@@ -43,12 +43,14 @@ export type SuccessToast =
   | (typeof VARIETIES_TEXT)['precioEliminado']
   | (typeof EXPENSES_TEXT)['expenseSaved']
   | (typeof EXPENSES_TEXT)['expenseDeleted']
+  | (typeof SETTINGS_TEXT)['currencySaved']
   | (typeof SETTINGS_TEXT)['categorySaved']
   | (typeof SETTINGS_TEXT)['categoryDeleted']
   | typeof RENAME_SUCCESS
   | typeof PASSWORD_CHANGED_SUCCESS
   | (typeof SETTINGS_TEXT)['invitationReady']
   | (typeof SALES_TEXT)['customerAssigned']
+  | (typeof SALES_TEXT)['expenseRecorded']
   | (typeof SALE_BILL_TEXT)['copied']
   | typeof THRESHOLD_SAVED
   | typeof CATALOG_SAVED

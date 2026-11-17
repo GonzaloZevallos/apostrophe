@@ -6,7 +6,7 @@
 
 import type { Expense, MonthlyView } from '../../api/expenses'
 import { formatDate } from '../../format/dates'
-import { formatMoney } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { EXPENSES_TEXT } from '../../copy/expenses'
 
 function countLine(expenses: number, categories: number): string {
@@ -22,6 +22,7 @@ export interface MonthBodyProps {
 }
 
 export default function MonthBody({ view, today, onEdit }: MonthBodyProps) {
+  const money = useMoney()
   const latest = view.categories
     .flatMap((category) => category.expenses.map((expense) => ({ expense, categoryName: category.name })))
     // ISO dates (YYYY-MM-DD) order as text; `<` and `>` do not read the device locale.
@@ -36,7 +37,7 @@ export default function MonthBody({ view, today, onEdit }: MonthBodyProps) {
       <div className="gastos__resumen">
         <div className="gastos__total">
           <span className="rotulo">{EXPENSES_TEXT.youSpentThisMonth}</span>
-          <span className="cifra-xl">{formatMoney(view.total)}</span>
+          <span className="cifra-xl">{money.money(view.total)}</span>
           {latest.length > 0 && (
             <span className="gastos__conteo">{countLine(latest.length, view.categories.length)}</span>
           )}
@@ -49,7 +50,7 @@ export default function MonthBody({ view, today, onEdit }: MonthBodyProps) {
                 <div key={category.id} className="gastos__categoria">
                   <div className="gastos__categoria-cabecera">
                     <span className="gastos__categoria-nombre">{category.name}</span>
-                    <span className="gastos__categoria-subtotal cifra-s">{formatMoney(category.subtotal)}</span>
+                    <span className="gastos__categoria-subtotal cifra-s">{money.money(category.subtotal)}</span>
                   </div>
                   <span className="gastos__barra" aria-hidden="true">
                     <span
@@ -79,7 +80,7 @@ export default function MonthBody({ view, today, onEdit }: MonthBodyProps) {
                 <span className="fila-gasto__categoria">{categoryName}</span>
                 <span className="fila-gasto__texto">{expense.detail}</span>
               </span>
-              <span className="fila-gasto__monto cifra-s">{formatMoney(expense.amount)}</span>
+              <span className="fila-gasto__monto cifra-s">{money.money(expense.amount)}</span>
             </button>
           ))}
         </div>

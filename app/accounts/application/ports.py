@@ -5,6 +5,7 @@ from typing import Protocol
 from app.accounts.domain.account import Business, Email, User
 from app.accounts.domain.invitation import Invitation
 from app.shared.language import BusinessLanguage
+from app.shared.money import MoneyFormat
 
 
 @dataclass(frozen=True)
@@ -25,6 +26,13 @@ class BusinessOpening(Protocol):
     single commit."""
 
     def opened(self, business_id: int, language: BusinessLanguage) -> None: ...
+
+
+class AccountsMoneyFormat(Protocol):
+    """How the signed-in business shows money, for `/auth/me` (docs/adr/0055). Accounts
+    declares it and never imports who implements it; `app/main.py` wires the real one."""
+
+    def current(self) -> MoneyFormat: ...
 
 
 class Accounts(Protocol):
@@ -69,7 +77,7 @@ class Accounts(Protocol):
     def clear_email(self, email: Email, now: datetime) -> None: ...
 
     def unlock_email(self, email: Email) -> None:
-        """Unguarded (docs/adr/0019): sets `failures = 0, locked_until = NULL`
+        """Unguarded (docs/adr/0019): sets `failures = 0, unlocks_at = NULL`
         whatever the lock's state. Only a completed Reset calls it."""
         ...
 

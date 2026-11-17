@@ -1,0 +1,3 @@
+// expect: resource-read@3
+import { ENGLISH_STATIC } from '../i18n/englishStatic.ts'
+export const close = ENGLISH_STATIC.common.close

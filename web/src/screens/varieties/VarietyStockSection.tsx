@@ -12,7 +12,8 @@ import BotonLink from '../../components/BotonLink'
 import InAppLink from '../../components/InAppLink'
 import { type Movement, type StockView, entriesOf } from '../../api/stock'
 import { formatDate } from '../../format/dates'
-import { formatGrams, formatMoney } from '../../format/money'
+import { formatGrams } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { VARIETY_ENTRIES, WITHDRAWAL, pathTo } from '../../routes'
 import { ORIGIN_LABEL } from '../originLabel'
 import { VARIETIES_TEXT } from '../../copy/varieties'
@@ -31,6 +32,7 @@ export default function VarietyStockSection({
   varietyId: number
   today: string
 }) {
+  const money = useMoney()
   const { t } = useTranslation()
   const rows: Movement[] = (
     movements ?? entriesOf(stock, varietyId).map((entry) => ({ ...entry, kind: 'entry' as const }))
@@ -63,13 +65,13 @@ export default function VarietyStockSection({
                   {formatDate(movement.date, today)}{OUT_OF_DATE_JOINER}{t(ORIGIN_LABEL[movement.origin])}
                 </span>
                 {movement.cost_per_gram !== null && (
-                  <span className="fila-entrada__linea2 cifra-n">{formatMoney(movement.cost_per_gram)}{VARIETIES_TEXT.elGramo}</span>
+                  <span className="fila-entrada__linea2 cifra-n">{money.money(movement.cost_per_gram)}{VARIETIES_TEXT.elGramo}</span>
                 )}
               </span>
               <span className="fila-entrada__cifras">
                 <span className="fila-entrada__costo cifra-s">{formatGrams(movement.quantity)}</span>
                 {movement.total_cost !== null && (
-                  <span className="fila-entrada__linea2 cifra-n">{formatMoney(movement.total_cost)}</span>
+                  <span className="fila-entrada__linea2 cifra-n">{money.money(movement.total_cost)}</span>
                 )}
               </span>
             </li>

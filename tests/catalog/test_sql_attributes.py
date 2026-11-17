@@ -14,7 +14,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.catalog.adapters.sql_attributes import SqlCatalogAttributes
-from app.catalog.adapters.tables import CatalogAttributesRow
+from app.catalog.adapters.tables import CatalogAttributeRow
 from app.catalog.domain.attributes import CatalogAttributes
 
 # `client` opens the first (and, in these tests, only) business on a fresh engine.
@@ -39,13 +39,13 @@ def test_put_twice_for_the_same_variety_updates_in_place_with_no_duplicate_row(
 
     with Session(engine) as session:
         rows = session.scalars(
-            select(CatalogAttributesRow).where(
-                CatalogAttributesRow.business_id == BUSINESS_ID,
-                CatalogAttributesRow.variety_id == variety_id,
+            select(CatalogAttributeRow).where(
+                CatalogAttributeRow.business_id == BUSINESS_ID,
+                CatalogAttributeRow.variety_id == variety_id,
             )
         ).all()
         assert len(rows) == 1
-        assert rows[0].shown is False
+        assert rows[0].is_shown is False
         assert rows[0].emoji is None
         assert rows[0].indica_share == 100
         assert rows[0].aroma is None

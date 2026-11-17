@@ -155,6 +155,12 @@ LEGACY_FRONT_PATHS: tuple[tuple[str, str], ...] = parse_legacy_front_paths(
 )
 
 
+# Retired front paths: they always go to `/`, with no query, through the same redirect as
+# the legacy rows. A separate list because the legacy table is Spanish-to-English and keeps
+# its query (docs/adr/20261116-more-and-mas-redirect-to-home-and-settings-marks-home).
+RETIRED_FRONT_PATHS: frozenset[str] = frozenset({"/more", "/mas"})
+
+
 class MissingBuiltFront(RuntimeError):
     def __init__(self, directory: Path) -> None:
         super().__init__(f"{directory} has no index.html; run `npm run build` in web/ first")
@@ -309,6 +315,8 @@ class FrontNavigation:
 
     - a legacy Spanish path (or it plus one trailing slash) is a 308 to its new path, for
       any method and any `Accept`, keeping the query string;
+    - `/more` or `/mas` (or it plus one trailing slash) is a 308 to `/`, for any method, with
+      the query dropped; any path under them is left to the unknown-address rule;
     - for a `GET`/`HEAD` that accepts `text/html`, a whole-path `SHARED_FRONT_PATHS` match is
       the app shell, served by the same `SpaStatic` as `/` so its headers have one author,
       and the same path plus one trailing slash is a 308 to the slashless path;
@@ -326,7 +334,10 @@ class FrontNavigation:
         path: str = scope["path"]
         legacy_target = _legacy_target(path)
         if legacy_target is not None:
-            await self._redirect(legacy_target, scope, receive, send)
+            await self._redirect(legacy_target, scope, receive, send, keep_query=True)
+            return
+        if _without_one_slash(path) in RETIRED_FRONT_PATHS:
+            await self._redirect("/", scope, receive, send, keep_query=False)
             return
         if scope["method"] in ("GET", "HEAD") and _accepts_html(scope):
             if _matching(path, SHARED_FRONT_PATHS):
@@ -335,13 +346,15 @@ class FrontNavigation:
                 return
             slashless = _without_one_slash(path)
             if slashless != path and _matching(slashless, SHARED_FRONT_PATHS):
-                await self._redirect(slashless, scope, receive, send)
+                await self._redirect(slashless, scope, receive, send, keep_query=True)
                 return
         await self._app(scope, receive, send)
 
     @staticmethod
-    async def _redirect(target: str, scope: Scope, receive: Receive, send: Send) -> None:
-        query = scope["query_string"].decode("latin-1")
+    async def _redirect(
+        target: str, scope: Scope, receive: Receive, send: Send, *, keep_query: bool
+    ) -> None:
+        query = scope["query_string"].decode("latin-1") if keep_query else ""
         location = f"{target}?{query}" if query else target
         await RedirectResponse(location, status_code=308)(scope, receive, send)
 

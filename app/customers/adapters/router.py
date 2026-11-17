@@ -20,6 +20,7 @@ from app.customers.application.ports import Balances, PricingSettingsReader
 from app.customers.domain.customer import Customer, CustomerRuleBroken
 from app.db import get_session
 from app.http_errors import Refused, TranslateErrors
+from app.shared.phone_country import UnknownPhoneCountry
 
 router = APIRouter(prefix="/customers", tags=["customers"])
 
@@ -77,7 +78,7 @@ as_http = TranslateErrors(
     [
         (404, (CustomerNotFound,)),
         (409, (PhoneTaken,)),
-        (422, (CustomerRuleBroken, RequiredFieldCleared)),
+        (422, (CustomerRuleBroken, RequiredFieldCleared, UnknownPhoneCountry)),
     ]
 )
 
@@ -120,6 +121,7 @@ def register_customer(
                 session,
                 name=body.name,
                 phone=body.phone,
+                phone_country=body.phone_country,
                 customer_type_id=body.customer_type_id,
             )
         except CustomerTypeNotFound:
@@ -151,7 +153,13 @@ def edit_customer(
         changes = body.to_changes()
         try:
             customer = manage_customers.edit_customer(
-                customers, settings, types, session, customer_id, changes
+                customers,
+                settings,
+                types,
+                session,
+                customer_id,
+                changes,
+                phone_country=body.phone_country,
             )
         except CustomerTypeNotFound:
             raise _type_not_found() from None

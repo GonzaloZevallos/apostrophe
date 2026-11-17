@@ -4,6 +4,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, PlainSerializer
 
+from app.money_schema import MoneyAmount, MoneyOut
 from app.products.domain.product import PriceEntry, Product
 
 # Quantity go out as a JSON number; they never carry more than two decimals.
@@ -16,19 +17,19 @@ class ProductIn(BaseModel):
 
 class PriceEntryIn(BaseModel):
     effective_from: date
-    list_price: int
-    bulk_price: int | None = None
+    list_price: MoneyAmount
+    bulk_price: MoneyAmount | None = None
     bulk_minimum: Decimal | None = None
-    vip_price: int | None = None
+    vip_price: MoneyAmount | None = None
 
 
 class PriceEntryOut(BaseModel):
     id: int
     effective_from: date
-    list_price: int
-    bulk_price: int | None
+    list_price: MoneyOut
+    bulk_price: MoneyOut | None
     bulk_minimum: QuantityOut | None
-    vip_price: int | None
+    vip_price: MoneyOut | None
 
     @classmethod
     def of(cls, entry: PriceEntry) -> "PriceEntryOut":
@@ -36,11 +37,33 @@ class PriceEntryOut(BaseModel):
         return cls(
             id=entry.id,
             effective_from=entry.effective_from,
-            list_price=entry.list_price,
-            bulk_price=entry.bulk.price if entry.bulk else None,
+            list_price=Decimal(entry.list_price),
+            bulk_price=Decimal(entry.bulk.price) if entry.bulk else None,
             bulk_minimum=entry.bulk.minimum.as_decimal() if entry.bulk else None,
-            vip_price=entry.vip_price,
+            vip_price=None if entry.vip_price is None else Decimal(entry.vip_price),
         )
+
+
+class TypePriceOut(BaseModel):
+    customer_type_id: int
+    price: MoneyOut
+
+
+class CurrentPriceOut(PriceEntryOut):
+    """The entry in force, with the price each customer type has in it (docs/adr/0059):
+    in this part, only the VIP type's."""
+
+    type_prices: list[TypePriceOut]
+
+    @classmethod
+    def with_types(cls, entry: PriceEntry, vip_type_id: int | None) -> "CurrentPriceOut":
+        base = PriceEntryOut.of(entry)
+        type_prices = (
+            []
+            if vip_type_id is None or entry.vip_price is None
+            else [TypePriceOut(customer_type_id=vip_type_id, price=Decimal(entry.vip_price))]
+        )
+        return cls(**base.model_dump(), type_prices=type_prices)
 
 
 class ProductOut(BaseModel):
@@ -48,17 +71,17 @@ class ProductOut(BaseModel):
     name: str
     # The price in force on the day asked for (today, unless the caller asked for
     # another day, docs/adr/0011); `null` when the product has none that day.
-    current_price: PriceEntryOut | None
+    current_price: CurrentPriceOut | None
     archived: bool
 
     @classmethod
-    def of(cls, product: Product, day: date) -> "ProductOut":
+    def of(cls, product: Product, day: date, vip_type_id: int | None) -> "ProductOut":
         assert product.id is not None, "only stored products go out"
         price = product.current_price(day)
         return cls(
             id=product.id,
             name=product.name.value,
-            current_price=None if price is None else PriceEntryOut.of(price),
+            current_price=None if price is None else CurrentPriceOut.with_types(price, vip_type_id),
             archived=product.is_archived,
         )
 

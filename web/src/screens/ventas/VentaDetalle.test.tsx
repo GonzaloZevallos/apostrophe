@@ -23,6 +23,7 @@ import Notice from '../../components/Notice'
 import { readFeedback, saleJustSaved } from '../../components/feedback'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import VentaDetalle from './VentaDetalle'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 /** Stands in for the real `Ventas` screen, just enough to show what `VentaDetalle`
  * navigated back with (plan, invariants: history state is only ever read through
@@ -61,10 +62,12 @@ function renderDetalle(initialState?: unknown) {
   )
   render(
     <QueryClientProvider client={queryClient}>
+<MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
       <SheetRouterProvider router={router}>
         <RouterProvider router={router} />
       </SheetRouterProvider>
-    </QueryClientProvider>,
+    </MoneyFormatProvider>
+</QueryClientProvider>,
   )
 }
 
@@ -81,11 +84,11 @@ test('shows the total, each line with its lowercase rule badge, shipping, note a
   // that every one of these fields renders, so it overrides just those two,
   // keeping everything else — id, lines, total_quantity — as the real answer's shape.
   vi.mocked(fetch).mockResolvedValue(
-    jsonResponse(200, { ...SALE, note: 'Entregar a la tarde', payment: 'cash' }),
+    jsonResponse(200, { ...SALE, note: 'Entregar a la tarde', payment: 'paid' }),
   )
   renderDetalle()
 
-  expect(await screen.findByText('Sale of 14/09')).toBeInTheDocument()
+  expect(await screen.findByText('Sale #2')).toBeInTheDocument()
   expect(screen.getAllByText('$ 11.000')).toHaveLength(2) // the big total and the final Total row.
   expect(screen.getByText('Flor A')).toBeInTheDocument()
   expect(screen.getByText('list')).toBeInTheDocument()
@@ -94,7 +97,7 @@ test('shows the total, each line with its lowercase rule badge, shipping, note a
   expect(screen.getByText('$ 10.500')).toBeInTheDocument()
   expect(screen.getByText('$ 500')).toBeInTheDocument()
   expect(screen.getByText('Entregar a la tarde')).toBeInTheDocument()
-  expect(screen.getByText('3,5 g · Ana Pérez · paid in cash')).toBeInTheDocument()
+  expect(screen.getByText('3,5 g · Ana Pérez · paid')).toBeInTheDocument()
 })
 
 test('shows the skeleton while the sale is pending, then the sale in its place', async () => {
@@ -110,16 +113,40 @@ test('shows the skeleton while the sale is pending, then the sale in its place',
   renderDetalle()
 
   expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
-  expect(screen.queryByText('Sale of 14/09')).not.toBeInTheDocument()
+  expect(screen.queryByText('Sale #2')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Delete sale' })).not.toBeInTheDocument()
   expect(fetch).toHaveBeenCalledTimes(1)
   expect(fetch).toHaveBeenCalledWith('/sales/10', expect.objectContaining({ method: 'GET' }))
 
   resolveSale(jsonResponse(200, SALE))
 
-  expect(await screen.findByText('Sale of 14/09')).toBeInTheDocument()
+  expect(await screen.findByText('Sale #2')).toBeInTheDocument()
   expect(screen.getAllByText('$ 11.000').length).toBeGreaterThan(0)
   expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+})
+
+test('while the detail loads the title is empty and nothing reads like a Sale number', async () => {
+  vi.mocked(fetch).mockReturnValue(new Promise<Response>(() => undefined))
+  renderDetalle()
+
+  expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
+  const main = screen.getByRole('main')
+  const body = main.firstElementChild as HTMLElement
+  expect(main).toHaveAttribute('aria-busy', 'true')
+  expect(body).not.toHaveAttribute('aria-busy')
+  expect(body.querySelector('.encabezado__titulo')).toBeEmptyDOMElement()
+  expect(main.textContent ?? '').not.toMatch(/#|[0-9]|Sale/)
+})
+
+test('the title is the Sale number as plain text, and the date sits under it', async () => {
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...SALE, number: 77 }))
+  renderDetalle()
+
+  const title = await screen.findByText('Sale #77')
+  expect(title.tagName).toBe('SPAN')
+  expect(title.closest('button, a')).toBeNull()
+  expect(title.parentElement?.nextElementSibling).toHaveTextContent(/^14\/09$/)
+  expect(screen.queryByText('Sale #10')).not.toBeInTheDocument() // the id (10) is never shown as the number.
 })
 
 test('a sale with no customer and no payment shows "No customer" and drops the payment part', async () => {
@@ -132,8 +159,7 @@ test('a sale with no customer and no payment shows "No customer" and drops the p
 })
 
 test.each([
-  ['cash', 'paid in cash'],
-  ['transfer', 'paid by transfer'],
+  ['paid', 'paid'],
   ['owing', 'left owing'],
 ] as const)('the summary line reads "%s" as "%s"', async (payment, words) => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...SALE, payment }))
@@ -154,7 +180,7 @@ test('Delete sale asks "Antes de borrar" naming the date, the amount and the gra
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle()
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
 
   await userEvent.click(screen.getByRole('button', { name: 'Delete sale' }))
   expect(
@@ -173,7 +199,7 @@ test('Delete sale asks "Antes de borrar" naming the date, the amount and the gra
 test('cancelling the delete confirmation keeps the sale', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
 
   await userEvent.click(screen.getByRole('button', { name: 'Delete sale' }))
   await userEvent.click(screen.getByRole('button', { name: 'No, keep it' }))
@@ -188,7 +214,7 @@ test('right after a save, Deshacer deletes the sale with no confirmation and nam
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle(saleJustSaved())
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
 
   expect(screen.getByText('Sale saved')).toBeInTheDocument()
 
@@ -206,7 +232,7 @@ test('right after a save, Deshacer deletes the sale with no confirmation and nam
 test('opening the detail without the just-saved marker never shows Deshacer', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
 
   expect(screen.queryByText('Sale saved')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Undo' })).not.toBeInTheDocument()
@@ -216,7 +242,7 @@ test('a sale already gone when deleted shows the gone notice and returns to Vent
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(404, { code: 'sale.not_found' }))
   renderDetalle()
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
 
   await userEvent.click(screen.getByRole('button', { name: 'Delete sale' }))
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
@@ -227,12 +253,12 @@ test('a sale already gone when deleted shows the gone notice and returns to Vent
 test('a sale with a customer already never shows Assign customer', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
-  await screen.findByText('Sale of 14/09')
+  await screen.findByText('Sale #2')
 
   expect(screen.queryByRole('button', { name: 'Assign customer' })).not.toBeInTheDocument()
 })
 
-const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', vip: true }
+const NICO_SEARCH_RESULT = { id: 5, name: 'Nico', phone: '1111', phone_display: '1111', vip: true }
 const NICO = { id: 5, name: 'Nico', vip: true }
 
 /** Dispatches on method and path instead of call order: the sheet's own search
@@ -411,7 +437,21 @@ test('a sale keeps its recorded "VIP" and "bulk" badges while both pricing switc
   )
   renderDetalle()
 
-  expect(await screen.findByText('Sale of 14/09')).toBeInTheDocument()
+  expect(await screen.findByText('Sale #2')).toBeInTheDocument()
   expect(screen.getByText('VIP')).toBeInTheDocument()
   expect(screen.getByText('bulk')).toBeInTheDocument()
+})
+
+test('a recorded type line shows the type name copied when it was saved', async () => {
+  const line = SALE.lines[0]
+  const recorded = {
+    ...SALE,
+    customer: { id: 5, name: 'Ana Pérez', vip: false },
+    lines: [{ ...line, pricing_rule: 'type', customer_type_name: 'Mayoristas' }],
+  }
+  vi.mocked(fetch).mockImplementation(() => Promise.resolve(jsonResponse(200, recorded)))
+  renderDetalle()
+
+  expect(await screen.findByText('Sale #2')).toBeInTheDocument()
+  expect(screen.getByText('Mayoristas')).toBeInTheDocument()
 })

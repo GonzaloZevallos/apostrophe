@@ -1,0 +1,5 @@
+// expect: none
+import { t } from 'i18next'
+export function title() {
+  return t('a')
+}

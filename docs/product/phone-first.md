@@ -1,74 +1,74 @@
 # Phone first
 
-The owner's product and design criteria (2026-10-21; the fourth, Assume nothing, added 2026-10-23) as the roles apply them. This file records the jobs and how their success is measured. The rules themselves are written once, in the documents listed below, and this file holds no rule text: where they differ, those documents win.
+Los criterios de producto y de diseño del dueño (2026-10-21; el cuarto, Assume nothing, se agregó el 2026-10-23) tal como los aplican los roles. Este archivo registra los jobs y cómo se mide su éxito. Las reglas en sí están escritas una sola vez, en los documentos que se listan más abajo, y este archivo no contiene texto de reglas: donde difieren, ganan esos documentos.
 
 ## Jobs
 
-- When a role builds, reviews or scopes a screen, I want it to apply my criteria (the drawing is a guide, the phone flow comes before polish, the user is a small-business owner on a phone with little time, and nothing about the business is assumed), so that the work goes into what that owner understands and does on the phone, and none of it goes into pixel differences that change neither.
-- When I scope, draw or review something that names what a business sells, how it measures it, its currency, how it gets paid, how it prices or which channels it uses, I want one test to tell this seller's way of working from the product's: "would this still be right for a business that sells something else, in other units, other ways?" If not, it is a finding. Then I keep the choice as a setting with a neutral default, never as a fixed rule or a business-type preset.
+- Cuando un rol construye, revisa o acota una pantalla, quiero que aplique mis criterios (el dibujo es una guía, el flujo en el teléfono va antes que el pulido, el usuario es el dueño de un negocio chico que usa el teléfono con poco tiempo, y no se da nada por sentado sobre el negocio), para que el trabajo se dedique a lo que ese dueño entiende y hace en el teléfono, y nada se pierda en diferencias de píxeles que no cambian ni una cosa ni la otra.
+- Cuando acoto, dibujo o reviso algo que nombra qué vende un negocio, cómo lo mide, su moneda, cómo cobra, cómo fija los precios o qué canales usa, quiero una sola prueba que distinga la forma de trabajar de este vendedor de la del producto: "would this still be right for a business that sells something else, in other units, other ways?" Si no, es un finding. Entonces conservo la elección como una configuración con un valor por defecto neutro, nunca como una regla fija ni como un preset por tipo de negocio.
 
-Used at four moments:
-- A designer or reviewer is about to open a "differs from the drawing" finding or issue.
-- A task has to choose between getting the phone flow working and visual polish.
-- The PM or Product Analyst is deciding scope or priority for a capability and has to weigh the phone against the computer.
-- A role is about to write down a word, unit, field, option list or default for a business: a PRD line, a screen label, a review comment, or the PM deciding a default.
+Se usa en cuatro momentos:
+- Un diseñador o revisor está por abrir un finding o issue de "difiere del dibujo".
+- Una tarea tiene que elegir entre dejar andando el flujo en el teléfono y el pulido visual.
+- El PM o el Product Analyst decide el alcance o la prioridad de una capacidad y tiene que sopesar el teléfono contra la computadora.
+- Un rol está por dejar escrito una palabra, unidad, campo, lista de opciones o valor por defecto para un negocio: una línea de PRD, una etiqueta de pantalla, un comentario de revisión, o el PM decidiendo un valor por defecto.
 
-## Where each criterion lives
+## Dónde vive cada criterio
 
-- Drawing as guide (rule 1): `DESIGN_STANDARDS.md`.
-- Phone first (rule 2): `DESIGN_STANDARDS.md`.
-- The primary user (rule 3) and the priority line: `BRIEF.md`, "Problem and who has it".
-- Assume nothing (criterion 4): `DESIGN_STANDARDS.md`, section "Assume nothing" (authoritative, including how a reviewer tells an extension from the new work's own assumption), and `BRIEF.md`, next to the primary user and the priority line. Both state its test in identical wording. The PM decides borderline findings with criterion 4's test, as for rule 1. The owner is asked only when the PM cannot tell whether a choice belongs to the business or to the product.
-- Icon and text rule, attention icon, tappable notice, design capture: `docs/product/icon-and-text-rule.md` and `docs/product/design-capture.md`, the authoritative text. `DESIGN_STANDARDS.md` holds a short entry section for each.
-- Mobile standard: `CODING_STANDARDS.md` §10 "Phone", pointed to from `DESIGN_STANDARDS.md`.
-- Mobile check (phone rows, offender lists, growth conditions): `docs/product/mobile-check.md` and `docs/product/gate.md`.
+- **Drawing as guide** (regla 1): `DESIGN_STANDARDS.md`.
+- **Phone first** (regla 2): `DESIGN_STANDARDS.md`.
+- El usuario principal (regla 3) y la línea de prioridad: `BRIEF.md`, "Problem and who has it".
+- Assume nothing (criterio 4): `DESIGN_STANDARDS.md`, sección "Assume nothing" (la que manda, incluido cómo distingue quien revisa una extensión de la suposición propia del trabajo nuevo), y `BRIEF.md`, junto al usuario principal y la línea de prioridad. Los dos enuncian su prueba con idéntica redacción. El PM decide los findings dudosos con la prueba del criterio 4, igual que con la regla 1. Solo se le pregunta al dueño cuando el PM no puede decidir si una elección pertenece al negocio o al producto.
+- **Icon and text rule**, **Attention icon**, **Tappable notice**, **Design capture**: `docs/product/icon-and-text-rule.md` y `docs/product/design-capture.md`, el texto que manda. `DESIGN_STANDARDS.md` tiene una sección breve para cada uno.
+- Estándar móvil: `CODING_STANDARDS.md` §10 "Phone", al que remite `DESIGN_STANDARDS.md`.
+- **Mobile check** (filas de teléfono, listas de infractores, condiciones de crecimiento): `docs/product/mobile-check.md` y `docs/product/gate.md`.
 
-## Rollout
+## Despliegue
 
-- `docs/product/icon-and-text-rule.md` and `docs/product/design-capture.md` are the one home of their rules, and `DESIGN_STANDARDS.md` holds only a short entry section for each, pointing to them.
-  - A change to either rule is made in its `docs/product/` file alone; the entry section in `DESIGN_STANDARDS.md` is not edited for it.
-- Criterion 4 applies to new scoping, design and review. It does not reclassify what exists: the brief's current constraints describe where the first businesses start, the existing assumptions are swept in #330, and the customizable model is #318.
+- `docs/product/icon-and-text-rule.md` y `docs/product/design-capture.md` son el único hogar de sus reglas, y `DESIGN_STANDARDS.md` tiene solo una sección breve para cada una, que remite a ellos.
+  - Un cambio a cualquiera de las dos reglas se hace solo en su archivo de `docs/product/`; la sección breve de `DESIGN_STANDARDS.md` no se edita por eso.
+- El criterio 4 se aplica al alcance, el diseño y la revisión nuevos. No reclasifica lo que ya existe: las restricciones actuales del brief describen dónde arrancan los primeros negocios, las suposiciones existentes se barren en #330, y el modelo personalizable es #318.
   - New work extends an existing choice when it reuses, unchanged, a word, unit or option list that `CONTEXT.md`, `BRIEF.md` or the code already fixes for every business (for example a new field in grams or whole pesos, or another "cash or transfer" choice). That finding is recorded as a review comment linking #330 (and #318 when the customizable model is what is missing), and the change merges; it does not wait for the sweep.
   - Anything the new work adds to or changes in such a choice (a further fixed option, a new unit next to grams), or that appears in none of `CONTEXT.md`, `BRIEF.md` or the code, is the new work's own assumption. Its finding blocks the merge like any finding: before merge, the choice becomes a setting with a neutral default, or the PM rules it borderline and decides with criterion 4's test.
-  - When the reviewer cannot tell which case applies, they ask the PM before merge, and the PM decides.
+  - Cuando quien revisa no puede decidir qué caso corresponde, le pregunta al PM antes de fusionar, y el PM decide.
 
-## Success criteria
+## Criterios de éxito
 
-1. A difference from the drawing becomes a finding or an issue only when it changes what the person understands or does. A pixel or layout difference that changes neither opens nothing.
-2. When a task has to choose, the phone flow works first. Polish is a separate, later task.
-3. Each role reads these criteria in the document it already uses: `DESIGN_STANDARDS.md` for the design roles, `BRIEF.md` / `docs/product/` for product.
-4. Each design rule has one home and no copy: the owner's four criteria and the rules that stay are in `DESIGN_STANDARDS.md`, and the icon and text rule and design capture are in their `docs/product/` files, with only a short entry section for each in `DESIGN_STANDARDS.md`. Glossary entries stay and point to the home.
-5. Every open "differs from the drawing" follow-up, design-capture review follow-ups included, has been reviewed against rule 1. The ones it makes moot are closed with a note quoting rule 1. The PM decides borderline ones with the same test. The rest stay open.
-6. The four criteria read together, in the same order and with the same numbers, in `BRIEF.md` and `DESIGN_STANDARDS.md`. Criterion 4's test is stated in both with its verdict, and a role can apply it to a concrete case (product type, units, currency, payment methods, pricing rules, channels, and so on) without asking the PM.
-7. A reviewer can tell from one diff whether a criterion 4 finding extends an existing choice (recorded, merges) or is the new work's own assumption (blocks), using the test in `DESIGN_STANDARDS.md` "Assume nothing".
+1. Una diferencia con el dibujo se convierte en un finding o un issue solo cuando cambia lo que la persona entiende o hace. Una diferencia de píxeles o de layout que no cambia ninguna de las dos cosas no abre nada.
+2. Cuando una tarea tiene que elegir, primero anda el flujo en el teléfono. El pulido es una tarea aparte, posterior.
+3. Cada rol lee estos criterios en el documento que ya usa: `DESIGN_STANDARDS.md` los roles de diseño, `BRIEF.md` / `docs/product/` los de producto.
+4. Cada regla de diseño tiene un solo hogar y ninguna copia: los cuatro criterios del dueño y las reglas que quedan están en `DESIGN_STANDARDS.md`, y la Icon and text rule y la Design capture están en sus archivos de `docs/product/`, con solo una sección breve para cada una en `DESIGN_STANDARDS.md`. Las definiciones del glosario se quedan y remiten al hogar.
+5. Todo seguimiento abierto de "difiere del dibujo", los seguimientos de revisión de la Design capture incluidos, fue revisado contra la regla 1. Los que la regla deja sin sentido se cierran con una nota que cita la regla 1. El PM decide los dudosos con la misma prueba. El resto queda abierto.
+6. Los cuatro criterios se leen juntos, en el mismo orden y con los mismos números, en `BRIEF.md` y `DESIGN_STANDARDS.md`. La prueba del criterio 4 está enunciada en ambos con su veredicto, y un rol puede aplicarla a un caso concreto (tipo de producto, unidades, moneda, medios de pago, reglas de precios, canales, etcétera) sin preguntarle al PM.
+7. Quien revisa puede decir, a partir de un solo diff, si un finding del criterio 4 extiende una elección existente (se registra, se fusiona) o es la suposición propia del trabajo nuevo (bloquea), usando la prueba de `DESIGN_STANDARDS.md` "Assume nothing".
 
-## Metrics
+## Métricas
 
-- "Differs from the drawing" findings or issues opened after the criteria land that fail the rule 1 test: target 0.
-- Tasks blocked, or shipped phone flows reopened, because of a polish gap: target 0.
-- Polish tasks opened from a finding rather than scheduled by the owner or PM: target 0.
-- Two checks, both true: `BRIEF.md` states the primary user and the priority line pointing to `DESIGN_STANDARDS.md`, and `DESIGN_STANDARDS.md` holds rules 1 and 2.
-- Design rule text held in two places at once: 0.
-- Glossary entries still carrying moved rule text: 0.
-- Share of open "differs from the drawing" follow-ups reviewed: 100%.
-- Closed follow-ups carrying a note quoting rule 1: 100%.
-- Borderline cases left undecided: 0.
-- Criterion 4's test reads identically in `BRIEF.md` and `DESIGN_STANDARDS.md`: true.
-- The extension test reads identically in `DESIGN_STANDARDS.md` "Assume nothing" and this file's Rollout: true.
-- Wording in `BRIEF.md`, `DESIGN_STANDARDS.md`, `CONTEXT.md` or this file that presents the brief's current constraints as rules for new work: 0.
-- New PRDs, designs or reviews after criterion 4 lands that fix a word, unit, field, option list or default for every business without a finding: target 0.
-- Changes merged with an unresolved criterion 4 finding on an assumption of their own: 0.
-- Criterion 4 findings on extensions of existing hard-coded choices recorded without a link to #330: 0.
-- Ready-made business-type presets introduced: 0.
+- Findings o issues de "difiere del dibujo" abiertos después de que los criterios entren en vigor que no pasan la prueba de la regla 1: objetivo 0.
+- Tareas bloqueadas, o flujos de teléfono ya entregados que se reabren, por una brecha de pulido: objetivo 0.
+- Tareas de pulido abiertas a partir de un finding en lugar de programadas por el dueño o el PM: objetivo 0.
+- Dos chequeos, ambos verdaderos: `BRIEF.md` enuncia el usuario principal y la línea de prioridad que remite a `DESIGN_STANDARDS.md`, y `DESIGN_STANDARDS.md` tiene las reglas 1 y 2.
+- Texto de reglas de diseño que está en dos lugares a la vez: 0.
+- Definiciones del glosario que todavía llevan texto de reglas que se mudó: 0.
+- Proporción de seguimientos abiertos de "difiere del dibujo" revisados: 100%.
+- Seguimientos cerrados que llevan una nota que cita la regla 1: 100%.
+- Casos dudosos sin decidir: 0.
+- La prueba del criterio 4 se lee idéntica en `BRIEF.md` y `DESIGN_STANDARDS.md`: verdadero.
+- La prueba de extensión se lee idéntica en `DESIGN_STANDARDS.md` "Assume nothing" y en el "Despliegue" de este archivo: verdadero.
+- Redacción en `BRIEF.md`, `DESIGN_STANDARDS.md`, `CONTEXT.md` o este archivo que presente las restricciones actuales del brief como reglas para el trabajo nuevo: 0.
+- PRDs, diseños o revisiones nuevos, después de que el criterio 4 entre en vigor, que fijan sin un finding una palabra, unidad, campo, lista de opciones o valor por defecto para todos los negocios: objetivo 0.
+- Cambios fusionados con un finding del criterio 4 sin resolver sobre una suposición propia: 0.
+- Findings del criterio 4 sobre extensiones de elecciones fijas existentes registrados sin un enlace a #330: 0.
+- Presets listos por tipo de negocio introducidos: 0.
 
-## Out of scope
+## Fuera de alcance
 
-- Rewriting any moved rule.
-- Changing the content of `gate.md`, `navigation.md` or `product-language.md`; only links to moved files are updated.
-- Changing the Mobile check, its offender lists or their growth conditions.
-- A standing check for citations of removed `docs/product/` files.
-- Moving the mobile standard out of `CODING_STANDARDS.md` §10, or removing its duplicate in the design README.
-- Reopening or removing existing computer-specific designs (ADR-0044).
-- Scheduling any polish task.
-- Any change to what the app does for a seller.
-- Editing the brief's constraint lines, the sweep of existing assumptions (#330) and the customizable model (#318).
+- Reescribir cualquier regla que se mudó.
+- Cambiar el contenido de `gate.md`, `navigation.md` o `product-language.md`; solo se actualizan los enlaces a archivos movidos.
+- Cambiar el Mobile check, sus listas de infractores o sus condiciones de crecimiento.
+- Un chequeo permanente de citas de archivos de `docs/product/` que se quitaron.
+- Mudar el estándar móvil fuera de `CODING_STANDARDS.md` §10, o quitar su duplicado en el README del diseño.
+- Reabrir o quitar diseños existentes específicos de la computadora (ADR-0044).
+- Programar cualquier tarea de pulido.
+- Cualquier cambio a lo que la app hace para un vendedor.
+- Editar las líneas de restricciones del brief, el barrido de las suposiciones existentes (#330) y el modelo personalizable (#318).

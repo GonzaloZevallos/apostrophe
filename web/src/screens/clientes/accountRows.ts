@@ -5,22 +5,22 @@
  * over), or both; a sale row is never a later payment.
  */
 
-import type { AccountRow, HowPaid, PaymentMethod } from '../../api/payments'
+import type { AccountRow, HowPaid, SaleAccountRow } from '../../api/payments'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { formatDateShort } from '../../format/dates'
-import { formatMoney, formatMoneyMagnitude } from '../../format/money'
+import type { MoneyFormatter } from '../../format/money'
 
-export const METHOD_LABEL: Record<PaymentMethod, string> = {
-  cash: CUSTOMERS_TEXT.methodCash,
-  transfer: CUSTOMERS_TEXT.methodTransfer,
-}
-
-/** What a sale row says under "Sale": total, so a new `HowPaid` fails to compile here. */
-const HOW_PAID_SUB: Record<HowPaid, string> = {
-  cash: CUSTOMERS_TEXT.paidInCash,
-  transfer: CUSTOMERS_TEXT.paidByTransfer,
+/** What a sale row says under "Sale": total, so a new `HowPaid` fails to compile here. A paid
+ * sale names its method instead (`saleSub`), from the row's `payment_method`. */
+const HOW_PAID_SUB: Record<Exclude<HowPaid, 'paid'>, string> = {
   owing: CUSTOMERS_TEXT.leftOwing,
   none: CUSTOMERS_TEXT.nothingToPay,
+}
+
+function saleSub(sale: SaleAccountRow['sale']): string {
+  if (sale.how_paid !== 'paid') return HOW_PAID_SUB[sale.how_paid]
+  // A paid sale always carries its method; the guard keeps the row readable if it did not.
+  return sale.payment_method === null ? CUSTOMERS_TEXT.paid : CUSTOMERS_TEXT.paidWith(sale.payment_method.name)
 }
 
 export type BalanceTone = 'debt' | 'credit' | 'neutral'
@@ -40,32 +40,32 @@ export interface LedgerRowView {
  * (`payments.md`, "En pantalla: la ficha del cliente"). Reads only `kind`, `how_paid`,
  * `method`, the sale's date and `standing`, never the sign of an amount.
  */
-export function ledgerRowView(row: AccountRow): LedgerRowView {
+export function ledgerRowView(row: AccountRow, money: MoneyFormatter): LedgerRowView {
   const balance =
     row.standing === 'credit'
-      ? { balance: CUSTOMERS_TEXT.creditAmount(formatMoneyMagnitude(row.running_balance)), balanceTone: 'credit' as const }
+      ? { balance: CUSTOMERS_TEXT.creditAmount(money.magnitude(row.running_balance)), balanceTone: 'credit' as const }
       : {
-          balance: CUSTOMERS_TEXT.balanceAmount(formatMoney(row.running_balance)),
+          balance: CUSTOMERS_TEXT.balanceAmount(money.money(row.running_balance)),
           balanceTone: row.standing === 'owes' ? ('debt' as const) : ('neutral' as const),
         }
   if (row.kind === 'sale') {
     return {
       title: CUSTOMERS_TEXT.saleTitle,
-      sub: HOW_PAID_SUB[row.sale.how_paid],
-      own: formatMoney(row.sale.total),
+      sub: saleSub(row.sale),
+      own: money.money(row.sale.total),
       ...balance,
     }
   }
-  const title = CUSTOMERS_TEXT.paymentTitle(METHOD_LABEL[row.payment.method])
+  const title = CUSTOMERS_TEXT.paymentTitle(row.payment.payment_method.name)
   if (row.kind === 'payment') {
     return {
       title,
       sub: CUSTOMERS_TEXT.onAccountOf(formatDateShort(row.applied_to.sale_date)),
-      own: formatMoney(row.applied_to.amount),
+      own: money.money(row.applied_to.amount),
       ...balance,
     }
   }
-  return { title, sub: CUSTOMERS_TEXT.creditLabel, own: formatMoneyMagnitude(row.amount), ...balance }
+  return { title, sub: CUSTOMERS_TEXT.creditLabel, own: money.magnitude(row.amount), ...balance }
 }
 
 /**

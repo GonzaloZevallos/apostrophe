@@ -1,3 +1,4 @@
 *.mo binary
-docs/api/** linguist-generated=true
-docs/architecture/generated/** linguist-generated=true
+docs/api/** linguist-generated=true merge=regen
+docs/architecture/generated/** linguist-generated=true merge=regen
+docs/architecture/decisiones.md linguist-generated=true merge=regen

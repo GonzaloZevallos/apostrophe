@@ -5,6 +5,7 @@
  * debtor (ADR-0040).
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, HOME, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
@@ -21,16 +22,16 @@ type Origin = 'customers' | 'home' | 'card'
 async function openCobroModal(page: Page, origin: Origin = 'customers'): Promise<void> {
   await signUpNewBusiness(page)
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await page.getByRole('link', { name: 'New product' }).click()
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')
   await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Name').fill('Carla Cobrar')
+  await page.getByLabel('Name', { exact: true }).fill('Carla Cobrar')
   await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'New sale to Carla Cobrar' }).click()

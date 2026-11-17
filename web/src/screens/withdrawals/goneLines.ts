@@ -1,23 +1,24 @@
 /**
  * The withdrawal form's rules about archived varieties (`stock.md`, "Sacar del stock"), with
- * no cache and no network: who a fresh list makes guilty, what a line's picker offers, and
+ * no cache and no network: who a fresh list makes guilty, what a line's Selector gets, and
  * whether a preselected variety survives. The form wires them to its state.
  */
+
+import type { SelectorOption } from '../../components/Selector'
+import { varietiesByName } from '../varieties/varietiesByName'
 
 export interface LineRef {
   key: number
   varietyId: string
 }
 
+export interface NamedLineRef extends LineRef {
+  varietyName: string
+}
+
 export interface ListedVariety {
   id: number
   name: string
-}
-
-export interface Option {
-  value: string
-  label: string
-  disabled: boolean
 }
 
 /**
@@ -38,29 +39,24 @@ export function guiltyKeys(
   return guilty
 }
 
+/** What a line's Variety Selector gets: `options` is the listed Varieties and nothing else. */
+export interface LineChoice {
+  options: SelectorOption[]
+  /** The line's Variety when it is not listed, with the name it was shown by: marked, never offered. */
+  selected?: { value: string; label: string }
+}
+
 /**
- * The listed varieties, plus one disabled option for each variety a line holds that the
- * list does not (a stored line archived since, or a line a refusal found archived), named
- * from `names` so the line keeps showing what the seller chose. A name never seen leaves
- * the label empty: an id is not something to show.
+ * The listed Varieties as options, in name order, and, for a line whose Variety is not listed
+ * (a stored line archived since, or a line a refusal found archived), `selected` with the name
+ * the line carries. An unlisted Variety is never an option. A name never seen gives no
+ * `selected`: an id is not something to show.
  */
-export function keptOptions(
-  lines: readonly LineRef[],
-  listed: readonly ListedVariety[],
-  names: ReadonlyMap<string, string>,
-): Option[] {
-  const options: Option[] = listed.map((variety) => ({
-    value: String(variety.id),
-    label: variety.name,
-    disabled: false,
-  }))
-  const offered = new Set(options.map((option) => option.value))
-  for (const line of lines) {
-    if (line.varietyId === '' || offered.has(line.varietyId)) continue
-    offered.add(line.varietyId)
-    options.push({ value: line.varietyId, label: names.get(line.varietyId) ?? '', disabled: true })
-  }
-  return options
+export function lineChoice(line: NamedLineRef, listed: readonly ListedVariety[]): LineChoice {
+  const options = varietiesByName(listed).map((variety) => ({ value: String(variety.id), label: variety.name }))
+  if (line.varietyId === '' || line.varietyName === '') return { options }
+  if (options.some((option) => option.value === line.varietyId)) return { options }
+  return { options, selected: { value: line.varietyId, label: line.varietyName } }
 }
 
 /** The variety `?variety=` chooses, or `''` when it is not offered (archived or unknown). */

@@ -32,7 +32,7 @@ msgid "operator.import.counts_heading"
 msgstr "Counts:"
 
 msgid "operator.import.count_varieties"
-msgstr "  Varieties: {count}"
+msgstr "  Products: {count}"
 
 msgid "operator.import.count_price_entries"
 msgstr "  Price entries: {count}"
@@ -223,3 +223,9 @@ msgstr "Marketing"
 
 msgid "stock.default_reason.own_use"
 msgstr "Own use"
+
+msgid "payment_methods.default_method.cash"
+msgstr "Cash"
+
+msgid "payment_methods.default_method.transfer"
+msgstr "Transfer"

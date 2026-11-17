@@ -1,0 +1,207 @@
+/**
+ * `CurrencyAndDecimals` at the screen seam (plan, "Currency and decimals form"): the live
+ * Example, a save that sets the front's format and the `me` cache, the symbol refusal that keeps
+ * what was typed, and the fixed lowering sentence with the Attention icon. The API is faked at
+ * `fetch`, never mocked deeper (CODING_STANDARDS §10).
+ */
+
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { createMemoryRouter, RouterProvider } from 'react-router'
+import saleFixture from '../../api/fixtures/sale.json'
+import GatedLayout from '../../shell/GatedLayout'
+import Ventas from '../ventas/Ventas'
+import { afterEach, beforeEach, expect, test, vi, type Mock } from 'vitest'
+import { keys } from '../../api/keys'
+import type { Me } from '../../api/me'
+import { COMMON_TEXT } from '../../copy/common'
+import { SETTINGS_TEXT } from '../../copy/settings'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+import { SALES, SETTINGS_CURRENCY } from '../../routes'
+import { SHOWN_EN } from '../../test/shownLanguage'
+import CurrencyAndDecimals from './CurrencyAndDecimals'
+
+const ME: Me = {
+  email: 'vos@lahuerta.com',
+  business_name: 'La Huerta',
+  today: '2026-10-02',
+  shown_language: SHOWN_EN,
+  money: { symbol: '$', decimals: 0 },
+}
+
+const SYMBOL_REFUSAL = 'Use 1 to 4 visible characters, and no two asterisks in a row.'
+const LOWERING_REFUSAL = 'Some recorded amounts have more decimals than that, so the decimals stay put.'
+
+type FetchMock = Mock<(url: string, init?: RequestInit) => Promise<Response>>
+
+function fetchReturning(response: Response | null): FetchMock {
+  return vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(() =>
+    Promise.resolve(response ?? jsonResponse(200, {})),
+  )
+}
+
+function jsonResponse(status: number, body: unknown): Response {
+  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
+}
+
+beforeEach(() => {
+})
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
+
+function renderForm(fetchMock: FetchMock): QueryClient {
+  vi.stubGlobal('fetch', fetchMock)
+  const queryClient = new QueryClient()
+  queryClient.setQueryData(keys.me(), ME)
+  const router = createMemoryRouter([{ path: SETTINGS_CURRENCY, element: <CurrencyAndDecimals /> }], {
+    initialEntries: [SETTINGS_CURRENCY],
+  })
+  render(
+    <QueryClientProvider client={queryClient}>
+      <MoneyFormatProvider format={ME.money}>
+        <RouterProvider router={router} />
+      </MoneyFormatProvider>
+    </QueryClientProvider>,
+  )
+  return queryClient
+}
+
+function lastPutBody(fetchMock: FetchMock): unknown {
+  const call = fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT')
+  if (call === undefined) throw new Error('no PUT was sent')
+  return JSON.parse(String(call[1]?.body))
+}
+
+test('the Example is written from the unsaved symbol and decimals as they are typed', async () => {
+  const user = userEvent.setup()
+  renderForm(fetchReturning(null))
+
+  expect(screen.getByRole('status')).toHaveTextContent('$ 11.000')
+
+  const symbol = screen.getByRole('textbox', { name: new RegExp(SETTINGS_TEXT.currencySymbol) })
+  await user.clear(symbol)
+  await user.type(symbol, 'US$')
+  await user.click(screen.getByRole('radio', { name: SETTINGS_TEXT.currencyDecimals2 }))
+
+  expect(screen.getByRole('status')).toHaveTextContent('US$ 11.000,50')
+})
+
+test('Save sends the symbol and the decimals only, sets the front format and the me cache', async () => {
+  const user = userEvent.setup()
+  const fetchMock = fetchReturning(jsonResponse(200, { symbol: 'US$', decimals: 0 }))
+  const queryClient = renderForm(fetchMock)
+
+  const symbol = screen.getByRole('textbox', { name: new RegExp(SETTINGS_TEXT.currencySymbol) })
+  await user.clear(symbol)
+  await user.type(symbol, 'US$')
+  await user.click(screen.getByRole('button', { name: COMMON_TEXT.save }))
+
+  expect(await screen.findByText(SETTINGS_TEXT.currencySaved)).toBeInTheDocument()
+  expect(lastPutBody(fetchMock)).toEqual({ symbol: 'US$', decimals: 0 })
+  expect(queryClient.getQueryData<Me>(keys.me())?.money).toEqual({ symbol: 'US$', decimals: 0 })
+})
+
+test('a symbol refusal shows the API refusal next to the field and keeps what was typed', async () => {
+  const user = userEvent.setup()
+  const fetchMock = fetchReturning(
+    jsonResponse(422, { code: 'money_format.symbol_invalid', field: 'symbol' }),
+  )
+  renderForm(fetchMock)
+
+  const symbol = screen.getByRole('textbox', { name: new RegExp(SETTINGS_TEXT.currencySymbol) })
+  await user.clear(symbol)
+  await user.type(symbol, 'a**')
+  await user.click(screen.getByRole('button', { name: COMMON_TEXT.save }))
+
+  expect(await screen.findByText(SYMBOL_REFUSAL)).toBeInTheDocument()
+  expect(symbol).toHaveValue('a**')
+})
+
+test('a refused lowering shows the fixed sentence with the Attention icon and changes nothing', async () => {
+  const user = userEvent.setup()
+  const fetchMock = fetchReturning(jsonResponse(409, { code: 'money_format.decimals_below_recorded' }))
+  const queryClient = renderForm(fetchMock)
+
+  await user.click(screen.getByRole('radio', { name: SETTINGS_TEXT.currencyDecimals1 }))
+  await user.click(screen.getByRole('button', { name: COMMON_TEXT.save }))
+
+  const alert = await screen.findByRole('alert')
+  expect(alert).toHaveTextContent(LOWERING_REFUSAL)
+  expect(alert.querySelector('svg')).not.toBeNull()
+  expect(screen.getByRole('radio', { name: SETTINGS_TEXT.currencyDecimals1 })).toHaveAttribute('aria-checked', 'true')
+  await waitFor(() => {
+    expect(queryClient.getQueryData<Me>(keys.me())?.money).toEqual({ symbol: '$', decimals: 0 })
+  })
+})
+
+test.each([
+  [503, 'money_format.busy', 'The app is busy right now. Nothing was saved, so try again in a moment.'],
+  [409, 'money_format.amount_too_large', 'An amount is too large to change the decimals. Nothing was saved.'],
+  [500, 'money_format.rescale_check_failed', 'The amounts could not be checked, so nothing was saved. Try again.'],
+])('a refused raise (%s %s) shows its own sentence with the Attention icon and changes nothing', async (status, code, sentence) => {
+  const user = userEvent.setup()
+  const fetchMock = fetchReturning(jsonResponse(status, { code }))
+  renderForm(fetchMock)
+
+  await user.click(screen.getByRole('radio', { name: SETTINGS_TEXT.currencyDecimals2 }))
+  await user.click(screen.getByRole('button', { name: COMMON_TEXT.save }))
+
+  const alert = await screen.findByRole('alert')
+  expect(alert).toHaveTextContent(sentence)
+  expect(alert.querySelector('svg')).not.toBeNull()
+  expect(screen.getByRole('radio', { name: SETTINGS_TEXT.currencyDecimals2 })).toHaveAttribute('aria-checked', 'true')
+})
+
+test('a mounted Sales list writes its total with the new symbol after Save, without navigating', async () => {
+  const user = userEvent.setup()
+  let stored = { symbol: '$', decimals: 0 }
+  const answer = (body: unknown) => Promise.resolve(jsonResponse(200, body))
+  vi.stubGlobal('fetch', (input: string, init?: RequestInit) => {
+    if (input === '/auth/me') return answer({ ...ME, money: stored })
+    if (input === '/api/money-format' && init?.method === 'PUT') {
+      stored = JSON.parse(String(init.body)) as typeof stored
+      return answer(stored)
+    }
+    if (input.startsWith(SALES)) return answer([saleFixture])
+    if (input === '/pricing-settings') return answer({ is_bulk_pricing: true, is_vip_customers: true })
+    return answer([])
+  })
+  const router = createMemoryRouter(
+    [
+      {
+        element: <GatedLayout />,
+        children: [
+          {
+            path: SETTINGS_CURRENCY,
+            element: (
+              <>
+                <Ventas />
+                <CurrencyAndDecimals />
+              </>
+            ),
+          },
+        ],
+      },
+    ],
+    { initialEntries: [SETTINGS_CURRENCY] },
+  )
+  render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+
+  // The list's total, its sale row and the form's Example all write 11.000 with the Business's symbol.
+  await waitFor(() => expect(screen.getAllByText('$ 11.000')).toHaveLength(3))
+  const symbol = screen.getByRole('textbox', { name: new RegExp(SETTINGS_TEXT.currencySymbol) })
+  await user.clear(symbol)
+  await user.type(symbol, 'US$')
+  await user.click(screen.getByRole('button', { name: COMMON_TEXT.save }))
+
+  await waitFor(() => expect(screen.getAllByText('US$ 11.000')).toHaveLength(3))
+  expect(screen.queryByText('$ 11.000')).not.toBeInTheDocument()
+  expect(router.state.location.pathname).toBe(SETTINGS_CURRENCY)
+})

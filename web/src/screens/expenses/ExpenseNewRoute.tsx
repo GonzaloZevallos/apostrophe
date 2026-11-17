@@ -1,6 +1,6 @@
 /**
  * `ExpenseNewRoute`: the host of the expense form on its own route (`GastoNuevo.dc.html`),
- * opened from Más and from Gastos. It owns how the form is left (the form itself knows
+ * opened from the Analysis Expenses card and from Gastos. It owns how the form is left (the form itself knows
  * nothing of the router):
  *
  * - "Cerrar" and a save leave through `useBackOr(EXPENSES)`: by history to whichever screen
@@ -8,8 +8,11 @@
  *   replacing the form's entry.
  * - A save refreshes the expenses, arms "Expense saved" to show on the screen it returns
  *   to (`useFlash().armAfterLeaving`), calls `disarm()`, then leaves.
+ * - The sheet itself is drawn by `ExpenseNewSheet`, which gets the blocker and the exits from here.
  * - On a phone the form is a `Sheet` (ADR-0062); on a direct address Expenses is drawn behind it
  *   (`ExpensesBehind`). The computer page is the one it always was.
+ * - The Category list is a Selector: its own history entry above the form, so a `SheetStackProvider`
+ *   sits above the leave guard and back with the list open closes only the list.
  * - Leaving with something typed asks first ("Discard the expense?"), through the one
  *   leave guard, so "Cerrar", the browser's Back and the swipe all ask the same question.
  */
@@ -18,20 +21,25 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
 import { invalidateResource } from '../../api/keys'
 import type { SuccessToast } from '../../components/AvisoExito'
-import LeaveConfirm from '../../components/LeaveConfirm'
 import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { EXPENSES } from '../../routes'
 import BehindPane from '../../components/BehindPane'
-import Sheet from '../../components/Sheet'
+import { SheetStackProvider } from '../../components/useSheetStack'
 import { useViewport } from '../../shell/useViewport'
-import ExpenseForm from './ExpenseForm'
+import ExpenseNewSheet from './ExpenseNewSheet'
 import ExpensesBehind from './ExpensesBehind'
-import { EXPENSES_TEXT } from '../../copy/expenses'
-import { COMMON_TEXT } from '../../copy/common'
 
 export default function ExpenseNewRoute() {
+  return (
+    <SheetStackProvider>
+      <ExpenseNewHost />
+    </SheetStackProvider>
+  )
+}
+
+function ExpenseNewHost() {
   const queryClient = useQueryClient()
   const flash = useFlash()
   const [dirty, setDirty] = useState(false)
@@ -53,27 +61,13 @@ export default function ExpenseNewRoute() {
           <ExpensesBehind />
         </BehindPane>
       )}
-      <Sheet
-        computer={computer}
-        computerClass="pantalla"
-        computerDialog={false}
-        label={COMMON_TEXT.addExpense}
-        touched={dirty}
+      <ExpenseNewSheet
+        blocker={blocker}
         onClose={leave}
-        aside={
-          blocker.state === 'blocked' && (
-            <LeaveConfirm
-              blocker={blocker}
-              question={EXPENSES_TEXT.discardTheExpense}
-              detail={COMMON_TEXT.losesWhatYouEntered}
-              keepLabel={COMMON_TEXT.noKeepEntering}
-              discardLabel={COMMON_TEXT.yesDiscard}
-            />
-          )
-        }
-      >
-        <ExpenseForm target="nuevo" onDone={onDone} onCancel={leave} onDirtyChange={setDirty} />
-      </Sheet>
+        onSaved={onDone}
+        onDirtyChange={setDirty}
+        computer={computer}
+      />
     </>
   )
 }

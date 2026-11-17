@@ -34,5 +34,11 @@
     "rule": "unreachable",
     "target": "",
     "issue": 78
+  },
+  {
+    "screen": "ConfiguracionMediosPagoArchivados",
+    "rule": "unreachable",
+    "target": "",
+    "issue": 60
   }
 ]

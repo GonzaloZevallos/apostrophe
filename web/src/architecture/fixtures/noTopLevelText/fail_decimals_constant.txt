@@ -1,0 +1,3 @@
+// expect: money-constant@2, money-constant@3
+export const MONEY_DECIMALS = 0
+export const CURRENCY_SYMBOL = '$'

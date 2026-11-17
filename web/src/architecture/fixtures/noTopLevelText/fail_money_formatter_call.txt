@@ -1,0 +1,3 @@
+// expect: money-at-module-scope@3
+import { moneyFormatter } from '../format/money'
+export const ARS = moneyFormatter({ symbol: '$', decimals: 0 })

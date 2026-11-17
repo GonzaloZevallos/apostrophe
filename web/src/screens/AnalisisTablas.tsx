@@ -7,7 +7,8 @@
 import { Fragment } from 'react'
 import type { Analysis } from '../api/analysis'
 import { formatDateShort, formatMonthLong } from '../format/dates'
-import { formatGrams, formatMoney } from '../format/money'
+import { formatGrams } from '../format/money'
+import { useMoney } from '../format/moneyContext'
 import { ANALYSIS_TEXT } from '../copy/analysis'
 import { COMMON_TEXT } from '../copy/common'
 import { BEST_WEEK_TABLE_MARK } from './analisis/marks'
@@ -39,6 +40,7 @@ function CostSubRow({
 }
 
 export function TablaVariedades({ products }: { products: Analysis['month']['products'] }) {
+  const money = useMoney()
   return (
     <div className="analisis__tabla-contenedor analisis__tabla-contenedor--variedades">
       <table className="analisis__tabla">
@@ -58,7 +60,7 @@ export function TablaVariedades({ products }: { products: Analysis['month']['pro
             <tr key={variety.product_id}>
               <td>{variety.name}</td>
               <td className="analisis__num cifra-n">
-                {formatMoney(variety.sales_without_shipping)}
+                {money.money(variety.sales_without_shipping)}
               </td>
               <td className="analisis__num cifra-n">
                 {variety.share_percent !== null ? `${variety.share_percent}%` : ''}
@@ -66,12 +68,12 @@ export function TablaVariedades({ products }: { products: Analysis['month']['pro
               <td className="analisis__num cifra-n">{formatGrams(variety.quantity_sold)}</td>
               <td className="analisis__num cifra-n">{formatGrams(variety.quantity_gifted)}</td>
               <td className="analisis__num cifra-n">
-                {formatMoney(variety.cost.costed)}
+                {money.money(variety.cost.costed)}
                 {pendingSuffix(variety.cost.pending_quantity)}
               </td>
               <td className="analisis__num analisis__celda-margen cifra-n">
                 <span className="cifra-n">
-                  {formatMoney(variety.margin.amount)}
+                  {money.money(variety.margin.amount)}
                   {pendingSuffix(variety.margin.pending_quantity)}
                 </span>
                 {variety.margin.percent !== null && (
@@ -87,6 +89,7 @@ export function TablaVariedades({ products }: { products: Analysis['month']['pro
 }
 
 export function TablaSemanas({ weeks, ids }: { weeks: Analysis['weeks']; ids: string }) {
+  const money = useMoney()
   return (
     <div className="analisis__tabla-contenedor analisis__tabla-contenedor--semanas">
       <table className="analisis__tabla">
@@ -109,17 +112,17 @@ export function TablaSemanas({ weeks, ids }: { weeks: Analysis['weeks']; ids: st
               }
             >
               <td id={`${ids}-wt-${week.first_day}`}>{formatDateShort(week.first_day)}</td>
-              <td className="analisis__num cifra-n">{formatMoney(week.sales)}</td>
+              <td className="analisis__num cifra-n">{money.money(week.sales)}</td>
               <td className="analisis__num cifra-n">{formatGrams(week.quantity)}</td>
-              <td className="analisis__num cifra-n">{formatMoney(week.expenses)}</td>
+              <td className="analisis__num cifra-n">{money.money(week.expenses)}</td>
               <td className="analisis__num cifra-n">
-                {formatMoney(week.profit.amount)}
+                {money.money(week.profit.amount)}
                 {pendingSuffix(week.profit.pending_quantity)}
                 {week.best && (
                   <span className="analisis__etiqueta-mejor">{BEST_WEEK_TABLE_MARK}</span>
                 )}
               </td>
-              <td className="analisis__num cifra-n">{formatMoney(week.cash)}</td>
+              <td className="analisis__num cifra-n">{money.money(week.cash)}</td>
             </tr>
             <CostSubRow
               period={week}
@@ -136,6 +139,7 @@ export function TablaSemanas({ weeks, ids }: { weeks: Analysis['weeks']; ids: st
 }
 
 export function TablaMeses({ months, ids }: { months: Analysis['months']; ids: string }) {
+  const money = useMoney()
   return (
     <div className="analisis__tabla-contenedor analisis__tabla-contenedor--meses">
       <table className="analisis__tabla">
@@ -154,14 +158,14 @@ export function TablaMeses({ months, ids }: { months: Analysis['months']; ids: s
             <Fragment key={row.month}>
             <tr>
               <td id={`${ids}-mt-${row.month}`}>{formatMonthLong(row.month)}</td>
-              <td className="analisis__num cifra-n">{formatMoney(row.sales)}</td>
+              <td className="analisis__num cifra-n">{money.money(row.sales)}</td>
               <td className="analisis__num cifra-n">{formatGrams(row.quantity)}</td>
-              <td className="analisis__num cifra-n">{formatMoney(row.expenses)}</td>
+              <td className="analisis__num cifra-n">{money.money(row.expenses)}</td>
               <td className="analisis__num cifra-n">
-                {formatMoney(row.profit.amount)}
+                {money.money(row.profit.amount)}
                 {pendingSuffix(row.profit.pending_quantity)}
               </td>
-              <td className="analisis__num cifra-n">{formatMoney(row.cash)}</td>
+              <td className="analisis__num cifra-n">{money.money(row.cash)}</td>
             </tr>
             <CostSubRow period={row} current={false} labelId={`${ids}-mt-${row.month}`} />
             </Fragment>

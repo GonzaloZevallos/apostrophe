@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-07
+summary: "los interruptores de precios viven en su propia tabla y la regla aplicable más baja fija el precio"
 ---
 
 # Pricing switches live in their own table, and the lowest applicable rule prices a line
@@ -84,7 +85,9 @@ customer-type prices part; until that part ships both describe what runs.
 
 Narrowed: a customer type's price is an effective-dated row, and a customer has at most one type. The
 lowest-applicable rule is unchanged but looks up the customer's type price in place of the VIP price.
-`customer.vip` and `price_entry.vip_price` stay in their tables, frozen with the values they hold and
+`customer.is_vip` and `price_entry.vip_price` stay in their tables, frozen with the values they hold and
 no longer written or read by new code; the migration that part writes gives each existing business a
 customer type VIP and copies its VIP marks and prices into rows. `pricing_settings` and its two
 switches stay as they are, and `is_vip_customers` is the switch for customer-type prices.
+
+2026-11: the stored names became `catalog_attribute`/`is_shown` and `customer.is_vip` in migration 0027 (GH-75 part 3, CODING_STANDARDS §11); the decision is unchanged.

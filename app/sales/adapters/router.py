@@ -9,6 +9,7 @@ from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.money_route import MoneyJsonRoute
 from app.sales.adapters.business_name import SqlBusinessNames
 from app.sales.adapters.customer_facts import SqlCustomerFacts
 from app.sales.adapters.price_book import SqlPriceBook
@@ -16,6 +17,8 @@ from app.sales.adapters.schemas import (
     AssignCustomerIn,
     DeleteSaleOut,
     LineIn,
+    OwingIn,
+    PaidIn,
     ReturnedQuantityOut,
     SaleDetailOut,
     SaleIn,
@@ -29,6 +32,7 @@ from app.sales.application.errors import SaleNotFound
 from app.sales.application.ports import (
     BusinessNames,
     LineCosts,
+    MoneyFormatReader,
     OwingSales,
     PricingSettingsReader,
     SaleView,
@@ -38,13 +42,14 @@ from app.sales.application.record_sale import record_sale as record_sale_use_cas
 from app.sales.domain.pricing import SaleRuleBroken
 from app.sales.domain.sale import (
     CustomerAlreadyAssigned,
-    PaymentMethod,
     UnknownCustomer,
     UnknownVariety,
 )
+from app.shared.money import TooManyDecimals
+from app.shared.payment_method import PaymentMethodId, PaymentMethodUnavailable
 from app.shared.quantity import InvalidQuantity, Quantity
 
-router = APIRouter(prefix="/sales", tags=["sales"])
+router = APIRouter(prefix="/sales", tags=["sales"], route_class=MoneyJsonRoute)
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -71,6 +76,17 @@ def get_line_costs(
     # the real implementation (`SqlLineCosts`) on `app.state.line_costs` as a factory,
     # the same shape `get_business_opening` uses for `business_opening`.
     factory = cast(Callable[[Session, int], LineCosts], request.app.state.line_costs)
+    return factory(session, business_id)
+
+
+def get_money_format(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> MoneyFormatReader:
+    # Sales never imports `app.money_format` (docs/adr/0055): `app/main.py` hangs
+    # `SqlMoneyFormat` on `app.state.sales_money_format` as a factory.
+    factory = cast(
+        Callable[[Session, int], MoneyFormatReader], request.app.state.sales_money_format
+    )
     return factory(session, business_id)
 
 
@@ -105,6 +121,7 @@ def get_business_names(session: SessionDep, business_id: CurrentBusinessId) -> B
     return SqlBusinessNames(session, business_id)
 
 
+MoneyFormatDep = Annotated[MoneyFormatReader, Depends(get_money_format)]
 LineCostsDep = Annotated[LineCosts, Depends(get_line_costs)]
 PricingSettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
 OwingSalesDep = Annotated[OwingSales, Depends(get_owing_sales)]
@@ -113,9 +130,9 @@ BusinessNamesDep = Annotated[BusinessNames, Depends(get_business_names)]
 
 as_http = TranslateErrors(
     [
-        (404, (SaleNotFound, UnknownCustomer, UnknownVariety)),
+        (404, (SaleNotFound, UnknownCustomer, UnknownVariety, PaymentMethodUnavailable)),
         (409, (CustomerAlreadyAssigned,)),
-        (422, (SaleRuleBroken, InvalidQuantity)),
+        (422, (SaleRuleBroken, InvalidQuantity, TooManyDecimals)),
     ]
 )
 
@@ -137,17 +154,23 @@ def record_sale(
     customer_facts: CustomerFactsDep,
     pricing_settings: PricingSettingsDep,
     owing_sales: OwingSalesDep,
+    money_format: MoneyFormatDep,
     session: SessionDep,
     today: TodayDep,
     clock: ClockDep,
 ) -> SaleOut:
     with as_http:
-        method = body.payment if isinstance(body.payment, PaymentMethod) else None
+        method = (
+            PaymentMethodId(body.payment.payment_method_id)
+            if isinstance(body.payment, PaidIn)
+            else None
+        )
         sale = record_sale_use_case(
             sales,
             price_book,
             customer_facts,
             pricing_settings,
+            money_format,
             session,
             sale_date=body.date or today,
             today=today,
@@ -156,7 +179,7 @@ def record_sale(
             note=body.note,
             lines=[_line_input(line) for line in body.lines],
             method=method,
-            left_owing=body.payment == "owing",
+            left_owing=isinstance(body.payment, OwingIn),
             recorded_at=clock(),
         )
         return _sale_out(sales, owing_sales, sale.id)

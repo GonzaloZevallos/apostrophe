@@ -36,19 +36,21 @@ import { useGoneExit } from '../../components/useGoneExit'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
 import { VARIETIES, WITHDRAWAL, pathTo } from '../../routes'
+import { SheetStackProvider } from '../../components/useSheetStack'
 import { useViewport } from '../../shell/useViewport'
 import VarietiesBehind from '../varieties/VarietiesBehind'
 import WithdrawalDetailBehind from './WithdrawalDetailBehind'
 import WithdrawalForm, { type WithdrawalTarget } from './WithdrawalForm'
 import { COMMON_TEXT } from '../../copy/common'
 import { STOCK_TEXT } from '../../copy/stock'
+import ContentArea from '../../components/ContentArea'
 
 
 function Frame({ children }: { children: ReactNode }) {
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">{children}</div>
-    </main>
+    </ContentArea>
   )
 }
 
@@ -110,7 +112,7 @@ function FormHost({ target }: { target: WithdrawalTarget }) {
   }
 
   return (
-    <>
+    <SheetStackProvider>
       {!computer && !isInApp(location.state) && (
         <BehindPane>
           {editing ? <WithdrawalDetailBehind withdrawalId={String(target.id)} /> : <VarietiesBehind />}
@@ -144,6 +146,6 @@ function FormHost({ target }: { target: WithdrawalTarget }) {
           onGone={onGone}
         />
       </Sheet>
-    </>
+    </SheetStackProvider>
   )
 }

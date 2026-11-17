@@ -12,6 +12,7 @@ import pytest
 
 from app.sales.domain.pricing import (
     BulkQuote,
+    CustomerTypeFact,
     GiftWithSpecialPrice,
     InvalidPriceQuote,
     InvalidSpecialPrice,
@@ -28,10 +29,11 @@ from app.sales.domain.pricing import (
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 
+TYPE = CustomerTypeFact(id=7, name="Wholesale")
 LIST_ONLY = PriceQuote(list_price=1_000)
 WITH_BULK = PriceQuote(list_price=1_000, bulk=BulkQuote(price=700, minimum=Quantity.of(10)))
 WITH_VIP = PriceQuote(
-    list_price=1_000, bulk=BulkQuote(price=700, minimum=Quantity.of(10)), vip_price=600
+    list_price=1_000, bulk=BulkQuote(price=700, minimum=Quantity.of(10)), type_price=600
 )
 ONE_GRAM = Quantity.of(1)
 BOTH_ON = PricingSettings(is_bulk_pricing=True, is_vip_customers=True)
@@ -50,7 +52,7 @@ def _price(
     return price_line(
         gift=gift,
         special_price=special_price,
-        customer_is_vip=vip,
+        customer_type=TYPE if vip else None,
         settings=settings,
         quote=quote,
         quantity=quantity,
@@ -83,21 +85,21 @@ def test_a_bulk_price_must_be_lower_than_the_list_price() -> None:
 @pytest.mark.parametrize("vip_price", [1_000, 1_001, 0, -5])
 def test_a_vip_price_must_be_above_zero_and_below_the_list_price(vip_price: int) -> None:
     with pytest.raises(InvalidPriceQuote):
-        PriceQuote(list_price=1_000, vip_price=vip_price)
+        PriceQuote(list_price=1_000, type_price=vip_price)
 
 
 def test_a_vip_price_is_never_compared_with_the_bulk_price() -> None:
     above_bulk = PriceQuote(
-        list_price=1_000, bulk=BulkQuote(price=700, minimum=Quantity.of(10)), vip_price=800
+        list_price=1_000, bulk=BulkQuote(price=700, minimum=Quantity.of(10)), type_price=800
     )
 
-    assert above_bulk.vip_price == 800
+    assert above_bulk.type_price == 800
 
 
 def test_every_price_quote_refusal_message_carries_no_input_value() -> None:
     cases: list[Callable[[], object]] = [
-        lambda: PriceQuote(list_price=1_000, vip_price=1_000),
-        lambda: PriceQuote(list_price=1_000, vip_price=0),
+        lambda: PriceQuote(list_price=1_000, type_price=1_000),
+        lambda: PriceQuote(list_price=1_000, type_price=0),
         lambda: PriceQuote(list_price=0),
         lambda: BulkQuote(price=0, minimum=Quantity.of(10)),
         lambda: BulkQuote(price=700, minimum=Quantity.of(0)),
@@ -126,6 +128,23 @@ def test_line_total_rounds_half_up_to_the_peso(
     assert line_total(price_per_gram, Quantity.of(grams)) == expected
 
 
+@pytest.mark.parametrize(
+    ("price_per_gram", "grams", "expected"),
+    [
+        (1, "0.50", 1),  # a tie: 0.5 goes up
+        (1, "0.49", 0),  # just below the tie
+        (5, "0.50", 3),  # 2.5 goes up
+        (5, "0.49", 2),  # 2.45 goes down
+        (101, "1.50", 152),  # 151.5 goes up
+        (101, "1.49", 150),  # 150.49 goes down
+    ],
+)
+def test_line_total_ties_go_up_and_the_value_just_below_goes_down(
+    price_per_gram: int, grams: str, expected: int
+) -> None:
+    assert line_total(price_per_gram, Quantity.of(grams)) == expected
+
+
 # -- special_rate -----------------------------------------------------------------------
 
 
@@ -140,6 +159,23 @@ def test_line_total_rounds_half_up_to_the_peso(
     ],
 )
 def test_special_rate_rounds_half_up(total: int, grams: str, expected: int) -> None:
+    assert special_rate(total, Quantity.of(grams)) == expected
+
+
+@pytest.mark.parametrize(
+    ("total", "grams", "expected"),
+    [
+        (1, "2.00", 1),  # a tie: 0.5 goes up
+        (99, "200.00", 0),  # 0.495 goes down
+        (5, "4.00", 1),  # 1.25 goes down
+        (3, "2.00", 2),  # 1.5 goes up
+        (299, "200.00", 1),  # 1.495 goes down
+        (301, "200.00", 2),  # 1.505 goes up
+    ],
+)
+def test_special_rate_ties_go_up_and_the_value_just_below_goes_down(
+    total: int, grams: str, expected: int
+) -> None:
     assert special_rate(total, Quantity.of(grams)) == expected
 
 
@@ -169,7 +205,7 @@ def test_below_the_minimum_stays_list() -> None:
 def test_vip_takes_its_own_price_below_the_minimum() -> None:
     priced = _price(vip=True, quote=WITH_VIP, quantity=Quantity.of(1))
 
-    assert priced.rule == PricingRule.VIP
+    assert priced.rule == PricingRule.CUSTOMER_TYPE
     assert priced.price_per_gram == 600
 
 
@@ -195,17 +231,17 @@ def test_bulk_with_the_switch_off_is_not_applied_at_the_minimum() -> None:
     assert priced.rule == PricingRule.LIST
 
 
-def test_a_vip_tie_with_bulk_is_stored_as_vip() -> None:
+def test_a_type_tie_with_bulk_is_stored_as_the_customer_type() -> None:
     quote = PriceQuote(
-        list_price=1_000, bulk=BulkQuote(price=700, minimum=Quantity.of(10)), vip_price=700
+        list_price=1_000, bulk=BulkQuote(price=700, minimum=Quantity.of(10)), type_price=700
     )
 
-    assert _price(vip=True, quote=quote, quantity=Quantity.of(10)).rule == PricingRule.VIP
+    assert _price(vip=True, quote=quote, quantity=Quantity.of(10)).rule == PricingRule.CUSTOMER_TYPE
 
 
 def test_a_vip_price_above_bulk_at_the_minimum_is_stored_as_bulk() -> None:
     quote = PriceQuote(
-        list_price=1_000, bulk=BulkQuote(price=700, minimum=Quantity.of(10)), vip_price=800
+        list_price=1_000, bulk=BulkQuote(price=700, minimum=Quantity.of(10)), type_price=800
     )
 
     priced = _price(vip=True, quote=quote, quantity=Quantity.of(10))
@@ -275,3 +311,62 @@ def test_every_pricing_refusal_message_carries_no_input_value() -> None:
         with pytest.raises(exc_type) as excinfo:
             action()
         assert not any(c.isdigit() for c in str(excinfo.value))
+
+
+# -- Pricing by customer type (docs/adr/0059) ----------------------------------------
+
+
+def _example_quote(type_price: int) -> PriceQuote:
+    return PriceQuote(
+        list_price=12_000,
+        bulk=BulkQuote(price=10_000, minimum=Quantity.of(100)),
+        type_price=type_price,
+    )
+
+
+@pytest.mark.parametrize("grams", ["50", "150"])
+def test_a_type_price_below_both_prices_wins_at_any_quantity_and_names_the_type(
+    grams: str,
+) -> None:
+    priced = _price(vip=True, quote=_example_quote(9_000), quantity=Quantity.of(grams))
+
+    assert priced.rule == PricingRule.CUSTOMER_TYPE
+    assert priced.price_per_gram == 9_000
+    assert priced.customer_type == TYPE
+
+
+def test_a_type_price_above_bulk_wins_below_the_minimum_and_loses_at_it() -> None:
+    quote = _example_quote(11_000)
+
+    below = _price(vip=True, quote=quote, quantity=Quantity.of("50"))
+    at_minimum = _price(vip=True, quote=quote, quantity=Quantity.of("150"))
+
+    assert (below.rule, below.price_per_gram) == (PricingRule.CUSTOMER_TYPE, 11_000)
+    assert (at_minimum.rule, at_minimum.price_per_gram) == (PricingRule.BULK, 10_000)
+    assert at_minimum.customer_type is None
+
+
+def test_a_type_price_tied_with_bulk_records_the_type() -> None:
+    priced = _price(vip=True, quote=_example_quote(10_000), quantity=Quantity.of("150"))
+
+    assert priced.rule == PricingRule.CUSTOMER_TYPE
+    assert priced.customer_type == TYPE
+
+
+def test_no_type_or_no_type_price_prices_by_list_or_bulk() -> None:
+    no_type = _price(vip=False, quote=_example_quote(9_000), quantity=Quantity.of("50"))
+    no_row = _price(vip=True, quote=WITH_BULK, quantity=Quantity.of("5"))
+    no_row_bulk = _price(vip=True, quote=WITH_BULK, quantity=Quantity.of("10"))
+
+    assert (no_type.rule, no_type.price_per_gram) == (PricingRule.LIST, 12_000)
+    assert no_row.rule == PricingRule.LIST
+    assert no_row_bulk.rule == PricingRule.BULK
+
+
+def test_the_type_switch_off_ignores_the_type_price() -> None:
+    settings = PricingSettings(is_bulk_pricing=True, is_vip_customers=False)
+
+    priced = _price(vip=True, settings=settings, quote=_example_quote(9_000), quantity=ONE_GRAM)
+
+    assert priced.rule == PricingRule.LIST
+    assert priced.customer_type is None

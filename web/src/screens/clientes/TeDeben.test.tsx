@@ -14,6 +14,7 @@ import debtorsFixture from '../../api/fixtures/debtors.json'
 import TeDeben from './TeDeben'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { baselineText } from '../../i18n/testing'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
 
@@ -28,13 +29,15 @@ function renderTeDeben() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
     <QueryClientProvider client={queryClient}>
+<MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
       <MemoryRouter initialEntries={[CUSTOMERS]}>
         <Routes>
           <Route path={CUSTOMERS} element={<TeDeben />} />
           <Route path={CUSTOMER} element={<span>ficha</span>} />
         </Routes>
       </MemoryRouter>
-    </QueryClientProvider>,
+    </MoneyFormatProvider>
+</QueryClientProvider>,
   )
 }
 
@@ -68,7 +71,7 @@ test("heads with the total owed and lists debtors in the API's own order", async
     .filter((link) => link.getAttribute('href')?.startsWith(`${CUSTOMERS}/`) && link.textContent !== 'Collect')
   expect(rows.map((row) => row.textContent)).toEqual([
     'APAna Pérez$ 15.000owes you since 14/09',
-    'BBeto$ 22.000owes you since 20/09',
+    'BEBeto$ 22.000owes you since 20/09',
   ])
   expect(screen.getAllByRole('link', { name: /^Collect from / }).map((link) => link.getAttribute('aria-label'))).toEqual([
     'Collect from Ana Pérez',

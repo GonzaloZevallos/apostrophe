@@ -15,7 +15,7 @@
 
 import type { Locator, Page } from '@playwright/test'
 import { CUSTOMERS, EXPENSES, HOME, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
-import { expect, test, withToastRecorder } from './fixtures.js'
+import { choosePaymentMethod, expect, test, withToastRecorder } from './fixtures.js'
 import { seedLongExpenses, seedLongLists, seedLongVarieties } from './helpers/scrollSeed.js'
 import { expectToast } from './helpers/toast.js'
 import { expectPath } from './helpers/url.js'
@@ -94,7 +94,7 @@ const COLLECT = /^Collect from /
 // Record payment saves clear. Every viewport reuses the one page and resizes it.
 let page: Page
 
-test.describe.serial('Scroll on a change of screen', () => {
+test.describe.serial('Scroll al cambiar de pantalla', () => {
   test.beforeAll(async ({ browser, workerServer }) => {
     test.setTimeout(300_000)
     page = await (
@@ -249,7 +249,7 @@ test.describe.serial('Scroll on a change of screen', () => {
           // A save: the whole debt of the first debtor.
           offset = await openScrolled()
           await page.getByRole('button', { name: /^All: / }).click()
-          await page.getByRole('radio', { name: 'Cash' }).check()
+          await choosePaymentMethod(page, 'Cash')
           await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
           await expectPath(page, path)
           await expect(page.getByRole('dialog')).toHaveCount(0)

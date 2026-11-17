@@ -1,8 +1,8 @@
 # apostrophe
 
-The back office of small businesses that sell flower by the gram: prices, sales, stock,
-money owed, expenses and results, several businesses in one installation that never mix.
-It replaces the spreadsheet `Control_de_ventas_y_gastos`.
+The back office of small businesses that sell products, in units, by weight, by volume or
+in other ways: prices, sales, stock, money owed, expenses and results, several businesses
+in one installation that never mix. It replaces the spreadsheet `Control_de_ventas_y_gastos`.
 
 Start with `BRIEF.md` (what and for whom), `CONTEXT.md` (the language, mandatory in code
 and issues), `CODING_STANDARDS.md` and `docs/adr/`. Each capability's behaviour lives in

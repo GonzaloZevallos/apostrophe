@@ -7,21 +7,27 @@
  * price per gram, rule and total, and "Quitar"). It only renders what it is given.
  */
 
-import type { KeyboardEvent, RefObject } from 'react'
+import type { FocusEvent, KeyboardEvent, RefObject } from 'react'
 import Boton from '../../components/Boton'
+import MoneyInput from '../../components/MoneyInput'
 import Loading from '../../components/Loading'
 import OpcionInterruptor from '../../components/OpcionInterruptor'
 import ReglaInsignia from '../../components/ReglaInsignia'
-import { formatGrams, formatMoney } from '../../format/money'
+import Selector from '../../components/Selector'
+import { formatGrams } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { type priceLine, fromHundredths } from '../../sales/pricing'
 import { GRAMS_HELP, SALES_TEXT } from '../../copy/sales'
 import { useViewport } from '../../shell/useViewport'
 import type { Variety } from '../Variedades'
 import { COMMON_TEXT } from '../../copy/common'
+import { useTranslation } from 'react-i18next'
 
 export interface LineState {
   key: string
   varietyId: string
+  /** The picked Product's name, kept with `varietyId` so a Product no longer offered keeps its name. */
+  varietyName: string
   grams: string
   gift: boolean
   specialPrice: string
@@ -32,6 +38,8 @@ export interface LinePreview {
   pricePerGram: number
   lineTotal: number
   gramsHundredths: number
+  /** The Customer's type name, when the rule is `'type'`: the badge's word. */
+  typeName: string | null
 }
 
 /** `scrollIntoView` doesn't exist in the jsdom the component's own tests render
@@ -65,9 +73,13 @@ interface NuevaVentaLineaProps {
   /** The line's variety, if the fetched prices carry it. */
   variety: Variety | undefined
   varieties: Variety[]
+  /** The Products have not loaded successfully: the Product field waits, never reads as empty. */
+  varietiesLoading: boolean
   /** "Quitar" is only offered when the sale has more than one line. */
   canRemove: boolean
-  varietyRef: RefObject<HTMLSelectElement | null>
+  varietyRef: RefObject<HTMLButtonElement | null>
+  /** Where the phone's Product list is drawn, outside the form it covers. */
+  listHost: HTMLElement | null
   gramsRef: RefObject<HTMLInputElement | null>
   specialPriceRef: RefObject<HTMLInputElement | null>
   onOpen: () => void
@@ -84,19 +96,28 @@ export default function NuevaVentaLinea({
   figuresLoading,
   variety,
   varieties,
+  varietiesLoading,
   canRemove,
   varietyRef,
+  listHost,
   gramsRef,
   specialPriceRef,
   onOpen,
   onChange,
   onRemove,
 }: NuevaVentaLineaProps) {
+  const money = useMoney()
   // A browser without `matchMedia` (jsdom) is the phone, the layout this component's own
   // changes are for.
   const isComputer = useViewport() === 'computer'
+  const { t } = useTranslation()
+  const gone = line.varietyId !== '' && variety === undefined
+  // Focus bubbles out of the Selector's list (a portal) too: only the field itself scrolls the form.
+  function onVarietyFocus(event: FocusEvent<HTMLElement>): void {
+    if (event.target === varietyRef.current) scrollFieldIntoView(event.target)
+  }
   if (!isOpen) {
-    const displayName = variety?.name ?? SALES_TEXT.noVariety
+    const displayName = variety?.name ?? (line.varietyName || SALES_TEXT.noVariety)
     const messageId = `linea-mensaje-${line.key}`
     return (
       <Boton
@@ -121,10 +142,10 @@ export default function NuevaVentaLinea({
           preview !== null && (
             <div className="nueva-venta__linea-detalle">
               {preview.rule !== 'gift' && (
-                <span className="nueva-venta__linea-preciogramo cifra-n">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
+                <span className="nueva-venta__linea-preciogramo cifra-n">{money.money(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
               )}
-              <ReglaInsignia rule={preview.rule} />
-              <span className="nueva-venta__linea-total cifra-s">{formatMoney(preview.lineTotal)}</span>
+              <ReglaInsignia rule={preview.rule} typeName={preview.typeName} />
+              <span className="nueva-venta__linea-total cifra-s">{money.money(preview.lineTotal)}</span>
             </div>
           )
         )}
@@ -139,24 +160,25 @@ export default function NuevaVentaLinea({
 
   return (
     <div className="nueva-venta__linea nueva-venta__linea--abierta">
-      <label className="campo">
-        <span className="campo__rotulo">{COMMON_TEXT.variety}</span>
-        <select
-          className="campo__input"
-          aria-label={SALES_TEXT.lineVariety(n)}
-          value={line.varietyId}
-          ref={varietyRef}
-          onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
-          onChange={(event) => onChange({ varietyId: event.target.value })}
-        >
-          <option value="">{COMMON_TEXT.pickAVariety}</option>
-          {varieties.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="campo" onFocus={onVarietyFocus}>
+        <Selector
+          required
+          label={COMMON_TEXT.variety}
+          accessibleName={SALES_TEXT.lineVariety(n)}
+          placeholder={COMMON_TEXT.pickAVariety}
+          options={varieties.map((item) => ({ value: String(item.id), label: item.name }))}
+          value={line.varietyId === '' ? null : line.varietyId}
+          selected={gone ? { value: line.varietyId, label: line.varietyName } : undefined}
+          loading={varietiesLoading}
+          emptySetMessage={t('emptyStates:selectorNoVarieties')}
+          fieldRef={varietyRef}
+          listHost={listHost}
+          onChange={(picked) => {
+            const name = varieties.find((item) => String(item.id) === picked)?.name ?? ''
+            onChange({ varietyId: picked ?? '', varietyName: name })
+          }}
+        />
+      </div>
       <label className="campo">
         <span className="campo__rotulo">{COMMON_TEXT.grams}</span>
         <input
@@ -201,11 +223,10 @@ export default function NuevaVentaLinea({
             onChange={(gift) => onChange({ gift })}
           />
         )}
-        <input
+        <MoneyInput
           className="campo__input"
           aria-label={SALES_TEXT.lineSpecialPrice(n)}
           type="text"
-          inputMode="numeric"
           enterKeyHint="done"
           placeholder={SALES_TEXT.specialPrice}
           value={line.specialPrice}
@@ -213,7 +234,7 @@ export default function NuevaVentaLinea({
           ref={specialPriceRef}
           onKeyDown={(event) => onEnter(event, () => specialPriceRef.current?.blur())}
           onFocus={(event) => scrollFieldIntoView(event.currentTarget)}
-          onChange={(event) => onChange({ specialPrice: event.target.value })}
+          onChange={(specialPrice) => onChange({ specialPrice })}
         />
       </div>
       {error !== null && (
@@ -229,10 +250,10 @@ export default function NuevaVentaLinea({
       {error === null && !figuresLoading && preview !== null && (
         <div className="nueva-venta__linea-detalle">
           {preview.rule !== 'gift' && (
-            <span className="nueva-venta__linea-preciogramo cifra-n">{formatMoney(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
+            <span className="nueva-venta__linea-preciogramo cifra-n">{money.money(preview.pricePerGram)}{COMMON_TEXT.perGram}</span>
           )}
-          <ReglaInsignia rule={preview.rule} />
-          <span className="nueva-venta__linea-total cifra-s">{formatMoney(preview.lineTotal)}</span>
+          <ReglaInsignia rule={preview.rule} typeName={preview.typeName} />
+          <span className="nueva-venta__linea-total cifra-s">{money.money(preview.lineTotal)}</span>
         </div>
       )}
       {canRemove && (

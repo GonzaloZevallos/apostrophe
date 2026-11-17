@@ -9,15 +9,17 @@ import { ANALYSIS } from '../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import { SHOWN_EN } from '../test/shownLanguage'
+import { homeLayoutRoute } from '../test/homeLayoutRoute'
+import { screenRoute } from '../test/screenRoute'
 import analysisEmptyFixture from '../api/fixtures/analysis-empty.json'
 import analysisFixture from '../api/fixtures/analysis.json'
 import { ANALYSIS_TEXT } from '../copy/analysis'
 import { formatDateShort, formatMonthLong } from '../format/dates'
-import { formatGrams, formatMoney } from '../format/money'
+import { formatGrams, moneyFormatter } from '../format/money'
 import { flipViewport, stubViewport } from '../test-viewport'
 import type { Viewport } from '../routes'
 import { rowOf } from './analisis/rowOf'
@@ -29,6 +31,7 @@ import Analisis, {
   SINCE_FIRST_RECORD_LABEL,
 } from './Analisis'
 import { baselineText } from '../i18n/testing'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 const EMPTY_MONTH_LINE = baselineText('analysis.ts:EMPTY_MONTH_LINE')
 const NO_HISTORY_LINE = baselineText('analysis.ts:NO_HISTORY_LINE')
@@ -68,7 +71,8 @@ const rowsOf = (card: HTMLElement): string[] =>
 const rowStarting = (card: HTMLElement, label: string): string | undefined =>
   rowsOf(card).find((text) => text.startsWith(label))
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-04', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-04', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
+const money = moneyFormatter({ symbol: '$', decimals: 0 })
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -78,7 +82,7 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
 function renderAnalisis(
@@ -89,13 +93,11 @@ function renderAnalisis(
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter initialEntries={[ANALYSIS]}>
-        <Routes>
-          <Route element={<Provide />}>
-            <Route path={ANALYSIS} element={<Analisis />} />
-          </Route>
-        </Routes>
-      </MemoryRouter>
+      <RouterProvider
+        router={createMemoryRouter([{ element: <Provide />, children: [homeLayoutRoute([screenRoute('analysis', <Analisis />)])] }], {
+          initialEntries: [ANALYSIS],
+        })}
+      />
     </QueryClientProvider>,
   )
 }
@@ -196,7 +198,7 @@ test('month navigation requests the previous month and disables at the bounds', 
 test('the computer table carries headers, the margin stack, pending marks and the best/current week', async () => {
   renderAnalisis(async () => jsonResponse(200, analysisFixture), 'computer')
 
-  const table = (await screen.findAllByText('Variety')).find(
+  const table = (await screen.findAllByText('Product')).find(
     (node) => node.closest('table') !== null,
   )
   expect(table).not.toBeUndefined()
@@ -678,15 +680,15 @@ describe('the phone renders cards, one per row, month selector first', () => {
       expect(card).toHaveAccessibleName(variety.name)
       const share = variety.share_percent === null ? [] : [String(variety.share_percent)]
       expect(figuresOf(card)).toEqual([
-        formatMoney(variety.sales_without_shipping),
+        money.money(variety.sales_without_shipping),
         ...share,
         formatGrams(variety.quantity_sold),
         formatGrams(variety.quantity_gifted),
-        formatMoney(variety.cost.costed),
-        formatMoney(variety.margin.amount),
+        money.money(variety.cost.costed),
+        money.money(variety.margin.amount),
       ])
       expect(rowsOf(card).at(-1)).toBe(
-        `${ANALYSIS_TEXT.margen}${formatMoney(variety.margin.amount)}${
+        `${ANALYSIS_TEXT.margen}${money.money(variety.margin.amount)}${
           variety.margin.percent === null ? '' : ` (${variety.margin.percent}%)`
         }${
           variety.margin.pending_quantity > 0
@@ -708,15 +710,15 @@ describe('the phone renders cards, one per row, month selector first', () => {
       expect(card).toHaveAccessibleName(formatDateShort(week.first_day))
       const withdrawals = [week.shortfall, ...week.withdrawals]
         .filter((cost) => cost !== null && cost.amount !== null)
-        .map((cost) => formatMoney(cost.amount))
+        .map((cost) => money.money(cost.amount))
       expect(figuresOf(card)).toEqual([
-        formatMoney(week.sales),
+        money.money(week.sales),
         formatGrams(week.quantity),
-        formatMoney(week.cost_of_goods.amount),
+        money.money(week.cost_of_goods.amount),
         ...withdrawals,
-        formatMoney(week.expenses),
-        formatMoney(week.profit.amount),
-        formatMoney(week.cash),
+        money.money(week.expenses),
+        money.money(week.profit.amount),
+        money.money(week.cash),
       ])
       expect(card.classList.contains('analisis__tarjeta--actual')).toBe(
         index === analysisFixture.weeks.length - 1,
@@ -747,15 +749,15 @@ describe('the phone renders cards, one per row, month selector first', () => {
       expect(card).toHaveAccessibleName(formatMonthLong(row.month))
       const withdrawals = [row.shortfall, ...row.withdrawals]
         .filter((cost) => cost !== null && cost.amount !== null)
-        .map((cost) => formatMoney(cost.amount))
+        .map((cost) => money.money(cost.amount))
       expect(figuresOf(card)).toEqual([
-        formatMoney(row.sales),
+        money.money(row.sales),
         formatGrams(row.quantity),
-        formatMoney(row.cost_of_goods.amount),
+        money.money(row.cost_of_goods.amount),
         ...withdrawals,
-        formatMoney(row.expenses),
-        formatMoney(row.profit.amount),
-        formatMoney(row.cash),
+        money.money(row.expenses),
+        money.money(row.profit.amount),
+        money.money(row.cash),
       ])
       expect(card.classList.contains('analisis__tarjeta--actual')).toBe(false)
     })

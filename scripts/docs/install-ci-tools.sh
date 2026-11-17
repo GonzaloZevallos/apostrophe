@@ -16,18 +16,17 @@ MERMAID_CLI_VERSION="12.0.0"
 bin_dir="$RUNNER_TEMP/bin"
 mkdir -p "$bin_dir" "$RUNNER_TEMP/downloads"
 
-fetch() { # fetch <url> <sha256> <file>
-  curl --fail --silent --show-error --location --output "$3" "$1"
-  echo "$2  $3" | sha256sum --check --strict -
-}
+source "$(dirname "${BASH_SOURCE[0]}")/ci-fetch.sh"
 
 oasdiff_tgz="$RUNNER_TEMP/downloads/oasdiff.tar.gz"
-fetch "https://github.com/oasdiff/oasdiff/releases/download/v${OASDIFF_VERSION}/oasdiff_${OASDIFF_VERSION}_linux_amd64.tar.gz" \
+fetch oasdiff "$OASDIFF_VERSION" \
+  "https://github.com/oasdiff/oasdiff/releases/download/v${OASDIFF_VERSION}/oasdiff_${OASDIFF_VERSION}_linux_amd64.tar.gz" \
   "$OASDIFF_SHA256" "$oasdiff_tgz"
 tar -xzf "$oasdiff_tgz" -C "$bin_dir" oasdiff
 
 lychee_tgz="$RUNNER_TEMP/downloads/lychee.tar.gz"
-fetch "https://github.com/lycheeverse/lychee/releases/download/lychee-v${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz" \
+fetch lychee "$LYCHEE_VERSION" \
+  "https://github.com/lycheeverse/lychee/releases/download/lychee-v${LYCHEE_VERSION}/lychee-x86_64-unknown-linux-gnu.tar.gz" \
   "$LYCHEE_SHA256" "$lychee_tgz"
 tar -xzf "$lychee_tgz" -C "$bin_dir" --strip-components=1 lychee-x86_64-unknown-linux-gnu/lychee
 

@@ -138,10 +138,18 @@ export function mappedRows(files: readonly MappingFile[], committed: readonly En
   return { rows, problems }
 }
 
-/** The mapping's own problems, then one per row that does not render its baseline text in `en`. */
-export function mappingProblems(files: readonly MappingFile[], committed: readonly Entry[], en: Bundle): string[] {
+/** The mapping's own problems, then one per row that does not render its baseline text in `en`.
+ * A row whose identity (`<source>\u0000<index>`) is in `excepted` is excused by a valid entry of
+ * `baseline_exceptions.json` (`baselineExceptions.ts`) and is not compared. */
+export function mappingProblems(
+  files: readonly MappingFile[],
+  committed: readonly Entry[],
+  en: Bundle,
+  excepted: ReadonlySet<string> = new Set(),
+): string[] {
   const { rows, problems } = mappedRows(files, committed)
   for (const { source, index, key, args, text } of rows) {
+    if (excepted.has(`${source}\u0000${index}`)) continue
     try {
       if (resolveKey(en, key, args) !== text) problems.push(`${source} row ${index}: renders another text in en`)
     } catch (error) {

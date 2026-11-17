@@ -1,0 +1,15 @@
+[
+  { "text": " +598 99 123 456", "locked": true, "country": "UY" },
+  { "text": "+1", "locked": true, "country": "US" },
+  { "text": "+1 242 555 0100", "locked": true, "country": "US" },
+  { "text": "+5", "locked": true, "country": null },
+  { "text": "+59", "locked": true, "country": null },
+  { "text": "+598", "locked": true, "country": "UY" },
+  { "text": "+595", "locked": true, "country": "PY" },
+  { "text": "+999999999999999", "locked": true, "country": null },
+  { "text": "(+54) 9 11 2345-6789", "locked": true, "country": "AR" },
+  { "text": "54 9 11 2345-6789", "locked": false },
+  { "text": "099 123 456", "locked": false },
+  { "text": "+", "locked": true, "country": null },
+  { "text": "5+98", "locked": false }
+]

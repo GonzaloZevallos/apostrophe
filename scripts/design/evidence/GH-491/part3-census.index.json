@@ -1,0 +1,1338 @@
+[
+  {
+    "screen": "InicioHoy_320x568",
+    "file": "InicioHoy_320x568.png",
+    "notes": [],
+    "design": "InicioHoy_320x568.design.png",
+    "built": "InicioHoy_320x568.built.png",
+    "capture": "captured",
+    "census": {
+      "design": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 320,
+          "height": 568
+        },
+        "document": {
+          "scroll_width": 390,
+          "scroll_height": 844,
+          "inner_width": 320,
+          "inner_height": 568
+        },
+        "layer": false,
+        "wide": true,
+        "grown": true,
+        "fits_viewport": "page wider than its viewport",
+        "class": "grown",
+        "pinned": [],
+        "viewport_shot": {
+          "width": 320,
+          "height": 568
+        },
+        "viewport_after": {
+          "width": 320,
+          "height": 844
+        },
+        "fits_viewport_after": "page wider than its viewport",
+        "sizes_changed": []
+      },
+      "built": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 320,
+          "height": 568
+        },
+        "document": {
+          "scroll_width": 320,
+          "scroll_height": 1074,
+          "inner_width": 320,
+          "inner_height": 568
+        },
+        "layer": false,
+        "wide": false,
+        "grown": true,
+        "fits_viewport": "page taller than its viewport",
+        "class": "grown",
+        "pinned": [
+          {
+            "path": "div.nueva-venta-flotante",
+            "position": "fixed",
+            "inset_top": 428,
+            "inset_bottom": 72,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          },
+          {
+            "path": "nav.bar-inferior",
+            "position": "fixed",
+            "inset_top": 496,
+            "inset_bottom": 0,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          }
+        ],
+        "viewport_shot": {
+          "width": 320,
+          "height": 568
+        },
+        "viewport_after": {
+          "width": 320,
+          "height": 1074
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": [
+          {
+            "pinned": false,
+            "pantalla": true,
+            "same_node": true,
+            "path": "html",
+            "ordinal": 0,
+            "before": {
+              "width": 320,
+              "height": 1073.88
+            },
+            "after": {
+              "width": 320,
+              "height": 1074
+            },
+            "query_900": "n/a",
+            "vv_alto": "changed",
+            "vv_alto_before": "568px",
+            "vv_alto_after": "1074px"
+          },
+          {
+            "pinned": false,
+            "pantalla": true,
+            "same_node": true,
+            "path": "body",
+            "ordinal": 0,
+            "before": {
+              "width": 320,
+              "height": 1073.88
+            },
+            "after": {
+              "width": 320,
+              "height": 1074
+            },
+            "query_900": "n/a",
+            "vv_alto": "changed",
+            "vv_alto_before": "568px",
+            "vv_alto_after": "1074px"
+          },
+          {
+            "pinned": false,
+            "pantalla": true,
+            "same_node": true,
+            "path": "div",
+            "ordinal": 0,
+            "before": {
+              "width": 320,
+              "height": 1073.88
+            },
+            "after": {
+              "width": 320,
+              "height": 1074
+            },
+            "query_900": "n/a",
+            "vv_alto": "changed",
+            "vv_alto_before": "568px",
+            "vv_alto_after": "1074px"
+          },
+          {
+            "pinned": false,
+            "pantalla": true,
+            "same_node": true,
+            "path": "div.disposicion",
+            "ordinal": 0,
+            "before": {
+              "width": 320,
+              "height": 1073.88
+            },
+            "after": {
+              "width": 320,
+              "height": 1074
+            },
+            "query_900": "n/a",
+            "vv_alto": "changed",
+            "vv_alto_before": "568px",
+            "vv_alto_after": "1074px"
+          },
+          {
+            "pinned": false,
+            "pantalla": true,
+            "same_node": true,
+            "path": "div.columna-principal",
+            "ordinal": 0,
+            "before": {
+              "width": 320,
+              "height": 1073.88
+            },
+            "after": {
+              "width": 320,
+              "height": 1074
+            },
+            "query_900": "n/a",
+            "vv_alto": "changed",
+            "vv_alto_before": "568px",
+            "vv_alto_after": "1074px"
+          },
+          {
+            "pinned": false,
+            "pantalla": true,
+            "same_node": true,
+            "path": "main.pantalla",
+            "ordinal": 0,
+            "before": {
+              "width": 320,
+              "height": 933.88
+            },
+            "after": {
+              "width": 320,
+              "height": 934
+            },
+            "query_900": "n/a",
+            "vv_alto": "changed",
+            "vv_alto_before": "568px",
+            "vv_alto_after": "1074px"
+          },
+          {
+            "pinned": false,
+            "pantalla": false,
+            "same_node": true,
+            "path": "div.cuerpo",
+            "ordinal": 0,
+            "before": {
+              "width": 320,
+              "height": 933.88
+            },
+            "after": {
+              "width": 320,
+              "height": 934
+            },
+            "query_900": "n/a",
+            "vv_alto": "changed",
+            "vv_alto_before": "568px",
+            "vv_alto_after": "1074px"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "screen": "InicioHoy_375x812",
+    "file": "InicioHoy_375x812.png",
+    "notes": [],
+    "design": "InicioHoy_375x812.design.png",
+    "built": "InicioHoy_375x812.built.png",
+    "capture": "captured",
+    "census": {
+      "design": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 375,
+          "height": 812
+        },
+        "document": {
+          "scroll_width": 390,
+          "scroll_height": 844,
+          "inner_width": 375,
+          "inner_height": 812
+        },
+        "layer": false,
+        "wide": true,
+        "grown": true,
+        "fits_viewport": "page wider than its viewport",
+        "class": "grown",
+        "pinned": [],
+        "viewport_shot": {
+          "width": 375,
+          "height": 812
+        },
+        "viewport_after": {
+          "width": 375,
+          "height": 844
+        },
+        "fits_viewport_after": "page wider than its viewport",
+        "sizes_changed": []
+      },
+      "built": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 375,
+          "height": 812
+        },
+        "document": {
+          "scroll_width": 375,
+          "scroll_height": 1071,
+          "inner_width": 375,
+          "inner_height": 812
+        },
+        "layer": false,
+        "wide": false,
+        "grown": true,
+        "fits_viewport": "page taller than its viewport",
+        "class": "grown",
+        "pinned": [
+          {
+            "path": "div.nueva-venta-flotante",
+            "position": "fixed",
+            "inset_top": 672,
+            "inset_bottom": 72,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          },
+          {
+            "path": "nav.bar-inferior",
+            "position": "fixed",
+            "inset_top": 740,
+            "inset_bottom": 0,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          }
+        ],
+        "viewport_shot": {
+          "width": 375,
+          "height": 812
+        },
+        "viewport_after": {
+          "width": 375,
+          "height": 1071
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": []
+      }
+    }
+  },
+  {
+    "screen": "InicioHoy_430x932",
+    "file": "InicioHoy_430x932.png",
+    "notes": [],
+    "design": "InicioHoy_430x932.design.png",
+    "built": "InicioHoy_430x932.built.png",
+    "capture": "captured",
+    "census": {
+      "design": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 430,
+          "height": 932
+        },
+        "document": {
+          "scroll_width": 430,
+          "scroll_height": 932,
+          "inner_width": 430,
+          "inner_height": 932
+        },
+        "layer": false,
+        "wide": false,
+        "grown": false,
+        "fits_viewport": null,
+        "class": "neither",
+        "pinned": [],
+        "viewport_shot": {
+          "width": 430,
+          "height": 932
+        },
+        "viewport_after": {
+          "width": 430,
+          "height": 932
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": []
+      },
+      "built": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 430,
+          "height": 932
+        },
+        "document": {
+          "scroll_width": 430,
+          "scroll_height": 1086,
+          "inner_width": 430,
+          "inner_height": 932
+        },
+        "layer": false,
+        "wide": false,
+        "grown": true,
+        "fits_viewport": "page taller than its viewport",
+        "class": "grown",
+        "pinned": [
+          {
+            "path": "div.nueva-venta-flotante",
+            "position": "fixed",
+            "inset_top": 792,
+            "inset_bottom": 72,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          },
+          {
+            "path": "nav.bar-inferior",
+            "position": "fixed",
+            "inset_top": 860,
+            "inset_bottom": 0,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          }
+        ],
+        "viewport_shot": {
+          "width": 430,
+          "height": 932
+        },
+        "viewport_after": {
+          "width": 430,
+          "height": 1086
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": []
+      }
+    }
+  },
+  {
+    "screen": "InicioOscuro_320x568",
+    "file": "InicioOscuro_320x568.png",
+    "notes": [],
+    "design": "InicioOscuro_320x568.design.png",
+    "built": "InicioOscuro_320x568.built.png",
+    "capture": "captured",
+    "census": {
+      "design": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 320,
+          "height": 568
+        },
+        "document": {
+          "scroll_width": 390,
+          "scroll_height": 844,
+          "inner_width": 320,
+          "inner_height": 568
+        },
+        "layer": false,
+        "wide": true,
+        "grown": true,
+        "fits_viewport": "page wider than its viewport",
+        "class": "grown",
+        "pinned": [],
+        "viewport_shot": {
+          "width": 320,
+          "height": 568
+        },
+        "viewport_after": {
+          "width": 320,
+          "height": 844
+        },
+        "fits_viewport_after": "page wider than its viewport",
+        "sizes_changed": []
+      },
+      "built": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 320,
+          "height": 568
+        },
+        "document": {
+          "scroll_width": 320,
+          "scroll_height": 1074,
+          "inner_width": 320,
+          "inner_height": 568
+        },
+        "layer": false,
+        "wide": false,
+        "grown": true,
+        "fits_viewport": "page taller than its viewport",
+        "class": "grown",
+        "pinned": [
+          {
+            "path": "div.nueva-venta-flotante",
+            "position": "fixed",
+            "inset_top": 428,
+            "inset_bottom": 72,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          },
+          {
+            "path": "nav.bar-inferior",
+            "position": "fixed",
+            "inset_top": 496,
+            "inset_bottom": 0,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          }
+        ],
+        "viewport_shot": {
+          "width": 320,
+          "height": 568
+        },
+        "viewport_after": {
+          "width": 320,
+          "height": 1074
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": [
+          {
+            "pinned": false,
+            "pantalla": true,
+            "same_node": true,
+            "path": "html",
+            "ordinal": 0,
+            "before": {
+              "width": 320,
+              "height": 1073.88
+            },
+            "after": {
+              "width": 320,
+              "height": 1074
+            },
+            "query_900": "n/a",
+            "vv_alto": "changed",
+            "vv_alto_before": "568px",
+            "vv_alto_after": "1074px"
+          },
+          {
+            "pinned": false,
+            "pantalla": true,
+            "same_node": true,
+            "path": "body",
+            "ordinal": 0,
+            "before": {
+              "width": 320,
+              "height": 1073.88
+            },
+            "after": {
+              "width": 320,
+              "height": 1074
+            },
+            "query_900": "n/a",
+            "vv_alto": "changed",
+            "vv_alto_before": "568px",
+            "vv_alto_after": "1074px"
+          },
+          {
+            "pinned": false,
+            "pantalla": true,
+            "same_node": true,
+            "path": "div",
+            "ordinal": 0,
+            "before": {
+              "width": 320,
+              "height": 1073.88
+            },
+            "after": {
+              "width": 320,
+              "height": 1074
+            },
+            "query_900": "n/a",
+            "vv_alto": "changed",
+            "vv_alto_before": "568px",
+            "vv_alto_after": "1074px"
+          },
+          {
+            "pinned": false,
+            "pantalla": true,
+            "same_node": true,
+            "path": "div.disposicion",
+            "ordinal": 0,
+            "before": {
+              "width": 320,
+              "height": 1073.88
+            },
+            "after": {
+              "width": 320,
+              "height": 1074
+            },
+            "query_900": "n/a",
+            "vv_alto": "changed",
+            "vv_alto_before": "568px",
+            "vv_alto_after": "1074px"
+          },
+          {
+            "pinned": false,
+            "pantalla": true,
+            "same_node": true,
+            "path": "div.columna-principal",
+            "ordinal": 0,
+            "before": {
+              "width": 320,
+              "height": 1073.88
+            },
+            "after": {
+              "width": 320,
+              "height": 1074
+            },
+            "query_900": "n/a",
+            "vv_alto": "changed",
+            "vv_alto_before": "568px",
+            "vv_alto_after": "1074px"
+          },
+          {
+            "pinned": false,
+            "pantalla": true,
+            "same_node": true,
+            "path": "main.pantalla",
+            "ordinal": 0,
+            "before": {
+              "width": 320,
+              "height": 933.88
+            },
+            "after": {
+              "width": 320,
+              "height": 934
+            },
+            "query_900": "n/a",
+            "vv_alto": "changed",
+            "vv_alto_before": "568px",
+            "vv_alto_after": "1074px"
+          },
+          {
+            "pinned": false,
+            "pantalla": false,
+            "same_node": true,
+            "path": "div.cuerpo",
+            "ordinal": 0,
+            "before": {
+              "width": 320,
+              "height": 933.88
+            },
+            "after": {
+              "width": 320,
+              "height": 934
+            },
+            "query_900": "n/a",
+            "vv_alto": "changed",
+            "vv_alto_before": "568px",
+            "vv_alto_after": "1074px"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "screen": "InicioOscuro_375x812",
+    "file": "InicioOscuro_375x812.png",
+    "notes": [],
+    "design": "InicioOscuro_375x812.design.png",
+    "built": "InicioOscuro_375x812.built.png",
+    "capture": "captured",
+    "census": {
+      "design": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 375,
+          "height": 812
+        },
+        "document": {
+          "scroll_width": 390,
+          "scroll_height": 844,
+          "inner_width": 375,
+          "inner_height": 812
+        },
+        "layer": false,
+        "wide": true,
+        "grown": true,
+        "fits_viewport": "page wider than its viewport",
+        "class": "grown",
+        "pinned": [],
+        "viewport_shot": {
+          "width": 375,
+          "height": 812
+        },
+        "viewport_after": {
+          "width": 375,
+          "height": 844
+        },
+        "fits_viewport_after": "page wider than its viewport",
+        "sizes_changed": []
+      },
+      "built": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 375,
+          "height": 812
+        },
+        "document": {
+          "scroll_width": 375,
+          "scroll_height": 1071,
+          "inner_width": 375,
+          "inner_height": 812
+        },
+        "layer": false,
+        "wide": false,
+        "grown": true,
+        "fits_viewport": "page taller than its viewport",
+        "class": "grown",
+        "pinned": [
+          {
+            "path": "div.nueva-venta-flotante",
+            "position": "fixed",
+            "inset_top": 672,
+            "inset_bottom": 72,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          },
+          {
+            "path": "nav.bar-inferior",
+            "position": "fixed",
+            "inset_top": 740,
+            "inset_bottom": 0,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          }
+        ],
+        "viewport_shot": {
+          "width": 375,
+          "height": 812
+        },
+        "viewport_after": {
+          "width": 375,
+          "height": 1071
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": []
+      }
+    }
+  },
+  {
+    "screen": "InicioOscuro_430x932",
+    "file": "InicioOscuro_430x932.png",
+    "notes": [],
+    "design": "InicioOscuro_430x932.design.png",
+    "built": "InicioOscuro_430x932.built.png",
+    "capture": "captured",
+    "census": {
+      "design": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 430,
+          "height": 932
+        },
+        "document": {
+          "scroll_width": 430,
+          "scroll_height": 932,
+          "inner_width": 430,
+          "inner_height": 932
+        },
+        "layer": false,
+        "wide": false,
+        "grown": false,
+        "fits_viewport": null,
+        "class": "neither",
+        "pinned": [],
+        "viewport_shot": {
+          "width": 430,
+          "height": 932
+        },
+        "viewport_after": {
+          "width": 430,
+          "height": 932
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": []
+      },
+      "built": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 430,
+          "height": 932
+        },
+        "document": {
+          "scroll_width": 430,
+          "scroll_height": 1086,
+          "inner_width": 430,
+          "inner_height": 932
+        },
+        "layer": false,
+        "wide": false,
+        "grown": true,
+        "fits_viewport": "page taller than its viewport",
+        "class": "grown",
+        "pinned": [
+          {
+            "path": "div.nueva-venta-flotante",
+            "position": "fixed",
+            "inset_top": 792,
+            "inset_bottom": 72,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          },
+          {
+            "path": "nav.bar-inferior",
+            "position": "fixed",
+            "inset_top": 860,
+            "inset_bottom": 0,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          }
+        ],
+        "viewport_shot": {
+          "width": 430,
+          "height": 932
+        },
+        "viewport_after": {
+          "width": 430,
+          "height": 1086
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": []
+      }
+    }
+  },
+  {
+    "screen": "Analisis_320x568",
+    "file": "Analisis_320x568.png",
+    "notes": [],
+    "design": "Analisis_320x568.design.png",
+    "built": "Analisis_320x568.built.png",
+    "capture": "captured",
+    "census": {
+      "design": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 320,
+          "height": 568
+        },
+        "document": {
+          "scroll_width": 390,
+          "scroll_height": 1000,
+          "inner_width": 320,
+          "inner_height": 568
+        },
+        "layer": false,
+        "wide": true,
+        "grown": true,
+        "fits_viewport": "page wider than its viewport",
+        "class": "grown",
+        "pinned": [],
+        "viewport_shot": {
+          "width": 320,
+          "height": 568
+        },
+        "viewport_after": {
+          "width": 320,
+          "height": 1000
+        },
+        "fits_viewport_after": "page wider than its viewport",
+        "sizes_changed": []
+      },
+      "built": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 320,
+          "height": 568
+        },
+        "document": {
+          "scroll_width": 320,
+          "scroll_height": 4684,
+          "inner_width": 320,
+          "inner_height": 568
+        },
+        "layer": false,
+        "wide": false,
+        "grown": true,
+        "fits_viewport": "page taller than its viewport",
+        "class": "grown",
+        "pinned": [
+          {
+            "path": "div.nueva-venta-flotante",
+            "position": "fixed",
+            "inset_top": 428,
+            "inset_bottom": 72,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          },
+          {
+            "path": "nav.bar-inferior",
+            "position": "fixed",
+            "inset_top": 496,
+            "inset_bottom": 0,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          }
+        ],
+        "viewport_shot": {
+          "width": 320,
+          "height": 568
+        },
+        "viewport_after": {
+          "width": 320,
+          "height": 4684
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": []
+      }
+    }
+  },
+  {
+    "screen": "Analisis_375x812",
+    "file": "Analisis_375x812.png",
+    "notes": [],
+    "design": "Analisis_375x812.design.png",
+    "built": "Analisis_375x812.built.png",
+    "capture": "captured",
+    "census": {
+      "design": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 375,
+          "height": 812
+        },
+        "document": {
+          "scroll_width": 390,
+          "scroll_height": 1000,
+          "inner_width": 375,
+          "inner_height": 812
+        },
+        "layer": false,
+        "wide": true,
+        "grown": true,
+        "fits_viewport": "page wider than its viewport",
+        "class": "grown",
+        "pinned": [],
+        "viewport_shot": {
+          "width": 375,
+          "height": 812
+        },
+        "viewport_after": {
+          "width": 375,
+          "height": 1000
+        },
+        "fits_viewport_after": "page wider than its viewport",
+        "sizes_changed": []
+      },
+      "built": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 375,
+          "height": 812
+        },
+        "document": {
+          "scroll_width": 375,
+          "scroll_height": 4528,
+          "inner_width": 375,
+          "inner_height": 812
+        },
+        "layer": false,
+        "wide": false,
+        "grown": true,
+        "fits_viewport": "page taller than its viewport",
+        "class": "grown",
+        "pinned": [
+          {
+            "path": "div.nueva-venta-flotante",
+            "position": "fixed",
+            "inset_top": 672,
+            "inset_bottom": 72,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          },
+          {
+            "path": "nav.bar-inferior",
+            "position": "fixed",
+            "inset_top": 740,
+            "inset_bottom": 0,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          }
+        ],
+        "viewport_shot": {
+          "width": 375,
+          "height": 812
+        },
+        "viewport_after": {
+          "width": 375,
+          "height": 4528
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": []
+      }
+    }
+  },
+  {
+    "screen": "Analisis_430x932",
+    "file": "Analisis_430x932.png",
+    "notes": [],
+    "design": "Analisis_430x932.design.png",
+    "built": "Analisis_430x932.built.png",
+    "capture": "captured",
+    "census": {
+      "design": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 430,
+          "height": 932
+        },
+        "document": {
+          "scroll_width": 430,
+          "scroll_height": 1000,
+          "inner_width": 430,
+          "inner_height": 932
+        },
+        "layer": false,
+        "wide": false,
+        "grown": true,
+        "fits_viewport": "page taller than its viewport",
+        "class": "grown",
+        "pinned": [],
+        "viewport_shot": {
+          "width": 430,
+          "height": 932
+        },
+        "viewport_after": {
+          "width": 430,
+          "height": 1000
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": []
+      },
+      "built": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 430,
+          "height": 932
+        },
+        "document": {
+          "scroll_width": 430,
+          "scroll_height": 4508,
+          "inner_width": 430,
+          "inner_height": 932
+        },
+        "layer": false,
+        "wide": false,
+        "grown": true,
+        "fits_viewport": "page taller than its viewport",
+        "class": "grown",
+        "pinned": [
+          {
+            "path": "div.nueva-venta-flotante",
+            "position": "fixed",
+            "inset_top": 792,
+            "inset_bottom": 72,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          },
+          {
+            "path": "nav.bar-inferior",
+            "position": "fixed",
+            "inset_top": 860,
+            "inset_bottom": 0,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          }
+        ],
+        "viewport_shot": {
+          "width": 430,
+          "height": 932
+        },
+        "viewport_after": {
+          "width": 430,
+          "height": 4508
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": []
+      }
+    }
+  },
+  {
+    "screen": "AnalisisOscuro_320x568",
+    "file": "AnalisisOscuro_320x568.png",
+    "notes": [],
+    "design": "AnalisisOscuro_320x568.design.png",
+    "built": "AnalisisOscuro_320x568.built.png",
+    "capture": "captured",
+    "census": {
+      "design": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 320,
+          "height": 568
+        },
+        "document": {
+          "scroll_width": 390,
+          "scroll_height": 1000,
+          "inner_width": 320,
+          "inner_height": 568
+        },
+        "layer": false,
+        "wide": true,
+        "grown": true,
+        "fits_viewport": "page wider than its viewport",
+        "class": "grown",
+        "pinned": [],
+        "viewport_shot": {
+          "width": 320,
+          "height": 568
+        },
+        "viewport_after": {
+          "width": 320,
+          "height": 1000
+        },
+        "fits_viewport_after": "page wider than its viewport",
+        "sizes_changed": []
+      },
+      "built": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 320,
+          "height": 568
+        },
+        "document": {
+          "scroll_width": 320,
+          "scroll_height": 4684,
+          "inner_width": 320,
+          "inner_height": 568
+        },
+        "layer": false,
+        "wide": false,
+        "grown": true,
+        "fits_viewport": "page taller than its viewport",
+        "class": "grown",
+        "pinned": [
+          {
+            "path": "div.nueva-venta-flotante",
+            "position": "fixed",
+            "inset_top": 428,
+            "inset_bottom": 72,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          },
+          {
+            "path": "nav.bar-inferior",
+            "position": "fixed",
+            "inset_top": 496,
+            "inset_bottom": 0,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          }
+        ],
+        "viewport_shot": {
+          "width": 320,
+          "height": 568
+        },
+        "viewport_after": {
+          "width": 320,
+          "height": 4684
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": []
+      }
+    }
+  },
+  {
+    "screen": "AnalisisOscuro_375x812",
+    "file": "AnalisisOscuro_375x812.png",
+    "notes": [],
+    "design": "AnalisisOscuro_375x812.design.png",
+    "built": "AnalisisOscuro_375x812.built.png",
+    "capture": "captured",
+    "census": {
+      "design": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 375,
+          "height": 812
+        },
+        "document": {
+          "scroll_width": 390,
+          "scroll_height": 1000,
+          "inner_width": 375,
+          "inner_height": 812
+        },
+        "layer": false,
+        "wide": true,
+        "grown": true,
+        "fits_viewport": "page wider than its viewport",
+        "class": "grown",
+        "pinned": [],
+        "viewport_shot": {
+          "width": 375,
+          "height": 812
+        },
+        "viewport_after": {
+          "width": 375,
+          "height": 1000
+        },
+        "fits_viewport_after": "page wider than its viewport",
+        "sizes_changed": []
+      },
+      "built": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 375,
+          "height": 812
+        },
+        "document": {
+          "scroll_width": 375,
+          "scroll_height": 4528,
+          "inner_width": 375,
+          "inner_height": 812
+        },
+        "layer": false,
+        "wide": false,
+        "grown": true,
+        "fits_viewport": "page taller than its viewport",
+        "class": "grown",
+        "pinned": [
+          {
+            "path": "div.nueva-venta-flotante",
+            "position": "fixed",
+            "inset_top": 672,
+            "inset_bottom": 72,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          },
+          {
+            "path": "nav.bar-inferior",
+            "position": "fixed",
+            "inset_top": 740,
+            "inset_bottom": 0,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          }
+        ],
+        "viewport_shot": {
+          "width": 375,
+          "height": 812
+        },
+        "viewport_after": {
+          "width": 375,
+          "height": 4528
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": []
+      }
+    }
+  },
+  {
+    "screen": "AnalisisOscuro_430x932",
+    "file": "AnalisisOscuro_430x932.png",
+    "notes": [],
+    "design": "AnalisisOscuro_430x932.design.png",
+    "built": "AnalisisOscuro_430x932.built.png",
+    "capture": "captured",
+    "census": {
+      "design": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 430,
+          "height": 932
+        },
+        "document": {
+          "scroll_width": 430,
+          "scroll_height": 1000,
+          "inner_width": 430,
+          "inner_height": 932
+        },
+        "layer": false,
+        "wide": false,
+        "grown": true,
+        "fits_viewport": "page taller than its viewport",
+        "class": "grown",
+        "pinned": [],
+        "viewport_shot": {
+          "width": 430,
+          "height": 932
+        },
+        "viewport_after": {
+          "width": 430,
+          "height": 1000
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": []
+      },
+      "built": {
+        "device_scale_factor": 2,
+        "viewport_before": {
+          "width": 430,
+          "height": 932
+        },
+        "document": {
+          "scroll_width": 430,
+          "scroll_height": 4508,
+          "inner_width": 430,
+          "inner_height": 932
+        },
+        "layer": false,
+        "wide": false,
+        "grown": true,
+        "fits_viewport": "page taller than its viewport",
+        "class": "grown",
+        "pinned": [
+          {
+            "path": "div.nueva-venta-flotante",
+            "position": "fixed",
+            "inset_top": 792,
+            "inset_bottom": 72,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          },
+          {
+            "path": "nav.bar-inferior",
+            "position": "fixed",
+            "inset_top": 860,
+            "inset_bottom": 0,
+            "margin_top": 0,
+            "margin_bottom": 0,
+            "transform": "none",
+            "pinned_class": "chrome"
+          }
+        ],
+        "viewport_shot": {
+          "width": 430,
+          "height": 932
+        },
+        "viewport_after": {
+          "width": 430,
+          "height": 4508
+        },
+        "fits_viewport_after": null,
+        "sizes_changed": []
+      }
+    }
+  }
+]

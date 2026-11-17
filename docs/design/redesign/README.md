@@ -64,3 +64,8 @@ Capturas y dibujos fuente del diseño consolidado que armó el dueño el 29 de o
 - Pedidos: lista por etapa, vista con un selector con buscador, vistas propias sobre el cubo, estados a medida en Ajustes (#500, #326, #321).
 - Aspecto nativo: nada debajo de la barra de estado, la cámara o el indicador de inicio (safe areas, #495, #319).
 - Modo oscuro: ningún control con el fondo blanco del navegador (#509).
+
+## Un solo modo de registrar (2026-11-02)
+
+- `registro-unificado.md`: el acuerdo aprobado por el dueño el 2 de noviembre de 2026 y, en "Archivos", la lista de dibujos que pasan a `pantallas/`.
+- `registro-unificado-mapa.dc.html`: el mapa de ese acuerdo como dibujo; no es una pantalla.

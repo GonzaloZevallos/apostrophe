@@ -1,16 +1,17 @@
 /**
  * Collecting from Hoy, phone and computer, against the real backend through the built front
- * (results.md, "Te deben block"): a seller taps "Collect from <name>" on the debtor's row, saves a
- * payment in Registrar cobro, and is back on Inicio in one move, with the block refreshed from
- * the API and the toast not naming the customer. "Close" returns in one move too.
+ * (results.md, "Bloque Owed to you"): a seller taps "Collect from <name>" on the debtor's row,
+ * saves a payment in Registrar cobro, and is back on Inicio in one move, with the block
+ * refreshed from the API and the toast not naming the customer. "Close" returns in one move too.
  *
  * "In one move" is read from the browser's own history: a single `page.goBack()` from Inicio
  * after the round trip leaves the app's own history, not Registrar cobro again.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { CUSTOMER, CUSTOMER_NEW, HOME, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -37,16 +38,16 @@ for (const viewport of VIEWPORTS) {
     })
 
     await page.goto(VARIETIES)
-    await page.getByRole('link', { name: 'New variety' }).click()
-    await page.getByLabel('Name').fill('Rosa')
-    await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+    await page.getByRole('link', { name: 'New product' }).click()
+    await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
+    await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
     await page.getByRole('link', { name: /Rosa/ }).click()
     await page.getByRole('link', { name: 'New price' }).click()
     await page.getByLabel(/^List price/).fill('1000')
     await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
     await page.goto(CUSTOMER_NEW)
-    await page.getByLabel('Name').fill('Carla Cobrar')
+    await page.getByLabel('Name', { exact: true }).fill('Carla Cobrar')
     await page.getByRole('button', { name: 'Save and use' }).click()
     await expectPath(page, CUSTOMER)
     await page.getByRole('link', { name: 'New sale to Carla Cobrar' }).click()
@@ -70,8 +71,8 @@ for (const viewport of VIEWPORTS) {
 
     // A partial payment: back on Inicio, the row keeps its new balance.
     await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
-    await page.getByLabel('Amount').fill('2000')
-    await page.getByRole('radio', { name: 'Cash' }).check()
+    await page.getByLabel('Amount', { exact: true }).fill('2000')
+    await choosePaymentMethod(page, 'Cash')
     // The exact text is the privacy check: an exact match cannot contain the customer's name.
     await expectToast(page, 'Payment saved · still owing $ 3.000', () =>
       page.getByRole('button', { name: 'Save' }).click(),
@@ -82,7 +83,7 @@ for (const viewport of VIEWPORTS) {
     // The rest, with "All": the row leaves and the block reads "Nobody owes you".
     await page.getByRole('link', { name: 'Collect from Carla Cobrar' }).click()
     await page.getByRole('button', { name: 'All: $ 3.000' }).click()
-    await page.getByRole('radio', { name: 'Transfer' }).check()
+    await choosePaymentMethod(page, 'Transfer')
     await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
     await expectPath(page, HOME)
     await expect(page.getByText('Nobody owes you')).toBeVisible()

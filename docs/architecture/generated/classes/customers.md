@@ -26,6 +26,8 @@ classDiagram
   }
   class manage_customers {
   }
+  class phone_countries_router {
+  }
   class ports {
   }
   class router {
@@ -90,16 +92,22 @@ classDiagram
   class MissingCustomerName {
     code : ClassVar~str~
   }
+  class PhoneNeedsCountryCode {
+    code : ClassVar~str~
+  }
   class PhoneNumber {
     digits : str
+    display : str
     value : str
-    of(raw: str) PhoneNumber
-    optional(raw: str #124; None) PhoneNumber #124; None
+    of(raw: str, country: PhoneCountry #124; None) PhoneNumber
+    optional(raw: str #124; None, country: PhoneCountry #124; None) PhoneNumber #124; None
+    plus_digits(raw: str) str #124; None
   }
   Customer --> CustomerName : name
   CustomerNameTooLong --|> CustomerRuleBroken
   InvalidPhoneNumber --|> CustomerRuleBroken
   MissingCustomerName --|> CustomerRuleBroken
+  PhoneNeedsCountryCode --|> CustomerRuleBroken
 ```
 
 ## application
@@ -157,14 +165,16 @@ classDiagram
     customer_type_id : int #124; None
     name : str
     phone : str #124; None
+    phone_country : str #124; None
   }
   class CustomerOut {
-    balance : int
+    balance
     customer_type_id : int #124; None
     id : int
     name : str
     owing_since : date #124; None
     phone : str #124; None
+    phone_display : str #124; None
     standing : Literal
     vip : bool
     of(customer: Customer, balance: CustomerBalance, vip_type_id: int #124; None) 'CustomerOut'
@@ -173,20 +183,27 @@ classDiagram
     customer_type_id : int #124; None
     name : str #124; None
     phone : str #124; None
+    phone_country : str #124; None
     to_changes() CustomerChanges
   }
   class CustomerRow {
     business_id : Mapped~int~
     customer_type_id : Mapped~int #124; None~
     id : Mapped~int~
+    is_vip : Mapped~bool~
     name : Mapped~str~
     phone : Mapped~str #124; None~
-    vip : Mapped~bool~
   }
   class CustomersImport {
     check_customer(name: str, phone: str #124; None) CustomerKey #124; CustomerRefusals
     has_records() bool
     write_customer(name: str, phone_key: str #124; None, customer_type_id: int #124; None, transaction: Transaction) int
+  }
+  class PhoneCountryOut {
+    calling_code : str
+    code : str
+    example : str
+    national_lengths : list~int~
   }
   class SqlCustomerTypeLookup {
     exists(type_id: int) bool

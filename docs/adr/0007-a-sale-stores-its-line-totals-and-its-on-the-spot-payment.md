@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-02
+summary: "la venta guarda los totales de sus líneas y su pago en el acto como una fila de pago"
 ---
 
 # A sale stores whole-peso line totals and records its on-the-spot payment as a payment row

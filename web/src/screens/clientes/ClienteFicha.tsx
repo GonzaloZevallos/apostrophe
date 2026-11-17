@@ -22,7 +22,6 @@ import { getCustomer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
 import CustomerTypeLine from './CustomerTypeLine'
 import {
-  type PaymentMethod,
   deletePayment,
   getAccount,
 } from '../../api/payments'
@@ -44,15 +43,16 @@ import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import { formatDateShort } from '../../format/dates'
-import { formatMoney, formatMoneyMagnitude } from '../../format/money'
-import { formatPhone } from '../../format/phone'
+import type { MoneyFormatter } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import AccountRowLine from './AccountRowLine'
-import { METHOD_LABEL, deleteRowIndices, rowKey } from './accountRows'
+import { deleteRowIndices, rowKey } from './accountRows'
 import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
+import ContentArea from '../../components/ContentArea'
 
-function deletePaymentTitle(payment: { amount: number; method: PaymentMethod; paid_on: string }): string {
-  return CUSTOMERS_TEXT.deletePaymentOf(formatMoney(payment.amount), METHOD_LABEL[payment.method], formatDateShort(payment.paid_on))
+function deletePaymentTitle(payment: { amount: number; method: string; paid_on: string }, money: MoneyFormatter): string {
+  return CUSTOMERS_TEXT.deletePaymentOf(money.money(payment.amount), payment.method, formatDateShort(payment.paid_on))
 }
 
 function cardHeading(root: HTMLElement): HTMLElement | null {
@@ -60,6 +60,7 @@ function cardHeading(root: HTMLElement): HTMLElement | null {
 }
 
 export default function ClienteFicha() {
+  const money = useMoney()
   const { id } = useParams<{ id: string }>()
   const customerId = id ?? ''
   const location = useLocation()
@@ -69,7 +70,7 @@ export default function ClienteFicha() {
 
   const [deletedToast, setDeletedToast] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState<
-    { id: number; amount: number; method: PaymentMethod; paid_on: string } | null
+    { id: number; amount: number; method: string; paid_on: string } | null
   >(null)
   const [accountGone, setAccountGone] = useState(false)
   const [deletePaymentOffline, setDeletePaymentOffline] = useState(false)
@@ -135,29 +136,29 @@ export default function ClienteFicha() {
     }
     if (error instanceof NetworkError) {
       return (
-        <main className="pantalla">
+        <ContentArea as="main" className="pantalla">
           <div className="cuerpo">
             <SinConexion />
           </div>
-        </main>
+        </ContentArea>
       )
     }
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <ErrorGenerico />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
   if (isPending || data === undefined) {
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <Loading />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
@@ -165,7 +166,7 @@ export default function ClienteFicha() {
   const deleteIndices = deleteRowIndices(rows)
 
   return (
-    <main className="pantalla" ref={root}>
+    <ContentArea as="main" className="pantalla" ref={root}>
       <div className="cuerpo">
         <div className="ficha-cliente__encabezado">
           <span className="encabezado__titulo" tabIndex={-1} data-place="card-heading">{data.name}</span>
@@ -184,7 +185,7 @@ export default function ClienteFicha() {
         {data.standing === 'owes' && (
           <div className="ficha-deuda">
             <span className="rotulo ficha-deuda__rotulo">{CUSTOMERS_TEXT.owesYou}</span>
-            <span className="cifra-l monto-deuda">{formatMoney(data.balance)}</span>
+            <span className="cifra-l monto-deuda">{money.money(data.balance)}</span>
             {data.owing_since !== null && (
               <span className="rotulo">{CUSTOMERS_TEXT.since}{formatDateShort(data.owing_since)}</span>
             )}
@@ -198,15 +199,15 @@ export default function ClienteFicha() {
         {data.standing === 'credit' && (
           <div className="ficha-deuda ficha-deuda--credito">
             <span className="rotulo ficha-deuda__rotulo">{CUSTOMERS_TEXT.creditLabel}</span>
-            <span className="cifra-l monto-credito">{formatMoneyMagnitude(data.balance)}</span>
+            <span className="cifra-l monto-credito">{money.magnitude(data.balance)}</span>
           </div>
         )}
 
         <div className="formulario">
-          {data.phone !== null && (
+          {data.phone_display !== null && (
             <div className="campo">
               <span className="campo__rotulo">{CUSTOMERS_TEXT.phone}</span>
-              <span>{formatPhone(data.phone)}</span>
+              <span className="campo__valor-telefono">{data.phone_display}</span>
             </div>
           )}
           <CustomerTypeLine typeId={data.customer_type_id} />
@@ -227,7 +228,7 @@ export default function ClienteFicha() {
                     setConfirmingDelete({
                       id: row.payment.id,
                       amount: row.payment.amount,
-                      method: row.payment.method,
+                      method: row.payment.payment_method.name,
                       paid_on: row.payment.paid_on,
                     })
                   }
@@ -246,7 +247,7 @@ export default function ClienteFicha() {
 
       {confirmingDelete !== null && (
         <ConfirmDialog
-          title={deletePaymentTitle(confirmingDelete)}
+          title={deletePaymentTitle(confirmingDelete, money)}
           detail={COMMON_TEXT.cannotUndo}
           confirmText={COMMON_TEXT.yesDelete}
           cancelText={COMMON_TEXT.noKeep}
@@ -254,6 +255,6 @@ export default function ClienteFicha() {
           onCancel={() => setConfirmingDelete(null)}
         />
       )}
-    </main>
+    </ContentArea>
   )
 }

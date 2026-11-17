@@ -1,0 +1,4 @@
+// expect: none
+export type Resources = {
+  common: typeof import('../copy/locales/en/common.json')
+}

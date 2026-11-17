@@ -17,11 +17,11 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.sql_accounts import SqlAccounts
-from app.accounts.adapters.tables import LoginGuardRow
 from app.accounts.domain.account import Email
 from app.accounts.domain.login_guard import AddressGuard
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
+from tests.accounts.guard_rows import find_guard_row
 
 NOW = datetime(2026, 10, 2, 18, 0, tzinfo=UTC)
 
@@ -50,8 +50,8 @@ def _count_email_failure(engine: Engine, email: Email, now: datetime) -> int:
 
 def test_clear_email_leaves_an_active_lock_in_place(file_engine: Engine) -> None:
     """A success's `clear_email` must not lift a lock that was set after its own read
-    of the guard (plan invariant: `locked_until` is written only by an `UPDATE`
-    guarded on `locked_until IS NULL OR locked_until <= :now`) — proven directly at
+    of the guard (plan invariant: `unlocks_at` is written only by an `UPDATE`
+    guarded on `unlocks_at IS NULL OR unlocks_at <= :now`) — proven directly at
     this seam, without relying on the race actually happening."""
     email = Email.of("raced@example.com")
     until = NOW + timedelta(minutes=15)
@@ -72,9 +72,9 @@ def test_clear_email_leaves_an_active_lock_in_place(file_engine: Engine) -> None
         session.commit()
 
     with Session(file_engine) as session:
-        row = session.get(LoginGuardRow, email.value)
+        row = find_guard_row(session, email.value)
         assert row is not None
-        assert row.locked_until == until
+        assert row.unlocks_at == until
         # If `clear_email`'s guard failed to hold, it would have zeroed this count;
         # proving it is still 1 is what tells the guard apart from a no-op update.
         assert row.failures == 1
@@ -148,6 +148,6 @@ def test_a_burst_of_email_failures_leaves_exactly_one_lock_and_a_count_of_n_minu
     assert locks.email_locked_until == NOW + timedelta(minutes=15)
 
     with Session(file_engine) as session:
-        row = session.get(LoginGuardRow, email.value)
+        row = find_guard_row(session, email.value)
         assert row is not None
         assert row.failures == n - 5

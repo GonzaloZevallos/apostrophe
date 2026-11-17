@@ -7,6 +7,7 @@
  * `catalog.spec.ts` fail on a slower runner).
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { CATALOG, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
@@ -26,9 +27,9 @@ test('a tap that leaves Variedades on the phone is not replaced when the viewpor
     email: `seleccion-${uniqueTag()}@example.com`,
   })
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await page.getByRole('link', { name: 'New product' }).click()
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
 
   const cdp = await context.newCDPSession(page)
   for (let round = 0; round < 3; round++) {

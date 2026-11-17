@@ -12,13 +12,12 @@ from sqlalchemy.orm import Session
 
 from app.payments.adapters.tables import PaymentRow
 from app.pricing_settings.adapters.tables import PricingSettingsRow
-from app.products.adapters.tables import PriceEntryRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
 from tests.conftest import TODAY
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.archive import archive_by_hand
 from tests.pricing_switches import set_switches
-from tests.vip_type import make_type, put_in_type
+from tests.vip_type import make_type, price_type, put_in_type
 
 
 def _variety(client: TestClient, list_price: int = 10_000) -> int:
@@ -55,7 +54,9 @@ def _row_counts(engine: Engine) -> tuple[int, int, int]:
 
 
 def _customer(client: TestClient) -> int:
-    customer = client.post("/customers", json={"name": "Juana", "phone": "11 2345-6789"}).json()
+    customer = client.post(
+        "/customers", json={"name": "Juana", "phone": "11 2345-6789", "phone_country": "AR"}
+    ).json()
     return int(customer["id"])
 
 
@@ -69,7 +70,7 @@ def test_a_sale_left_owing_is_marked_still_owing_everywhere_it_is_read(
         "/sales",
         json={
             "customer_id": customer_id,
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety_id, "quantity": "1"}],
         },
     ).json()
@@ -87,7 +88,10 @@ def test_a_sale_paid_on_the_spot_is_never_still_owing(client: TestClient) -> Non
 
     created = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "1"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "1"}],
+        },
     ).json()
 
     assert created["still_owing"] is False
@@ -99,13 +103,16 @@ def test_record_sale_without_a_customer_paid_cash(client: TestClient) -> None:
 
     response = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        },
     )
 
     assert response.status_code == 201, response.text
     body = response.json()
     assert body["customer"] is None
-    assert body["payment"] == "cash"
+    assert body["payment"] == "paid"
     assert body["total"] == 100_000
     assert body["lines"] == [
         {
@@ -113,6 +120,7 @@ def test_record_sale_without_a_customer_paid_cash(client: TestClient) -> None:
             "product_name": "Lavanda",
             "quantity": 10.0,
             "pricing_rule": "list",
+            "customer_type_name": None,
             "price_per_gram": 10_000,
             "line_total": 100_000,
         }
@@ -126,7 +134,10 @@ def test_a_sale_line_still_sending_variety_id_is_refused_for_the_missing_product
 
     response = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"variety_id": variety_id, "quantity": "1"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"variety_id": variety_id, "quantity": "1"}],
+        },
     )
 
     assert response.status_code == 422, response.text
@@ -140,7 +151,10 @@ def test_record_sale_left_owing_without_a_customer_is_refused(client: TestClient
 
     response = client.post(
         "/sales",
-        json={"payment": "owing", "lines": [{"product_id": variety_id, "quantity": "10"}]},
+        json={
+            "payment": {"kind": "owing"},
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        },
     )
 
     assert response.status_code == 422, response.text
@@ -149,7 +163,11 @@ def test_record_sale_left_owing_without_a_customer_is_refused(client: TestClient
 def test_record_sale_with_an_unknown_variety_is_refused(client: TestClient) -> None:
     # Missing and foreign stay indistinguishable: gone, not a refusal (docs/adr/0011).
     response = client.post(
-        "/sales", json={"payment": "cash", "lines": [{"product_id": 999_999, "quantity": "10"}]}
+        "/sales",
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": 999_999, "quantity": "10"}],
+        },
     )
 
     assert response.status_code == 404, response.text
@@ -162,7 +180,7 @@ def test_record_sale_with_an_unknown_customer_is_refused(client: TestClient) -> 
     response = client.post(
         "/sales",
         json={
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "customer_id": 999_999,
             "lines": [{"product_id": variety_id, "quantity": "10"}],
         },
@@ -204,7 +222,10 @@ def test_get_and_list_a_recorded_sale(client: TestClient) -> None:
     variety_id = _variety(client)
     sale_id = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        },
     ).json()["id"]
 
     got = client.get(f"/sales/{sale_id}")
@@ -220,7 +241,10 @@ def test_delete_sale_removes_it(client: TestClient) -> None:
     variety_id = _variety(client)
     sale_id = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        },
     ).json()["id"]
 
     deleted = client.delete(f"/sales/{sale_id}")
@@ -245,7 +269,7 @@ def test_deleting_a_sale_sums_returned_grams_per_variety_sorted_by_variety_id(
     sale_id = client.post(
         "/sales",
         json={
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "lines": [
                 {"product_id": second_variety, "quantity": "3"},
                 {"product_id": first_variety, "quantity": "4"},
@@ -268,7 +292,10 @@ def test_assign_customer_to_a_sale_with_none(client: TestClient) -> None:
     customer_id = _customer(client)
     sale_id = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        },
     ).json()["id"]
 
     response = client.put(f"/sales/{sale_id}/customer", json={"customer_id": customer_id})
@@ -291,7 +318,10 @@ def test_assign_customer_refusal_order_unknown_customer_answers_404(
     variety_id = _variety(client)
     sale_id = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        },
     ).json()["id"]
 
     response = client.put(f"/sales/{sale_id}/customer", json={"customer_id": 999_999})
@@ -304,13 +334,13 @@ def test_assign_customer_already_assigned_answers_409(client: TestClient) -> Non
     variety_id = _variety(client)
     first_customer = _customer(client)
     second_customer_response = client.post(
-        "/customers", json={"name": "Otra", "phone": "11 9876-5432"}
+        "/customers", json={"name": "Otra", "phone": "11 9876-5432", "phone_country": "AR"}
     )
     second_customer = second_customer_response.json()["id"]
     sale_id = client.post(
         "/sales",
         json={
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "customer_id": first_customer,
             "lines": [{"product_id": variety_id, "quantity": "10"}],
         },
@@ -326,7 +356,10 @@ def test_record_sale_defaults_its_date_to_today_from_the_clock(client: TestClien
 
     response = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        },
     )
 
     assert response.json()["date"] == TODAY.isoformat()
@@ -338,7 +371,7 @@ def test_a_zero_total_sale_ignores_its_method_and_has_no_payment(client: TestCli
     response = client.post(
         "/sales",
         json={
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "lines": [{"product_id": variety_id, "quantity": "10", "gift": True}],
         },
     )
@@ -355,7 +388,7 @@ def test_a_sale_left_owing_answers_owing_as_its_payment(client: TestClient) -> N
     response = client.post(
         "/sales",
         json={
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "customer_id": customer_id,
             "lines": [{"product_id": variety_id, "quantity": "10"}],
         },
@@ -373,7 +406,7 @@ def test_list_sales_orders_newest_date_first_then_most_recently_recorded(
     def _record(sale_date: str) -> int:
         body = {
             "date": sale_date,
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "lines": [{"product_id": variety_id, "quantity": "10"}],
         }
         return int(client.post("/sales", json=body).json()["id"])
@@ -394,13 +427,37 @@ def test_list_sales_orders_newest_date_first_then_most_recently_recorded(
     ]
 
 
+def test_each_sale_s_date_is_read_back_in_the_list_and_in_the_detail(
+    client: TestClient,
+) -> None:
+    # Two past dates, different from each other and from the clock's today (2026-10-02).
+    variety_id = _variety(client)
+    ids: dict[str, int] = {}
+    for sale_date in ("2026-09-03", "2026-09-21"):
+        body = {
+            "date": sale_date,
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        }
+        ids[sale_date] = int(client.post("/sales", json=body).json()["id"])
+
+    listed = client.get("/sales").json()
+
+    assert [(sale["id"], sale["date"]) for sale in listed] == [
+        (ids["2026-09-21"], "2026-09-21"),
+        (ids["2026-09-03"], "2026-09-03"),
+    ]
+    for sale_date, sale_id in ids.items():
+        assert client.get(f"/sales/{sale_id}").json()["date"] == sale_date
+
+
 def test_list_sales_filters_by_an_inclusive_date_range(client: TestClient) -> None:
     variety_id = _variety(client)
 
     def _record(sale_date: str) -> int:
         body = {
             "date": sale_date,
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "lines": [{"product_id": variety_id, "quantity": "10"}],
         }
         return int(client.post("/sales", json=body).json()["id"])
@@ -425,7 +482,7 @@ def test_list_sales_with_an_inverted_range_answers_an_empty_list(client: TestCli
         "/sales",
         json={
             "date": "2026-09-15",
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "lines": [{"product_id": variety_id, "quantity": "10"}],
         },
     )
@@ -445,7 +502,7 @@ def test_get_and_list_label_the_sale_with_the_customer_s_current_name_and_vip_fl
     sale_id = client.post(
         "/sales",
         json={
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "customer_id": customer_id,
             "lines": [{"product_id": variety_id, "quantity": "10"}],
         },
@@ -471,7 +528,10 @@ def test_assigning_a_vip_customer_later_does_not_reprice_the_sale(
 
     sale_id = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "5"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "5"}],
+        },
     ).json()["id"]
     before = client.get(f"/sales/{sale_id}").json()
     assert before["lines"][0]["pricing_rule"] == "list"
@@ -498,7 +558,7 @@ def test_toggling_a_customers_vip_after_the_sale_changes_only_its_vip_badge(
     sale_id = client.post(
         "/sales",
         json={
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "customer_id": customer_id,
             "lines": [{"product_id": variety_id, "quantity": "5"}],
         },
@@ -520,7 +580,10 @@ def test_adding_a_price_entry_after_the_sale_does_not_reprice_it(client: TestCli
     variety_id = _variety_with_bulk(client, list_price=10_000, bulk_price=8_000, bulk_minimum="50")
     sale_id = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "5"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "5"}],
+        },
     ).json()["id"]
     before = client.get(f"/sales/{sale_id}").json()
 
@@ -545,7 +608,10 @@ def test_deleting_a_price_entry_after_the_sale_does_not_reprice_it(client: TestC
     variety_id = _variety_with_bulk(client, list_price=10_000, bulk_price=8_000, bulk_minimum="50")
     sale_id = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "5"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "5"}],
+        },
     ).json()["id"]
     before = client.get(f"/sales/{sale_id}").json()
 
@@ -566,7 +632,10 @@ def test_a_refused_sale_leaves_no_rows_in_sale_line_or_payment(
 
     response = client.post(
         "/sales",
-        json={"payment": "owing", "lines": [{"product_id": variety_id, "quantity": "10"}]},
+        json={
+            "payment": {"kind": "owing"},
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        },
     )
 
     assert response.status_code == 422, response.text
@@ -583,15 +652,9 @@ def _switches(engine: Engine, *, bulk: bool, vip: bool) -> None:
         session.commit()
 
 
-def _vip_price(engine: Engine, vip_price: int) -> None:
-    with Session(engine) as session:
-        session.execute(update(PriceEntryRow).values(vip_price=vip_price))
-        session.commit()
-
-
 def _line_of(client: TestClient, variety_id: int, customer_id: int | None) -> dict[str, object]:
     body: dict[str, object] = {
-        "payment": "cash",
+        "payment": {"kind": "paid", "payment_method_id": 1},
         "lines": [{"product_id": variety_id, "quantity": "50"}],
     }
     if customer_id is not None:
@@ -620,16 +683,17 @@ def test_a_vip_customer_is_stored_as_vip_once_vip_is_switched_on(
 ) -> None:
     _switches(engine, bulk=True, vip=True)
     variety_id = _variety_with_bulk(client)
-    _vip_price(engine, 7_000)
     customer_id = _customer(client)
-    put_in_type(engine, customer_id, make_type(engine, is_vip=True))
+    vip_type = make_type(engine, is_vip=True)
+    price_type(engine, variety_id, vip_type, 7_000)
+    put_in_type(engine, customer_id, vip_type)
     _switches(engine, bulk=True, vip=False)
     assert _line_of(client, variety_id, customer_id)["pricing_rule"] == "bulk"
 
     _switches(engine, bulk=True, vip=True)
     line = _line_of(client, variety_id, customer_id)
 
-    assert (line["pricing_rule"], line["price_per_gram"]) == ("vip", 7_000)
+    assert (line["pricing_rule"], line["price_per_gram"]) == ("type", 7_000)
 
 
 def test_switching_a_rule_off_leaves_a_recorded_sale_as_it_was(
@@ -639,7 +703,10 @@ def test_switching_a_rule_off_leaves_a_recorded_sale_as_it_was(
     variety_id = _variety_with_bulk(client)
     created = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "50"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "50"}],
+        },
     ).json()
 
     _switches(engine, bulk=False, vip=False)
@@ -665,7 +732,10 @@ def test_a_sale_line_on_an_archived_variety_is_refused_as_gone_and_writes_nothin
 
     response = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": archived, "quantity": "10"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": archived, "quantity": "10"}],
+        },
     )
 
     assert response.status_code == 404
@@ -680,11 +750,17 @@ def test_a_sale_of_a_variety_archived_afterwards_can_still_be_deleted_and_assign
     customer_id = _customer(client)
     sale_id = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        },
     ).json()["id"]
     other_sale_id = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "5"}]},
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "5"}],
+        },
     ).json()["id"]
     archive_by_hand(engine, variety_id)
 

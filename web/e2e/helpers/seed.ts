@@ -5,6 +5,7 @@
  * address bar after each save.
  */
 
+import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './labels.js'
 import {
   CUSTOMER,
   CUSTOMER_NEW,
@@ -14,6 +15,7 @@ import {
   STOCK_ENTRY_NEW,
   VARIETIES,
   VARIETY,
+  VARIETY_NEW,
   WITHDRAWAL,
   pathTo,
   withdrawalNewFor,
@@ -23,6 +25,7 @@ import { newBusinessInvitationUrl } from '../backend.js'
 import { expectPath } from './url.js'
 import { expectToast } from './toast.js'
 import { fillSaleLine } from './sale.js'
+import { pickWithdrawalReason } from './stockVariety.js'
 import { leaveOnboarding } from './signup.js'
 import { uniqueTag } from './unique.js'
 
@@ -39,9 +42,9 @@ export interface Records {
 
 export async function signUp(page: Page, label: string): Promise<void> {
   await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Business name').fill(`Flores de ${label} ${uniqueTag()}`)
-  await page.getByLabel('Email address').fill(`duena-${label}-${uniqueTag()}@example.com`)
-  await page.getByLabel('Password').fill(PASSWORD)
+  await page.getByLabel('Business name', { exact: true }).fill(`Flores de ${label} ${uniqueTag()}`)
+  await page.getByLabel('Email address', { exact: true }).fill(`duena-${label}-${uniqueTag()}@example.com`)
+  await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
   await page.getByRole('button', { name: 'Create the business' }).click()
   // A new business lands in the Onboarding; this spec is about something else.
   await leaveOnboarding(page)
@@ -57,9 +60,11 @@ async function idAt(page: Page, template: string): Promise<number> {
 
 export async function seedRecords(page: Page, customerName: string): Promise<Records> {
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await page.getByRole('link', { name: 'New product' }).click()
+  await expectPath(page, VARIETY_NEW)
+  // The exact fill below is what waits for the form: an earlier screen's "Edit name" button is not a "Name" field.
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   const variety = await idAt(page, VARIETY)
   await page.getByRole('link', { name: 'New price' }).click()
@@ -67,7 +72,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
   await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Name').fill(customerName)
+  await page.getByLabel('Name', { exact: true }).fill(customerName)
   await page.getByRole('button', { name: 'Save and use' }).click()
   const customer = await idAt(page, CUSTOMER)
   await page.getByRole('link', { name: `New sale to ${customerName}` }).click()
@@ -77,9 +82,9 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
   const sale = await idAt(page, SALE)
 
   await page.goto(STOCK_ENTRY_NEW)
-  await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
-  await page.getByLabel('Total cost').fill('45000')
+  await page.getByLabel('Grams', { exact: true }).fill('50')
+  await pickStockVariety(page, 'Rosa')
+  await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill('45000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
   await page.goto(STOCK)
   await page.getByRole('link', { name: 'Edit' }).click()
@@ -87,7 +92,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
 
   await page.goto(withdrawalNewFor(variety))
   await page.getByLabel('Grams 1', { exact: true }).fill('1')
-  await page.getByRole('button', { name: 'Marketing', exact: true }).click()
+  await pickWithdrawalReason(page, 'Marketing')
   await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
   await page.goto(pathTo(VARIETY, { id: variety }))
   await page.locator('.fila-entrada__enlace', { hasText: 'Marketing' }).click()
@@ -95,3 +100,5 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
 
   return { variety, customer, sale, entry, withdrawal, customerName }
 }
+
+import { pickStockVariety } from './stockVariety.js'

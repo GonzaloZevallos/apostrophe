@@ -8,6 +8,7 @@ import './styles/app.css'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
+import { fontsReady } from './fontsReady'
 import { bootLanguage, startLanguage } from './i18n/language'
 import { startKeepFocusVisible } from './shell/keepFocusVisible'
 import { startAutomatic } from './theme'
@@ -29,6 +30,9 @@ startKeepFocusVisible()
 // awaited before the first render so Entrar never flashes in English. A failed or slow chunk
 // ends in English (`startLanguage` never rejects), so the page always renders.
 if (bootLanguage !== 'en') await startLanguage()
+
+// The first screen is laid out in Geist, not in the fallback face it would swap out of.
+await fontsReady(document.fonts)
 
 createRoot(root).render(
   <StrictMode>

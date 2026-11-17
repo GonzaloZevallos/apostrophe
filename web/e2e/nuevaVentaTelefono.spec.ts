@@ -10,6 +10,7 @@
  * before merge (ADR-0028).
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
@@ -39,9 +40,9 @@ async function box(locator: Locator): Promise<Box> {
 async function signInWithAPricedVariety(page: Page): Promise<void> {
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `telefono-${uniqueTag()}@example.com` })
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Name').fill('Jazmín')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await page.getByRole('link', { name: 'New product' }).click()
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Jazmín')
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await setPriceDate(page, '2000-01-01')
@@ -82,7 +83,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
     await expect(save).toBeInViewport()
 
     // Header: the date input is 16 px or more and 44 px or more tall.
-    const date = page.getByLabel('Date')
+    const date = page.getByLabel('Date', { exact: true })
     expect(await date.evaluate((node) => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(16)
     expect((await box(date)).height).toBeGreaterThanOrEqual(44)
 
@@ -96,7 +97,7 @@ test('the form is three zones at every phone width: footer in view, header fixed
     const header = page.locator('.nueva-venta__cabecera')
     const before = await box(header)
     for (let line = 0; line < 4; line += 1) {
-      await page.getByRole('button', { name: 'Add another variety' }).click()
+      await page.getByRole('button', { name: 'Add another product' }).click()
     }
     const scroller = page.locator('.nueva-venta__disposicion')
     await scroller.evaluate((node) => {
@@ -129,7 +130,7 @@ test('with the viewport shortened the footer stays in view, and the keyboard fla
 
   await page.setViewportSize({ width: 375, height: 380 })
   await expect(save).toBeInViewport()
-  await expect(page.getByLabel('Date')).toBeInViewport()
+  await expect(page.getByLabel('Date', { exact: true })).toBeInViewport()
 
   // Headless Chromium has no on-screen keyboard: the flag the visual-viewport hook sets is
   // set by hand, to see what the stylesheet does under it.

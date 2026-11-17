@@ -70,7 +70,7 @@ export default function A({ v }: { v: string }) {
 
 test('a helper function of the same file, ignoring the literals it compares with', () => {
   const result = scan(`function railClassName(group: string, active: boolean): string {
-  const base = group === 'more' ? 'item item--secundario' : 'item'
+  const base = group === 'secondary' ? 'item item--secundario' : 'item'
   return active ? \`\${base} item--activo\` : base
 }
 export default function A() {

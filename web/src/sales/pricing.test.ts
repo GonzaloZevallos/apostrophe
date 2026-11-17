@@ -9,6 +9,7 @@ import {
   type PricingRule,
   fromHundredths,
   hundredthsOfApiGrams,
+  paymentChoiceOf,
   priceLine,
   saleTotals,
   toHundredths,
@@ -22,6 +23,10 @@ const ERRORS = {
   NoPriceThatDay,
 } as const
 
+/** The matrix still names the type rule `vip`; a line priced by a type's price is `type` now
+ * (the same mapping `tests/sales/test_pricing_matrix.py` makes). */
+const storedRule = (rule: string): string => (rule === 'vip' ? 'type' : rule)
+
 // The pricing matrix (`pricing-matrix.json`) is shared with `tests/sales/test_pricing_matrix.py`:
 // a rule change in the domain that isn't mirrored here breaks one side or the other.
 describe('priceLine, against the shared pricing matrix', () => {
@@ -33,7 +38,7 @@ describe('priceLine, against the shared pricing matrix', () => {
         expect(() => priceLine(input)).toThrow(ErrorClass)
       } else {
         const result = priceLine(input)
-        expect(result.rule).toBe(line.expect.rule as PricingRule)
+        expect(result.rule).toBe(storedRule(line.expect.rule) as PricingRule)
         expect(result.pricePerGram).toBe(line.expect.pricePerGram)
         expect(result.lineTotal).toBe(line.expect.lineTotal)
       }
@@ -46,7 +51,7 @@ describe('saleTotals, against the shared pricing matrix', () => {
     test(entry.name, () => {
       const results = entry.lines.map((line) => priceLine(line as LineInput))
       if ('expectRules' in entry) {
-        expect(results.map((r) => r.rule)).toEqual(entry.expectRules)
+        expect(results.map((r) => r.rule)).toEqual((entry.expectRules ?? []).map(storedRule))
       }
       const priced = results.map((result, i) => {
         const input = entry.lines[i] as LineInput
@@ -98,10 +103,12 @@ describe('fromHundredths', () => {
   })
 })
 
+const NO_PAYMENT = { payState: null, method: null, total: 0 } as const
+
 describe('validateSale', () => {
   test('flags a line with no price that day, naming the variety from the screen\'s own line', () => {
     const errors = validateSale({
-      method: null,
+      ...NO_PAYMENT,
       hasCustomer: false,
       lines: [
         { id: 'a', varietyName: 'Sativa', gift: false, specialPrice: null, quote: null },
@@ -114,7 +121,7 @@ describe('validateSale', () => {
 
   test('does not flag a gift line or a special-price line with no quote', () => {
     const errors = validateSale({
-      method: null,
+      ...NO_PAYMENT,
       hasCustomer: false,
       lines: [
         { id: 'a', varietyName: 'Sativa', gift: true, specialPrice: null, quote: null },
@@ -125,20 +132,55 @@ describe('validateSale', () => {
   })
 
   test('flags Debiendo with no customer', () => {
-    const errors = validateSale({ method: 'owing', hasCustomer: false, lines: [] })
+    const errors = validateSale({ ...NO_PAYMENT, payState: 'owing', hasCustomer: false, lines: [] })
     expect(errors).toEqual([
       { field: 'customer', message: 'To leave it owing, pick a customer' },
     ])
   })
 
   test('does not flag Debiendo once a customer is chosen', () => {
-    const errors = validateSale({ method: 'owing', hasCustomer: true, lines: [] })
+    const errors = validateSale({ ...NO_PAYMENT, payState: 'owing', hasCustomer: true, lines: [] })
     expect(errors).toEqual([])
   })
 
-  test('does not flag cash or transfer, with or without a customer', () => {
-    expect(validateSale({ method: 'cash', hasCustomer: false, lines: [] })).toEqual([])
-    expect(validateSale({ method: null, hasCustomer: false, lines: [] })).toEqual([])
+  test('does not flag a Paid sale with a method, or a sale with no state chosen', () => {
+    expect(validateSale({ payState: 'paid', method: 1, total: 500, hasCustomer: false, lines: [] })).toEqual([])
+    expect(validateSale({ ...NO_PAYMENT, hasCustomer: false, lines: [] })).toEqual([])
+  })
+
+  test('flags Paid above $0 with no method, on the method field', () => {
+    const errors = validateSale({ payState: 'paid', method: null, total: 500, hasCustomer: false, lines: [] })
+    expect(errors).toEqual([{ field: 'method' }])
+  })
+
+  test('a Paid sale of $0 needs no method', () => {
+    expect(validateSale({ payState: 'paid', method: null, total: 0, hasCustomer: false, lines: [] })).toEqual([])
+  })
+
+  test('a method held under Owing is not a missing method', () => {
+    expect(validateSale({ payState: 'owing', method: null, total: 500, hasCustomer: true, lines: [] })).toEqual([])
+  })
+})
+
+describe('paymentChoiceOf', () => {
+  test('Owing is owing, whatever method is still held', () => {
+    expect(paymentChoiceOf('owing', null, 500)).toEqual({ kind: 'owing' })
+    expect(paymentChoiceOf('owing', 1, 500)).toEqual({ kind: 'owing' })
+  })
+
+  test('Paid sends the chosen method', () => {
+    expect(paymentChoiceOf('paid', 1, 500)).toEqual({ kind: 'paid', payment_method_id: 1 })
+    expect(paymentChoiceOf('paid', 2, 500)).toEqual({ kind: 'paid', payment_method_id: 2 })
+  })
+
+  test('Paid with no method sends nothing (allowed only at $0)', () => {
+    expect(paymentChoiceOf('paid', null, 0)).toBeNull()
+    expect(paymentChoiceOf('paid', null, 500)).toBeNull()
+  })
+
+  test('no state chosen sends nothing, even with a method held', () => {
+    expect(paymentChoiceOf(null, null, 500)).toBeNull()
+    expect(paymentChoiceOf(null, 2, 500)).toBeNull()
   })
 })
 
@@ -157,5 +199,44 @@ describe('hundredthsOfApiGrams', () => {
 
   test('rejects a shape toHundredths itself would reject', () => {
     expect(() => hundredthsOfApiGrams(Number.NaN)).toThrow()
+  })
+})
+
+// The type candidate, one case per way the preview can go (ADR-0059): the tie order is type,
+// bulk, list, so the preview names the same rule the save records.
+describe('priceLine, the Customer type candidate', () => {
+  const BOTH_ON = { bulk: true, vip: true }
+  const quote = (typePrice: number | null) => ({
+    listPrice: 12000,
+    bulk: { price: 10000, minimumHundredths: 10000 },
+    vipPrice: typePrice,
+  })
+  const price = (over: Partial<LineInput>) =>
+    priceLine({
+      gift: false,
+      specialPrice: null,
+      customerIsVip: true,
+      settings: BOTH_ON,
+      quote: quote(9000),
+      gramsHundredths: 5000,
+      ...over,
+    })
+
+  test('the type price is lowest: the line is the type', () => {
+    expect(price({})).toMatchObject({ rule: 'type', pricePerGram: 9000 })
+  })
+
+  test('the type price ties with bulk at the minimum: the line is the type', () => {
+    expect(price({ quote: quote(10000), gramsHundredths: 10000 })).toMatchObject({ rule: 'type', pricePerGram: 10000 })
+  })
+
+  test('the type price above bulk at a large quantity: the line is bulk', () => {
+    expect(price({ quote: quote(11000), gramsHundredths: 15000 })).toMatchObject({ rule: 'bulk', pricePerGram: 10000 })
+  })
+
+  test('a customer with no type, no customer, or the switch off: priced as list or bulk', () => {
+    expect(price({ customerIsVip: false })).toMatchObject({ rule: 'list', pricePerGram: 12000 })
+    expect(price({ settings: { bulk: true, vip: false } })).toMatchObject({ rule: 'list', pricePerGram: 12000 })
+    expect(price({ quote: quote(null) })).toMatchObject({ rule: 'list', pricePerGram: 12000 })
   })
 })

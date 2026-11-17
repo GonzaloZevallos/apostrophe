@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-15
+summary: "los comandos del operador reciben su reloj; las pruebas nunca leen la hora real"
 ---
 
 # The operator commands take their clock; tests never read the wall clock

@@ -13,7 +13,7 @@
 import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { watchConsole } from './console.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -34,7 +34,7 @@ function aYearBefore(iso: string): string {
 
 async function registerCustomer(page: Page, name: string): Promise<void> {
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Name').fill(name)
+  await page.getByLabel('Name', { exact: true }).fill(name)
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
@@ -46,7 +46,7 @@ async function sellOnCredit(page: Page, name: string, grams: string, older = fal
   await page.getByRole('link', { name: `New sale to ${name}` }).click()
   await expectPath(page, SALE_NEW)
   if (older) {
-    const date = page.getByLabel('Date')
+    const date = page.getByLabel('Date', { exact: true })
     await date.fill(aYearBefore(await date.inputValue()))
   }
   // An older date has no list price, so the older sale carries its own, $1.000 a gram too: the line's total.
@@ -78,9 +78,9 @@ for (const viewport of VIEWPORTS) {
     })
 
     await page.goto(VARIETIES)
-    await page.getByRole('link', { name: 'New variety' }).click()
-    await page.getByLabel('Name').fill('Rosa')
-    await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+    await page.getByRole('link', { name: 'New product' }).click()
+    await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
+    await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
     await page.getByRole('link', { name: /Rosa/ }).click()
     await page.getByRole('link', { name: 'New price' }).click()
     await page.getByLabel(/^List price/).fill('1000')
@@ -115,8 +115,8 @@ for (const viewport of VIEWPORTS) {
 
     // "All" fills the whole balance in one tap, and the payment is saved.
     await page.getByRole('button', { name: 'All: $ 5.000' }).click()
-    await expect(page.getByLabel('Amount')).toHaveValue('$ 5.000')
-    await page.getByRole('radio', { name: 'Cash' }).check()
+    await expect(page.getByLabel('Amount', { exact: true })).toHaveValue('$ 5.000')
+    await choosePaymentMethod(page, 'Cash')
     await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
     await expectPath(page, CUSTOMERS)
 
@@ -163,3 +163,4 @@ for (const viewport of VIEWPORTS) {
     expect(consoleMessages).toEqual([])
   })
 }
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'

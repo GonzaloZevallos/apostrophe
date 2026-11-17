@@ -253,4 +253,4 @@ def test_a_switch_turned_on_between_the_plan_and_the_write_still_succeeds_with_t
     assert sale["total"] == 8000
     lines = sale["lines"]
     assert isinstance(lines, list)
-    assert lines[0]["pricing_rule"] == "vip"
+    assert lines[0]["pricing_rule"] == "type"

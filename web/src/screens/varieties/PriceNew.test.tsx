@@ -45,7 +45,7 @@ test('the date starts as today and a save posts the amounts, goes back and toast
   await user.type(screen.getByLabelText(/^List price/), '12000')
   await user.click(screen.getByRole('button', { name: 'Save the price' }))
 
-  expect(await screen.findByText('Variety page')).toBeInTheDocument()
+  expect(await screen.findByText('Product page')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(VARIETY_PATH)
   expect(await screen.findAllByText('Price saved')).toHaveLength(1)
   expect(writes(fetchMock)).toEqual([
@@ -145,7 +145,7 @@ test('an untouched form closes at once, back to the page that opened it', async 
 
   await user.click(await screen.findByRole('button', { name: 'Close' }))
 
-  expect(await screen.findByText('Variety page')).toBeInTheDocument()
+  expect(await screen.findByText('Product page')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(VARIETY_PATH)
 })
 
@@ -155,7 +155,7 @@ test('with no history, "Close" goes to the variety\'s page', async () => {
 
   await user.click(await screen.findByRole('button', { name: 'Close' }))
 
-  expect(await screen.findByText('Variety page')).toBeInTheDocument()
+  expect(await screen.findByText('Product page')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(VARIETY_PATH)
 })
 
@@ -175,7 +175,7 @@ test('closing with something typed asks first; staying keeps it, discarding save
   await user.click(screen.getByRole('button', { name: 'Close' }))
   await user.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
 
-  expect(await screen.findByText('Variety page')).toBeInTheDocument()
+  expect(await screen.findByText('Product page')).toBeInTheDocument()
   expect(writes(fetchMock)).toEqual([])
 })
 
@@ -186,7 +186,7 @@ test('a variety that is gone says "That is gone." and goes back to Variedades', 
   )
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Products' })).toBeInTheDocument()
 })
 
 test('a variety that vanishes while saving shows the gone screen', async () => {
@@ -409,4 +409,27 @@ test('another day counts as typed: leaving asks first', async () => {
   await user.click(screen.getByRole('button', { name: 'Close' }))
 
   expect(await screen.findByText('Discard the price?')).toBeInTheDocument()
+})
+
+test('the "VIP price" field shows with Customer types on and a VIP type', async () => {
+  await renderOpened(api())
+
+  expect(await screen.findByLabelText(/^VIP price/)).toBeInTheDocument()
+})
+
+test('the "VIP price" field is hidden in a business without its VIP type, and nothing about it is sent', async () => {
+  const user = userEvent.setup()
+  const { fetchMock } = await renderOpened(
+    api({
+      'GET /api/customer-types': () => jsonResponse(200, [{ id: 3, name: 'Amigos', icon: 'heart', is_vip: false }]),
+      'POST /api/products/1/prices': () => CREATED.clone(),
+    }),
+  )
+
+  await user.type(await screen.findByLabelText(/^List price/), '12000')
+  expect(screen.queryByLabelText(/^VIP price/)).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Save the price' }))
+
+  await screen.findByText('Price saved')
+  expect(writes(fetchMock)[0]?.body).toEqual({ effective_from: ME.today, list_price: 12000 })
 })

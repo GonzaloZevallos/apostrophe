@@ -466,7 +466,7 @@ def test_a_browser_s_own_accept_header_gets_the_shell(served_client: TestClient)
 def test_a_double_trailing_slash_on_a_legacy_path_is_not_redirected(
     served_client: TestClient,
 ) -> None:
-    for path in ("/mas/", "/gastos/"):
+    for path in ("/gastos/", "/analisis/"):
         response = _request(served_client, "GET", path + "/", HTML)
 
         assert response.status_code != 308, path

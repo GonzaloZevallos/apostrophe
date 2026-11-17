@@ -1,0 +1,52 @@
+"""Database naming (CODING_STANDARDS §11): `sale.sale_date` becomes
+`sold_on` and `stock_entry.entry_date` becomes `entered_on`.
+
+Revision ID: 0026
+Revises: 0025
+
+SQLite renames a column in place (`RENAME COLUMN` rewrites only the schema text), so no
+table is rebuilt and no row is copied. Only one index covers a renamed column, 0016's
+`ix_sale_business_id_sale_date`; it is dropped before the rename and created again under
+the convention name after it (`op.f` spells the final name). `stock_entry` has no index on
+its date. The downgrade is the exact mirror and restores the 0025 schema, names included.
+
+The downgrade turns foreign keys off before its first write, as 0023 and 0025 do. It
+rebuilds nothing itself, but it is the first step of a walk down from head, and SQLite
+ignores `PRAGMA foreign_keys` once a write transaction is open: without this, the
+rebuild of `sale` in 0023's downgrade runs with enforcement on and fails.
+"""
+
+from collections.abc import Sequence
+
+from alembic import op
+
+revision: str = "0026"
+down_revision: str | None = "0025"
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
+
+
+def upgrade() -> None:
+    op.drop_index(op.f("ix_sale_business_id_sale_date"), table_name="sale")
+    op.execute("ALTER TABLE sale RENAME COLUMN sale_date TO sold_on")
+    op.create_index(
+        op.f("ix_sale_business_id_sold_on"), "sale", ["business_id", "sold_on"], unique=False
+    )
+    op.execute("ALTER TABLE stock_entry RENAME COLUMN entry_date TO entered_on")
+
+
+def downgrade() -> None:
+    raw = op.get_bind().connection.dbapi_connection
+    assert raw is not None
+    # Deliberately not put back, unlike 0023 and 0025: a walk down from head reaches 0023's
+    # rebuild of `sale` next, and this step is the only point before alembic's first write
+    # where the pragma still takes effect. Putting it back here turns enforcement on again
+    # for that rebuild (test_0013_archived_variety walks it). Every new connection sets the
+    # pragma on again in `app/db.py`.
+    raw.execute("PRAGMA foreign_keys=OFF")
+    op.execute("ALTER TABLE stock_entry RENAME COLUMN entered_on TO entry_date")
+    op.drop_index(op.f("ix_sale_business_id_sold_on"), table_name="sale")
+    op.execute("ALTER TABLE sale RENAME COLUMN sold_on TO sale_date")
+    op.create_index(
+        op.f("ix_sale_business_id_sale_date"), "sale", ["business_id", "sale_date"], unique=False
+    )

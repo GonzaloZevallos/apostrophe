@@ -3,13 +3,15 @@
 import type { Locator, Page } from '@playwright/test'
 import { resolvePlaceholders, type RegistryScreen } from '../../src/mobile-standard/registry.ts'
 import type { WalkStep } from '../../src/mobile-standard/states.ts'
+import { resolveStep } from '../../src/i18n/step.ts'
+import type { Bundle } from '../../src/i18n/resolve.ts'
 import { judgeLanguage } from '../../src/mobile-standard/language.ts'
 import { mobileLanguage } from '../env.js'
 
 export const STEP_TIMEOUT_MS = 3_000
 
 /** What the walk visits: a registry screen, or a state with steps of its own. */
-export interface WalkScreen extends Omit<RegistryScreen, 'steps'> {
+export interface WalkScreen extends Omit<RegistryScreen, 'steps' | 'walkedAs'> {
   steps: readonly WalkStep[]
 }
 
@@ -25,7 +27,8 @@ function clickTarget(page: Page, name: string): Locator {
 
 /** A fill types into an input or textarea, and picks the option with that label in a select. */
 async function fill(page: Page, label: string, value: string, timeout: number): Promise<void> {
-  const field = page.getByLabel(label).first()
+  // Exact, so "Phone" is not also the "Phone country" field, which comes first on a phone. The evaluate below waits for it.
+  const field = page.getByLabel(label, { exact: true })
   const isSelect = await field.evaluate((element) => element.tagName === 'SELECT', undefined, { timeout })
   if (isSelect) await field.selectOption({ label: value }, { timeout })
   else await field.fill(value, { timeout })
@@ -42,7 +45,7 @@ async function run(page: Page, step: WalkStep, facts: Facts): Promise<void> {
   } else if ('click' in step) await clickTarget(page, step.click).click(options)
   else if ('press' in step) await page.getByRole('button', { name: step.press, exact: true }).click(options)
   else if ('select' in step) {
-    await page.getByLabel(step.select.label).first().selectOption({ index: step.select.index }, options)
+    await page.getByLabel(step.select.label, { exact: true }).selectOption({ index: step.select.index }, options)
   } else if ('fill' in step) {
     await fill(page, step.fill.label, resolvePlaceholders(step.fill.value, facts), STEP_TIMEOUT_MS)
   } else if ('wait' in step) await page.getByText(step.wait, { exact: true }).first().waitFor(options)
@@ -82,11 +85,11 @@ export async function open(page: Page, screen: WalkScreen, facts: Facts): Promis
   await assertLanguage(page)
 }
 
-/** Runs the registry's steps; answers whether every one was reachable. */
-export async function runSteps(page: Page, screen: WalkScreen, facts: Facts): Promise<boolean> {
+/** Runs the registry's steps, each resolved against `bundle` first (a key names its English text); answers whether every one was reachable. */
+export async function runSteps(page: Page, screen: WalkScreen, facts: Facts, bundle: Bundle): Promise<boolean> {
   try {
     for (const step of screen.steps) {
-      await run(page, step, facts)
+      await run(page, resolveStep(step, bundle), facts)
       await settle(page)
     }
     return true

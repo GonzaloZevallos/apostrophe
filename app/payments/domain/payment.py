@@ -18,11 +18,11 @@ from typing import ClassVar
 from app.payments.domain.settlement import (
     LaterPaymentEntry,
     Ledger,
-    PaymentMethod,
     Split,
     Standing,
     settle,
 )
+from app.shared.payment_method import PaymentMethodId
 
 
 class PaymentAmountInvalid(ValueError):
@@ -75,7 +75,7 @@ class NewPayment:
 
     paid_on: date
     amount: int
-    method: PaymentMethod | None
+    method: PaymentMethodId | None
 
     def __post_init__(self) -> None:
         if self.amount <= 0:

@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-04
+summary: "Render, Turso y UptimeRobot reemplazan la máquina virtual anterior"
 ---
 
 # Render, Turso and UptimeRobot replace the Oracle VM, Caddy, DuckDNS, Litestream and Backblaze B2

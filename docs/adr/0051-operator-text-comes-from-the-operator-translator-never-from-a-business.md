@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-24
+summary: "el texto del operador viene del traductor del operador"
 ---
 
 # Operator text comes from `operator_translator`, never from a business's language

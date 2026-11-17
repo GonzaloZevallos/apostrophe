@@ -1,522 +1,740 @@
-# Navigation
-
-The app's one structure for a business: the tabs on the phone, the sidebar on a computer, More, Settings, the one rule that gives every screen its chrome and its way back, which place is marked, the routes and their redirects, the phone layout (fixed bar, floating "+ New sale", forms as sheets), where a screen starts and where back returns to on the page, and the first run (the Onboarding for a brand-new business, the first-run checklist for a business that existed before it, the after-import notice for an imported one). It says where every capability is reached from. What each capability does stays in its own file; nothing here changes a rule of pricing, settlement, stock, the catalog, isolation or feedback. Seen only by the session's business (ADR-0004).
-
 ## Jobs
 
-**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often: record a sale, see who owes and collect, send the catalog, record incoming stock. Each should be one or two taps away. Everything about one variety should be in one place, every business setting in one other place, and expenses and analysis within reach for the weekly or monthly look. **So I can** get back to the customer instead of hunting through menus, and never wonder which of several screens holds what I need.
+**Cuando** manejo mi negocio desde el celular entre pedidos o en medio de un chat con un cliente, varias veces al día, **quiero** la app organizada según lo que de verdad hago y cada cuánto: registrar una venta, ver quién debe y cobrar, mandar el Catalog, registrar el stock que entra. Cada cosa tiene que estar a uno o dos toques. Todo lo de un producto tiene que estar en un solo lugar, cada configuración del negocio en otro lugar único, y las Expenses y el análisis a mano para la mirada semanal o mensual. **para poder** volver con el cliente en vez de buscar entre menús, sin preguntarme nunca cuál de varias pantallas tiene lo que necesito.
 
-This is the navigation job underneath every capability's own "from my phone" job (sales, payments, stock, catalog, expenses). It replaces none of them. The computer is the same job on a bigger screen. The protagonist is the seller; the operator's tools stay outside the app (accounts.md).
+Este es el job de navegación que está debajo del job propio "desde mi celular" de cada capacidad (ventas, pagos, stock, Catalog, Expenses). No reemplaza a ninguno. La computadora es el mismo job en una pantalla más grande. El protagonista es quien vende; las herramientas del **Operator** quedan fuera de la app (accounts.md).
 
-**When** I open the app between orders or at the end of the day, **I want** to see what I sold today, who owes me and what is running out, and act on it at once (collect from a debtor, open a variety that is running low, fix what a notice tells me), **so I can** get back to the customer without going through Customers and Varieties one by one or doing any arithmetic.
+**Cuando** abro la app entre pedidos o al final del día, **quiero** ver qué vendí hoy, quién me debe y qué se está terminando, y actuar en el acto (cobrarle a un deudor, abrir un producto que está bajo, arreglar lo que me dice un aviso), **para poder** volver con el cliente sin recorrer Customers y Products uno por uno ni hacer cuentas.
 
-This refines the navigation job and results.md's panel job for Home (GH-45); it is not a new job. Served here by "Collect" on Home's debtor rows, the first-run checklist and the after-import notice, each leading to its fix.
+Esto afina el job de navegación y el job del **Panel** de results.md para Home (GH-45); no es un job nuevo. Lo sirven acá "Collect" en las filas de deudores de Home y el aviso de **Out of date** del Pinned catalog, cada uno llevando a su arreglo. Home no muestra ningún elemento de primer uso (results.md).
 
-**When** a customer asks me what I have or how much something costs, or flower comes in, runs out or gets a new price, **I want** to open one variety and find everything about it on its own page, the list to tell me at a glance what I have, what is running out and what I can't sell, and today's catalog one tap from that list, ready to share from my phone, **so I can** answer the customer, record what came in and send an up-to-date catalog without moving between screens, and my customers never get a stale price or a variety I can't sell.
+**Cuando** un cliente me pregunta qué tengo o cuánto sale algo, o entra Stock, se termina o cambia de precio, **quiero** abrir un producto y encontrar todo lo suyo en su propia página, que la lista me diga de un vistazo qué tengo, qué se está terminando y qué no puedo vender, y el Catalog de hoy a un toque de esa lista, listo para compartir desde el celular, **para poder** contestarle al cliente, registrar lo que entró y mandar un Catalog al día sin moverme entre pantallas, y que mis clientes nunca reciban un precio viejo ni un producto que no puedo vender.
 
-This refines the navigation job for varieties, stock and the catalog (varieties.md); it is not a new job.
+Esto afina el job de navegación para productos, stock y el Catalog (varieties.md); no es un job nuevo.
 
-**When** a variety I loaded by mistake, or one I no longer work with, keeps showing in my lists and pickers, **I want** to take it out from my phone in a few taps, deleting it if it never moved and archiving it if it has history, **so** my lists show only what I still sell, no past sale, stock, cost or profit figure changes, and I can bring it back exactly as it was if I start selling it again.
+**Cuando** un producto que cargué por error, o uno con el que ya no trabajo, sigue apareciendo en mis listas y selectores, **quiero** sacarlo desde el celular en pocos toques, eliminándolo si nunca se movió y archivándolo si tiene historial, **para que** mis listas muestren solo lo que todavía vendo, no cambie ninguna cifra pasada de venta, stock, costo o Profit, y pueda traerlo de vuelta exactamente como estaba si vuelvo a venderlo.
 
-This refines the varieties and navigation job for the end of a variety's life (varieties.md); it is not a new job. Served here by the Archived card and the archived variety's page.
+Esto afina el job de productos y navegación para el fin de la vida de un producto (varieties.md); no es un job nuevo. Lo sirven acá la tarjeta Archived y la página del **Archived product**.
 
-**When** I need to change how my business is set up (rename it, bring in a partner, connect or switch the Telegram bot, edit the catalog's header and footer, manage my expense categories, switch to dark, change my password or log out), **I want** every business-wide setting in one place, each in its own short screen, **so I can** change it in a few taps from my phone and get back to the customer, without wondering which screen holds it.
+**Cuando** necesito cambiar cómo está configurado mi negocio (renombrarlo, sumar un socio, conectar o cambiar el bot de Telegram, editar el **Catalog header and footer**, manejar mis **Expense category**s y mis **Payment method**s, pasar a oscuro, cambiar mi contraseña o cerrar sesión), **quiero** cada configuración de todo el negocio en un solo lugar, cada una en su propia pantalla corta, **para poder** cambiarla en pocos toques desde el celular y volver con el cliente, sin preguntarme qué pantalla la tiene.
 
-Settings is rare and deliberate; the daily jobs never need it. It refines the navigation job's "every business setting in one other place". Settings that belong to one variety live on its page and are not part of this job.
+**Settings** es poco frecuente y deliberado; los jobs diarios nunca lo necesitan. Afina el "cada configuración del negocio en otro lugar único" del job de navegación. Las configuraciones que son de un solo producto viven en su página y no son parte de este job.
 
-**When** I move between screens between orders or mid-chat with a customer (Varieties and a variety's page, its prices and entries, a stock entry, a customer's card, Record payment), **I want** every screen to give me the same way out and back, and my old links to still open the right screen, **so I can** get back to the customer without hunting, losing my place or tapping back twice.
+**Cuando** un cliente me paga, en la venta o más tarde, **quiero** registrar cómo me pagó con los medios que mi negocio de verdad acepta, nombrados a mi manera, **para** que cada pago me diga después cómo me llegó la plata, sin que la app decida por mí que la plata es efectivo o transferencia. (Parte 24 de GH-318: la lista vive en payment-methods.md; acá la sirve el grupo Payments and expenses de Settings, a 3 toques desde cualquier pantalla principal.)
 
-This refines the navigation job and criterion 5; it is not a new job. Its protagonist is the seller, on the phone or a computer. Before it, the stock entry form said "Back" where every other form said "Close", a record that was gone left its parent twice in history so back took two taps, and Varieties and old paths behaved differently from the rest of the app on reload and redirect. The seller tapped back again or used the bar.
+**Cuando** me muevo entre pantallas entre pedidos o en medio de un chat con un cliente (Products y la página de un producto, sus precios y sus Stock entries, una **Stock entry**, la ficha de un cliente, Record payment), **quiero** que cada pantalla me dé la misma forma de salir y volver, y que mis links viejos sigan abriendo la pantalla correcta, **para poder** volver con el cliente sin buscar, sin perder mi lugar ni tocar atrás dos veces.
 
-GH-480 refines the same job for the page itself: a screen I arrive at starts at its top, and going back puts me where I was on the screen I left, as a phone app does. Before it, a new screen opened at the offset of the screen left behind, so a tab or a detail opened from far down a list landed in the middle of the new screen, and back left the seller wherever the browser happened to put them. It is not a new job; it is served by "Scroll on a change of screen (GH-480)" and criteria 21–23.
+Esto afina el job de navegación y el criterio 5; no es un job nuevo. Su protagonista es quien vende, en el celular o en una computadora. Antes, el formulario de Stock entry decía "Back" donde cualquier otro formulario decía "Close", un registro que ya no existía dejaba dos veces a su pantalla madre en el historial, así que volver llevaba dos toques, y Products y los paths viejos se comportaban distinto del resto de la app al recargar y al redirigir. Quien vendía tocaba atrás de nuevo o usaba la barra.
 
-**When** I take grams out of my own stock without selling them (to share at a party so people get to know the business, or for my own use), **I want** to record them from my phone in a few taps (date, varieties and grams, the reason), **so I can** keep stock right and see in Profit what promoting the business and my own consumption cost me, without recording a sale nobody made or an adjustment that reads as lost flower. (Served here by "Take from stock" in More, on Varieties and on a variety's page, at most 2 taps from any tab root; defined in stock.md.)
+GH-480 afina el mismo job para la página en sí: una pantalla a la que llego empieza arriba de todo, y volver me deja donde estaba en la pantalla que dejé, como hace una app de celular. Antes, una pantalla nueva se abría en el offset de la pantalla que quedaba atrás, así que una pestaña o un detalle abiertos desde muy abajo en una lista caían en el medio de la pantalla nueva, y volver dejaba a quien vendía donde el navegador lo pusiera. No es un job nuevo; lo sirven "Scroll al cambiar de pantalla (GH-480)" y los criterios 21–23.
 
-**When** I have just opened my business and it is still empty, **I want** to be walked through what it needs, one short step at a time, with defaults already filled in, **so I can** record my first sale the same day without hunting through Settings, Varieties and the catalog screen. (Served here by the Onboarding as a brand-new business's one first-run element, opened on accepting the invitation and from Home's notice; defined in onboarding.md.)
+**Cuando** saco gramos de mi propio stock sin venderlos (para compartir en una fiesta y que la gente conozca el negocio, o para consumo propio), **quiero** registrarlos desde el celular en pocos toques (fecha, productos y gramos, el motivo), **para poder** mantener el stock bien y ver en el **Profit** cuánto me costó promocionar el negocio y mi propio consumo, sin registrar una venta que nadie hizo ni un **Adjustment** que se lee como Stock perdido. (Lo sirve acá "Take from stock" en Products, junto a "+ Stock entry", y en la página de un producto, a 2 toques como máximo desde cualquier **Tab root**; definido en stock.md.)
 
-**When** I review a change to Home's first-run elements before approving it, **I want** the tests, the `/first-run` contract and the design capture to prove what navigation.md, results.md and ADR-0046 say in every state they can be in and in both themes, **so I can** approve from the evidence alone, without trusting partial checks or carrying open findings into the next task.
+**Cuando** necesito registrar una Expense, sacar Stock, ver cómo va el negocio o cambiar una configuración desde el celular, **quiero** encontrarlo donde ya vive ese contexto (Analysis en Home, "Take from stock" en la vista de stock de Products, Settings en el encabezado), **para** terminar en pocos toques sin pasar por un menú que lo junta todo.
 
-- Its protagonist is the maintainer, or the reviewer acting for them, as in gate.md, design-capture.md and onboarding.md criterion 6. The seller is affected only indirectly: a head nobody can approve holds up the work they are waiting for.
-- It refines criterion 12, results.md criteria 10–12 and ADR-0046; it is not a new product job and adds no product behaviour.
-- Its capture side (the `InicioHoyCompu` row) is design-capture.md's.
-- Before it (GH-45's follow-up): the agreement test reached `/first-run` only where the checklist shows, the shape of `checklist` outside the checklist kind was undecided, only the checklist test ran in both themes, and the Today capture showed a difference by construction.
+- Afina el job de navegación para el celular (GH-651, parte 2 de GH-560); no es un job nuevo de producto. Su protagonista es quien vende, en el celular, con poco tiempo, cuando algo acaba de pasar (pagó algo, sacó Stock) o quiere ver cómo va. No es navegar por la app, y el flujo diario (New sale, Collect) no cambia.
+- El dueño retiró la pantalla More el 2026-11-02 (`docs/design/redesign/registro-unificado.md`). Esta parte lleva a cabo esa decisión: la ubicación de cada entrada sigue los dibujos aprobados aunque otro lugar ahorrara un toque, y una duda de ubicación se juzga con **Drawing as guide**.
+- Antes: More era el único camino del celular a Settings, Analysis, Expenses, Add expense y Take from stock; quien vendía abría More, recorría una lista y tocaba.
+- Lo sirven "Los destinos que estaban en More (GH-651)" y los criterios 24–26.
 
-**When** I'm in the middle of serving a customer with my phone in hand, **I want** the app to behave like a phone app (the tabs and "+ New sale" within reach, a form that fills the screen with its main action under my thumb, and nothing I need hidden behind the keyboard or off the edge of the screen), **so I can** record a sale, a payment or stock without fighting the screen or losing what I typed.
+**Cuando** estoy en medio de una venta en el celular y me acuerdo de una Expense, **quiero** registrarla desde New sale y volver a mi venta como la dejé, **para** que las cuentas queden bien sin perder el pedido ni hacer esperar al cliente.
 
-- This is a quality bar on the navigation job and the BRIEF's phone jobs (record a sale, collect a payment, record stock, check Home), below 900 px only (GH-319). It is not a new job. The computer keeps every capability and gets nothing from it (Phone first).
-- Before it: the bar scrolled away with the page, "+ New sale" sat in the page flow, forms were overlays or routed pages whose action could end up below the fold or behind the keyboard, some tap targets and labels were too small, and some screens scrolled sideways. The seller scrolled back up, pinched or retried taps.
-- Served by "Phone layout (GH-319)" below and criteria 19 and 20. Analysis's content (its three tables and month selector) is GH-319's part 2; its chrome is covered here.
+- Es el job de sales.md y expenses.md (partes 3 y 4 de GH-725); acá lo sirve que el formulario de Expense quede a 2 toques de cada Tab root del celular ("+ New sale" → "Expense", criterio 1) y que, abierto desde New sale, sea una entrada del historial sobre New sale (Marco y camino de vuelta).
+- Antes: el formulario de Expense quedaba a 2 toques desde Home y a 3 desde Sales, Customers y Products, siempre por Analysis, y ningún documento lo decía como presupuesto.
+- "Como la dejé" vale solo dentro de la misma sesión: la venta en curso vive en memoria y una recarga la pierde (sales.md).
 
-Choosing which pricing rules the business uses (pricing-settings.md) belongs in Settings too, as the Prices group.
+**Cuando** reviso mi negocio en el celular y quiero pasar del Home de hoy al Analysis de mis días, semanas y meses, o volver, **quiero** cambiar con un solo toque del pulgar, **para poder** leer la vista que necesito y que atrás me siga llevando a donde venía, en vez de pasar por cada cambio que hice.
 
-Before this structure: the bar was Home · Sales · Customers · Stock · More; one variety was split across Stock, Varieties and Catalog; collecting a debt took four taps from Customers; settings were split across Business, Catalog and Expenses → Expense categories, and the bot was configured inside Catalog. Nothing of it is kept but the redirects from its paths, and, until Settings's Integrations and Catalog message exist, the temporary place for the bot and the header and footer reached from the catalog screen (catalog.md).
+- Afina el job de navegación para el celular (parte 1 de GH-723); no es un job nuevo de producto. Rige solo en el celular: en una computadora Analysis tiene su entrada en la barra lateral y el segmento no muestra nada.
+- Antes: cada cambio entre Home y Analysis agregaba una entrada al historial, así que atrás recorría los cambios anteriores en vez de salir del par; el objetivo táctil del segmento no tenía garantizados 44 px; y la opción marcada salía de comparar la dirección, no del registro de pantallas.
+- Lo sirven "El segmento Home | Analysis (GH-723)" y los criterios 27–29.
 
-Success criteria:
+**Cuando** estoy en la pestaña Home del celular y quiero pasar entre la vista en vivo y la vista de historia de mi negocio, **quiero** que las dos opciones se llamen como las vistas que abren, Home y Analysis, **para** saber dónde estoy y adónde me lleva la otra opción sin un "Today" encima de otro.
 
-1. **Daily jobs by frequency.** From any tab root on the phone:
-   - a sale opens in 1 tap ("+ New sale");
-   - the payment sheet with the customer already chosen opens in at most 2 taps (Customers → "Collect", or "Collect" on Home directly);
-   - the catalog screen opens in at most 2 taps (Varieties → "Send catalog");
-   - a stock entry opens in at most 2 taps (Varieties → "+ Stock entry");
-   - a stock withdrawal opens in at most 2 taps (More → "Take from stock", or Varieties → "Take from stock");
-   - an expense opens in at most 2 taps (More → "+ Add expense").
+- Afina el job de navegación para el celular (#733, separado de #731, parte de #495); no es un job nuevo de producto. Es un arreglo de claridad que decidió el dueño: no se reportó ningún error de quien vende, y ningún comportamiento cambia.
+- Antes: la primera opción del segmento decía "Today", la misma palabra que la primera pestaña del Panel justo debajo, así que quien vendía tenía que deducir por el contexto si "Today" era este día o la pantalla Home.
+- El segmento nunca elige un rango de fechas: eso es de las pestañas Today · Week · Month del Panel, que no cambian.
+- Lo sirven la opción "Home" de "El segmento Home | Analysis (GH-723)" y los criterios 30–32.
 
-   On a computer, each takes no more taps than on the phone.
-2. **Every business-wide setting in one place.** Name, users and join links, the pricing rules (Bulk price and VIP customers), the Telegram bot, the catalog header and footer, expense categories, appearance, and your account (password, log out) are all in Settings and nowhere else. Settings is reachable in at most 2 taps from any tab root: from the business avatar on Home and from More on the phone, from the sidebar's business row on a computer. Settings that belong to one variety live on the variety, and nowhere else. The one temporary exception is the bot and the header and footer, reached from the catalog screen until their Settings groups exist. The Onboarding's steps save these same settings through their owners and are not a second place for them (onboarding.md).
-3. **One variety, one page.** A variety's stock and its movements (entries and withdrawals), prices, low-stock warning and catalog attributes are seen and edited from its page. No fact is edited in two places under two names.
-4. **Nothing lost, nothing invented.** Everything a seller could do before stays reachable. The one deliberate exception is the customer channel, which is removed. No navigation entry or screen exists for something not yet built: no "coming soon", no promotions, automations or languages. No link points at a screen that does not exist.
-5. **One rule for chrome and back.** Every screen is one of three kinds: tab root, card or detail, form or sheet. Each kind gets its chrome by the rule. Back follows history, and the parent screen is the fallback.
-6. **Readable and accessible.** Tab labels are always visible. The active tab and every state are marked by shape or word, never color alone. The bar fits at 320 px with text at 130 %, measured in a real browser.
-7. **One structure, said once.** The product docs, CONTEXT.md, the design (`docs/product/design-system/pantallas/`, phone and computer) and `scripts/design/screens.json` state the same structure and routes.
-8. **Settings, group by group.** Each group is its own subscreen with "Close"; leaving with unsaved changes asks first, an untouched group closes at once. Renaming, "Invite a partner", the pricing switches, the bot (token, chats, Test it), the header and footer, categories (add, rename, remove, the refused removal included), Appearance, changing the password and logging out all work from the phone, and the end-to-end front run goes through every group.
-9. **Chrome by kind, everywhere.** Every screen, the Varieties screens included (the two-pane list, a variety's page, its "See all" lists of prices and entries, New price, New variety, "All entries" and the stock entry form), is exactly one kind with a parent. The stock entry form reads "Close", never "Back".
-10. **One move back.** Back or "Close" leaves a screen in one tap and never lands on the same screen twice in history, the "That is gone." exits and Record payment included. With no history, back goes to the screen the form, sheet or card belongs to.
-11. **Every address opens its screen.** A reload on any Varieties route, parameterised ones included, opens the screen and never the API's answer. Every old Spanish path, `/variedades/{id}` and `/mi-stock/entradas/{id}` included, answers a permanent redirect to its new route with the id carried across.
-12. **First run, one element at a time.** A brand-new business gets the Onboarding notice; only a business that existed before the Onboarding shipped sees the first-run checklist; an imported business sees the dismissable after-import notice; never two first-run elements at once, and each leads to its fix.
+**Cuando** abro Home en el celular entre pedidos, **quiero** que arriba de la pantalla se vea qué día estoy mirando y poder pasar entre Home y Analysis con un toque, **para poder** ver cómo va el día o el mes. No necesito que la app me diga en qué Business estoy, porque ya lo sé.
 
-Success criteria, reviewing the first run (GH-45 follow-up):
+- Afina el job de navegación para el celular y el job del Panel de results.md (parte 2 de GH-723); no es un job nuevo de producto. Rige solo en el celular: la computadora no cambia.
+- Antes: Home y Analysis armaban cada una su propio encabezado. En el celular, el nombre del Business y la Yerba mark ocupaban arriba de la pantalla para repetir algo que quien vende ya sabe, la fecha a la que pertenecen las cifras no se mostraba, y el segmento Home | Analysis estaba dentro del contenido de cada pantalla, en un lugar distinto en cada una.
+- El lugar "Editar" del dibujo queda vacío e inerte: no sirve a ningún job todavía y no promete ninguna función de edición.
+- Lo sirven "El encabezado de Home y Analysis (celular, GH-723)" y los criterios 34–37.
 
-13. **Approved from the evidence alone.** A review of the merging head raises no important finding about the first run's agreement test, the shape of `checklist`, its theme coverage or the Today capture, and none is carried into another task.
-14. **A broken answer fails a test.** In any reachable state (no variety; priced without stock; stock without a price; sold out; qualifying; checklist gone), a test fails if `/first-run`'s `nothing_qualifies` is not exactly "the kind is the checklist and `GET /catalog` has no text", or if its checklist steps disagree with the data.
-15. **One shape for `checklist`.** Its shape outside the checklist kind is written once, here. The API, `contract.json` and the front agree on it, and a test pins it.
-16. **Both themes.** Every first-run test on Home runs in light and in dark.
-17. **The capture tells the truth.** `InicioHoyCompu` is compared against its own named section (design-capture.md).
-18. **Nothing a seller sees changes, and no test is loosened.** This file, results.md and every screen read and behave as before; every suite passes; edited tests keep every assertion they had; registry changes stay within their declared seams.
+**Cuando** estoy en Home o en Analysis en el celular y necesito cambiar algo de mi Business (sumar un Payment method, un **Withdrawal reason** o una Expense category, cambiar Currency and decimals o el Catalog message, configurar o arreglar el bot de Telegram y su **Test send**, invitar a un socio, cambiar mi contraseña o el tema, o cerrar sesión), **quiero** abrir Settings directo desde el encabezado, **para poder** cambiarlo y volver a mis números sin buscarlo.
 
-Success criteria, the phone layout (GH-319). They are checked at 320, 360 and 390 px. Analysis's content meets them in GH-319's part 2; its chrome meets them here. Speed is criterion 1 together with the BRIEF's measure: the tap count to a saved sale is unchanged, and a sale is still recorded from the phone in under a minute.
+- Afina el job de Settings y el de navegación para el celular (parte 3 de GH-495); no es un job nuevo de producto. Es poco frecuente, no diario, y puede ser un arreglo o una configuración planeada. Las configuraciones de un solo Product siguen en su página, nunca detrás del avatar.
+- Antes: el avatar "Settings" ya estaba en Home y Analysis (es la entrada del celular a Settings desde GH-651), pero era un disco gris de 38 px dibujado con un borde transparente, en lugar del círculo verde de 36 px del dibujo dentro de una caja táctil de 44×44, y no se comparaba con los dibujos `Inicio`, `InicioOscuro`, `Analisis` y `AnalisisOscuro`. Además, en el código de Home quedaban restos de los avisos de primer uso que el dueño ya había sacado.
+- Lo sirven el avatar "Settings" de Pestañas y los criterios 38–41.
 
-19. **Nothing needed is out of reach on the phone.**
-    - On tab roots, the bar and "+ New sale" stay in view at any scroll position. On cards and details only the bar shows, and on forms and sheets neither shows.
-    - While a text keyboard is open, the bar and the button are hidden and can't be tapped, and nothing shifts when they come back.
-    - A sheet's main action, and any error about it, stays pinned and visible at the bottom. The three forms that keep the old overlay (below) are a named exception.
-    - No page is wider than the screen, down to 246 px, with extreme data.
-    - Long names truncate with an ellipsis. A figure never splits, and "$" never stays alone on a line.
-    - Every tap target is at least 44×44, and no text is under 12 px.
-20. **Nothing typed or found is lost, and the computer is untouched.**
-    - Rotating the phone or resizing across 900 px keeps what was typed.
-    - Closing a sheet opened from a scrolled list returns to the same scroll position.
-    - Tapping outside a sheet never discards work and never adds a confirmation. Where a visible area lies outside it, a tap there closes it only when nothing was changed. A full-screen phone sheet has no outside: the safe-area strip by the status bar never counts as one.
-    - Computer layouts come out with unchanged captures, ADR-0044's price modal included.
+**Cuando** estoy en cualquier pantalla principal del celular y necesito cambiar cómo está configurado mi negocio, o sacar algo del stock, **quiero** llegar en uno o dos toques desde donde estoy, sin una pantalla que lo junte todo en el medio, **para poder** hacerlo y volver a vender. Nada de lo que alcanzaba por More puede perderse en el camino.
 
-Success criteria, scroll on a change of screen (GH-480). They are checked at 320, 375 and 430 px and on a computer.
+- Afina el job de navegación para el celular y el de Settings (parte 5 de GH-495); no es un job nuevo de producto. Termina en el celular el retiro de More que decidió GH-651. Quien vende busca Settings o Take from stock en medio de una tarea, en la pantalla en la que está y con el celular en una mano, no en un momento aparte de "configuración".
+- Antes: la barra del celular conservaba la pestaña More y la pantalla `/more`, por donde Settings y los demás destinos quedaban a un desvío, y los encabezados de Sales, Customers y Products no daban un camino directo a Settings. Un favorito viejo a `/more` o `/mas` era la única dirección que necesitaba una llegada amable.
+- Lo sirven el avatar "Settings" de Pestañas, "Los destinos que estaban en More", las Rutas y los criterios 42–45.
 
-21. **A new screen starts at the top.** Every forward move to another screen (a tab in the bar or the sidebar, an entry in More, "+ New sale", a link, a list row into its card or detail, a redirect) shows that screen from its top, whatever the offset of the screen left behind.
-22. **Back returns you to your place.** The phone's or the browser's back, "‹ <parent>" when it goes through history, and "Close" of a form or sheet opened from inside the app all return to the previous screen at the offset it had when it was left. This includes New sale opened from "+ New sale" and Record payment opened from "Collect" or "Record payment". With no history, the fallback parent opens at its top.
-23. **A sheet or overlay leaves the page alone.** Opening and closing any sheet, routed or in-page, any confirmation or overlay, and any toast leaves the screen under it at the same offset. The offset is judged on the real screen once the sheet or modal closes, by Close, back or a save. An inert picture of the screen drawn behind a computer modal (Home's `InicioFondo` behind Record payment) is not held to that offset while the modal is open.
+**Cuando** acabo de abrir mi negocio y todavía está vacío, **quiero** que me guíen por lo que necesita, un paso corto por vez, con los valores por defecto ya completos, **para** registrar mi primera venta el mismo día sin buscar entre Settings, Products y la pantalla del Catalog. (Lo sirve acá el **Onboarding** como el único elemento de primer uso de un **Business** recién creado, abierto al aceptar la **Invitation** y en su propia dirección, `/onboarding`; definido en onboarding.md.)
 
-## Behaviour
+**Cuando** reviso un cambio en las reglas de primer uso que quedan (la línea de precio faltante de "+ New sale" y el "Send catalog" deshabilitado) antes de aprobarlo, **quiero** que los tests y el contrato `/first-run` prueben lo que dicen navigation.md y ADR-0046 en cada estado en que pueden estar y en los dos temas, **para poder** aprobar solo con la evidencia, sin confiar en controles parciales ni arrastrar hallazgos abiertos a la próxima tarea.
 
-### Tabs (phone)
+- Su protagonista es el mantenedor, o quien revisa en su nombre, como en gate.md, design-capture.md y el criterio 6 de onboarding.md. Quien vende se ve afectado solo de forma indirecta: un head que nadie puede aprobar frena el trabajo que espera.
+- Afina el criterio 12 y ADR-0046 (su lugar en Home ya no existe: ADR-0081); no es un job de producto nuevo y no agrega comportamiento de producto.
+- Su lado de captura (la fila `InicioHoyCompu`) es de design-capture.md.
+- Antes (el seguimiento de GH-45): el test de concordancia llegaba a `/first-run` solo donde se muestra la checklist, la forma de `checklist` fuera del tipo checklist estaba sin decidir, solo el test de la checklist corría en los dos temas, y la captura de Today mostraba una diferencia por construcción.
 
-- **The bar**: Home · Sales · Customers · Varieties · More, in that order. Tabs are objects, chosen by how often they are used. It is fixed to the bottom of the screen (Phone layout).
-- **"+ New sale"** floats just above the bar on tab roots, apart from the tabs, and opens the sale form directly (sales.md). It is not a tab.
-- **Labels** are always visible, at least 12 px; no tab is an icon alone.
-- **The active tab** is marked by more than color: a filled icon or an underline, and `aria-current` on the element.
-- **Fit**: the bar, "Varieties" included, fits at 320 px viewport width with text at 130 %, measured in a real browser.
+**Cuando** estoy en medio de atender a un cliente con el celular en la mano, **quiero** que la app se comporte como una app de celular (las pestañas y "+ New sale" a mano, un formulario que llena la pantalla con su acción principal bajo el pulgar, y nada de lo que necesito escondido detrás del teclado o fuera del borde de la pantalla), **para poder** registrar una venta, un pago o stock sin pelearme con la pantalla ni perder lo que tipeé.
 
-### Sidebar (computer)
+- Es un piso de calidad sobre el job de navegación y los jobs de celular del BRIEF (registrar una venta, cobrar un pago, registrar stock, mirar Home), solo por debajo de 900 px (GH-319). No es un job nuevo. La computadora conserva cada capacidad y no recibe nada de esto (**Phone first**).
+- Antes: la barra se iba con el scroll de la página, "+ New sale" estaba en el flujo de la página, los formularios eran ventanas superpuestas o páginas con ruta cuya acción podía quedar debajo del pliegue o detrás del teclado, algunos objetivos táctiles y etiquetas eran demasiado chicos, y algunas pantallas se desplazaban de costado. Quien vendía volvía a subir, hacía zoom con los dedos o repetía toques.
+- Lo sirven "Disposición en el celular (GH-319)" más abajo y los criterios 19 y 20. El contenido de Analysis (sus tres tablas y su selector de mes) es la parte 2 de GH-319; su marco se cubre acá.
 
-- From the top: "+ New sale"; Home, Sales, Customers, Varieties; a divider; Expenses, Analysis.
-- At the bottom: the business's name with its avatar, which opens Settings (as `InicioCompu` draws it).
-- There is no More on a computer. The withdrawal form is reached from Varieties' secondary "Take from stock" and from a variety's page.
-- **Two panes**: Customers and Varieties show the list on the left and the selected customer's card or variety's page on the right. Varieties opened with nothing selected selects the first unarchived variety by name (varieties.md); that counts as no tap. Archived uses the same two panes, selecting the first archived variety by name. Customers selects nothing on its own.
-- **Two panes and history**: on a computer, picking a row in the left pane replaces the current history entry, and so does Varieties' automatic selection of its first variety. Back from either screen leaves it in one step, never once per row looked at. On the phone, opening a variety or a customer pushes an entry, and back returns to the list.
+Elegir qué reglas de precio usa el Business (pricing-settings.md) también es de Settings, como el grupo Prices.
 
-### More (phone)
+Antes de esta estructura: la barra era Home · Sales · Customers · Stock · More; un producto estaba repartido entre Stock, Products y Catalog; cobrar una deuda llevaba cuatro toques desde Customers; las configuraciones estaban repartidas entre Business, Catalog y Expenses → Expense categories, y el bot se configuraba dentro de Catalog. No se conserva nada de eso salvo las redirecciones desde sus paths y, hasta que existan Integrations y Catalog message de Settings, el lugar provisorio para el bot y el Catalog header and footer al que se llega desde la pantalla del Catalog (catalog.md). Después, la barra fue Home · Sales · Customers · Products · More hasta que GH-651 retiró More y la parte 5 de GH-495 sacó del celular la pestaña y la pantalla `/more`.
 
-- In order: "+ Add expense" (it opens the expense form with today's date, expenses.md), "Take from stock" (it opens the stock withdrawal form with today's date and no variety chosen, stock.md), Expenses, Analysis, Settings.
-- "+ Add expense" and "Take from stock" are on top because they are the loads with no shorter path from every tab root.
-- Nothing else: an entry appears only once what it opens exists. There is no entry for the Onboarding.
+# Navigation
+
+La **Navigation** es la única estructura de la app para un Business: las pestañas en el celular, la barra lateral en una computadora, el avatar "Settings" del encabezado del celular, el encabezado compartido de Home y Analysis con su segmento Home | Analysis, Settings, la única regla que le da a cada pantalla su marco y su camino de vuelta, qué lugar queda marcado, las rutas y sus redirecciones, la disposición en el celular (barra fija, "+ New sale" flotante, formularios como **Sheet**s), dónde empieza una pantalla y adónde vuelve atrás en la página, y el primer uso (el Onboarding para un Business recién creado; Home no muestra ningún elemento de primer uso). Dice desde dónde se llega a cada capacidad. Lo que hace cada capacidad queda en su propio archivo; nada de acá cambia una regla de precios, **Settlement**, **Stock**, el **Catalog**, el aislamiento o los mensajes de respuesta. Lo ve solo el Business de la **Session** (ADR-0004). No hay pantalla ni pestaña More (GH-651, parte 5 de GH-495).
+
+Criterios de éxito:
+
+1. **Los jobs diarios, por frecuencia.** Desde cualquier Tab root en el celular:
+   - una **Sale** se abre en 1 toque ("+ New sale");
+   - la Sheet de **Payment** con el **Customer** ya elegido se abre en 2 toques como máximo (Customers → "Collect", o "Collect" directo en Home);
+   - la pantalla del Catalog se abre en 2 toques como máximo (Products → "Send catalog");
+   - una Stock entry se abre en 2 toques como máximo (Products → "+ Stock entry");
+   - un **Stock withdrawal** se abre en 2 toques como máximo (Products → "Take from stock");
+   - el formulario de **Expense** se abre en 2 toques desde cada Tab root del celular (Home, Sales, Customers, Products y Analysis) con "+ New sale" → "Expense" (la fila "Other things to record" de New sale, que se ofrece también sin líneas; sales.md), y desde Home también en 2 con el segmento "Analysis" → "Record expense" de la tarjeta Expenses. Cuentan solo los toques hasta que el formulario está abierto; sus campos no. Este archivo es el único lugar de este presupuesto; otro documento que lo nombre remite acá. La ubicación sigue los dibujos aprobados; no se rediseña para bajar la cuenta.
+
+   En una computadora, cada uno no lleva más toques que en el celular.
+2. **Cada configuración de todo el Business en un solo lugar.** El nombre, los **User**s y los links para sumarse, las reglas de precio (Bulk price y VIP customers), los **Payment method**s, el bot de Telegram, el Catalog header and footer, las Expense categories, la apariencia y tu cuenta (contraseña, cerrar sesión) están todos en Settings y en ningún otro lado. Se llega a Settings en 1 toque desde cualquier Tab root: con el avatar "Settings" del encabezado (un link) en el celular, y con la fila del Business de la barra lateral en una computadora. Los Payment methods se abren en 3 toques desde cualquier pantalla principal (avatar → Payments and expenses → Payment methods; decisión 21 del humano). Las configuraciones que son de un solo **Product** viven en el Product, y en ningún otro lado. La única excepción provisoria es el bot y el Catalog header and footer, a los que se llega desde la pantalla del Catalog hasta que existan sus grupos de Settings. Los pasos del Onboarding guardan estas mismas configuraciones a través de sus dueños y no son un segundo lugar para ellas (onboarding.md).
+3. **Un Product, una página.** El Stock de un Product y sus movimientos (Stock entries y Stock withdrawals), sus precios, su aviso de Stock bajo y sus **Catalog attributes** se ven y se editan desde su página. Ningún dato se edita en dos lugares con dos nombres.
+4. **Nada perdido, nada inventado.** Todo lo que quien vende podía hacer antes sigue a su alcance. Las únicas excepciones deliberadas son el canal del Customer, que se quita, y la pantalla More, que el dueño retiró el 2026-11-02: cada uno de sus cinco destinos tiene su propia entrada. No existe ninguna opción de Navigation ni pantalla para algo que todavía no está construido: ningún "coming soon", ni promociones, automatizaciones o idiomas. Ningún link apunta a una pantalla que no existe.
+5. **Una sola regla para el marco y la vuelta.** Cada pantalla es de uno de tres tipos: Tab root, tarjeta o detalle, formulario o Sheet. Cada tipo recibe su marco por la regla. Atrás sigue el historial, y la pantalla madre es la alternativa.
+6. **Legible y accesible.** Las etiquetas de las pestañas siempre se ven. La pestaña activa y cada estado se marcan por forma o palabra, nunca solo por color. La barra entra a 320 px con el texto al 130 %, medido en un navegador real.
+7. **Una estructura, dicha una vez.** Los docs del producto, CONTEXT.md, el diseño (`docs/product/design-system/pantallas/`, celular y computadora) y `scripts/design/screens.json` dicen la misma estructura y las mismas rutas.
+8. **Settings, grupo por grupo.** Cada grupo es su propia subpantalla con "Close"; salir con cambios sin guardar pregunta primero, y un grupo sin tocar se cierra de inmediato. Renombrar, "Invite a partner", los interruptores de precio, los Payment methods (agregar, editar, ordenar, archivar, restaurar y eliminar), el bot (token, chats, Test it), el Catalog header and footer, las categorías (agregar, renombrar, quitar, incluido el rechazo al quitar), Appearance, cambiar la contraseña y cerrar sesión funcionan todos desde el celular, y la corrida de punta a punta del front pasa por cada grupo.
+9. **Marco por tipo, en todas partes.** Cada pantalla, incluidas las de Products (la lista de dos paneles, la página de un Product, sus listas "See all" de precios y de Stock entries, New price, New product, "All entries" y el formulario de Stock entry), es exactamente de un tipo y tiene una pantalla madre. La única excepción con nombre es Expenses, que es un detalle en el celular y un Tab root en una computadora (Marco y camino de vuelta). El formulario de Stock entry dice "Close", nunca "Back".
+10. **Un solo movimiento atrás.** Atrás o "Close" deja una pantalla en un toque y nunca cae dos veces en la misma pantalla del historial, incluidas las salidas de "That is gone." y Record payment. Sin historial, atrás va a la pantalla a la que pertenece el formulario, la Sheet o la tarjeta.
+11. **Cada dirección abre su pantalla.** Recargar cualquier ruta de Products, incluidas las que llevan parámetros, abre la pantalla y nunca la respuesta de la API. Cada path viejo en español, incluidos `/variedades/{id}` y `/mi-stock/entradas/{id}`, responde una redirección permanente a su ruta nueva con el id pasado. `/mas` y `/more`, los paths viejos de More, redirigen de forma permanente a Home (`/`) en un solo salto (parte 5 de GH-495).
+12. **Primer uso, fuera de Home.** Home no muestra ningún elemento de primer uso. El Onboarding se abre solo al aceptar la Invitation de un Business nuevo o en la dirección `/onboarding`.
+
+Criterios de éxito, revisión del primer uso (seguimiento de GH-45):
+
+13. **Aprobado solo con la evidencia.** Una revisión del head que se integra no levanta ningún hallazgo importante sobre el test de concordancia del primer uso, la forma de `checklist`, su cobertura de temas o la captura de Today, y ninguno se arrastra a otra tarea.
+14. **Una respuesta rota hace fallar un test.** En cualquier estado alcanzable (sin Product; con precio sin Stock; con Stock sin precio; agotado; que califica; checklist ida), un test falla si el `nothing_qualifies` de `/first-run` no es exactamente "el tipo es la checklist y `GET /catalog` no tiene texto", o si sus pasos de checklist no concuerdan con los datos.
+15. **Una sola forma para `checklist`.** Su forma fuera del tipo checklist se escribe una vez, acá. La API, `contract.json` y el front concuerdan en ella, y un test la fija.
+16. **Los dos temas.** Cada test de las reglas laterales de primer uso (el Shell y Products) corre en claro y en oscuro.
+17. **La captura dice la verdad.** `InicioHoyCompu` se compara contra su propia sección nombrada (design-capture.md).
+18. **Nada de lo que ve quien vende cambia, y ningún test se afloja.** Este archivo, results.md y cada pantalla se leen y se comportan como antes; cada suite pasa; los tests editados conservan cada aserción que tenían; los cambios del registro quedan dentro de sus costuras declaradas.
+
+Criterios de éxito, la disposición en el celular (GH-319). Se verifican a 320, 360 y 390 px. El contenido de Analysis los cumple en la parte 2 de GH-319; su marco los cumple acá. La velocidad es el criterio 1 junto con la medida del BRIEF: la cantidad de toques hasta una Sale guardada no cambia, y una Sale se sigue registrando desde el celular en menos de un minuto.
+
+19. **Nada de lo necesario queda fuera de alcance en el celular.**
+    - En los Tab roots, la barra y "+ New sale" quedan a la vista en cualquier posición de scroll. En tarjetas y detalles solo se muestra la barra, y en formularios y Sheets no se muestra ninguna de las dos.
+    - Mientras hay un teclado de texto abierto, la barra y el botón se ocultan y no se pueden tocar, y nada se corre cuando vuelven.
+    - La acción principal de una Sheet, y cualquier error sobre ella, queda fija y visible abajo. Los tres formularios que conservan la ventana superpuesta vieja (abajo) son una excepción con nombre.
+    - Ninguna página es más ancha que la pantalla, hasta 246 px, con datos extremos.
+    - Los nombres largos se cortan con puntos suspensivos. Una cifra nunca se parte, y "$" nunca queda solo en una línea.
+    - Cada objetivo táctil mide al menos 44×44, y ningún texto está por debajo de 12 px.
+20. **Nada de lo tipeado o encontrado se pierde, y la computadora no se toca.**
+    - Girar el celular o cambiar el tamaño cruzando 900 px conserva lo tipeado. La excepción con nombre es la Sheet de Expense abierta sobre New sale, que solo existe en el celular: al cruzar 900 px se cierra, lo tipeado en el gasto se pierde y la venta se conserva (sales.md).
+    - Cerrar una Sheet abierta desde una lista desplazada vuelve a la misma posición de scroll.
+    - Tocar fuera de una Sheet nunca descarta trabajo y nunca agrega una confirmación. Donde hay un área visible fuera de ella, un toque ahí la cierra solo cuando no se cambió nada. Una Sheet de celular a pantalla completa no tiene afuera: la franja de área segura junto a la barra de estado nunca cuenta como afuera.
+    - Las disposiciones de computadora salen con capturas sin cambios, incluido el diálogo modal de precio de ADR-0044.
+
+Criterios de éxito, scroll al cambiar de pantalla (GH-480). Se verifican a 320, 375 y 430 px y en una computadora.
+
+21. **Una pantalla nueva empieza arriba.** Cada movimiento hacia adelante a otra pantalla (una pestaña de la barra o de la barra lateral, el avatar "Settings", el segmento Home | Analysis, una acción de la tarjeta Expenses, "+ New sale", un link, una fila de lista hacia su tarjeta o detalle, una redirección) muestra esa pantalla desde arriba, sea cual sea el offset de la pantalla que quedó atrás.
+22. **Atrás devuelve al lugar.** El atrás del celular o del navegador, "‹ <parent>" cuando pasa por el historial, y "Close" de un formulario o Sheet abierto desde dentro de la app vuelven todos a la pantalla anterior en el offset que tenía cuando se la dejó. Esto incluye New sale abierta desde "+ New sale" y Record payment abierto desde "Collect" o "Record payment". Sin historial, la pantalla madre alternativa se abre arriba.
+23. **Una Sheet o una ventana superpuesta no mueve la página.** Abrir y cerrar cualquier Sheet, con ruta o dentro de la página, cualquier confirmación o ventana superpuesta, y cualquier toast deja la pantalla de abajo en el mismo offset. El offset se juzga en la pantalla real una vez que la Sheet o el diálogo se cierra, por Close, atrás o un guardado. Una imagen inerte de la pantalla dibujada detrás de un diálogo de computadora (`InicioFondo` de Home detrás de Record payment) no tiene que respetar ese offset mientras el diálogo está abierto.
+
+Criterios de éxito, el retiro de More (GH-651). Se verifican en el celular; la computadora no cambia.
+
+24. **Cada destino, alcanzable sin More.** Desde el celular se llega a Settings, Analysis, Expenses, Record expense y Take from stock sin More, y cada uno tiene un test de Testing Library escrito en su punto de entrada.
+25. **Cada entrada donde la ponen los dibujos aprobados.** Settings es el avatar del encabezado del celular, un link con nombre accesible "Settings"; Analysis es el segmento Home | Analysis de Home; Expenses y Record expense son la tarjeta Expenses de Analysis, con "Record expense" y "See expenses"; Take from stock está junto a la acción de entrada en la vista de stock de Products. Cada botón o link nuevo cumple el estándar del celular (44 px y las demás reglas) y sus palabras salen de las palabras In-the-app del glosario, en inglés, en el **Copy module**.
+26. **Nada alcanzable se pierde.** Un destino sin lugar en los dibujos aprobados se lista en el PR, nunca se pierde en silencio. La barra lateral de la computadora no cambia (Phone first).
+
+Criterios de éxito, el segmento Home | Analysis (parte 1 de GH-723). Se verifican en el celular; la computadora no cambia.
+
+27. **Fácil de tocar.** Cada opción del segmento tiene una caja de al menos 44×44 px a 320, 360 y 390 px de ancho y con el texto al 130 %. Ninguna lista de infractores crece.
+28. **Cambiar no toca el historial.** Cualquier cantidad de cambios entre Home y Analysis deja el historial como estaba, y el próximo gesto de atrás va a la pantalla desde la que vino quien vende. Cada cambio a la otra vista la abre arriba. La pestaña Home de la barra sigue agregando una entrada al historial, porque es un movimiento deliberado.
+29. **La marca siempre es la correcta, y el control es el del dibujo.** La opción marcada siempre corresponde a la pantalla que se ve, y la barra mantiene Home marcada en las dos pantallas. El control coincide con los dibujos Inicio e InicioOscuro, en claro y en oscuro (Analisis y AnalisisOscuro no se comparan para el segmento, por decisión del dueño; sí se comparan a ojo para el avatar, criterio 40); la diferencia de etiquetas ("Hoy"/"Análisis" en los dibujos, "Home"/"Analysis" en la app desde #733) no cuenta: el nombre "Home" es una decisión del dueño, y el resto se juzga por **Drawing as guide**. La comparación es la **Design capture**: el dibujo y la app lado a lado, adjuntos al PR y juzgados a ojo, sin ningún número de AE, porque `scripts/design/ae.mjs` solo compara dos corridas de captura y nunca una construcción con un dibujo. Si una etiqueta de `section` no es única en su dibujo, el trabajo se frena y va al dueño con los números; nunca se agranda una tolerancia ni se lista un infractor.
+
+Criterios de éxito, el nombre de la opción Home (#733). Se verifican en el celular; la computadora no cambia.
+
+30. **Ninguna opción del segmento dice "Today".** Ni en pantalla ni en su nombre accesible. Las pestañas Today · Week · Month del Panel quedan exactamente como están.
+31. **Las opciones son "Home" y "Analysis".** Un toque lleva de cualquiera de las dos vistas a la otra; el gesto de atrás se comporta como ahora (las opciones reemplazan la entrada del historial y no agregan una); Analysis sigue marcando Home como activa.
+32. **Nada más cambia para quien vende.** Las mismas pantallas, en los mismos lugares, con el mismo comportamiento.
+
+Criterios de éxito, el encabezado de Home y Analysis (parte 2 de GH-723). Se verifican en el celular salvo el 37.
+
+34. **Un toque para cambiar, sin rebote.** Un toque cambia entre Home y Analysis, sin agregar una entrada al historial, así que atrás sale de Home en vez de rebotar entre las dos vistas (criterio 28, que esta parte conserva).
+35. **El mismo encabezado en las dos pantallas.** Home y Analysis muestran el mismo encabezado en el mismo lugar: la línea de fecha larga de hoy (día de la semana, día y mes, sin año, en el idioma de la pantalla), el segmento y el avatar. Nada más de esa fila se puede tocar. El encabezado se va con el scroll (no es fijo). Cada pantalla tiene exactamente un h1, y nada visible lo repite.
+36. **Entra en celulares chicos y con zoom.** A 320, 360 y 390 px y con el texto al 130 %, en claro y en oscuro: la línea de fecha nunca se parte (a 320 px y 100 % se ve entera; al 130 % puede terminar en puntos suspensivos), la página nunca se desplaza de costado, cada objetivo táctil mide al menos 44×44 y el Mobile check pasa sin que crezca ninguna lista de infractores.
+37. **La computadora se ve igual.** En Home el nombre del Business está arriba del título visible; en Analysis solo se ve el título. Expenses no se toca.
+
+Criterios de éxito, el avatar "Settings" de Home y Analysis (parte 3 de GH-495). Se verifican en el celular; la computadora no cambia.
+
+38. **Settings a un toque.** En el celular, Settings se abre en 1 toque desde Home y desde Analysis. El avatar muestra las iniciales del Business, un lector de pantalla dice "Settings" y se alcanza con el teclado.
+39. **Fácil de tocar, solo en el celular.** La caja táctil del avatar mide 44×44 y el Mobile check pasa `touch-target` sin que crezca ninguna lista de infractores. A 900 px y más no aparece, porque la fila del Business de la barra lateral ya lleva a Settings.
+40. **Como el dibujo.** El avatar se juzga a ojo contra los dibujos `Inicio`, `InicioOscuro`, `Analisis` y `AnalisisOscuro`, lado a lado con `scripts/design/comparisons.mjs` (decisión 1 del humano, la misma vía de GH-723); no hay filas de recorte con AE 0, porque `ae.mjs` solo compara dos corridas. Las capturas de antes y después prueban que nada fuera del avatar cambia en Home, Analysis, Sales, Customers, Products y Expenses. La línea de fecha queda como está (el dibujo la traerá #748) y "Editar" sigue siendo un lugar vacío e inerte hasta que #327 construya lo que abre. Cualquier otra diferencia visible con el dibujo va al dueño como pregunta; ningún rol la acepta. Nunca se agranda una tolerancia ni se lista un infractor.
+41. **Home sin primer uso, también en el código.** Ninguna clase de cuenta (`pre_onboarding`, `imported`, `onboarding`) ve un aviso de primer uso en Home, y nada que quede en Home abre algo que todavía no está construido. Las reglas laterales de "+ New sale" y "Send catalog" siguen exactamente como están.
+
+Criterios de éxito, el fin de More en el celular (parte 5 de GH-495). Se verifican en el celular salvo el 45, que también rige en la computadora.
+
+42. **Settings a un toque desde cada pantalla con avatar.** En el celular, Settings se abre en 1 toque desde Home, Sales, Customers, Products y Analysis, con el avatar "Settings" de su encabezado. Atrás desde la lista de Settings vuelve a la pantalla desde la que se abrió; sin historial, a Home.
+43. **Take from stock a dos toques como máximo.** El formulario de Stock withdrawal se abre en 2 toques como máximo desde cualquier Tab root (Products → "Take from stock"), y "Take from stock" sigue en Products y en la página de un Product (stock.md).
+44. **Los links viejos caen en Home, y More no se ve.** `/more` y `/mas` llevan a Home en un solo salto. Nada en la app muestra ni nombra More: la barra del celular no tiene pestaña More y `/more` no es una pantalla.
+45. **Cada destino conserva su entrada.** Cada destino que estaba detrás de More conserva su propia entrada, en el celular y en la computadora: Settings y sus grupos por el avatar (la fila del Business en la computadora), Take from stock en Products y en la página de un Product, Analysis por el segmento, y Expenses por Analysis (la barra lateral en la computadora). Ninguno queda sin salida ni desaparece. La barra lateral de la computadora pierde solo el lugar More del registro.
+
+## Comportamiento
+
+### Pestañas (celular)
+
+- **La barra**: Home · Sales · Customers · Products, en ese orden. Las pestañas son objetos, elegidos según cuánto se usan. Está fija abajo de la pantalla (Disposición en el celular). No hay pestaña More: desde la parte 5 de GH-495, `more` no es un lugar de la barra (`BarPlace`) ni de la barra lateral (`RailPlace`). Las cuatro pestañas y el "+ New sale" flotante quedan como están hasta la parte 6 de GH-495.
+- **"+ New sale"** flota justo arriba de la barra en los Tab roots, aparte de las pestañas, y abre directamente el formulario de Sale (sales.md). No es una pestaña.
+- **Etiquetas**: siempre se ven, de al menos 12 px; ninguna pestaña es solo un ícono.
+- **La pestaña activa** se marca con algo más que color: un ícono relleno o un subrayado, y `aria-current` en el elemento. Analysis marca Home como activa; Settings y cada pantalla de Settings también marcan Home, porque su pantalla madre en el celular es Home (parte 5 de GH-495). La marca se ve donde se muestra la barra (la lista de Settings y la lista de Payment methods); los grupos son formularios y no la muestran.
+- **Entra**: la barra, "Products" incluida, entra a 320 px de ancho de viewport con el texto al 130 %, medido en un navegador real.
+- **El avatar "Settings"**: un link de avatar en el encabezado del celular de Home, Sales, Customers, Products y Analysis, que abre Settings en 1 toque y se alcanza con el teclado. Reemplaza al avatar del Business que tenía Home, así que cada pantalla tiene una sola entrada a Settings. En Home y Analysis va al final de la fila de fecha del encabezado compartido (El encabezado de Home y Analysis). No hace que ningún encabezado se desborde a 320 px.
+  - **Nombre**: su nombre accesible es "Settings", del Copy module, nunca el nombre del Business. Es un link, porque abrir Settings es navegar, no actuar sobre datos.
+  - **Iniciales**: muestra las iniciales del nombre del Business de la Session, calculadas solo por `initialsOf` (`web/src/format/initials.ts`). Ningún componente las calcula por su cuenta, y no agrega ninguna ruta de API.
+  - **Mientras el nombre no se conoce**: sigue visible y tocable, se llama "Settings" y el círculo no muestra letras, ni texto de marcador, ni "?". Quien vende nunca pierde la entrada a Settings porque un pedido tarda, y el encabezado no salta cuando llega el nombre.
+  - **Caja y círculo** (parte 3 de GH-495): la caja táctil es el link, de 44×44 con márgenes negativos, sin relleno ni borde. El círculo verde dibujado de 36 px es un hijo dentro de ella: relleno `--boton`, con las iniciales en `--boton-texto`, a 13 px y peso 600, en claro y en oscuro solo con tokens.
+  - **Al tocarlo y con el teclado**: la marca de presión (el anillo `--papel` de los botones) cae sobre el círculo, no sobre la caja; el anillo de foco, de 2 px en `--acento`, se dibuja alrededor del círculo, y el link no dibuja el suyo.
+  - **Qué queda marcado** sale solo de `placeOf` en `routes.ts`: Settings y sus pantallas marcan Home, y ningún componente compara una dirección, un estado ni el historial.
+  - **Un solo componente** (`SettingsAvatar`), que reutilizan los encabezados de las demás pantallas. La caja y el círculo son del componente, así que Sales, Customers y Products también muestran el círculo verde de 36 px. Expenses en el celular no lleva el avatar: ningún dibujo `Gastos` lo trae y el dueño lo decidió el 2026-11-14 en #724. Es una pantalla de detalle y su encabezado es "‹ Analysis" con la acción de anotar un gasto.
+  - **En Sales, Customers y Products** (parte 5 de GH-495): se monta en el encabezado que ya tienen, y nada más de esos encabezados cambia (decisión 1 del humano). Si no entra sin superponerse a otro elemento o sin romper el área segura, la construcción se frena y el caso va al dueño con el encabezado y la pantalla donde falla; no hay ninguna posición alternativa.
+  - A 900 px y más no dibuja nada.
+- **El segmento Home | Analysis**: un control de navegación en el encabezado compartido de Home y Analysis, con la opción actual marcada por forma o palabra y no solo por color. "Analysis" abre `/analysis`; "Home" vuelve a Home. Home siempre abre en su vista Home y no recuerda nada. Las pestañas Today · Week · Month del **Panel** no cambian. Cómo se comporta está en "El segmento Home | Analysis (GH-723)".
+
+### El segmento Home | Analysis (celular, GH-723)
+
+- **Dónde**: en el encabezado compartido de Home y Analysis, debajo de la fila de fecha y arriba del h1 oculto (El encabezado de Home y Analysis, parte 2 de GH-723). El lugar "Editar" de la fila de fecha queda vacío e inerte: ningún link, botón, rol, texto ni elemento enfocable. En una computadora no muestra nada.
+- **Dos opciones, Home y Analysis.** La opción que vuelve a Home se llama "Home" (#733; antes decía "Today", la misma palabra que la primera pestaña del Panel). Ninguna opción del segmento dice "Today", ni en pantalla ni en su nombre accesible. El nombre accesible del grupo sigue siendo "Home view". Cada palabra y nombre accesible sale del Copy module, en inglés (`common:homeSegmentHome`).
+- **Cada opción es un link que reemplaza la entrada actual del historial**, nunca una pestaña (`role="tab"`). La opción actual se marca como la página actual (`aria-current="page"`), por forma o peso, nunca solo por color.
+- **Qué opción se marca** sale solo del registro de pantallas: el valor `segment` del lugar de la pantalla actual en `routes.ts` (`home` en Home, `analysis` en Analysis), con la pantalla actual obtenida igual que la usa la barra. Ningún componente compara una dirección, un estado ni el historial. Expenses no tiene `segment`. Los valores salen del Fixed set `HOME_VIEWS`, cuyo motivo es "Home and Analysis are the two views of the phone's Home tab; the app ships both and no setting adds another."
+- **Tocar la otra opción** abre esa vista arriba, como una pantalla nueva. No pasa nada de una a otra: Home abre en la pestaña Today del Panel y Analysis en su mes por defecto.
+- **Tocar la opción ya marcada no cambia nada**: no salta arriba, no agrega una entrada al historial y no reinicia la pestaña del Panel ni el mes elegido. No es un cambio de pantalla, porque el path no cambia (Scroll al cambiar de pantalla). Sigue siendo un link con su caja de 44 px y su marca.
+- **Atrás** sale del par Home/Analysis hacia la pantalla desde la que vino quien vende, sin importar cuántas veces cambió. Nunca pasa a la otra vista.
+- **Marco**: Analysis sigue siendo un Tab root con la barra marcando Home, conserva su entrada en la barra lateral y no tiene flecha de regreso propia. Expenses, abierta desde Analysis en el celular, conserva su "‹ Analysis" y no tiene segmento.
+- **Objetivo táctil**: cada opción es una caja de link de al menos 44×44, con `touch-action: manipulation`, sin selección de texto, sin resaltado de toque y con un estado `:active`; la píldora dibujada de 36 px es un hijo ubicado con márgenes negativos.
+- **Las rutas no cambian** por el segmento; `/more` y `/mas` redirigen a Home como dice Rutas.
+
+### El encabezado de Home y Analysis (celular, GH-723)
+
+![InicioHoy](../assets/screens/InicioHoy.webp)
+
+- **Uno solo, compartido**: Home y Analysis comparten un encabezado que dibuja un solo layout de ruta (`HomeLayout`), arriba del contenido de la pantalla y fuera de toda área de contenido. Expenses nunca lo lleva: conserva su propio encabezado, con "‹ Analysis" y sin el avatar "Settings" (decisión del dueño en #724).
+- **No es fijo**: es un `div` (`.inicio-cabecera`), no un elemento `<header>`, y no es fijo ni pegajoso, así que se va con el scroll de la página. El encabezado de marco que mira el Mobile check es el `<header>`; sin él, pasa como hoy.
+- **En el celular, en este orden**:
+  1. Una fila con la línea de fecha, un lugar vacío y el avatar "Settings".
+     - La línea de fecha es el hoy del Business (hora de Argentina) en forma larga ("Jueves 29 de octubre", "Thursday, October 29"), tomado del `me.today` de la Session con `formatTodayLong`. Los nombres del día y del mes salen de `Intl` en el idioma de la pantalla, así que no suman nada al Copy module. Es la única fecha que no es dd/mm (ADR-0049, GH-748). Nunca se parte en dos líneas y toma el ancho libre de la fila.
+     - El lugar vacío ocupa el lugar que el dibujo le da a "Editar". No tiene link, botón, rol, texto ni elemento enfocable, y no promete ninguna función de edición.
+     - El avatar "Settings" es el de Pestañas: un link con las iniciales del Business, su caja de 44×44 y el círculo de 36 px adentro (parte 3 de GH-495).
+  2. El segmento Home | Analysis, como lo define su sección.
+  3. El único h1 de la pantalla, con su título de siempre, oculto a la vista en el celular: solo lo leen los lectores de pantalla, y nada visible lo repite.
+- **El celular no muestra** el nombre del Business, la Yerba mark ni un título visible (decisión del dueño): quien vende ya sabe en qué Business está.
+- **Nada más se toca**: fuera de las dos opciones del segmento y el avatar, ningún elemento del encabezado es interactivo.
+- **La misma fecha en las dos pantallas**: Analysis también muestra el hoy del Business, nunca el período que se lee; ese período lo nombran los controles propios de Analysis, que esta parte no toca.
+- **Medianoche**: la línea cambia solo cuando se vuelve a cargar `me.today`, igual que cualquier otro "hoy" de la app. No hay temporizador propio ni regla nueva; si la línea y las cifras alguna vez no coinciden después de medianoche, es un hallazgo aparte sobre cómo se refresca "hoy".
+- **Cambiar de vista**: la vista elegida abre arriba, con el encabezado y el segmento a la vista (criterio 28). Volver de un detalle, como Expenses, o de una Sheet sigue la regla de Scroll al cambiar de pantalla, sin cambios.
+- **Mientras carga o falla**: el encabezado, el segmento y el avatar se muestran y funcionan siempre, cualquiera sea el estado de la vista de abajo (cargando, error o Business vacío), así que quien vende siempre puede volver a Today o abrir Settings. Solo el área de contenido muestra la carga o el error, y conserva su `aria-busy`. La línea de fecha, y el nombre del Business en la computadora, salen de los datos de la Session, cargados antes de cualquier pantalla: nunca esperan los datos del Panel ni de Analysis y nunca muestran un marcador de lugar. Si el nombre del Business todavía no llegó, el avatar sigue ahí, sin letras (Pestañas).
+- **Computadora**: Home muestra el nombre del Business arriba de un h1 visible, con las clases de siempre; Analysis muestra solo el h1. No hay línea de fecha, segmento ni avatar, y nada más se agrega: se ve igual que antes.
+
+### Barra lateral (computadora)
+
+- Desde arriba: "+ New sale"; Home, Sales, Customers, Products; un divisor; Expenses, Analysis.
+- Abajo: el nombre del Business con su avatar, que abre Settings (como lo dibuja `InicioCompu`).
+- Sin cambios por GH-651, GH-723, #733 ni la parte 3 de GH-495: no hay avatar en el encabezado ni segmento Home | Analysis en una computadora, y Settings, Expenses y Analysis se abren desde la barra lateral como antes. Al formulario de Stock withdrawal se llega desde el "Take from stock" secundario de Products y desde la página de un Product.
+- La parte 5 de GH-495 solo saca `more` de los lugares del registro (`RailPlace`): la fila del Business, que abre Settings, y la entrada Expenses quedan exactamente como están, sin trabajo de diseño nuevo (Phone first), y sus capturas no cambian.
+- **Dos paneles**: Customers y Products muestran la lista a la izquierda y la ficha del Customer o la página del Product elegidos a la derecha. Products abierto sin nada elegido elige el primer Product sin archivar por nombre (varieties.md); eso cuenta como ningún toque. Archived usa los mismos dos paneles y elige el primer Archived product por nombre. Customers no elige nada por su cuenta.
+- **Dos paneles e historial**: en una computadora, elegir una fila del panel izquierdo reemplaza la entrada actual del historial, y lo mismo hace la selección automática del primer Product de Products. Atrás desde cualquiera de las dos pantallas la deja en un paso, nunca uno por fila mirada. En el celular, abrir un Product o un Customer agrega una entrada al historial, y atrás vuelve a la lista.
+
+### Los destinos que estaban en More (celular, GH-651)
+
+El dueño retiró la pantalla More el 2026-11-02 (`docs/design/redesign/registro-unificado.md`). Cada uno de sus cinco destinos tiene su propia entrada, en el lugar que le dan los dibujos aprobados, y abre la pantalla que ya está construida. Las pantallas rediseñadas completas las construyen sus propios issues. Desde la parte 5 de GH-495 el celular tampoco tiene la pestaña More ni la pantalla `/more`.
+
+- **Settings**: el avatar "Settings" del encabezado de Home, Sales, Customers, Products y Analysis (Pestañas), a 1 toque desde cada una. Su pantalla madre en el celular es Home. Atrás sigue el historial y vuelve a la pantalla desde la que se tocó el avatar; sin historial va a "‹ Home".
+- **Analysis**: el segmento Home | Analysis de Home. En el celular, Analysis es un Tab root con la barra y "+ New sale" que marca Home como activa y muestra el mismo encabezado compartido, con "Analysis" elegido en el segmento.
+- **Expenses y Record expense**: la tarjeta Expenses de Analysis, con "Record expense" (abre el formulario de Expense con la fecha de hoy, expenses.md) y "See expenses" (abre Expenses). En el celular, Expenses es un detalle con "‹ Analysis", la barra y sin "+ New sale". El formulario de Expense es una Sheet: "Close" vuelve a donde se abrió (la tarjeta de Analysis, Expenses o New sale), y sin historial a Expenses. Desde las partes 3 y 4 de GH-725 el formulario de Expense también se abre desde New sale en el celular, con el tile "Expense" de la fila "Other things to record" (sales.md), a 2 toques de cada Tab root (criterio 1).
+- **Take from stock**: el "Take from stock" de Products, junto a "+ Stock entry" (abre el formulario de Stock withdrawal con la fecha de hoy y sin Product elegido, stock.md), a 2 toques como máximo desde cualquier Tab root. La página de un Product conserva el suyo.
+- Nada más: no hay pantalla ni menú que reúna estos destinos, y un destino sin lugar en los dibujos aprobados se lista en el PR. No hay ninguna opción para el Onboarding.
 
 ### Settings
 
-- **One screen holding every business-wide setting, in groups, and nothing else.** The groups, in this order (each group's behaviour belongs to its owner):
-  - **Business**: the business's name (accounts.md). Toast "Business renamed".
-  - **Users**: the partners by email, sorted by email, the signed-in one marked "you", and "Invite a partner", which creates one fresh join link per tap, to copy or share (accounts.md). No list of invitations, no revoking, no roles.
-  - **Prices** (pricing-settings.md), at `/settings/prices`:
-    - the two switches, Bulk price and VIP customers;
-    - "Save the prices", and the toast "Prices saved";
-    - the fixed line that past sales keep their price and switching off deletes nothing, and the fixed help line under the VIP switch.
-  - **Integrations**: the Telegram bot (pinned-catalog.md):
-    - the token, the channel chat, the own chat, and Test it, the only way they are saved;
-    - after a token or channel change, "The previous pinned message stays as it is; unpin it yourself in Telegram.";
-    - a plain link to the catalog screen, for publishing, carrying no status. Publish and the pin's status are only on the catalog screen.
-  - **Catalog message**: the catalog's header and footer (catalog.md). Toast "Catalog saved".
-  - **Expense categories**: add, rename and remove, the refused removal included (expenses.md).
-  - **Appearance**: the theme, Light or Dark, under accounts.md's theme rule (Dark sets `data-tema="oscuro"`, Light removes it).
-    - A tap applies and remembers the choice on the device at once: no save, no toast, no unsaved-changes warning.
-    - The current choice is marked by word or shape and `aria-checked`, never color alone.
-    - Language has no entry until it exists.
-  - **Your account**: "Change password" above "Sign out" (accounts.md). Nothing new.
-- **Reached from**: the business avatar at the top of Home; More on the phone; the sidebar's business row on a computer. `/settings` marks More as the active tab on the phone.
-- **The list of groups** is a card: the bar or sidebar and a back arrow, no "+ New sale". Back follows history; with none, it goes to "‹ More" on the phone and "‹ Home" on a computer.
-- **Each group** is its own subscreen, a form: "Close", no bar, no "+ New sale"; unsaved changes ask before discarding, an untouched group closes at once. Appearance never has unsaved changes, so it always closes at once.
-- **Empty business**: every group works. Users lists at least the signed-in user; Prices shows both switches as they stand (off for a new business); Expense categories with none shows an empty list and the add action; Integrations with nothing saved shows empty fields and no "Saved" line.
-- **Never here**: a variety's own settings (catalog attributes, low-stock threshold, its prices, its VIP price included) or its archiving, which live only on its page and in Archived (varieties.md); anything for the operator (ADR-0002); a group or placeholder for anything not built; an entry to run the Onboarding again.
-- **Nowhere else**: the old Business screen is gone; the catalog screen edits no header or footer (its "Edit header and footer" opens Catalog message); Expenses has no categories entry, apart from creating one inside the expense form (expenses.md); the pricing switches are reached from no variety page, price form or customer form. The Onboarding's steps save the same settings through their owners, never a copy (onboarding.md).
-- **Temporary exception, until Integrations and Catalog message exist**: the bot settings and the header and footer stay editable, exactly as before, in one temporary place reached only from the catalog screen ("Edit header and footer" and Publish's "unavailable" link). It is a form ("Close" back by history, else to the catalog screen; confirmation on unsaved leave), with no tab, More entry, Settings group or "coming soon" mark, and no pin status or Publish. The catalog screen itself still edits nothing; it links out. Settings's own issue retargets both links and removes the temporary place.
+![Configuracion](../assets/screens/Configuracion.webp)
 
-### Chrome and back: one rule
+- **Una pantalla que reúne cada configuración de todo el Business, en grupos, y nada más.** Los grupos, en este orden (el comportamiento de cada grupo es de su dueño):
+  - **Business**: el nombre del Business. Toast "Saved".
+  - **Users**: los socios por email, ordenados por email, el que inició sesión marcado "you", e "Invite a partner", que crea un link nuevo para sumarse por toque, para copiar o compartir (accounts.md). Sin lista de Invitations, sin revocar, sin roles.
+  - **Prices** (pricing-settings.md), en `/settings/prices`:
+    - los dos interruptores, Bulk price y VIP customers;
+    - "Save the prices", y el toast "Prices saved";
+    - la línea fija de que las Sales pasadas conservan su precio y que desactivar no borra nada, y la línea fija de ayuda bajo el interruptor VIP.
+  - **Payments and expenses** (payment-methods.md), en `/settings/payments`, como el dibujo `ConfiguracionCobros` (decisión 21 del humano; no está dentro de Business):
+    - una sola fila hoy, "Payment methods", cuyo subtítulo son los nombres de los medios ofrecidos en su orden, unidos por ", " y cortados con puntos suspensivos;
+    - la fila abre la lista de Payment methods (`/settings/payments/methods`), una tarjeta con flecha de regreso "‹ Payments and expenses": cada medio ofrecido con su ícono y su nombre, Move up / Move down, Delete o Archive según tenga Payments, "Add method" y la entrada "Archived";
+    - agregar y editar un medio es una Sheet; Archived (`/settings/payments/methods/archived`) es un formulario con "Restore" por fila;
+    - son 3 toques desde cualquier pantalla principal: avatar → Payments and expenses → Payment methods.
+  - **Integrations**: el bot de Telegram (pinned-catalog.md):
+    - el token, el chat del canal, el chat propio, y Test it, la única forma en que se guardan;
+    - después de un cambio de token o de canal, "The previous pinned message stays as it is; unpin it yourself in Telegram.";
+    - un link simple a la pantalla del Catalog, para publicar, sin ningún estado. Publish y el estado del fijado están solo en la pantalla del Catalog.
+  - **Catalog message**: el Catalog header and footer (catalog.md). Toast "Catalog saved".
+  - **Expense categories**: agregar, renombrar y quitar, incluido el rechazo al quitar (expenses.md).
+  - **Appearance**: el tema, Light o Dark, bajo la regla de tema de accounts.md (Dark pone `data-tema="oscuro"`, Light lo quita).
+    - Un toque aplica y recuerda la elección en el dispositivo de inmediato: sin guardar, sin toast, sin aviso de cambios sin guardar.
+    - La elección actual se marca por palabra o forma y `aria-checked`, nunca solo por color.
+    - Language no tiene opción hasta que exista.
+  - **Your account**: "Change password" arriba de "Sign out" (accounts.md). Nada nuevo.
+- **Desde dónde se llega**: en el celular, el avatar "Settings" (un link) del encabezado de Home, Sales, Customers, Products y Analysis, a 1 toque desde cada una; en una computadora, la fila del Business de la barra lateral. En el celular, la pantalla madre de `/settings` es Home, así que `/settings` y cada pantalla de Settings marcan Home como activa (parte 5 de GH-495); lo decide solo `placeOf` en `routes.ts`. La computadora no cambia.
+- **La lista de grupos** es una tarjeta: la barra o la barra lateral y una flecha de regreso, sin "+ New sale". Atrás sigue el historial y vuelve a la pantalla desde la que se abrió (en el celular, la pantalla cuyo avatar se tocó: Home, Sales, Customers, Products o Analysis); sin historial, va a "‹ Home" en el celular y en una computadora.
+- **Cada grupo** es su propia subpantalla, un formulario: "Close", sin barra, sin "+ New sale"; los cambios sin guardar preguntan antes de descartar, y un grupo sin tocar se cierra de inmediato. "Close" o atrás desde un grupo vuelve un paso por el historial; sin historial, va a la lista de grupos de Settings. Appearance nunca tiene cambios sin guardar, así que siempre se cierra de inmediato. Dentro de Payments and expenses, la lista de Payment methods es una tarjeta cuya pantalla madre es el grupo.
+- **Business vacío**: cada grupo funciona. Users lista al menos al User que inició sesión; Prices muestra los dos interruptores como están (apagados para un Business nuevo); Payments and expenses muestra los medios con que arrancó el Business ("Cash" y "Transfer" para uno nuevo), nunca una lista vacía; Expense categories sin ninguna muestra una lista vacía y la acción de agregar; Integrations sin nada guardado muestra campos vacíos y ninguna línea "Saved".
+- **Nunca acá**: las configuraciones propias de un Product (Catalog attributes, **Low-stock threshold**, sus precios, incluido su VIP price) o su archivado, que viven solo en su página y en Archived (varieties.md); nada para el Operator (ADR-0002); un grupo o marcador de lugar para algo no construido; una opción para volver a correr el Onboarding.
+- **En ningún otro lado**: la vieja pantalla Business ya no existe; la pantalla del Catalog no edita el Catalog header and footer (su "Edit header and footer" abre Catalog message); Expenses no tiene opción de categorías, salvo crear una dentro del formulario de Expense (expenses.md); a los interruptores de precio no se llega desde ninguna página de Product, formulario de precio ni formulario de Customer; New sale y Record payment eligen un Payment method pero nunca editan la lista. Los pasos del Onboarding guardan las mismas configuraciones a través de sus dueños, nunca una copia (onboarding.md).
+- **Excepción provisoria, hasta que existan Integrations y Catalog message**: los **Bot settings** y el Catalog header and footer siguen editables, exactamente como antes, en un lugar provisorio al que se llega solo desde la pantalla del Catalog ("Edit header and footer" y el link "unavailable" de Publish). Es un formulario ("Close" vuelve por el historial, si no a la pantalla del Catalog; confirmación al salir con cambios sin guardar), sin pestaña, entrada propia, grupo de Settings ni marca de "coming soon", y sin estado del fijado ni Publish. La pantalla del Catalog en sí sigue sin editar nada; manda afuera con un link. El issue propio de Settings reapunta los dos links y quita el lugar provisorio.
 
-Every screen is exactly one of three kinds, has one parent, and gets its chrome only from its kind.
+### Marco y camino de vuelta: una sola regla
 
-- **Tab root**: Home, Sales, Customers, Varieties, Expenses, Analysis and More. It shows the bar (or the sidebar) and "+ New sale". Expenses and Analysis are reached from More on the phone and from the sidebar on a computer.
-- **Card or detail**: a customer's card, a variety's page, an archived variety's page ("‹ Archived"), the Archived card ("‹ Varieties"), a sale's detail, an expense, a stock withdrawal's detail, the catalog screen, "All entries", every "See all" list of a variety's page (its entries and withdrawals, and its prices), and Settings's list of groups.
-  - It shows the bar (or the sidebar) and a "‹ <parent>" back arrow naming the screen it returns to. A withdrawal's detail returns to the screen it was opened from, and to Varieties with no history.
-  - It never shows "+ New sale". A customer's card carries only "New sale to <name>".
-- **Form or sheet**: New sale and Pick a customer, Record payment, the customer form (new, `/customers/new`, and editing, `/customers/{id}/edit`), the stock entry form (new or editing, `/varieties/entries/{id}`), the stock withdrawal form ("Take from stock", new or editing), the price entry form, the expense form, a variety's add and rename, a variety's low-stock warning form and catalog attributes form, every Settings group, every Onboarding step and its closing screen "Done", and the temporary place for the bot and the header and footer while it exists.
-  - It shows neither the bar nor "+ New sale". It closes with "Close", never another word such as "Back".
-  - Leaving it with unsaved changes asks before discarding. New sale keeps its own "Discard the sale?" (sales.md); every other form or sheet asks the same way with its own fixed wording.
-  - An untouched form or sheet closes at once.
-  - On the phone, the forms listed under "Phone layout" are drawn as sheets by the one shared `Sheet`.
-  - The Onboarding's "Close" lands on Home and keeps its resume point; New sale opened from "Done" goes back to Home, never to "Done" or the Onboarding (onboarding.md).
-- **Opened from inside the app, a form or sheet is an entry in the app's history.** That covers every way in: "+ New sale" in the bar area and in the sidebar, "New sale to <name>", "Collect" and "Record payment", and every "+" and edit action. Its "Close" and back are then one step back to the screen it was opened from, never a jump to its fixed parent. The fixed parent is only the fallback for a form opened by a direct link.
-- **Back** follows the app's history and leaves in one move; it never lands on the same screen twice. With no history (a link opened directly), it goes to the parent named by "‹", or for a form or sheet to the screen it belongs to:
+Cada pantalla es exactamente de uno de tres tipos, tiene una sola pantalla madre y recibe su marco solo de su tipo. La única excepción con nombre es Expenses, cuyo tipo depende del ancho porque la barra lateral de la computadora no cambia (el ADR de GH-651).
 
-| Screen | Back with no history goes to |
+- **Tab root**: Home, Sales, Customers, Products y Analysis; en una computadora, también Expenses. Muestra la barra (o la barra lateral) y "+ New sale". En el celular, a Analysis se llega con el segmento Home | Analysis de Home y marca Home como activa; en una computadora, Expenses y Analysis se abren desde la barra lateral.
+- **Tarjeta o detalle**: la ficha de un Customer, la página de un Product, la página de un Archived product ("‹ Archived"), la tarjeta Archived ("‹ Products"), el detalle de una Sale, una Expense, en el celular la pantalla Expenses ("‹ Analysis"), el detalle de un Stock withdrawal, la pantalla del Catalog, "All entries", cada lista "See all" de la página de un Product (sus Stock entries y Stock withdrawals, y sus precios), la lista de grupos de Settings y la lista de Payment methods ("‹ Payments and expenses").
+  - Muestra la barra (o la barra lateral) y una flecha de regreso "‹ <parent>" que nombra la pantalla a la que vuelve. El detalle de un Stock withdrawal vuelve a la pantalla desde la que se abrió, y a Products sin historial.
+  - Nunca muestra "+ New sale". La ficha de un Customer lleva solo "New sale to <name>".
+- **Formulario o Sheet**: New sale y Pick a customer, Record payment, el formulario de Customer (nuevo, `/customers/new`, y edición, `/customers/{id}/edit`), el formulario de Stock entry (nuevo o edición, `/varieties/entries/{id}`), el formulario de Stock withdrawal ("Take from stock", nuevo o edición), el formulario de **Price entry**, el formulario de Expense (también abierto sobre New sale en el celular), agregar y renombrar un Product, el formulario del aviso de Stock bajo y el formulario de Catalog attributes de un Product, cada grupo de Settings, agregar y editar un Payment method, los Payment methods archivados, cada paso del Onboarding y su pantalla de cierre "Done", y el lugar provisorio para el bot y el Catalog header and footer mientras exista.
+  - No muestra ni la barra ni "+ New sale". Se cierra con "Close", nunca con otra palabra como "Back".
+  - Salir con cambios sin guardar pregunta antes de descartar. New sale conserva su propio "Discard the sale?" (sales.md); cada otro formulario o Sheet pregunta de la misma manera con su propio texto fijo.
+  - Un formulario o Sheet sin tocar se cierra de inmediato.
+  - En el celular, los formularios listados en "Disposición en el celular" los dibuja como Sheets el único `Sheet` compartido.
+  - El "Close" del Onboarding cae en Home y conserva su punto de retomar; New sale abierta desde "Done" vuelve a Home, nunca a "Done" ni al Onboarding (onboarding.md).
+- **Abierto desde dentro de la app, un formulario o Sheet es una entrada en el historial de la app.** Eso cubre cada forma de entrar: "+ New sale" en la zona de la barra y en la barra lateral, "New sale to <name>", "Collect" y "Record payment", "Record expense" de la tarjeta Expenses, el tile "Expense" de New sale en el celular, y cada acción "+" y de edición. Su "Close" y atrás son entonces un paso atrás hasta la pantalla desde la que se abrió, nunca un salto a su pantalla madre fija. La pantalla madre fija es solo la alternativa para un formulario abierto con un link directo.
+- **El formulario de Expense abierto desde New sale** (celular, partes 3 y 4 de GH-725) es una entrada del historial sobre New sale, que sigue montada debajo con todo lo cargado. Su "Close", el Back de la franja "Sale in progress" y el gesto de atrás del celular son la misma acción: un paso atrás, de vuelta a New sale, sin preguntar "Discard the sale?" por la venta. Guardar el gasto también vuelve a New sale. No tiene ruta propia ni alternativa sin historial: existe solo sobre una New sale abierta (sales.md; la regla de la hoja sobre un formulario está en la ADR 20261114).
+- **Atrás** sigue el historial de la app y sale en un movimiento; nunca cae dos veces en la misma pantalla. Con historial, la lista de grupos de Settings abierta con el avatar vuelve a la pantalla cuyo avatar se tocó. Sin historial (un link abierto directamente), va a la pantalla madre nombrada por "‹", o para un formulario o Sheet a la pantalla a la que pertenece:
+
+| Pantalla | Atrás sin historial va a |
 |---|---|
 | New sale | Sales |
-| New variety | Varieties |
-| New price | that variety's page |
-| Stock entry form, new | Varieties |
-| Stock entry form, editing | "All entries" |
-| Customer form, new | Customers |
-| Customer form, editing | that customer's card |
+| New product | Products |
+| New price | la página de ese Product |
+| Formulario de Stock entry, nuevo | Products |
+| Formulario de Stock entry, edición | "All entries" |
+| Formulario de Customer, nuevo | Customers |
+| Formulario de Customer, edición | la ficha de ese Customer |
 | Record payment | Customers |
-| Expense form, new | Expenses |
-| A variety's "See all" of prices or entries | the variety's page |
-| "All entries" | Varieties |
-| Stock withdrawal form, new | Varieties |
-| Stock withdrawal form, editing | that withdrawal's detail |
-| A withdrawal's detail | Varieties |
-| Archived | Varieties |
-| An archived variety's page | Archived |
-| An Onboarding step or "Done" | Home |
+| Formulario de Expense, nuevo | Expenses |
+| Expenses (celular) | Analysis |
+| La lista de grupos de Settings | Home (`/`) |
+| Un grupo de Settings | la lista de grupos de Settings |
+| La lista de Payment methods (tarjeta "‹ Payments and expenses") | el grupo Payments and expenses |
+| El "See all" de precios o de Stock entries de un Product | la página del Product |
+| "All entries" | Products |
+| Formulario de Stock withdrawal, nuevo | Products |
+| Formulario de Stock withdrawal, edición | el detalle de ese Stock withdrawal |
+| El detalle de un Stock withdrawal | Products |
+| Archived | Products |
+| La página de un Archived product | Archived |
+| Los Payment methods archivados | la lista de Payment methods |
+| Un paso del Onboarding o "Done" | Home |
 
-- **A gone exit is the same move as "Close".** When saving, deleting or undoing in the stock entry form, the customer form or Record payment hits a record that no longer exists, the screen goes back one step in history when it was opened from inside the app, or to its parent when it was opened by a direct link. The list refreshes and "That is gone. The list is up to date." shows, as accounts.md defines it. No history entry is ever duplicated.
-- **"Collect from <name>"** on a debtor row (Customers or Home) opens Record payment with that customer chosen, as an entry in the app's history; back or "Close" closes it in one move, back to the screen it came from.
+- **Salir porque el registro ya no existe es el mismo movimiento que "Close".** Cuando guardar, eliminar o deshacer en el formulario de Stock entry, el formulario de Customer o Record payment da con un registro que ya no existe, la pantalla vuelve un paso en el historial cuando se abrió desde dentro de la app, o a su pantalla madre cuando se abrió con un link directo. La lista se actualiza y se muestra "That is gone. The list is up to date.", como lo define accounts.md. Nunca se duplica una entrada del historial.
+- **"Collect from <name>"** en una fila de deudor (Customers o Home) abre Record payment con ese Customer elegido, como una entrada en el historial de la app; atrás o "Close" lo cierra en un movimiento, de vuelta a la pantalla de la que vino.
+- **El segmento Home | Analysis reemplaza, nunca agrega.** Pasar de Home a Analysis o de Analysis a Home con el segmento reemplaza la entrada actual del historial, así que el par ocupa una sola entrada y atrás sale de él en un movimiento (El segmento Home | Analysis). La pestaña Home de la barra sigue agregando una entrada.
 
-### Phone layout (GH-319)
+### Disposición en el celular (GH-319)
 
-Below 900 px only. Every rule here is scoped under that breakpoint. Computer layouts, ADR-0044's price modal included, stay exactly as they are. Analysis's content (its three tables and month selector) is GH-319's part 2; only its chrome follows this section now.
+Solo por debajo de 900 px. Cada regla de acá rige bajo ese corte. Las disposiciones de computadora, incluido el diálogo modal de precio de ADR-0044, quedan exactamente como están. El contenido de Analysis (sus tres tablas y su selector de mes) es la parte 2 de GH-319; por ahora solo su marco sigue esta sección.
 
-- **Fixed bar**: the bar is fixed to the bottom of the screen on tab roots and on cards and details, respecting the device insets.
-- **Floating "+ New sale"**: it floats together with its "what is missing" line just above the bar, on tab roots only. Forms and sheets show neither the bar nor the button.
-- **Bottom space**: content never ends under the bar or the button, and the last row is fully visible above them. One bottom-space value (`--bottom-chrome-height`) drives three things: the content padding, the button position and the toast position. No rule hard-codes those heights. A customer's card pins its "New sale to <name>" above the bar from the same value.
-- **Keyboard**:
-  - Whenever a text keyboard is open, on any tab root or card with a text field (Customers search, Sales search or filters, and the rest), the bar and the button are hidden and can't be tapped. They are never pushed up above the keyboard.
-  - Padding does not change, so nothing shifts. Closing the keyboard brings both back with the typed text and scroll position unchanged.
-  - Pinch-zoom never counts as keyboard open. Neither does a date, time, select, checkbox, radio, range, color, file or button control: those leave the bar in place.
-  - It works on iOS, on Android and without the visual viewport API. Only `useVisualViewport` decides it, through one pure function (ADR-0028 as amended). New sale keeps its form-fixed behaviour.
-- **Toasts**: only their position changes, never their timing or dismissal.
-  - They sit above the bar and the "+ New sale" group on tab roots, above the bar on cards and details, and above the pinned action on a sheet. A toast never covers a main action.
-  - After a save closes a sheet, the toast shows in its place on the screen the seller returns to.
+- **Barra fija**: la barra está fija abajo de la pantalla en los Tab roots y en tarjetas y detalles, respetando los márgenes del dispositivo.
+- **"+ New sale" flotante**: flota junto con su línea de "qué falta" justo arriba de la barra, solo en los Tab roots. Los formularios y las Sheets no muestran ni la barra ni el botón.
+- **Espacio de abajo**: el contenido nunca termina debajo de la barra o del botón, y la última fila se ve entera arriba de ellos. Un solo valor de espacio de abajo (`--bottom-chrome-height`) maneja tres cosas: el relleno del contenido, la posición del botón y la posición del toast. Ninguna regla fija esas alturas en el código. La ficha de un Customer fija su "New sale to <name>" arriba de la barra a partir del mismo valor.
+- **Teclado**:
+  - Siempre que hay un teclado de texto abierto, en cualquier Tab root o tarjeta con un campo de texto (la búsqueda de Customers, la búsqueda o los filtros de Sales, y el resto), la barra y el botón se ocultan y no se pueden tocar. Nunca se empujan arriba del teclado.
+  - El relleno no cambia, así que nada se corre. Cerrar el teclado trae de vuelta a los dos con el texto tipeado y la posición de scroll sin cambios.
+  - El zoom con los dedos nunca cuenta como teclado abierto. Tampoco un control de fecha, hora, select, checkbox, radio, rango, color, archivo o botón: esos dejan la barra en su lugar.
+  - Funciona en iOS, en Android y sin la API de visual viewport. Solo `useVisualViewport` lo decide, mediante una sola función pura (ADR-0028 tal como se enmendó). New sale conserva su comportamiento de formulario fijo.
+- **Toasts**: solo cambia su posición, nunca su duración ni cómo se descartan.
+  - Se ubican arriba de la barra y del grupo "+ New sale" en los Tab roots, arriba de la barra en tarjetas y detalles, y arriba de la acción fija en una Sheet. Un toast nunca tapa una acción principal.
+  - Después de que un guardado cierra una Sheet, el toast se muestra en su lugar en la pantalla a la que vuelve quien vende. Así se muestra "Expense recorded" (o "Expense saved" sin ninguna línea con producto) de vuelta en New sale (sales.md).
 - **Sheets**:
-  - One shared `Sheet` draws every phone form listed below. It is a full-screen modal dialog with "Close" at the top, and the background does not scroll.
-  - Focus goes to the first enabled field (a choice group's first option included), or to a field the form names.
-  - The main action sits in an actions container pinned at the bottom of the form, inside the form. Errors and destructive actions sit above the main action, and nothing renders below it.
-  - The sheet's height follows the visible viewport, so the keyboard does not cover the action.
-  - The form's element tree is the same on phone and computer, so a resize across 900 px or a rotation keeps what was typed.
-- **Back and Close on a sheet**: the phone's back gesture is the same action as "Close".
-  - With nothing changed, the sheet closes and the seller is back where they opened it from, at the same scroll position.
-  - With something typed, the form's existing leave confirmation appears, exactly as before.
-  - The inline edits on a variety's page close their sheet first and never jump over the page.
-- **Tap outside**:
-  - On the phone a sheet fills the screen and has no outside. The safe-area strip by the status bar does not count as outside: a tap there does nothing, whether the sheet is touched or not. No gap or visible backdrop is added to create an outside. "Close" and back are a phone sheet's only exits.
-  - Where a visible area does lie outside a dialog (the computer's existing dialogs), a tap there closes an untouched dialog and does nothing on a touched one. Those computer frames keep their backdrop behaviour exactly as it is today; this part does not edit them.
-  - Anywhere, tapping outside never discards work, never opens a dialog, and no form gains a new confirmation.
-- **What is behind a sheet**:
-  - Opened from inside the app, the screen behind is the one the form was opened from. An in-page sheet (a variety's inline edits, editing an expense) has its own screen behind it.
-  - Opened by a direct address, a routed form shows its sheet over the parent from the back-with-no-history table. That parent is inert and hidden from assistive technology, with no chrome, no heading and no ids, and it shows nothing while its data is loading or missing.
-  - Routes, kinds and parents do not change.
-- **Forms drawn as sheets**:
+  - Un solo `Sheet` compartido dibuja cada formulario de celular listado abajo. Es un diálogo modal a pantalla completa con "Close" arriba, y el fondo no se desplaza.
+  - El foco va al primer campo habilitado (incluida la primera opción de un grupo de opciones), o a un campo que el formulario nombre.
+  - La acción principal está en un contenedor de acciones fijo abajo del formulario, dentro del formulario. Los errores y las acciones destructivas van arriba de la acción principal, y nada se dibuja debajo de ella.
+  - La altura de la Sheet sigue el viewport visible, así que el teclado no tapa la acción.
+  - El árbol de elementos del formulario es el mismo en celular y computadora, así que un cambio de tamaño cruzando 900 px o un giro conserva lo tipeado. La excepción con nombre es la Sheet de Expense sobre New sale, que existe solo en el celular (criterio 20).
+- **Atrás y Close en una Sheet**: el gesto de atrás del celular es la misma acción que "Close".
+  - Sin nada cambiado, la Sheet se cierra y quien vende vuelve a donde la abrió, en la misma posición de scroll.
+  - Con algo tipeado, aparece la confirmación de salida que ya tiene el formulario, exactamente como antes.
+  - Las ediciones en línea de la página de un Product cierran primero su Sheet y nunca saltan por encima de la página.
+- **Tocar afuera**:
+  - En el celular una Sheet llena la pantalla y no tiene afuera. La franja de área segura junto a la barra de estado no cuenta como afuera: un toque ahí no hace nada, esté la Sheet tocada o no. No se agrega ningún hueco ni fondo visible para crear un afuera. "Close" y atrás son las únicas salidas de una Sheet de celular.
+  - Donde sí hay un área visible fuera de un diálogo (los diálogos que ya existen en la computadora), un toque ahí cierra un diálogo sin tocar y no hace nada en uno tocado. Esos marcos de computadora conservan su comportamiento de fondo exactamente como hoy; esta parte no los edita.
+  - En cualquier lado, tocar afuera nunca descarta trabajo, nunca abre un diálogo, y ningún formulario gana una confirmación nueva.
+- **Qué hay detrás de una Sheet**:
+  - Abierto desde dentro de la app, la pantalla de atrás es aquella desde la que se abrió el formulario. Una Sheet dentro de la página (las ediciones en línea de un Product, editar una Expense, el formulario de Expense sobre New sale) tiene su propia pantalla detrás.
+  - Abierto con una dirección directa, un formulario con ruta muestra su Sheet sobre la pantalla madre de la tabla de atrás sin historial. Esa pantalla madre es inerte y queda oculta para la tecnología de asistencia, sin marco, sin título y sin ids, y no muestra nada mientras sus datos cargan o faltan.
+  - Las rutas, los tipos y las pantallas madre no cambian.
+- **Formularios dibujados como Sheets**:
   - Record payment;
-  - the price entry form (phone only; its computer modal is ADR-0044's);
-  - the customer form, new and editing;
-  - the expense form, new and editing;
-  - the stock entry form, new and editing;
-  - the stock withdrawal form, new and editing;
-  - New variety;
-  - a variety's rename, low-stock warning form and catalog attributes form.
-- **Known exception**: Change password, the expense categories editor and New sale's new-customer overlay keep the old overlay on the phone, with no pinned action. The `Sheet` ADR (ADR-0062) names them. This is an exception to criterion 19's pinned action, not a failure of it.
-- **Record payment's focus**: on the phone, opening it puts focus on its first field, not its title; its computer modal still focuses the title. Closing still returns focus to the "Collect" or "Record payment" that was tapped (payments.md).
-- **New sale's payment choice**:
-  - The Cash / Transfer / Owing choice stays visible above the sale's footer.
-  - Save is never disabled. It does not look ready until a choice is made: it is drawn as a secondary button until then and as the primary button after.
-  - A tap on Save before the choice does what it did before: the line names what is missing. The tap count to a saved sale does not change.
-- **Fit**: no page is wider than the viewport at 320 and 246 px with extreme data. Long names truncate with an ellipsis, a figure never splits, and "$" never stays alone on a line. The expenses month ordering rule applies to Expenses only.
-- **Tap targets and text**: every tap target is at least 44×44 and no text is under 12 px. This includes:
-  - New variety;
-  - the onboarding Skip and Skip the rest;
-  - Categories, Integrations and Edit header and footer;
+  - el formulario de Price entry (solo en el celular; su diálogo modal de computadora es el de ADR-0044);
+  - el formulario de Customer, nuevo y edición;
+  - el formulario de Expense, nuevo y edición, también abierto sobre New sale;
+  - el formulario de Stock entry, nuevo y edición;
+  - el formulario de Stock withdrawal, nuevo y edición;
+  - New product;
+  - el renombrar, el formulario del aviso de Stock bajo y el formulario de Catalog attributes de un Product;
+  - agregar y editar un Payment method.
+- **Excepción conocida**: Change password, el editor de Expense categories y la ventana superpuesta de Customer nuevo de New sale conservan la ventana superpuesta vieja en el celular, sin acción fija. El ADR del `Sheet` (ADR-0062) los nombra. Es una excepción a la acción fija del criterio 19, no una falla de él.
+- **El foco de Record payment**: en el celular, abrirlo pone el foco en su primer campo, no en su título; su diálogo modal de computadora sigue enfocando el título. Cerrar sigue devolviendo el foco al "Collect" o "Record payment" que se tocó (payments.md).
+- **La elección de pago de New sale**:
+  - La elección Paid · Owing sigue visible arriba de la franja inferior del formulario de Sale; bajo Paid, el campo "Payment method" ofrece los medios propios del Business (sales.md, payment-methods.md).
+  - Save nunca se deshabilita. No parece listo hasta que se hace una elección: hasta entonces se dibuja como botón secundario y después como botón principal.
+  - Un toque en Save antes de la elección hace lo que hacía antes: la línea nombra lo que falta. La cantidad de toques hasta una Sale guardada no cambia.
+- **Entra**: ninguna página es más ancha que el viewport a 320 y 246 px con datos extremos. Los nombres largos se cortan con puntos suspensivos, una cifra nunca se parte, y "$" nunca queda solo en una línea. La regla de orden por mes de Expenses rige solo para Expenses.
+- **Objetivos táctiles y texto**: cada objetivo táctil mide al menos 44×44 y ningún texto está por debajo de 12 px. Esto incluye:
+  - New product;
+  - el Skip y el Skip the rest del Onboarding;
+  - Categories, Integrations y Edit header and footer;
   - Owed to you;
-  - the month arrows;
-  - the low-stock switch.
-- **Keyboard help**:
-  - Login suggests the username and current password.
-  - Change password and the reset page suggest the new and current password.
-  - Customer search is a search field with a search key on the keyboard.
+  - las flechas de mes;
+  - el interruptor de Stock bajo;
+  - el Move up y el Move down de cada Payment method;
+  - el avatar "Settings" (su caja de link de 44×44 con el círculo de 36 px como hijo, parte 3 de GH-495, también en Sales, Customers y Products desde la parte 5), el segmento Home | Analysis (cada opción, como caja de link, GH-723) y las dos acciones de la tarjeta Expenses (GH-651).
+- **Ayuda del teclado**:
+  - El login sugiere el usuario y la contraseña actual.
+  - Change password y la página de reseteo sugieren la contraseña nueva y la actual.
+  - La búsqueda de Customers es un campo de búsqueda con una tecla de buscar en el teclado.
 
-### Scroll on a change of screen (GH-480)
+### Scroll al cambiar de pantalla (GH-480)
 
-On the phone and on a computer alike. A screen is its route's path. A change of a sheet's depth (ADR-0027), or a routed sheet opening over the screen it was opened from, is not a change of screen. Neither is picking a row in a computer's two panes.
+En el celular y en una computadora por igual. Una pantalla es el path de su ruta. Un cambio de profundidad de una Sheet (ADR-0027), o una Sheet con ruta que se abre sobre la pantalla desde la que se abrió, no es un cambio de pantalla. Tampoco lo es elegir una fila en los dos paneles de una computadora, ni tocar en el segmento Home | Analysis la opción ya marcada.
 
-- **Arriving starts at the top.** Every forward move to another screen shows it from its top, whatever the offset of the screen left behind. A forward move is a tab in the bar or the sidebar, an entry in More, "+ New sale", a link, a list row into its card or detail, a redirect, or the business avatar into Settings.
-- **Going back returns to the place.** These are all one move back, and each returns to the previous screen at the offset it had when it was left:
-  - the phone's back gesture or the browser's back;
-  - "‹ <parent>" when it goes through history;
-  - "Close" of a form or sheet opened from inside the app (Chrome and back).
+- **Llegar empieza arriba.** Cada movimiento hacia adelante a otra pantalla la muestra desde arriba, sea cual sea el offset de la pantalla que quedó atrás. Un movimiento hacia adelante es una pestaña de la barra o de la barra lateral, el segmento Home | Analysis (que reemplaza la entrada del historial en vez de agregar una), una acción de la tarjeta Expenses, "+ New sale", un link, una fila de lista hacia su tarjeta o detalle, una redirección, o el avatar "Settings" (o la fila del Business de la barra lateral) hacia Settings.
+- **Volver devuelve al lugar.** Todos estos son un movimiento atrás, y cada uno vuelve a la pantalla anterior en el offset que tenía cuando se la dejó:
+  - el gesto de atrás del celular o el atrás del navegador;
+  - "‹ <parent>" cuando pasa por el historial;
+  - "Close" de un formulario o Sheet abierto desde dentro de la app (Marco y camino de vuelta).
 
-  The offset applies once the screen's content has loaded, never earlier onto a loading screen. When the content is now shorter, the screen lands as far down as it goes. The browser's forward does the same for the screen it returns to.
-- **A fallback is an arrival.** With no history (a link opened directly), back, "‹" or "Close" goes to the parent named in the back-with-no-history table, and that parent starts at its top.
-- **New sale and Record payment are no exception.**
-  - "Close" or back from New sale opened by "+ New sale" returns to the screen it was opened from, at its offset. "Discard the sale?" still asks first when something was typed (sales.md).
-  - "Close" or back from Record payment without a save returns to the screen underneath at its offset. Its save keeps that place by payments.md's own rule ("Volver donde estabas").
-  - A Record payment opened and closed without a save leaves nothing behind that changes where the next opening or closing lands.
-- **Sheets and overlays leave the page alone.** None of these ever moves the screen under it, and closing returns to the same offset (criterion 20):
-  - opening or closing a sheet, routed or in-page;
-  - a confirmation;
-  - the old overlays (Change password, the expense categories editor, New sale's new-customer overlay);
-  - a toast.
+  El offset se aplica una vez que cargó el contenido de la pantalla, nunca antes sobre una pantalla que está cargando. Cuando el contenido ahora es más corto, la pantalla cae lo más abajo que llega. El adelante del navegador hace lo mismo para la pantalla a la que vuelve.
+- **Una alternativa es una llegada.** Sin historial (un link abierto directamente), atrás, "‹" o "Close" va a la pantalla madre nombrada en la tabla de atrás sin historial, y esa pantalla madre empieza arriba.
+- **New sale y Record payment no son una excepción.**
+  - "Close" o atrás desde New sale abierta con "+ New sale" vuelve a la pantalla desde la que se abrió, en su offset. "Discard the sale?" sigue preguntando primero cuando se tipeó algo (sales.md).
+  - "Close" o atrás desde Record payment sin guardar vuelve a la pantalla de abajo en su offset. Su guardado conserva ese lugar por la regla propia de payments.md ("Volver donde estabas").
+  - Un Record payment abierto y cerrado sin guardar no deja nada atrás que cambie dónde cae la próxima apertura o cierre.
+- **Las Sheets y las ventanas superpuestas no mueven la página.** Ninguna de estas mueve nunca la pantalla de abajo, y cerrar vuelve al mismo offset (criterio 20):
+  - abrir o cerrar una Sheet, con ruta o dentro de la página;
+  - una confirmación;
+  - las ventanas superpuestas viejas (Change password, el editor de Expense categories, la ventana superpuesta de Customer nuevo de New sale);
+  - un toast.
 
-  What counts is the real screen once the sheet or modal closes, by Close, back or a save. On a computer, a routed modal may draw an inert picture of the screen behind it, such as Home's `InicioFondo` behind Record payment. That picture is not held to the screen's offset while the modal is open, and it is not redrawn to match: everything the seller reads and does is in the modal (Drawing as guide), and the computer gets no dedicated polish (Phone first).
-- **Two panes are one screen.** On a computer, picking a row in Customers' or Varieties' two panes, or Varieties' automatic selection of its first variety, never moves the list the seller is looking at.
-- **A screen's own scroll stays its own.** A deliberate scroll a screen already makes (Home's own, Record payment's return after a save) is not changed by this section.
-- **Kept in memory only.** Offsets are remembered only while the app is open in that tab. They are never written to browser storage (ADR-0026) and are never stored together with any business data. A reload forgets them, and a screen reached by back after a reload starts at its top.
+  Lo que cuenta es la pantalla real una vez que la Sheet o el diálogo se cierra, por Close, atrás o un guardado. En una computadora, un diálogo con ruta puede dibujar una imagen inerte de la pantalla de atrás, como `InicioFondo` de Home detrás de Record payment. Esa imagen no tiene que respetar el offset de la pantalla mientras el diálogo está abierto, y no se vuelve a dibujar para que coincida: todo lo que quien vende lee y hace está en el diálogo (**Drawing as guide**), y la computadora no recibe pulido dedicado (Phone first).
+- **Dos paneles son una sola pantalla.** En una computadora, elegir una fila en los dos paneles de Customers o de Products, o la selección automática del primer Product de Products, nunca mueve la lista que quien vende está mirando.
+- **El scroll propio de una pantalla sigue siendo suyo.** Un scroll deliberado que una pantalla ya hace (el propio de Home, la vuelta de Record payment después de un guardado) no lo cambia esta sección.
+- **Solo en memoria.** Los offsets se recuerdan solo mientras la app está abierta en esa pestaña. Nunca se escriben en el almacenamiento del navegador (ADR-0026) y nunca se guardan junto con datos de ningún Business. Una recarga los olvida, y una pantalla a la que se llega con atrás después de una recarga empieza arriba.
 
-### Routes
+### Rutas
 
-- Every screen's route is in English: `/sales`, `/customers`, `/varieties`, `/expenses`, `/analysis`, `/settings`, `/settings/prices`, `/more`, and the same for every other screen. The stock withdrawal form is `/withdrawals/new` (and `/withdrawals/{id}/edit`), a withdrawal's detail `/withdrawals/{id}`. Every screen is registered once, with its kind and its parent, in `scripts/design/screens.json`, which fixes its exact path; each Settings group, each Onboarding step and "Done" are included, as are `/customers/new`, `/customers/{id}/edit` and `/varieties/entries/{id}`.
-- **Varieties** and its screens: `/varieties`, `/varieties/{id}`, `/varieties/catalog` (the catalog screen), `/varieties/entries` ("All entries"), `/varieties/entries/new`, `/varieties/entries/{id}` (editing a stock entry), `/varieties/{id}/entries` (a variety's entries, the same list filtered to it, with the withdrawals that touch it, "‹ <variety>"), `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/new` and `/varieties/archived` (the Archived card). A variety's page is read-only when the variety is archived. `{id}` is the variety's or entry's own id. A reload on any of them opens the screen, never the API's answer, and the front's own API calls still reach the API.
-- Every old Spanish path redirects permanently to its new route, each tested one by one, with a record's id carried across:
-  - `/ventas`, `/clientes`, `/mi-stock`, `/mi-stock/nueva-entrada`, `/mi-stock/entradas/{id}` (to `/varieties/entries/{id}`), `/variedades`, `/variedades/{id}` (to `/varieties/{id}`), `/catalogo`, `/gastos`, `/mas`, and every other one, including the old Owed to you screen's path, which goes to Customers;
-  - `/negocio` goes to Settings;
-  - the old Expenses → Expense categories path (`/gastos/categorias`) goes to Settings → Expense categories.
-- Every redirect target is a registered screen. The server answers every old path through one redirect mechanism; the front has no redirects of its own.
-- The old Catalog had no separate paths for the bot or the header and footer, so nothing redirects to Integrations or Catalog message. Prices is new, so nothing redirects to it.
-- An unknown or mistyped address goes to Home (`/`), as it always has. An Onboarding path opened for a business whose Onboarding is over, or that never had one, goes to Home too. A later task that removes a path with no counterpart decides where that path goes.
-- No route carries a business (ADR-0004); a record's own id in a path is allowed. `/invitation/{token}` and `/reset/{token}` stay as they are (accounts.md).
-- Screen text stays in Rioplatense Spanish; only the routes change.
+- La ruta de cada pantalla está en inglés: `/sales`, `/customers`, `/varieties`, `/expenses`, `/analysis`, `/settings`, `/settings/prices`, `/settings/payments`, y lo mismo para cada otra pantalla. El formulario de Stock withdrawal es `/withdrawals/new` (y `/withdrawals/{id}/edit`), el detalle de un Stock withdrawal `/withdrawals/{id}`. La lista de Payment methods es `/settings/payments/methods` y sus archivados `/settings/payments/methods/archived`. Cada pantalla se registra una vez, con su tipo y su pantalla madre, en `scripts/design/screens.json`, que fija su path exacto; se incluyen cada grupo de Settings, cada paso del Onboarding y "Done", y también `/customers/new`, `/customers/{id}/edit` y `/varieties/entries/{id}`. Las filas `Mas` y `MasOscuro` salen del registro junto con la pantalla More (GH-651). Las filas `InicioHoy` e `InicioOscuro` llevan una sección `section` exacta para el segmento Home | Analysis (GH-723), y para el segmento `Analisis` y `AnalisisOscuro` no se comparan. El avatar de la parte 3 de GH-495 no agrega filas de recorte al registro: se juzga a ojo con `comparisons.mjs` contra los cuatro dibujos (criterio 40).
+- **La venta en curso y la vuelta no tienen ruta** (parte 4 de GH-725): el formulario de Expense sobre New sale vive dentro de New sale. Las filas de teléfono `VentaEnCurso`, `VentaEnCursoOscuro`, `VentaVuelve` y `VentaVuelveOscuro` se alcanzan con los pasos del recorrido del Mobile check (sales.md, "Chequeo en el teléfono"), nunca con un path; ninguna sugiere una ruta que no existe (los paths inventados `/sales/in-progress` y `/sales/resumed` salieron de ellas), y no hay ruta nueva. Las filas `*Compu` de esas pantallas quedan como están hasta una limpieza posterior.
+- En `routes.ts`, el lugar de Home y el de Analysis llevan un `segment` (`home`, `analysis`); los dos son Tab roots con la barra en Home, Analysis conserva su entrada en la barra lateral y ninguna flecha de regreso, y ningún otro lugar, Expenses incluido, lleva `segment`. En el router, Home y Analysis (y solo ellas) cuelgan del layout compartido `HomeLayout`, que les pasa el contexto de outlet que recibe; Expenses nunca. Desde la parte 5 de GH-495, `more` no es un valor de `BarPlace` ni de `RailPlace`, y el lugar de Settings y de sus pantallas tiene la barra en Home, con Home como pantalla madre en el celular.
+- **Products** y sus pantallas: `/varieties`, `/varieties/{id}`, `/varieties/catalog` (la pantalla del Catalog), `/varieties/entries` ("All entries"), `/varieties/entries/new`, `/varieties/entries/{id}` (editar una Stock entry), `/varieties/{id}/entries` (las Stock entries de un Product, la misma lista filtrada a él, con los Stock withdrawals que lo tocan, "‹ <product>"), `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/new` y `/varieties/archived` (la tarjeta Archived). La página de un Product es de solo lectura cuando el Product está archivado. `{id}` es el id propio del Product o de la Stock entry. Recargar cualquiera de ellas abre la pantalla, nunca la respuesta de la API, y las llamadas propias del front a la API siguen llegando a la API.
+- **Campos personalizados** (dibujados en `docs/design/campos-personalizados/`, construidos por #394 y #395; todavía no construidos, así que sus filas en `scripts/design/screens.json` tienen `route: null`): los campos personalizados de una categoría viven bajo esa categoría, junto a Categories en `/settings/products/categories`. En `screens.json` los ids son números concretos de ejemplo (`1` para la categoría y para el campo); acá `:category` es un id de categoría y `:field` un id de campo. La lista es `/settings/products/categories/:category/fields`; su Sheet de campo nuevo es `.../fields/new`; la Sheet de un campo numérico es `.../fields/:field`; sus valores de lista son `.../fields/:field/values` y archivar un valor es `.../fields/:field/values/archive`; copiar un campo a las hojas hermanas es `.../fields/apply-to-siblings`; copiar los campos de otra categoría es `.../fields/copy`. Cada gemelo oscuro tiene el path de su pantalla clara, y las dos pantallas de computadora tienen el path de su pantalla de celular.
+- Cada path viejo en español redirige de forma permanente a su ruta nueva, cada uno probado uno por uno, con el id del registro pasado:
+  - `/ventas`, `/clientes`, `/mi-stock`, `/mi-stock/nueva-entrada`, `/mi-stock/entradas/{id}` (a `/varieties/entries/{id}`), `/variedades`, `/variedades/{id}` (a `/varieties/{id}`), `/catalogo`, `/gastos`, y cada otro, incluido el path de la vieja pantalla Owed to you, que va a Customers;
+  - `/negocio` va a Settings;
+  - el path viejo de Expenses → Expense categories (`/gastos/categorias`) va a Settings → Expense categories.
+- **`/more` y `/mas`** (parte 5 de GH-495): cada uno redirige de forma permanente a Home (`/`), en un solo salto, por el único mecanismo de redirección del servidor. Solo esos dos paths exactos; la cadena de consulta se descarta y la redirección cae en un `/` limpio. Cualquier otro path debajo de ellos (`/more/algo`) no tiene redirección propia: cae bajo la regla de dirección desconocida, que también lleva a Home. Ninguno de los dos cae en un destino más específico: cada uno de los cinco destinos de More tiene su propia entrada, y Home es la llegada amable para un favorito viejo, sin ningún mensaje. `tests/test_static_spa.py` tiene un caso que lo prueba. Esto cambia lo que decidió el ADR `20261109-more-is-retired-…` (que los dos cayeran solo por la regla de dirección desconocida, sin redirección ni test que los nombre), que se enmienda en la misma tarea. Lo decide el ADR [20261116-more-and-mas-redirect-to-home-and-settings-marks-home](../adr/20261116-more-and-mas-redirect-to-home-and-settings-marks-home.md).
+- Cada destino de redirección es una pantalla registrada. El servidor responde cada path viejo mediante un solo mecanismo de redirección; el front no tiene redirecciones propias.
+- El Catalog viejo no tenía paths aparte para el bot ni para el header y el footer, así que nada redirige a Integrations ni a Catalog message. Prices y Payments and expenses son nuevos, así que nada redirige a ellos.
+- Una dirección desconocida o mal tipeada va a Home (`/`), como siempre. Un path del Onboarding abierto para un Business cuyo Onboarding terminó, o que nunca tuvo uno, también va a Home. Una tarea posterior que quite un path sin equivalente decide adónde va ese path.
+- Ninguna ruta lleva un Business (ADR-0004); se permite el id propio de un registro en un path. `/invitation/{token}` y `/reset/{token}` quedan como están (accounts.md).
+- El texto de pantalla sigue en español rioplatense; solo cambian las rutas.
 
-### Routes for screens still to be rebuilt
+### Rutas para pantallas que todavía se van a rehacer
 
-This covers Settings and its groups, the catalog screen and a variety's page, whose screens their own issues rebuild.
+Esto cubre Settings y sus grupos, la pantalla del Catalog y la página de un Product, cuyas pantallas rehacen sus propios issues.
 
-- A route shows the existing screen or content that holds that function today, inside the new chrome. For example, `/settings/users` shows today's users list and "Invite a partner".
-- A route with nothing existing behind it is not registered. The issue that builds that screen adds it.
-- No route renders an empty page, a placeholder or "coming soon".
-- Every function a seller reaches today stays reachable from some registered route. If a function would lose its only way in, its route is registered with today's content.
+- Una ruta muestra la pantalla o el contenido existente que hoy tiene esa función, dentro del marco nuevo. Por ejemplo, `/settings/users` muestra la lista de Users de hoy e "Invite a partner".
+- Una ruta sin nada existente detrás no se registra. La agrega el issue que construye esa pantalla.
+- Ninguna ruta dibuja una página vacía, un marcador de lugar ni "coming soon".
+- Cada función a la que llega quien vende hoy sigue siendo alcanzable desde alguna ruta registrada. Si una función fuera a perder su única forma de entrar, su ruta se registra con el contenido de hoy.
 
-### First run
+### Primer uso
 
-- **Three first-run elements, each for its own business, never two at once**:
-  - **the Onboarding**, for a business opened by a new-business invitation after it shipped (onboarding.md);
-  - **the first-run checklist**, for a business that existed before the Onboarding shipped;
-  - **the after-import notice**, for a business loaded by the spreadsheet import. Once the import loads a business, its Onboarding is over.
-- There is no tour and no welcome screen beyond these.
-- **First-run state belongs to the business.** Every user of it sees the same element: a user who joined by a join invitation sees whatever the business they joined has, or none. A join invitation never opens a business, so it never starts a first run of its own.
-- **What is stored**: the Onboarding's own state (ADR-0036) is never copied. Beyond it, only three facts of the business are kept:
-  1. that the business was loaded by the spreadsheet import, and when. Only the import writes it, inside its single commit, and it is never cleared or moved (import.md). A business imported before this fact existed has none, and is not backfilled;
-  2. that the checklist has gone for good;
-  3. that the after-import notice was dismissed.
+- **Home no muestra ningún elemento de primer uso**: ni el aviso del Onboarding, ni una checklist, ni "Start with your products", ni un aviso posterior a la **Spreadsheet import**. Home no lee `/first-run` ni `/onboarding-progress`, y es el Panel de results.md para un Business en cualquier estado de su configuración (ADR-0081). Desde la parte 3 de GH-495 tampoco quedan restos en el código de Home: ni la checklist, ni el aviso posterior a la Spreadsheet import, ni el aviso "Go on to the setup", ni la lectura propia de primer uso de Home, ni sus ramas en `inicioNotices.ts`. Un test de arquitectura (`homeFirstRun`) lo cuida: Home y sus archivos no importan `api/firstRun` ni `api/onboarding`, y los únicos lectores permitidos de `api/firstRun` son el Shell y Products.
+- **El Onboarding** es el único elemento de primer uso, para un Business abierto con una Invitation de Business nuevo después de que salió (onboarding.md). Una vez que la Spreadsheet import carga un Business, su Onboarding terminó.
+- No hay tour ni pantalla de bienvenida más allá de él.
+- **El estado de primer uso es del Business.** Cada User de él comparte el mismo estado: un User que se sumó con una Invitation para sumarse comparte el del Business al que se sumó, o ninguno. Una Invitation para sumarse nunca abre un Business, así que nunca arranca un primer uso propio.
+- **Qué se guarda**: el estado propio del Onboarding (ADR-0036) nunca se copia. Además de él, se guardan solo tres hechos del Business:
+  1. que el Business lo cargó la Spreadsheet import, y cuándo. Solo la Spreadsheet import lo escribe, dentro de su único commit, y nunca se borra ni se mueve (import.md). Termina el Onboarding del Business. Un Business importado antes de que existiera este hecho no tiene ninguno, y no se completa hacia atrás;
+  2. que la checklist se fue para siempre;
+  3. que se descartó el aviso posterior a la Spreadsheet import. Ya no lo lee ninguna pantalla; quitarlo es una decisión aparte (ADR-0081).
 
-  None of them holds personal data. No checklist step is ever stored as ticked.
-- Which element shows, and each checklist step, is answered by the server for the session's business.
+  Ninguno guarda datos personales. Ningún paso de la checklist se guarda nunca como tildado.
+- **Las reglas laterales** siguen, sin ninguna pantalla que las anuncie. Rigen para un Business que existía antes de que saliera el Onboarding y que todavía no cumplió los dos pasos obligatorios, y valen para cada User de él:
+  - los pasos, calculados a partir de los datos del Business en el momento, nunca de una marca guardada: (1) un Product con **Current price** hoy (obligatorio); (2) cualquier Stock entry (obligatorio); (3) el **Pinned catalog** publicado al menos una vez y (4) un segundo User en el Business, ambos opcionales y que nunca las retienen;
+  - se van para siempre la primera vez que los pasos 1 y 2 están cumplidos los dos, y nunca vuelven, aunque la condición de un paso obligatorio después vuelva a ser falsa (por ejemplo, se elimina la única Price entry);
+  - mientras rigen, "+ New sale" sigue visible y, sin ningún Product con precio hoy, dice en palabras qué falta;
+  - mientras rigen y nada califica para el Catalog, "Send catalog" está deshabilitado con su motivo en palabras (p. ej. "Add a product with a price and its stock"). Es la única vez que se deshabilita (catalog.md). El link de Integrations a la pantalla del Catalog nunca se deshabilita;
+  - un Business recién creado y un Business importado no las tienen: el primero tiene el Onboarding, el segundo llega con precios y Stock.
+- Qué regla rige, y cada paso, lo responde el servidor para el Business de la Session.
 
-### What `/first-run` answers, and how it is proven (GH-45 follow-up)
+### Qué responde `/first-run`, y cómo se prueba (seguimiento de GH-45)
 
-- **The shape of `checklist`**: outside the checklist kind (the Onboarding notice, "Start with your varieties", none), `checklist` is an empty list `[]`, never `null`. The after-import notice is its own flag and never changes it. This is the one statement of the shape: the plan, the API schema and the front read it, and the contract checker is not changed. Home shows the checklist only when the kind says so, never because the list has items.
-- **`nothing_qualifies`** is true exactly when the kind is the checklist and the catalog has no text to send; in every other kind it is false, whatever the catalog holds. It is read only by the checklist's rule that disables "Send catalog", and outside the checklist it means nothing. It is never widened to answer for every kind.
-- **The agreement test** compares `/first-run` with its sources in eight states: no variety; priced without stock; stock without a price; sold out; qualifying; checklist gone; an open Onboarding; and an imported business, while its notice shows and once it is over. In every state:
-  - the kind and the notice flag equal what their sources say: `/onboarding-progress`, the import fact and the publish fact;
-  - `GET /catalog` itself is read (not only the port the server reads it through), and `nothing_qualifies` equals "the kind is the checklist and `GET /catalog` has no text".
+- **Quién lo lee**: solo el Shell ("+ New sale", la línea de precio faltante) y Products ("Send catalog" deshabilitado). Home no lo lee. El endpoint conserva su respuesta tal como está (ADR-0046); `POST /first-run/import-notice/dismissal` y el indicador `import_notice` no tienen lector, y quitarlos es una decisión aparte (ADR-0081). Como las reglas laterales son lo único que queda leyéndolo, recortar la respuesta a lo que leen el Shell y Products es una limpieza posterior, que bloquea solo la última parte de GH-495 (D-61b9b2a6); hasta entonces el tipo `checklist`, `nothing_qualifies` y la línea de precio faltante siguen con sus nombres de código.
+- **La forma de `checklist`**: fuera del tipo checklist (el aviso del Onboarding, "Start with your products", ninguno), `checklist` es una lista vacía `[]`, nunca `null`. El indicador `import_notice` es independiente y nunca la cambia. Esta es la única declaración de la forma: el plan, el esquema de la API y el front la leen, y el verificador del contrato no cambia. El front lee la regla lateral solo cuando el tipo dice checklist, nunca porque la lista tenga elementos.
+- **`nothing_qualifies`** es verdadero exactamente cuando el tipo es la checklist y el Catalog no tiene texto para enviar; en cualquier otro tipo es falso, tenga lo que tenga el Catalog. Lo lee solo la regla que deshabilita "Send catalog", y fuera de la checklist no significa nada. Nunca se amplía para responder por cada tipo.
+- **El test de concordancia** compara `/first-run` con sus fuentes en ocho estados: sin Product; con precio sin Stock; con Stock sin precio; agotado; que califica; checklist ida; un Onboarding abierto; y un Business importado, mientras tiene el indicador `import_notice` y una vez que terminó. En cada estado:
+  - el tipo y el indicador son iguales a lo que dicen sus fuentes: `/onboarding-progress`, el hecho de la Spreadsheet import y el hecho de la publicación;
+  - se lee el propio `GET /catalog` (no solo el puerto por el que lo lee el servidor), y `nothing_qualifies` es igual a "el tipo es la checklist y `GET /catalog` no tiene texto".
 
-  Each first-run element (the Onboarding notice, the checklist, "Start with your varieties", the after-import notice, none) appears in at least one state. It adds checks only; no rule or matrix here changes.
-- **Both themes**: the front tests of the Onboarding notice, the checklist, "Start with your varieties", the after-import notice, "+ New sale"'s missing-price line and the disabled "Send catalog" each run in light and dark, keeping every assertion they had. Home's figures are out of this scope.
+  Cada tipo que el endpoint responde aparece en al menos un estado. Solo agrega controles; no cambia ninguna regla ni matriz de acá.
+- **Los dos temas**: los tests del front de la línea de precio faltante de "+ New sale" y del "Send catalog" deshabilitado corren cada uno en claro y en oscuro, conservando cada aserción que tenían. Las cifras de Home quedan fuera de este alcance.
 
-### The Onboarding (first run of a brand-new business)
+### El Onboarding (primer uso de un Business recién creado)
 
-- **Entry**: accepting a new-business invitation lands in the Onboarding instead of Home. That is the only time it opens by itself.
-- **The Home notice**: while it is not over, "Go on to the setup" sits at the top of Home, on the phone and on `InicioCompu`, in the checklist's place (results.md gives Home's order). It shows "N of 6 steps" and what is next, opens the Onboarding at its resume step, and cannot be dismissed.
-- **While it is not over**, the checklist and "Start with your varieties" do not show.
-- **It adds no side rule**: "+ New sale" and "Send catalog" behave as for any business. What is missing is told by the notice, by New sale's own no-price line before saving and by the catalog screen's empty state.
-- **Once it is over** ("Done" reached, or the import loaded the business), it never shows again; ongoing gaps are told by the standing notices.
-- Its steps, passes, resume and closing screen are onboarding.md.
+- **Entrada**: aceptar una Invitation de Business nuevo cae en el Onboarding en lugar de Home. Es la única vez que se abre solo. Después, se vuelve a él solo abriendo la dirección `/onboarding`: ninguna pantalla enlaza a él, ni Home ni Settings.
+- **Home no lo anuncia**: ni un aviso, ni una marca, ni un recordatorio. Home es el Panel, sea cual sea el estado de la configuración.
+- **Abrir `/onboarding`**:
+  - mientras no terminó, lleva al paso donde se retoma;
+  - con cada paso hecho o pasado y sin "Done" alcanzado, manda `advance` una sola vez por montaje, muestra "Done" (reemplazando su entrada del historial) y con eso termina el Onboarding (ADR-0081). Una segunda apertura lleva a Home;
+  - para un Business cuyo Onboarding terminó (por "Done" o por la Spreadsheet import) y para uno que nunca tuvo uno, lleva a Home.
+- **No agrega ninguna regla lateral**: "+ New sale" y "Send catalog" se comportan como para cualquier Business. Lo que falta lo dicen la propia línea de falta de precio de New sale antes de guardar y el estado vacío de la pantalla del Catalog.
+- **Una vez que terminó** ("Done" alcanzado, o la Spreadsheet import cargó el Business), no vuelve; los faltantes que siguen los dicen los avisos permanentes.
+- Sus pasos, pases, retomar y pantalla de cierre están en onboarding.md.
 
-### First-run checklist (businesses that existed before the Onboarding)
+### Restricciones
 
-- **The steps**, each worked out from the business's data at the moment, never from a stored tick:
-  1. a variety with a current price today (required);
-  2. any stock entry (required);
-  3. the pinned catalog published at least once (optional);
-  4. a second user in the business (optional).
-- A met step shows its box checked and the word "Done", never color alone. The step labels are design's wording, within the icon and text rule's length limits; the checklist carries no attention icon.
-- **Who sees it**: a business that existed before the Onboarding shipped and has not yet met both required steps, and every user of it. A brand-new business gets the Onboarding instead and never sees the checklist. The optional steps never hold it on screen; they stay reachable in Settings (Integrations, Users).
-- **When it goes**: for good, the first time steps 1 and 2 are both met.
-  - It never comes back, even if a required step's condition later becomes false again (say, the only price entry is deleted).
-  - Ongoing gaps are told by the standing notices: "Start with your varieties" and the pinned catalog's out-of-date notice.
-- **Where**: at the top of Home, on the phone and on `InicioCompu` alike (results.md gives Home's order). While it applies, it takes the first-run slot, and "Start with your varieties" does not show.
-- **While it shows**:
-  - "+ New sale" stays visible and, with no variety priced today, says in words what is missing;
-  - while nothing qualifies for the catalog, "Send catalog" is disabled with its reason in words (e.g. "Add a variety with a price and its stock"). This is the only time it is ever disabled (catalog.md). Integrations' link to the catalog screen is never disabled.
-- **An imported business** arrives with prices and stock, so it never sees the checklist.
+- Nada de acá agrega una ruta que responda datos del Business más allá de lo que necesitan el Panel de Home y el estado de primer uso; cada pantalla lee las rutas de su dueño, que ya están en el barrido de aislamiento y en el test de rutas protegidas. Las rutas propias del Onboarding, y cualquier ruta del estado de primer uso (el hecho de la Spreadsheet import, el fin de la checklist), se suman a los dos, y ese estado lleva `business_id` y lo exporta y lo borra la **Business removal** (ADR-0015). Las rutas de los Payment methods (`/api/payment-methods*`) son de payment-methods.md y están en los dos.
+- Servir un path del front a una navegación del navegador nunca amplía lo que la API responde a un pedido JSON, y no agrega ninguna ruta de la API (ADR-0024).
+- Lo que deciden el Onboarding y las reglas laterales lo responde el servidor solo para el Business de la Session. Abrir `/onboarding` puede terminar solo el Onboarding del Business de la Session, y solo en `finish`; el pedido no nombra ningún Business (ADR-0081).
+- Ningún id de Business en una URL; ningún dato personal ni dinero en la consola o el almacenamiento del navegador (accounts.md). La **Theme choice** es lo único que se guarda en el dispositivo (ADR-0026); los hechos de primer uso se guardan en el servidor, nunca en el navegador. Los offsets de scroll (GH-480) viven solo en la memoria de la app en marcha, nunca en `sessionStorage`, `localStorage` ni ningún otro almacenamiento del navegador. El segmento Home | Analysis no recuerda nada: Home siempre abre en su vista Home. La venta en curso de New sale tampoco se guarda en ningún lado: vive en la memoria de la app y una recarga la pierde (sales.md).
+- Los mensajes de respuesta siguen accounts.md, en Settings, el Onboarding y Home como en todas partes:
+  - sin red se muestra "No connection";
+  - un error del servidor muestra un reintento genérico;
+  - un registro que ya no existe sigue la regla de "That is gone.".
+- **Disposición en el celular (GH-319)**:
+  - Cada Sheet de celular la dibuja el único `Sheet` compartido (ADR-0062). Ningún formulario define su propio fondo, ubicación de Close, disposición de acción fija ni bloqueo de scroll.
+  - Donde una Sheet tiene afuera, su toque afuera y su Close leen el mismo valor `touched`: el `dirty` que el host ya le pasa a `useLeaveGuard`. En la Sheet a pantalla completa del celular nada fuera de ella la cierra.
+  - "Teclado abierto" lo decide solo `useVisualViewport` (ADR-0028 tal como se enmendó).
+  - Las reglas del celular nunca editan la rama de diálogo `PriceFrame` de ADR-0044 ni la rama de computadora de `CobroFrame`.
+  - Cada paso deja el **Mobile check** en verde, borra de las listas cada infractor que pone en verde, conserva las claves del registro y no agrega ningún infractor fuera de las reglas de canje o de fila nueva de gate.md.
+- **El retiro de More (GH-651)**: ningún dibujo de `docs/product/design-system/pantallas/` se edita; las filas `Mas` y `MasOscuro` de `screens.json` y sus infractores salen en el mismo diff que quita la pantalla, y `PAUSED_CEILING` y `PAUSED` no crecen.
+- **El segmento Home | Analysis (GH-723)**:
+  - La opción marcada sale solo de `placeOf(...).segment` en `routes.ts`; ningún componente compara un path, un estado o el historial.
+  - Cada opción es un link de react-router con `replace` y `aria-current="page"`, nunca `role="tab"`. Un test que afirma que no se agregó una entrada al historial mira `router.state.historyAction === 'REPLACE'` y un `historyIndex` sin cambios, nunca `window.history.length`.
+  - Las clases `ajustes-tema*` de Settings no se tocan; el segmento tiene su propio CSS.
+  - Antes de construir, la sección del segmento en `InicioHoy` e `InicioOscuro` se ancla con una etiqueta `section` que aparece exactamente una vez en su dibujo (`Analisis` y `AnalisisOscuro` no se comparan para el segmento, pero sí para el avatar, criterio 40); una etiqueta que no es única frena el trabajo y va al dueño con los números. Las dos filas se capturan lado a lado con `scripts/design/comparisons.mjs --only` y se juzgan a ojo; no se pide ningún número de AE contra el dibujo. Ninguna tolerancia se agranda y ningún infractor se lista.
+- **El encabezado de Home y Analysis (parte 2 de GH-723)**:
+  - Cada cuerpo (Home y Analysis) conserva su propia área de contenido como `main`, su estado de carga y su `ref`, así que `aria-busy`, `useReturnToPlace` y ScrollSync no cambian.
+  - Ninguna palabra ni nombre accesible nuevo en el Copy module y ningún formateador de fecha nuevo: la línea de fecha es una cifra.
+  - Se borró el código que perdió su último uso: #736 sacó la variante de la Yerba mark sola de `BrandMark`, `clipRoot`, el CSS `.inicio__cabecera-marca`, `.brand-mark--mark` y las reglas muertas de `.inicio__cabecera`, y el token `--marca-tamano`. `brandBox` se fue antes, con #732.
+  - Ninguna lista de infractores crece y ninguna tolerancia se agranda; una falla se arregla en el código, nunca en una lista.
+- **El nombre de la opción Home (#733)**: el valor del segmento en `HOME_VIEWS`, `copy/readers/homeViews.ts` y el tipo `Segment` del registro es `home`, nunca `today`; la palabra sale de `common:homeSegmentHome`, y en-XA se regenera con `web/scripts/i18n/pseudo.ts`. El ADR `20261109-more-is-retired-…` y los docs generados no se editan por la etiqueta vieja.
+- **El avatar "Settings" de Home y Analysis (parte 3 de GH-495)**:
+  - Su nombre accesible sale del Copy module, en inglés, sin ningún literal en un componente; las iniciales salen solo de `initialsOf`; no agrega ninguna ruta de API.
+  - Es un link, no un botón: los tests afirman su nombre, sus iniciales y que lleva a Settings, nunca un rol de botón. Lo que queda marcado sale solo de `placeOf`.
+  - La caja y el círculo son del componente compartido, así que el cambio se ve en las cinco pantallas que lo montan, aunque esta parte lo juzga contra los dibujos solo en Home y Analysis. Sales, Customers y Products conservan su montaje, porque sus encabezados son de la parte 5; el cambio ahí queda dentro del dibujo y sus capturas no empeoran. Expenses en el celular no monta el avatar: ningún dibujo `Gastos` lo lleva y el dueño lo decidió el 2026-11-14 en #724.
+  - Lo que ya se cumplía (el link, su nombre, las iniciales, la caja de al menos 44×44) se conserva y no se rehace.
+  - El avatar se juzga a ojo contra los cuatro dibujos, lado a lado con `comparisons.mjs` (decisión 1 del humano); no se pide ningún número de AE contra el dibujo. Las capturas de antes y después, comparadas con `ae.mjs --box`, prueban que nada fuera del avatar cambia (las filas de la computadora, en 0 exacto; el contenido bajo la fila del teléfono sube lo que mide el cambio de alto de la fila, de 44 a 36 px como mucho). Nunca se agranda una tolerancia ni se lista un infractor.
+  - Quitar los restos de primer uso de Home borra solo lo que alimenta un aviso de Home. La lectura de `/first-run` del Shell y las reglas laterales de "+ New sale" y "Send catalog" se quedan, fijadas por un test.
+  - Si un elemento borrado es una referencia del e2e (una clase o un localizador en `web/e2e/helpers/` o en varias specs), la misma tarea migra cada uso en el e2e; el elemento nunca se vuelve a poner, visible ni oculto, para satisfacer un localizador (D-69509906).
+- **Una Expense desde New sale (parte 4 de GH-725)**: el registro y los documentos se ponen al día sin tocar `docs/architecture/generated`, `docs/api` ni `decisiones.md`; ninguna lista de infractores crece y ninguna tolerancia se agranda.
+- **El fin de More en el celular (parte 5 de GH-495)**:
+  - El registro (`web/src/routes.ts`, `web/src/shell/chrome.ts`) es lo único que decide qué entrada queda marcada (`placeOf`), nunca un path, un estado ni el historial. `more` sale de `BarPlace` y de `RailPlace`; la pantalla madre de Settings en el celular es Home, y sin historial atrás desde la lista de Settings va a `/`.
+  - La redirección de `/more` y `/mas` pasa por el único mecanismo de redirección del servidor; el front no agrega ninguna.
+  - El escaneo de arquitectura que mantiene retirado More (ningún archivo bajo `web/src`, `web/e2e` ni `tests` nombra More ni `/more`) admite una sola excepción: el caso de redirección de `tests/test_static_spa.py`. "More info" sigue pasando, como antes.
+  - El avatar que se monta en Sales, Customers y Products es el mismo `SettingsAvatar`, sin cambios; ninguna otra cosa de esos encabezados cambia (decisión 1 del humano), y si no entra sin superponerse o sin romper el área segura, la construcción se frena y va al dueño.
+  - `Shell.test.tsx` y cada spec del e2e que nombra More o `/more` (la lista sale de una búsqueda al empezar) se migran: se quitan solo las aserciones sobre More y se conserva el resto; una aserción que deja de cumplirse se informa, nunca se borra. More nunca se vuelve a poner, visible ni oculto, para satisfacer un localizador (D-69509906).
+  - Toda palabra y nombre accesible sale del Copy module, en inglés, sin ningún literal en un componente; ningún link ni botón abre algo que todavía no está construido (decisión 4 del humano).
+  - El Mobile check sigue en verde; ninguna lista de infractores crece y ninguna tolerancia de captura o de control se agranda.
 
-### After-import notice
+## Métricas
 
-- A business the spreadsheet import loaded (import.md), as recorded by the import itself, shows on Home "Connect the bot so the pinned catalog updates by itself", with the attention icon (icon-and-text-rule.md).
-- It can be dismissed. It shows until it is dismissed or the pinned catalog is first published, whichever comes first, and then never again. A dismissal is for the business: no partner sees it afterwards.
-- A business imported before the import recorded it never sees the notice.
+- **Presupuesto de toques (criterio 1)**: a través del front, desde cada Tab root, en viewports de celular y de computadora, la corrida de punta a punta cuenta los toques para abrir: el formulario de Sale (1), Record payment con el Customer elegido desde Customers y desde Home (≤2), la pantalla del Catalog (≤2), el formulario de Stock entry (≤2), el formulario de Stock withdrawal (≤2, por Products → "Take from stock") y el formulario de Expense por Analysis (en el celular, 2 desde Home y 3 desde Sales, Customers y Products; en una computadora, ≤2). 100% dentro del presupuesto. El camino de 2 toques "+ New sale" → "Expense" desde cada Tab root del celular no lleva un conteo propio por Tab root: lo sostienen "+ New sale" en cada Tab root (este criterio, 1 toque, y el criterio 19) y el tile "Expense" siempre ofrecido en New sale, incluso sin líneas, que el recorrido del Mobile check toca en el estado de la franja (sales.md, criterio 40).
+- **Settings en un solo lugar (criterio 2)**: cada configuración de todo el Business nombrada en los docs del producto está en exactamente un grupo de Settings y en ninguna otra pantalla, incluidos los interruptores de precio y los Payment methods; la pantalla del Catalog no edita el Catalog header and footer, Expenses no tiene opción de categorías y la vieja pantalla Business no existe; cada configuración de un solo Product está solo en la página del Product. Settings se abre en 1 toque y Prices en ≤2 desde cada Tab root, en celular y computadora, y la lista de Payment methods en 3. Mientras el lugar provisorio reemplaza a Integrations y Catalog message, se llega a él solo desde la pantalla del Catalog y desde ninguna pestaña, entrada del encabezado ni grupo de Settings. Los pasos del Onboarding escriben a través de las rutas de los dueños, y un valor guardado ahí se lee igual en Settings.
+- **Un dato, un lugar (criterio 3)**: ningún precio, Stock entry, Stock withdrawal, umbral ni Catalog attribute se puede editar desde dos pantallas, verificado contra los docs y el diseño. Una Stock entry se edita con su único formulario, `/varieties/entries/{id}`, sea cual sea la lista desde la que se abrió.
+- **Nada perdido, nada inventado (criterio 4)**: cada acción que quien vende tenía antes del rediseño, y todo lo alcanzable en master o en #59, corresponde a un lugar de la estructura nueva, salvo el canal del Customer; la barra, la barra lateral, el encabezado del celular, la tarjeta Expenses de Analysis y Settings muestran exactamente las opciones listadas arriba, sin grupo de marcador de lugar ni opción del Onboarding; ningún link apunta a una pantalla que falta. Las especificaciones de punta a punta de #47 y las esperas de tests de #118 pasan sin editarse para que encajen.
+- **Marco (criterios 5, 9)**: cada pantalla de los docs y de `scripts/design/screens.json` se clasifica como exactamente un tipo con una pantalla madre (Expenses, con su tipo de celular y de computadora nombrados), incluidos los pasos del Onboarding y "Done", y tests del front verifican su marco: los Tab roots con la barra y "+ New sale", las tarjetas con "‹ <parent>" y sin "+ New sale", los formularios y las Sheets sin ninguno de los dos, "Close" y una confirmación al salir con cambios sin guardar. El formulario de Stock entry dice "Close", nunca "Back"; el formulario de Customer muestra "Close".
+- **Un solo movimiento atrás (criterio 10)**:
+  - cada salida por un registro que ya no existe (formulario de Stock entry, formulario de Customer, Record payment), abierta desde su pantalla madre, deja el historial con la pantalla madre una sola vez, y un atrás sale; abierta con un link directo, va a la pantalla madre nombrada;
+  - cada fila de la tabla de atrás sin historial se prueba una por una; atrás sin historial desde la lista de Settings va a Home en el celular y en una computadora; desde un grupo de Settings, a la lista de grupos; desde Expenses en el celular, a Analysis; desde el detalle de un Stock withdrawal, a Products; desde la página de un Archived product, a Archived; desde Archived, a Products; desde el Onboarding, a Home;
+  - en una computadora, elegir filas en los dos paneles de Products y de Customers, y el primer Product elegido automáticamente de Products, dejan atrás en un paso; en el celular, abrir un registro agrega una entrada al historial;
+  - tocar "Collect from <name>" en una fila de Customers y en una fila de Home abre Record payment con el Customer elegido, lleva el estado de historial de la app, y atrás lo cierra en un movimiento;
+  - "+ New sale", en la zona de la barra y en la barra lateral, abre New sale con el estado de historial de la app, y su "Close" sin tocar va un paso atrás hasta la pantalla desde la que se abrió;
+  - el formulario de Expense abierto desde New sale en el celular vuelve a New sale en un movimiento, con la venta intacta; el estado de la vuelta del Mobile check lo recorre (sales.md, criterio 40).
+- **Barra accesible (criterio 6)**: un test de Playwright a 320 px con el texto al 130 % muestra entera cada etiqueta de pestaña; la pestaña activa lleva `aria-current` y una marca que no es color; ningún estado se dice solo por color.
+- **Settings (criterio 8)**:
+  - tests del front:
+    - cada grupo tiene "Close" y no tiene barra;
+    - los cambios sin guardar preguntan, y un grupo sin tocar se cierra de inmediato;
+    - Appearance no muestra guardar, toast ni aviso;
+  - Prices está después de Users y antes de Payments and expenses, en `/settings/prices`; Payments and expenses está antes de Integrations, en `/settings/payments`;
+  - Integrations muestra el link a la pantalla del Catalog, sin estado del fijado y sin Publish, y la línea "unpin it yourself in Telegram" después de un cambio de token o de canal;
+  - una corrida de punta a punta del front desde un viewport de celular:
+    - renombra el Business y crea un link para sumarse;
+    - cambia y guarda Prices;
+    - corre Test it y sigue el link a la pantalla del Catalog;
+    - edita el Catalog header and footer;
+    - agrega, renombra y quita una categoría, incluido un rechazo al quitar;
+    - cambia Appearance, cambia la contraseña y cierra sesión;
+  - la corrida de punta a punta de celular `web/e2e/paymentMethods.spec.ts` agrega un Payment method, lo edita y al volver a abrirlo ve lo guardado, y lo archiva, lo restaura y lo elimina.
+- **Matriz de primer uso, el Onboarding**: 100% en verde, celular y computadora:
+  - un Business recién creado cae en el Onboarding al aceptar su Invitation; Home, abierto después, no muestra ningún aviso del Onboarding;
+  - mientras corre, "+ New sale" y "Send catalog" se comportan como para cualquier Business;
+  - `/onboarding` retoma en el primer paso ni hecho ni pasado; con cada paso hecho o pasado y sin "Done", muestra "Done" y lo termina, y una segunda apertura lleva a Home;
+  - un Business preexistente y un Business importado (incluido uno que cayó en el Onboarding antes de la Spreadsheet import) caen en Home al abrir `/onboarding`; un User que se suma a un Business a mitad del Onboarding comparte su estado.
+- **Matriz de primer uso, Home y las reglas laterales (criterio 12)**: 100% en verde, celular y computadora:
+  - Home no muestra ningún aviso de primer uso ni "Start with your products", para un Business en Onboarding, uno preexistente, uno importado y uno sin precio hoy, y sigue mostrando "Your Telegram catalog is out of date" mientras aplica; Home no pide `/first-run` ni `/onboarding-progress`;
+  - un Business que existía antes del Onboarding y no cumplió los pasos 1 y 2 tiene la línea de precio faltante de "+ New sale" y el "Send catalog" deshabilitado cuando nada califica;
+  - se van la primera vez que los pasos 1 y 2 están cumplidos los dos, sean como sean el 3 y el 4, y eliminar después la única Price entry nunca las trae de vuelta;
+  - un Business importado y uno recién creado nunca las tienen;
+  - un User que se sumó ve las reglas de su Business, o ninguna.
+- **Estado de primer uso aislado**: sus rutas están en el barrido y en el test de rutas protegidas; la Business removal deja 0 filas de él y conteo exportado = conteo borrado.
+- **Concordancia de primer uso (criterios 13, 14)**: en los ocho estados, el tipo y el indicador `import_notice` de `/first-run` son iguales a sus fuentes, y `nothing_qualifies` es igual a "el tipo es la checklist y `GET /catalog` no tiene texto": 0 diferencias; cada tipo que el endpoint responde aparece en al menos un estado; un `nothing_qualifies` roto a propósito hace fallar el test, mostrado una vez en el PR y sin commitear. 0 hallazgos de estos tipos en el head que se integra, y 0 arrastrados a otra tarea.
+- **Una sola forma (criterio 15)**: un test del backend muestra `checklist == []` para cada tipo que no es la checklist; un test del front muestra que `[]` se lee como sin checklist; el plan, el esquema y el front concuerdan, y el código del verificador del contrato no cambia.
+- **Los dos temas (criterio 16)**: cada uno de los tests del front de las reglas laterales (la línea de precio faltante de "+ New sale" y el "Send catalog" deshabilitado) corre en claro y en oscuro, y ningún test tiene menos aserciones que antes.
+- **Nada aflojado (criterio 18)**: cada suite pasa; los únicos tests editados son el test de concordancia, los tests de primer uso que quedan y los dos tests del registro, cada uno conservando sus aserciones; bajo `web/src/` no cambia nada salvo tests, aparte del tipo `/first-run` del front si declaraba `checklist` como anulable.
+- **Redirecciones (criterio 11)**: cada path viejo en español que se movió responde una redirección permanente a su ruta en inglés, probado uno por uno, incluidos `/negocio`, `/gastos/categorias`, `/catalogo`, `/mi-stock/nueva-entrada`, y `/variedades/{id}` y `/mi-stock/entradas/{id}` con el id pasado. `/more` y `/mas` responden cada uno una redirección permanente a `/` en un solo salto, también con una cadena de consulta, que se descarta; `/more/algo` no recibe esa redirección y cae en Home por la regla de dirección desconocida (`tests/test_static_spa.py`). Un test muestra que cada destino de redirección es un path de `screens.json`, sin excepción. Hay un solo mecanismo de redirección, en el servidor, y ninguno en el front.
+- **Recargas bajo `/varieties` (criterio 11)**: una navegación del navegador a cada ruta de Products, incluidas las que llevan parámetros (`/varieties/{id}`, `/varieties/{id}/entries`, `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/entries/{id}`) y `/varieties/archived`, abre la pantalla, nunca la respuesta de la API; las llamadas propias del front a la API siguen llegando a la API.
+- **Una estructura (criterio 7)**: los docs, CONTEXT.md, `pantallas/` y `screens.json` nombran las mismas pantallas y rutas, incluidos el formulario y el detalle de Stock withdrawal, la tarjeta Archived, la página del Archived product, Prices, Payments and expenses con su lista de Payment methods y sus archivados, las pantallas del Onboarding, Home sin ningún estado de primer uso, y las filas de la venta en curso y de la vuelta (`VentaEnCurso`, `VentaVuelve` y sus oscuras) sin ruta propia; Zeta aprueba el pull request que las enuncia.
+- **Diseño**: `scripts/design/compare.sh` corre antes y después para el formulario de Stock entry, el formulario de Customer, New sale y Home (celular y computadora, los dos temas), adjuntado al PR y juzgado a ojo; `NuevaVentaCompu` sale sin cambios; cualquier diferencia con el diseño se lista en el PR.
+- **Velocidad en el celular (GH-319, con el criterio 1)**: el e2e de New sale pasa sin editarse, con la misma cantidad de toques hasta una Sale guardada. Una Sale se registra desde un viewport de celular en menos de 60 s.
+- **Marco a mano (criterio 19)**:
+  - El Mobile check corre a 320, 360 y 390 px, en las posiciones de scroll de arriba, del medio y de abajo. En cada Tab root, incluido el marco de Analysis, encuentra la barra y "+ New sale" dentro del viewport con la última fila entera arriba de ellos. En las tarjetas encuentra la barra y ningún botón, y en formularios y Sheets ninguno de los dos.
+  - Quedan 0 infractores `chrome-at-load`, `chrome-mid-scroll` o de etiqueta de barra para las pantallas del alcance.
+- **Teclado (criterio 19)**:
+  - La matriz unitaria de la decisión del teclado pasa al 100%: hueco de iOS, caída de Android, foco al montar, un cambio de la barra de direcciones de menos de 120 px, `scale = 2`, y sin `visualViewport` con foco en texto, fecha y select.
+  - En Customers, el e2e oculta la barra y el botón con el teclado abierto y los trae de vuelta con el texto de búsqueda y el offset de scroll sin cambios.
+  - Un scroll del tamaño de Android mantiene la barra visible.
+  - `nuevaVentaTelefono.spec.ts` y los tests existentes del hook pasan sin editarse.
+- **Acción fija y foco (criterio 19)**:
+  - En cada Sheet, el borde inferior de la acción queda dentro de `--inset-abajo` del borde inferior de la Sheet. Se verifica en renombrar (el formulario más corto) y en un Stock withdrawal con líneas (el más alto).
+  - Un test del front por formulario afirma su control con el primer foco, incluido el primer campo de Record payment.
+  - Una dirección directa muestra cada Sheet con ruta sobre su pantalla madre, un test por ruta.
+- **Entrar, objetivos y texto (criterio 19)**:
+  - 0 infractores `h-scroll`, `name-overflow` o `figure-split` a 320 y 246 px con los datos extremos de la semilla, en cada pantalla de celular salvo el contenido de Analysis.
+  - 0 infractores `touch-target`, `text-size` o `autocomplete` en las pantallas del alcance.
+  - Ningún infractor nombra los estados recorridos de la Sheet de Record payment.
+- **Nada perdido (criterio 20)**:
+  - Tests de giro del viewport en el formulario de precio y en Record payment conservan el texto tipeado.
+  - Close desde una lista desplazada vuelve al mismo offset.
+  - Tests unitarios de `Sheet`, donde se dibuja un fondo: tocarlo cierra una Sheet sin tocar y no hace nada en una tocada.
+  - Un test unitario de `Sheet` en el celular: un toque en la franja de área segura de arriba deja la Sheet abierta, tocada o sin tocar.
+  - Los tests existentes de cambios sin guardar pasan sin editarse.
+- **Computadora sin tocar (criterio 20)**: las capturas de computadora de las pantallas tocadas no cambian. La rama de diálogo de `PriceFrame` y la rama de computadora de `CobroFrame` tienen 0 líneas cambiadas.
+- **Listas de infractores (GH-319)**: 0 infractores agregados fuera de las reglas de canje o de fila nueva de gate.md. Cada aserción nueva se muestra fallando una vez sobre un caso roto a propósito en el PR, y ese caso no se commitea.
+- **Scroll al cambiar de pantalla (criterios 21–23)**: una corrida de punta a punta a 320, 375 y 430 px y a 1280 px, 100% en verde, sin ninguna aserción aflojada:
+  - desde una lista desplazada bien por debajo de su primera pantalla, una pestaña, un link y una fila hacia su detalle hacen caer cada uno la pantalla nueva en el offset 0;
+  - atrás (el del navegador o el del celular) y "‹" desde un detalle abierto en una lista de Sales desplazada vuelven a Sales en el offset en que se la dejó;
+  - New sale abierta con "+ New sale" desde una lista de Customers desplazada y cerrada sin tocar vuelve a Customers en su offset;
+  - Record payment abierto con "Collect" desde una lista desplazada vuelve a esa lista en su offset, una vez cerrado con "Close" y otra con atrás, sin guardar. Una apertura y un cierre siguientes caen igual. En una computadora, el offset se lee en la pantalla real después de que se cierra el diálogo; no se afirma el offset de una imagen de fondo inerte mientras el diálogo está abierto (`InicioFondo` de Home);
+  - un link directo a un formulario, cerrado, abre su pantalla madre alternativa en el offset 0;
+  - abrir y cerrar una Sheet deja sin cambios el offset de abajo;
+  - en una computadora, elegir una fila en los dos paneles de Customers deja sin cambios el offset de la lista.
 
-### Constraints
+  Tests unitarios cubren la decisión de llegada o vuelta y las secuencias abrir → Close y abrir → atrás de Record payment. Después de la corrida, el almacenamiento del navegador no guarda nada salvo la Theme choice. Cada aserción nueva se muestra fallando una vez sobre un caso roto a propósito en el PR, y ese caso no se commitea.
+- **El retiro de More (criterios 24–26)**:
+  - 0 archivos bajo `web/src`, `web/e2e` y `tests` nombran More o `/more`, salvo el caso de redirección de `tests/test_static_spa.py` (parte 5 de GH-495).
+  - 5 de 5 destinos (Settings, Analysis, Expenses, Record expense, Take from stock) alcanzables desde un viewport de celular, cada uno con un test de Testing Library escrito en su punto de entrada: el avatar "Settings" en el encabezado de cada Tab root del celular, el segmento Home | Analysis en Home, "Record expense" y "See expenses" en la tarjeta Expenses de Analysis, y "Take from stock" junto a "+ Stock entry" en Products.
+  - Un test muestra que Analysis en el celular tiene la barra, "+ New sale" y Home marcada como activa; que Expenses en el celular tiene "‹ Analysis" y no "+ New sale"; que Settings marca Home (parte 5 de GH-495); y que Home abre en su vista Home.
+  - 0 infractores `touch-target`, `text-size` o `h-scroll` para los controles nuevos a 320 px; cada palabra nueva está en `web/src/copy/`.
+  - La barra lateral de la computadora y sus marcos tienen 0 cambios, y sus capturas no cambian.
+  - vitest, e2e (incluido el proyecto `mobile`) y pytest en verde; ningún dibujo de `pantallas/` editado; `PAUSED_CEILING` y `PAUSED` sin crecer.
+- **El segmento Home | Analysis (criterios 27–29, GH-723)**:
+  - Fácil de tocar (27): 0 infractores `touch-target`, `touch-action` y `user-select` del segmento en `InicioHoy`, `InicioOscuro`, `Analisis` y `AnalisisOscuro`, a 320, 360 y 390 px y con el texto al 130 %; ningún infractor agregado y ninguno dejado obsoleto.
+  - El historial (28): a través del router real en el celular, tocando Analysis y Home tres veces o más, el 100% de los cambios dan `historyAction` REPLACE, un `historyIndex` sin cambios, scroll en 0, `aria-current` en la opción tocada y la barra marcando Home; la pestaña Home de la barra sigue siendo un PUSH, y atrás después de los cambios sale a la pantalla anterior al par. Tocar la opción ya marcada, después de desplazarse y elegir una pestaña del Panel distinta de Today (Home) o retroceder un mes (Analysis), no cambia el `historyIndex`, el offset, la pestaña del Panel ni el mes.
+  - La marca y el dibujo (29): datos del registro para Home y Analysis (root, barra en Home, su valor de `segment`; Analysis con su entrada en la barra lateral y sin flecha de regreso) y para Expenses sin `segment`; las dos filas `section` (`InicioHoy` e `InicioOscuro`) capturadas lado a lado con su dibujo y adjuntas al PR, juzgadas a ojo, cada etiqueta encontrada exactamente una vez, sin ninguna tolerancia agrandada; `Analisis` y `AnalisisOscuro` informadas como "not compared" para el segmento. En una computadora el segmento no muestra nada.
+- **El encabezado de Home y Analysis (criterios 34–37, parte 2 de GH-723)**:
+  - Sin rebote (34): los controles de historial del criterio 28 siguen pasando sin editarse con el segmento dentro del encabezado compartido.
+  - Un h1 (35): a través del router real, en `/` y en `/analysis`, exactamente un h1; en el celular con `visualmente-oculto`, en la computadora sin él. Expenses no muestra el grupo "Home view".
+  - La fecha (35): con hoy 2026-10-03, la línea de fecha dice `03/10` en Home y en Analysis.
+  - Nada más se toca (35): la fila del encabezado no tiene ningún elemento interactivo salvo las dos opciones del segmento y el avatar; el lugar "Editar" no tiene rol, texto ni foco.
+  - Nada del Business en el celular (35): en Home y Analysis no hay nombre del Business ni imagen "apostrophe", y el h1 está oculto a la vista.
+  - Siempre a mano (35): con la vista cargando y con un error, el encabezado, el segmento y el avatar están presentes y funcionan, y `aria-busy` queda en el área de contenido.
+  - Entra (36): el proyecto e2e `mobile` en las cuatro filas de celular (`InicioHoy`, `InicioOscuro`, `Analisis`, `AnalisisOscuro`), a 320, 360 y 390 px y con el texto al 130 %, da 0 infractores `chrome-at-load`, `chrome-mid-scroll`, `h-scroll`, de carga, de contraste, `text-size` y `touch-target`; la línea de fecha ocupa una sola línea; el h1 oculto no se informa; ninguna lista de infractores crece ni se agranda ninguna tolerancia.
+  - Computadora (37): las capturas `InicioHoyCompu*` y `AnalisisCompu*` no cambian; en Home el nombre del Business está arriba del h1 visible y en Analysis solo está el h1.
+- **El nombre de la opción Home (criterios 30–32, #733)**:
+  - Ninguna opción dice "Today" (30): un test de Testing Library a través del router real, en ancho de celular, encuentra en Home y en Analysis el grupo "Home view" con exactamente dos links de nombre accesible "Home" y "Analysis", y las pestañas del Panel siguen siendo exactamente Today · Week · Month. Una búsqueda no encuentra la clave `homeSegmentToday`, ningún valor `'today'` en `HOME_VIEWS` ni en `Segment`, y ningún "Today | Analysis" bajo `web/src`, `web/e2e` ni en los docs del producto. 0 restos.
+  - Las mismas opciones, el mismo cambio (31): los tests del historial de GH-723 pasan con "Home" en lugar de "Today", sin ninguna aserción aflojada. 100% de aprobación.
+  - Nada más cambia (32): el proyecto e2e `mobile` pasa en `InicioHoy`, `InicioOscuro`, `Analisis` y `AnalisisOscuro` sin ningún infractor agregado; vitest, e2e y pytest en verde; el diff no cambia ninguna otra clave del Copy module ni ninguna ruta.
+- **El avatar "Settings" de Home y Analysis (criterios 38–41, parte 3 de GH-495)**:
+  - Settings a un toque (38): pruebas de Testing Library a través del router real, en ancho de celular, en `/` y en `/analysis`: exactamente un link de nombre accesible "Settings", que muestra las iniciales que da `initialsOf` para el nombre del Business de la Session y que al tocarlo lleva a `/settings`; se alcanza con el teclado. Con la Session todavía sin nombre del Business, el link está, se llama "Settings" y no muestra letras ni ningún marcador. Ningún test afirma un rol de botón. 100% de aprobación.
+  - Solo en el celular (39): en ancho de computadora el avatar no está en Home ni en Analysis, y Settings se abre desde la fila del Business de la barra lateral.
+  - Fácil de tocar (39): el proyecto e2e `mobile` en `InicioHoy`, `InicioOscuro`, `Analisis` y `AnalisisOscuro`, a 320, 360 y 390 px y con el texto al 130 %, da 0 infractores `touch-target` para el avatar; su caja mide al menos 44×44, el círculo de 36 px es un hijo que queda dentro de ella, el anillo de foco se dibuja en el círculo y no en el link, la caja no se cruza con ninguna opción del segmento, y un toque en el centro o en las esquinas de la caja cae en el link; ninguna lista de infractores crece.
+  - Como el dibujo (40): las comparaciones lado a lado de `Inicio`, `InicioOscuro`, `Analisis` y `AnalisisOscuro` se miran a ojo y se adjuntan al PR; las corridas A/A y antes/después con `ae.mjs --box` prueban que nada fuera del avatar cambia. 0 tolerancias agrandadas y 0 infractores listados. Las capturas de Sales, Customers, Products y Expenses no empeoran.
+  - Home sin primer uso (41): pruebas del front muestran que Home no dibuja ningún aviso de primer uso para las clases de cuenta `pre_onboarding`, `imported` y `onboarding`, y no pide `/first-run` ni `/onboarding-progress`; el par de tests de arquitectura `homeFirstRun` (sobre un caso de prueba y sobre el árbol real) falla si Home importa `api/firstRun` o `api/onboarding`; las pruebas de las reglas laterales de "+ New sale" y "Send catalog" del Shell siguen pasando en claro y en oscuro sin ninguna aserción aflojada; ninguna referencia del e2e a un aviso borrado queda sin migrar y ningún aviso se vuelve a poner para un localizador.
+  - CI: checks, web, vitest, e2e y docs en verde.
+- **El fin de More en el celular (criterios 42–45, parte 5 de GH-495)**:
+  - Settings a un toque (42): a través del router real, en ancho de celular, en `/`, `/sales`, `/customers`, `/varieties` y `/analysis` hay exactamente un link de nombre accesible "Settings" y un toque lleva a `/settings`: 5 de 5. Abierto desde Sales, Customers y Products, atrás desde la lista de Settings vuelve a esa pantalla; sin historial, va a `/`. En `/settings` y en la lista de Payment methods la barra marca Home, decidido por `placeOf`. 100% de aprobación.
+  - Take from stock (43): desde cada Tab root del celular el formulario de Stock withdrawal se abre en ≤2 toques (Products → "Take from stock"), y la página de un Product sigue ofreciendo "Take from stock". 100% dentro del presupuesto.
+  - Links viejos y More fuera de la vista (44): `tests/test_static_spa.py` muestra que `/more` y `/mas`, con y sin cadena de consulta, responden cada uno una redirección permanente a `/` en un solo salto, y que `/more/algo` no recibe esa redirección. La barra del celular tiene exactamente cuatro pestañas (Home, Sales, Customers, Products) y ninguna dice More; `Shell.test.tsx` y cada spec del e2e migrada pasan sin aserciones sobre More y sin ninguna otra aserción quitada (las que dejaron de cumplirse se informan en el PR).
+  - Nada se pierde (45): los tests de punto de entrada de los cinco destinos de More siguen en verde; en una computadora la barra lateral conserva la fila del Business hacia Settings y la entrada Expenses, y sus capturas no cambian.
+  - Avatar en Sales, Customers y Products: el proyecto e2e `mobile` en sus filas de celular, a 320, 360 y 390 px y con el texto al 130 %, da 0 infractores `touch-target` y `h-scroll` para el avatar, la caja no se superpone con ningún otro elemento del encabezado ni con el área segura, y las capturas de antes y después muestran que nada más del encabezado cambió. Si no se cumple, el caso fue al dueño antes de construir.
+  - Gate: checks, web, vitest, e2e, pytest y docs en verde; el Mobile check en verde; 0 infractores agregados y 0 tolerancias agrandadas.
 
-- Nothing here adds a route that answers business data beyond what Home's panel and the first-run state need; each screen reads its owner's routes, already in the isolation sweep and the gated-route test. The Onboarding's own routes, and any route for the first-run state (the import fact, the checklist's end, the after-import notice's dismissal), join both, and that state carries `business_id` and is exported and deleted by business removal (ADR-0015).
-- Serving a front path to a browser navigation never widens what the API answers to a JSON request, and adds no API route (ADR-0024).
-- Whatever decides the Onboarding notice, the checklist and the after-import notice is answered by the server for the session's business only.
-- No business id in a URL; no personal data or money in the console or browser storage (accounts.md). The theme choice is the only thing kept on the device (ADR-0026); the first-run facts are kept on the server, never in the browser. Scroll offsets (GH-480) live only in the running app's memory, never in `sessionStorage`, `localStorage` or any other browser storage.
-- Feedback follows accounts.md, in Settings, the Onboarding and Home as everywhere:
-  - no network shows "No connection";
-  - a server error shows a generic retry;
-  - a record that is gone follows the "That is gone." rule.
-- **Phone layout (GH-319)**:
-  - Every phone sheet is rendered by the one shared `Sheet` (ADR-0062). No form defines its own backdrop, Close placement, pinned-action layout or scroll lock.
-  - Wherever a sheet has an outside, its tap-outside and its Close read the same `touched` value: the `dirty` the host already passes to `useLeaveGuard`. On the phone's full-screen sheet nothing outside it closes it.
-  - "Keyboard open" is decided only in `useVisualViewport` (ADR-0028 as amended).
-  - The phone rules never edit ADR-0044's `PriceFrame` dialog branch or `CobroFrame`'s computer branch.
-  - Each step leaves the Mobile check green, deletes every offender entry it turns green, keeps registry keys and adds no entry outside gate.md's trade or new-row rules.
+## Fuera de alcance
 
-## Metrics
-
-- **Tap budget (criterion 1)**: through the front, from each tab root, phone and computer viewports, the end-to-end run counts the taps to open: the sale form (1), Record payment with the customer chosen from Customers and from Home (≤2), the catalog screen (≤2), the stock entry form (≤2), the stock withdrawal form (≤2) and the expense form (≤2). 100% within budget.
-- **Settings in one place (criterion 2)**: every business-wide setting named in the product docs sits in exactly one Settings group and on no other screen, the pricing switches included; the catalog screen edits no header or footer, Expenses has no categories entry, and the old Business screen does not exist; every per-variety setting sits only on the variety's page. Settings and Prices open in ≤2 taps from every tab root, phone and computer. While the temporary place stands in for Integrations and Catalog message, it is reached only from the catalog screen and from no tab, More or Settings entry. The Onboarding's steps write through the owners' routes, and a value saved there reads the same in Settings.
-- **One fact, one place (criterion 3)**: no price, stock entry, withdrawal, threshold or catalog attribute is editable from two screens, checked against the docs and the design. A stock entry is edited through its one form, `/varieties/entries/{id}`, whichever list it was opened from.
-- **Nothing lost, nothing invented (criterion 4)**: every action a seller had before the redesign, and everything reachable on master or on #59, maps to a place in the new structure, except the customer channel; the bar, the sidebar, More and Settings show exactly the entries listed above, with no placeholder group and no Onboarding entry; no link points at a missing screen. #47's end-to-end specs and #118's test waits pass without being edited to fit.
-- **Chrome (criteria 5, 9)**: every screen in the docs and in `scripts/design/screens.json` is classified as exactly one kind with a parent, the Onboarding's steps and "Done" included, and front tests check its chrome: tab roots with the bar and "+ New sale", cards with "‹ <parent>" and no "+ New sale", forms and sheets with neither, "Close" and a confirmation on unsaved leave. The stock entry form reads "Close", never "Back"; the customer form shows "Close".
-- **One move back (criterion 10)**:
-  - each gone exit (stock entry form, customer form, Record payment), opened from its parent, leaves history holding the parent once, and one back leaves; opened by a direct link, it goes to the named parent;
-  - each row of the back-with-no-history table is tested one by one; back with no history from Settings's list goes to More on the phone and Home on a computer; from a withdrawal's detail, to Varieties; from an archived variety's page, to Archived; from Archived, to Varieties; from the Onboarding, to Home;
-  - on a computer, picking rows in Varieties' and Customers' two panes, and Varieties' auto-selected first variety, leave back at one step; on the phone, opening a record pushes an entry;
-  - tapping "Collect from <name>" on a Customers row and on an Home row opens Record payment with the customer chosen, carries the in-app history state, and back closes it in one move;
-  - "+ New sale", in the bar area and in the sidebar, opens New sale carrying the in-app history state, and its untouched "Close" goes one step back to the screen it was opened from.
-- **Accessible bar (criterion 6)**: a Playwright test at 320 px with text at 130 % shows every tab label whole; the active tab carries `aria-current` and a non-color mark; no state is told by color alone.
-- **Settings (criterion 8)**:
-  - front tests:
-    - every group has "Close" and no bar;
-    - unsaved changes ask, and an untouched group closes at once;
-    - Appearance shows no save, toast or warning;
-  - Prices sits after Users and before Integrations, at `/settings/prices`;
-  - Integrations shows the link to the catalog screen, no pin status and no Publish, and the "unpin it yourself in Telegram" line after a token or channel change;
-  - one end-to-end front run from a phone viewport:
-    - renames the business and creates a join link;
-    - switches and saves Prices;
-    - runs Test it and follows the link to the catalog screen;
-    - edits the header and footer;
-    - adds, renames and removes a category, a refused removal included;
-    - switches Appearance, changes the password and logs out.
-- **First-run matrix, the Onboarding**: 100% passing, phone and computer:
-  - a brand-new business lands in the Onboarding on accepting its invitation and sees "Go on to the setup" while it is not over, never with "Start with your varieties";
-  - while it runs, "+ New sale" and "Send catalog" behave as for any business;
-  - a pre-existing business and an imported business (including one that landed in the Onboarding before the import) never see it; a user who joins a business mid-Onboarding sees the same notice.
-- **First-run matrix, the checklist and the after-import notice (criterion 12)**: 100% passing, phone and computer:
-  - a business that existed before the Onboarding sees the checklist, and each met step shows "Done";
-  - it goes the first time steps 1 and 2 are both met, whatever 3 and 4;
-  - deleting the only price entry afterwards never brings it back;
-  - an imported business never sees it, and sees the after-import notice until dismissed or published; once dismissed, no partner sees it;
-  - a business that finished the Onboarding through "Done" never sees the after-import notice, and neither does a business imported before the import fact existed;
-  - a joined user sees their business's element, or none;
-  - two first-run elements never show at once;
-  - "Send catalog" is disabled only while the checklist shows and nothing qualifies.
-- **First-run state isolated**: its routes are in the sweep and the gated-route test; business removal leaves 0 rows of it and exported count = deleted count.
-- **First-run agreement (criteria 13, 14)**: over the eight states, `/first-run`'s kind and notice flag equal their sources, and `nothing_qualifies` equals "the kind is the checklist and `GET /catalog` has no text": 0 differences; each of the five elements appears in at least one state; a deliberately broken `nothing_qualifies` makes the test fail, shown once in the PR and not committed. 0 findings of these kinds on the merging head, and 0 carried into another task.
-- **One shape (criterion 15)**: a backend test shows `checklist == []` for every kind that is not the checklist; a front test shows `[]` is read as no checklist; the plan, the schema and the front agree, and the contract checker's code is unchanged.
-- **Both themes (criterion 16)**: each of the six first-run front tests runs in light and dark, and no test has fewer assertions than before.
-- **Nothing loosened (criterion 18)**: every suite passes; the only edited tests are the agreement test, the Home first-run tests and the two registry tests, each keeping its assertions; under `web/src/` nothing but tests changes, apart from the front's `/first-run` type if it declared `checklist` nullable.
-- **Redirects (criterion 11)**: every old Spanish path that has moved answers a permanent redirect to its English route, tested one by one, including `/negocio`, `/gastos/categorias`, `/catalogo`, `/mi-stock/nueva-entrada`, and `/variedades/{id}` and `/mi-stock/entradas/{id}` with the id carried across. A test shows every redirect target is a `screens.json` path, with no exemption. There is one redirect mechanism, on the server, and none in the front.
-- **Reloads under `/varieties` (criterion 11)**: a browser navigation to each Varieties route, parameterised ones included (`/varieties/{id}`, `/varieties/{id}/entries`, `/varieties/{id}/prices`, `/varieties/{id}/prices/new`, `/varieties/entries/{id}`) and `/varieties/archived`, opens the screen, never the API's answer; the front's own API calls still reach the API.
-- **One structure (criterion 7)**: the docs, CONTEXT.md, `pantallas/` and `screens.json` name the same screens and routes, the withdrawal form and detail, the Archived card, the archived variety's page, Prices, the Onboarding's screens and Home's first-run states included; Zeta approves the pull request that states them.
-- **Design**: `scripts/design/compare.sh` runs before and after for the stock entry form, the customer form, New sale and Home (phone and computer, both themes), attached to the PR and judged by eye; `NuevaVentaCompu` comes out unchanged; any difference from the design is listed in the PR.
-- **Phone speed (GH-319, with criterion 1)**: the New sale e2e passes unedited, with the same tap count to a saved sale. A sale is recorded from a phone viewport in under 60 s.
-- **Chrome in reach (criterion 19)**:
-  - The Mobile check runs at 320, 360 and 390 px, at the top, middle and bottom scroll positions. On every tab root, Analysis's chrome included, it finds the bar and "+ New sale" inside the viewport with the last row fully above them. On cards it finds the bar and no button, and on forms and sheets neither.
-  - 0 `chrome-at-load`, `chrome-mid-scroll` or bar-label entries are left for the screens in scope.
-- **Keyboard (criterion 19)**:
-  - The unit matrix of the keyboard decision passes 100%: iOS gap, Android drop, focus at mount, an address-bar change under 120 px, `scale = 2`, and no `visualViewport` with text, date and select focus.
-  - On Customers, the e2e hides the bar and button with the keyboard open and brings them back with the search text and scroll offset unchanged.
-  - An Android-sized scroll keeps the bar visible.
-  - `nuevaVentaTelefono.spec.ts` and the existing hook tests pass unedited.
-- **Pinned action and focus (criterion 19)**:
-  - On every sheet, the action's bottom edge is within `--inset-abajo` of the sheet's bottom. This is checked on rename (the shortest form) and on a withdrawal with lines (the tallest).
-  - A front test per form asserts its first-focus control, Record payment's first field included.
-  - A direct address shows each routed sheet over its parent, one test per route.
-- **Fit, targets and text (criterion 19)**:
-  - 0 `h-scroll`, `name-overflow` or `figure-split` entries at 320 and 246 px with the seed's extreme data, on every phone screen except Analysis's content.
-  - 0 `touch-target`, `text-size` or `autocomplete` entries on the screens in scope.
-  - No entry names Record payment's walked sheet states.
-- **Nothing lost (criterion 20)**:
-  - Viewport-flip tests in the price form and in Record payment keep the typed text.
-  - Close from a scrolled list returns to the same offset.
-  - `Sheet` unit tests, wherever a backdrop is drawn: tapping it closes an untouched sheet and does nothing on a touched one.
-  - A `Sheet` unit test on the phone: a tap on the top safe-area strip leaves the sheet open, touched or untouched.
-  - The existing unsaved-changes tests pass unedited.
-- **Computer untouched (criterion 20)**: the computer captures of touched screens are unchanged. `PriceFrame`'s dialog branch and `CobroFrame`'s computer branch have 0 changed lines.
-- **Offender lists (GH-319)**: 0 entries added outside gate.md's trade or new-row rules. Each new assertion is shown failing once on a deliberately regressed input in the PR, and that input is not committed.
-- **Scroll on a change of screen (criteria 21–23)**: an end-to-end run at 320, 375 and 430 px and at 1280 px, 100% passing, with no assertion loosened:
-  - from a list scrolled well below its first screen, a tab, a link and a row into its detail each land the new screen at offset 0;
-  - back (the browser's or the phone's) and "‹" from a detail opened on a scrolled Sales list return to Sales at the offset it was left at;
-  - New sale opened with "+ New sale" from a scrolled Customers list and closed untouched returns to Customers at its offset;
-  - Record payment opened with "Collect" from a scrolled list returns to that list at its offset, once closed with "Close" and once with back, with no save. A following opening and closing lands the same way. On a computer, the offset is read on the real screen after the modal closes; the offset of an inert background picture while the modal is open (Home's `InicioFondo`) is not asserted;
-  - a direct link to a form, closed, opens its fallback parent at offset 0;
-  - opening and closing a sheet leaves the offset under it unchanged;
-  - on a computer, picking a row in Customers' two panes leaves the list's offset unchanged.
-
-  Unit tests cover the arrival-or-return decision and Record payment's open → Close and open → back sequence. After the run, browser storage holds nothing but the theme choice. Each new assertion is shown failing once on a deliberately regressed input in the PR, and that input is not committed.
-
-## Out of scope
-
-- English screen texts (#53); a language entry.
-- Rebuilding each area's screens (#45–#49, Settings's groups): their routes show today's content until then.
-- Any operator or admin surface in the app; roles; listing or revoking invitations.
-- A tour or welcome screen beyond the Onboarding.
-- An entry to run the Onboarding again.
-- Side rules on "+ New sale" or "Send catalog" tied to the Onboarding.
-- A checklist for a brand-new business; storing a checklist step as ticked.
-- Backfilling the import fact for a business imported before it existed.
-- Promotions (as campaigns or offers), automations, languages, and any entry for them before they exist. A stock withdrawal for promotion is a stock record, not this.
-- The pin's status or Publish in Integrations.
-- Per-variety settings in Settings (#47).
-- An Archived entry in the bar, the sidebar, More or Settings: it is reached only from Varieties.
-- A redirect rule for removed paths with no counterpart; changing where unknown addresses go.
-- Marks or "‹ <parent>" labels that depend on how a screen was reached.
-- A back arrow that ignores history.
-- Changing the copy of any existing unsaved-changes question.
-- Live updates between partners.
-- A way into Prices from a variety's page, the price form or the customer form.
-- Redirects in the front; a second redirect mechanism.
-- Auto-selecting a customer on Customers' two panes.
-- Any token, wording or layout change to a screen beyond what the chrome rule gives it.
-- A business-wide list of stock withdrawals.
-- Changing the contract checker so it can declare a nullable array; a `null` checklist.
-- A `nothing_qualifies` that answers for every kind, or a catalog read added to every Home read for it.
-- Theme coverage of Home's Today, Week and Month figures as part of the first-run review.
-- Analysis's content on the phone (its three tables and month selector): GH-319's part 2.
-- Converting Change password, the expense categories editor or New sale's new-customer overlay into sheets.
-- Any computer layout change from the phone layout; changing the timing or dismissal of toasts; changing New sale's tap count or what Save does before the payment choice.
-- Disabling Save in New sale; a scroll-and-highlight on Save.
-- A tap-outside area on the phone's full-screen sheet: a gap, a visible backdrop strip, or the safe-area strip acting as a close target.
-- Remembering scroll offsets across a reload or in browser storage; restoring the scroll inside a list nested within a screen (a pane, a picker) beyond the two-pane rule; scrolling to the top when the seller taps the tab they are already on.
-- Matching the offset of an inert background picture drawn behind a computer modal (Home's `InicioFondo` behind Record payment) while the modal is open, or redrawing that background to do so.
+- Los textos de pantalla en inglés (#53); una opción de idioma.
+- Rehacer las pantallas de cada área (#45–#49, los grupos de Settings): sus rutas muestran el contenido de hoy hasta entonces.
+- Cualquier superficie del Operator o de administración en la app; roles; listar o revocar Invitations.
+- Un tour o pantalla de bienvenida más allá del Onboarding.
+- Una opción para volver a correr el Onboarding.
+- Reglas laterales sobre "+ New sale" o "Send catalog" atadas al Onboarding.
+- Un aviso, una marca o un link a `/onboarding` en Home o Settings; quitar o adelgazar `/first-run` (decisión aparte, ADR-0081).
+- Una checklist para un Business recién creado; guardar un paso de la checklist como tildado.
+- Completar hacia atrás el hecho de la Spreadsheet import para un Business importado antes de que existiera.
+- Promociones (como campañas u ofertas), automatizaciones, idiomas, y cualquier opción para ellas antes de que existan. Un Stock withdrawal para promoción es un registro de Stock, no esto.
+- El estado del fijado o Publish en Integrations.
+- Configuraciones de un solo Product en Settings (#47).
+- Una opción Archived en la barra, la barra lateral, el encabezado o Settings: se llega solo desde Products. (Los Payment methods archivados son otra cosa: se ven solo dentro de Payments and expenses → Payment methods.)
+- Mover las filas de Expense categories y Withdrawal reasons al grupo Payments and expenses, como lo dibuja `ConfiguracionCobros`: queda como hallazgo.
+- El encabezado grande "‹ Ajustes", el título de sección con conteo y la tarjeta del dibujo `ConfiguracionCobros` en la página del grupo Payments and expenses.
+- Una regla de redirección para paths quitados sin equivalente, salvo `/more` y `/mas` (parte 5 de GH-495); cambiar adónde van las direcciones desconocidas.
+- Marcas o etiquetas "‹ <parent>" que dependan de cómo se llegó a una pantalla.
+- Una flecha de regreso que ignore el historial.
+- Cambiar el texto de cualquier pregunta existente de cambios sin guardar.
+- Actualizaciones en vivo entre socios.
+- Una forma de llegar a Prices desde la página de un Product, el formulario de precio o el formulario de Customer.
+- Redirecciones en el front; un segundo mecanismo de redirección.
+- Elegir automáticamente un Customer en los dos paneles de Customers.
+- Cualquier cambio de token, redacción o disposición en una pantalla más allá de lo que le da la regla del marco.
+- Una lista de Stock withdrawals de todo el Business.
+- Cambiar el verificador del contrato para que pueda declarar un arreglo anulable; una checklist `null`.
+- Un `nothing_qualifies` que responda por cada tipo, o una lectura del Catalog agregada a cada lectura de Home para eso.
+- La cobertura de temas de las cifras de Today, Week y Month de Home como parte de la revisión del primer uso.
+- El contenido de Analysis en el celular (sus tres tablas y su selector de mes): la parte 2 de GH-319.
+- Convertir en Sheets Change password, el editor de Expense categories o la ventana superpuesta de Customer nuevo de New sale.
+- Cualquier cambio en la disposición de computadora a partir de la disposición en el celular; cambiar la duración o el descarte de los toasts; cambiar la cantidad de toques de New sale o lo que hace Save antes de la elección de pago.
+- Deshabilitar Save en New sale; un scroll con resaltado sobre Save.
+- Un área de toque afuera en la Sheet a pantalla completa del celular: un hueco, una franja de fondo visible, o la franja de área segura funcionando como objetivo para cerrar.
+- Recordar offsets de scroll después de una recarga o en el almacenamiento del navegador; restaurar el scroll dentro de una lista anidada en una pantalla (un panel, un selector) más allá de la regla de los dos paneles; ir arriba cuando quien vende toca la pestaña en la que ya está.
+- Hacer coincidir el offset de una imagen de fondo inerte dibujada detrás de un diálogo de computadora (`InicioFondo` de Home detrás de Record payment) mientras el diálogo está abierto, o volver a dibujar ese fondo para lograrlo.
+- Del retiro de More (GH-651): las pantallas rediseñadas completas, que construyen sus propios issues; cualquier cambio en la barra lateral de la computadora o en sus marcos; un avatar en el encabezado de la computadora; recordar la última vista de Home; cambiar las pestañas Today · Week · Month del Panel; un destino más específico que Home para `/mas` o `/more`; un menú o pantalla que vuelva a reunir los destinos de More.
+- Del segmento Home | Analysis (parte 1 de GH-723): moverlo a un layout compartido o cambiar la fila del encabezado; reestructurar el cuerpo de Home o de Analysis (la parte 2 de GH-723); vistas o entradas nuevas; recordar la pestaña del Panel o el mes de Analysis entre un cambio y otro; cualquier cambio de rutas o de ScrollSync; editar el ADR `20261109-more-is-retired-…` por su etiqueta vieja.
+- Del nombre de la opción Home (#733): cambiar las pestañas Today · Week · Month del Panel o sus selectores en `panel.spec.ts` y `ventasPhone.spec.ts`; cualquier cambio de comportamiento del segmento (los links con `replace`, la caja de 44 px, el CSS: son de #731); editar los dibujos para que digan "Home"; una nota de versión o un anuncio del cambio de nombre.
+- Del encabezado de Home y Analysis (parte 2 de GH-723): cualquier función detrás del lugar "Editar"; mostrar en el encabezado el período que se lee en Analysis; un temporizador o una regla nueva de medianoche; el nombre del Business, la Yerba mark o un título visible en el encabezado del celular; cualquier cambio en la disposición de computadora, en Expenses o en las pestañas Today · Week · Month del Panel; palabras nuevas en el Copy module o un formateador de fecha nuevo; cualquier cambio de listas de infractores o de tolerancias.
+- Del avatar "Settings" de Home y Analysis (parte 3 de GH-495): el montaje del avatar en Sales, Customers y Products (sus encabezados son de la parte 5); un avatar en la computadora; letras, un marcador o "?" en el círculo mientras carga el nombre; rutas de API nuevas; filas de recorte con AE 0 en `scripts/design/screens.json`; la fecha dibujada ("Jueves 29 de octubre", #748) y lo que abre "Editar" (#327); configuraciones de un solo Product detrás del avatar; quitar la lectura de `/first-run` del Shell o las reglas laterales de "+ New sale" y "Send catalog" (como son lo único que la lee, es una limpieza posterior que bloquea solo la última parte de GH-495, D-61b9b2a6); volver a poner un aviso borrado, visible u oculto, para un localizador del e2e (D-69509906).
+- De una Expense desde New sale (parte 4 de GH-725): un conteo de toques propio por cada Tab root para "+ New sale" → "Expense"; una ruta propia para la venta en curso o la vuelta; cambiar las filas `*Compu` del registro; la fila "Other things to record" o la franja en una computadora; borradores o conservar la venta en curso después de una recarga.
+- Del fin de More en el celular (parte 5 de GH-495): cambiar las cuatro pestañas o el "+ New sale" flotante (la parte 6); cualquier otro cambio en los encabezados de Sales, Customers y Products; una posición alternativa para el avatar si no entra; redirigir paths debajo de `/more` o `/mas`, o conservar la cadena de consulta; un destino para `/more` o `/mas` distinto de Home; cualquier cambio en la barra lateral de la computadora más allá de sacar `more` del registro; volver a poner More, visible u oculto, para un localizador del e2e (D-69509906).
 
 ## Planned in GH-318
 
-Not built yet. Until the part named ships, the sections above are what the app does.
+Todavía no está construido. Hasta que salga la parte nombrada, las secciones de arriba son lo que hace la app.
 
-Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+Cada pasaje nombra el ADR que lo decide, la parte que lo va a entregar y la oración actual que va a reemplazar. La parte que entrega un pasaje lo quita de acá y edita Comportamiento y Fuera de alcance en el mismo diff.
 
 ### Settings
 
-Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md and docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md and docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md and docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; delivered by the Settings parts, each for the setting it builds.
+Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md y docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md y docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md y docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; lo entregan las partes de Settings, cada una para la configuración que construye.
 
-- Every setting the seller sets will have a group in Settings, each its own phone-first subscreen: the product word, categories and subcategories with their attributes, units, customer types, payment methods, withdrawal reasons, expense categories, the catalog template, and the currency symbol and money decimals.
-- **Time zone and phone country**: each business will have a time zone, changed in Settings; a change will only move what "today" is from then on, and recorded dates will never be rewritten (ADR-0057). Each business will have a default phone country; phone numbers will stay optional and in international form.
-- **Money decimals** will be raisable in Settings by any business, including one that existed before, through a one-time rescale in one transaction that will leave every value and derived figure equal (ADR-0058). They will go down only when no recorded amount has more decimals.
-- It will replace: "**One screen holding every business-wide setting, in groups, and nothing else.** The groups, in this order (each group's behaviour belongs to its owner):" (the list of groups will grow), "**Prices** (pricing-settings.md), at `/settings/prices`:" (the VIP switch will become customer types) and "**Expense categories**: add, rename and remove, the refused removal included (expenses.md)." (it will become one of the business's own lists).
-- Out of scope: "Per-variety settings in Settings (#47)." will stay out; the attributes of a subcategory will be the business's, not a variety's.
+- Cada configuración que fija quien vende va a tener un grupo en Settings, cada uno su propia subpantalla pensada primero para el celular: categorías y subcategorías con sus atributos, Units, Customer types, Withdrawal reasons, Expense categories, la plantilla del Catalog, y el símbolo de moneda y los decimales del dinero. (Los Payment methods ya salieron con la parte 24, en el grupo Payments and expenses de arriba.)
+- **Zona horaria y país del teléfono**: cada Business va a tener una zona horaria, que se cambia en Settings; un cambio solo va a mover qué es "hoy" de ahí en adelante, y las fechas registradas nunca se van a reescribir (ADR-0057). Cada Business va a tener un país de teléfono por defecto; los Phone numbers van a seguir siendo opcionales y en formato internacional.
+- **Los decimales del dinero** los va a poder subir en Settings cualquier Business, incluido uno que existía antes, mediante un reescalado único en una sola transacción que va a dejar iguales cada valor y cada cifra derivada (ADR-0058). Solo van a bajar cuando ningún monto registrado tenga más decimales.
+- Va a reemplazar: "**Una pantalla que reúne cada configuración de todo el Business, en grupos, y nada más.** Los grupos, en este orden (el comportamiento de cada grupo es de su dueño):" (la lista de grupos va a crecer), "**Prices** (pricing-settings.md), en `/settings/prices`:" (el interruptor VIP va a pasar a ser Customer types) y "**Expense categories**: agregar, renombrar y quitar, incluido el rechazo al quitar (expenses.md)." (va a pasar a ser una de las listas propias del Business).
+- Fuera de alcance: "Configuraciones de un solo Product en Settings (#47)." va a seguir afuera; los atributos de una subcategoría van a ser del Business, no de un Product.

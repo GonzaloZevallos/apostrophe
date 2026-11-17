@@ -6,6 +6,9 @@
 # It then prints the phone check's known offenders per issue and per rule (GH-80, CODING_STANDARDS
 # §10 "Phone"). With `COMPARE_MOBILE=1` it also runs the check itself (`mobile.spec.ts`, which
 # needs a browser and a minute or more), so an area PR can attach the run and not only the counts.
+# It exits 1 when the sample app stops or is not ready. `--out DIR` passed to it goes to
+# comparisons.mjs after the script's own `--out`, so it wins; the closing echo still names the
+# temporary directory.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 work="$(mktemp -d)"

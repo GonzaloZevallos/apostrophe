@@ -26,8 +26,9 @@ import VarietiesIndex from './VarietiesIndex'
 import VarietiesLayout from './VarietiesLayout'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -115,7 +116,7 @@ function renderAt(path: string | InitialEntry[], overrides: Answers = {}, hidden
         element: (
           <QueryClientProvider client={queryClient}>
             <FlashProvider>
-              <Outlet context={ME} />
+              <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
             </FlashProvider>
           </QueryClientProvider>
         ),
@@ -145,7 +146,7 @@ function renderAt(path: string | InitialEntry[], overrides: Answers = {}, hidden
 function watchForLiveActions(): { seen: () => boolean; stop: () => void } {
   let seen = false
   const look = () => {
-    if (/Eliminar variety|Archive variety|Editar|New price/.test(document.body.textContent ?? '')) seen = true
+    if (/Eliminar variety|Archive product|Editar|New price/.test(document.body.textContent ?? '')) seen = true
   }
   const observer = new MutationObserver(look)
   observer.observe(document.body, { childList: true, subtree: true, characterData: true })
@@ -171,7 +172,7 @@ describe('Archivadas (N) on Variedades', () => {
 describe('the Archivadas card', () => {
   test('its empty state is measured copy and the screen follows the rule', async () => {
     renderAt(ARCHIVED_VARIETIES, { 'GET /api/products?archived=true': () => json(200, []) })
-    const title = await screen.findByText('You have no archived varieties')
+    const title = await screen.findByText('You have no archived products')
 
     expect(title).toHaveAttribute('data-copy', 'emptyTitle')
     expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS, samples: SAMPLES })
@@ -195,7 +196,7 @@ describe('the Archivadas card', () => {
     for (const mark of screen.getAllByText('Archived', { selector: '.insignia' })) expect(mark.className).toBe('insignia')
     expect(screen.queryByText('Hidden')).toBeNull()
     expect(screen.getAllByRole('button', { name: 'Restore' })).toHaveLength(2)
-    expect(screen.getByRole('button', { name: '‹ Varieties' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: '‹ Products' })).toBeTruthy()
     expect(screen.queryByText('+ New sale')).toBeNull()
   })
 
@@ -238,7 +239,7 @@ describe('the Archivadas card', () => {
 
   test('says so with a fixed line when there are none', async () => {
     renderAt(ARCHIVED_VARIETIES, { 'GET /api/products?archived=true': () => json(200, []) })
-    expect(await screen.findByText('You have no archived varieties')).toBeTruthy()
+    expect(await screen.findByText('You have no archived products')).toBeTruthy()
   })
 
   test('restores in one tap, with the toast and no confirmation', async () => {
@@ -246,7 +247,7 @@ describe('the Archivadas card', () => {
     const { fetchMock } = renderAt(ARCHIVED_VARIETIES)
     await screen.findByText('Alfa Vieja')
     await user.click(screen.getAllByRole('button', { name: 'Restore' })[0]!)
-    expect(await screen.findByText('Variety restored')).toBeTruthy()
+    expect(await screen.findByText('Product restored')).toBeTruthy()
     expect(screen.queryByRole('dialog')).toBeNull()
     const requested = fetchMock.mock.calls.filter(([, init]) => init?.method === 'POST').map(([url]) => url)
     expect(requested).toEqual(['/api/products/4/restore'])
@@ -274,8 +275,8 @@ describe("an archived variety's page", () => {
       '+ Entry',
       'New price',
       'Take from stock',
-      'Delete variety',
-      'Archive variety',
+      'Delete product',
+      'Archive product',
       'Delete',
       'Edit',
     ]) {
@@ -297,7 +298,7 @@ describe("an archived variety's page", () => {
 
     expect(await screen.findByRole('heading', { name: 'Archived' })).toBeTruthy()
     expect(router.state.location.pathname).toBe(ARCHIVED_VARIETIES)
-    expect(await screen.findByText('Variety restored')).toBeTruthy()
+    expect(await screen.findByText('Product restored')).toBeTruthy()
     expect(screen.queryByText('Alfa Vieja')).toBeNull()
     expect(screen.getByText('Zeta Vieja')).toBeTruthy()
     // Nothing refetched the page under the seller's finger before it left.
@@ -336,7 +337,7 @@ describe("an archived variety's page", () => {
 
     expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 4 }))
     expect(screen.getByRole('heading', { name: 'Alfa Vieja' })).toBeTruthy()
-    for (const name of ['Delete variety', 'Archive variety', 'Edit', 'New price']) {
+    for (const name of ['Delete product', 'Archive product', 'Edit', 'New price']) {
       expect(screen.queryByRole('button', { name })).toBeNull()
       expect(screen.queryByRole('link', { name })).toBeNull()
     }
@@ -347,7 +348,7 @@ describe("an archived variety's page", () => {
     expect(screen.queryByText('Alfa Vieja')).toBeNull()
   })
 
-  test('the last archived variety restored lands on Variedades, never on an empty Archivadas', async () => {
+  test('the last archived product restored lands on Variedades, never on an empty Archivadas', async () => {
     const user = userEvent.setup()
     const { router } = renderAt(FROM_FOOT_LINK)
     await user.click(await screen.findByRole('link', { name: /Alfa Vieja/ }))
@@ -357,8 +358,8 @@ describe("an archived variety's page", () => {
     await user.click(await screen.findByRole('button', { name: 'Restore' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES))
-    expect(await screen.findByText('Variety restored')).toBeTruthy()
-    expect(screen.queryByText('You have no archived varieties')).toBeNull()
+    expect(await screen.findByText('Product restored')).toBeTruthy()
+    expect(screen.queryByText('You have no archived products')).toBeNull()
     await act(() => router.navigate(-1))
     expect(router.state.location.pathname).toBe(VARIETIES)
   })
@@ -369,7 +370,7 @@ describe("an archived variety's page", () => {
     await user.click(await screen.findByRole('button', { name: 'Restore' }))
 
     await waitFor(() => expect(router.state.location.pathname).toBe(ARCHIVED_VARIETIES))
-    expect(await screen.findByText('Variety restored')).toBeTruthy()
+    expect(await screen.findByText('Product restored')).toBeTruthy()
     expect(await screen.findByText('Zeta Vieja')).toBeTruthy()
     expect(screen.queryByText('Alfa Vieja')).toBeNull()
   })
@@ -381,7 +382,7 @@ describe("an archived variety's page", () => {
     })
     await user.click(await screen.findByRole('link', { name: /Alfa Vieja/ }))
     await user.click(await screen.findByRole('button', { name: 'Restore' }))
-    await waitFor(() => expect(screen.queryByText('Variety restored')).toBeNull())
+    await waitFor(() => expect(screen.queryByText('Product restored')).toBeNull())
     expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 4 }))
   })
 })
@@ -397,7 +398,7 @@ describe('on a computer (two panes)', () => {
           element: (
             <QueryClientProvider client={queryClient}>
               <FlashProvider>
-                <Outlet context={ME} />
+                <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
               </FlashProvider>
             </QueryClientProvider>
           ),
@@ -438,7 +439,7 @@ describe('on a computer (two panes)', () => {
 
   test('with none archived, Archivadas selects nothing and says so on the left', async () => {
     const { router } = renderComputer(ARCHIVED_VARIETIES, { 'GET /api/products?archived=true': () => json(200, []) })
-    expect(await screen.findByText('You have no archived varieties')).toBeTruthy()
+    expect(await screen.findByText('You have no archived products')).toBeTruthy()
     expect(router.state.location.pathname).toBe(ARCHIVED_VARIETIES)
   })
 
@@ -474,7 +475,7 @@ describe('on a computer (two panes)', () => {
 
     await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 5 })))
     expect(await screen.findByRole('heading', { name: 'Zeta Vieja' })).toBeTruthy()
-    expect(await screen.findByText('Variety restored')).toBeTruthy()
+    expect(await screen.findByText('Product restored')).toBeTruthy()
     // The card is still on the left, without the restored variety.
     await waitFor(() => expect(screen.queryByText('Alfa Vieja')).toBeNull())
     expect(screen.getByRole('heading', { name: 'Archived' })).toBeTruthy()
@@ -493,7 +494,7 @@ describe('on a computer (two panes)', () => {
     expect(await screen.findByRole('heading', { name: 'Alfa Vieja' })).toBeTruthy()
   })
 
-  test('with none left, Restore goes to Variedades, where the restored varieties are listed', async () => {
+  test('with none left, Restore lands on Varieties with the first variety by name selected, the restored ones listed', async () => {
     const user = userEvent.setup()
     const { router } = renderComputer([VARIETIES, pathTo(VARIETY, { id: 4 })])
     await screen.findByText('Zeta Vieja')
@@ -501,7 +502,12 @@ describe('on a computer (two panes)', () => {
     await screen.findByRole('heading', { name: 'Zeta Vieja' })
     await user.click(pageRestore())
 
-    await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES))
+    // Restore leaves for Varieties, and on a computer Varieties at once replaces its bare path with
+    // the first live variety by name: that page is the stable end state, so it is the one waited on.
+    // The bare path is held for an instant only, and no wait can count on seeing it. (The red on
+    // master after 6b4aa4a5 did not reproduce on any commit of e388f5b..6b4aa4a5, so the culprit
+    // commit was not found; this is the mechanism read in the code and seen in the router's history.)
+    await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 4 })), { timeout: 10_000 })
     expect(await screen.findByText('All entries')).toBeTruthy()
     // The list takes the left pane back one render after the path changes: wait for it.
     await waitFor(() => expect(screen.queryByRole('heading', { name: 'Archived' })).toBeNull())
@@ -510,7 +516,7 @@ describe('on a computer (two panes)', () => {
     const livePane = within(document.querySelector<HTMLElement>('.variedades-paneles__lista')!)
     expect(await livePane.findByText('Alfa Vieja')).toBeTruthy()
     expect(await livePane.findByText('Zeta Vieja')).toBeTruthy()
-    await waitFor(() => expect(screen.queryByText('You have no archived varieties')).toBeNull())
+    await waitFor(() => expect(screen.queryByText('You have no archived products')).toBeNull())
     await goBackToTheList(router)
   })
 

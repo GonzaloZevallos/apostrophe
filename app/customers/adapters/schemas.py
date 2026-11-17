@@ -6,6 +6,7 @@ for `name`. A `vip` in a body is ignored, like any extra field: membership in th
 type is `customer_type_id`'s to say."""
 
 from datetime import date
+from decimal import Decimal
 from typing import Literal
 
 from pydantic import BaseModel
@@ -14,17 +15,22 @@ from app.customers.application.errors import RequiredFieldCleared
 from app.customers.application.manage_customers import UNCHANGED, CustomerChanges, Unchanged
 from app.customers.application.ports import CustomerBalance, Standing
 from app.customers.domain.customer import Customer
+from app.money_schema import MoneyOut
 
 
 class CustomerIn(BaseModel):
     name: str
     phone: str | None = None
+    # The country a number typed without "+" is read by: a plain string, checked against
+    # the list when it is used (docs/adr/20261111-phone-country-per-number).
+    phone_country: str | None = None
     customer_type_id: int | None = None
 
 
 class CustomerPatchIn(BaseModel):
     name: str | None = None
     phone: str | None = None
+    phone_country: str | None = None
     customer_type_id: int | None = None
 
     def to_changes(self) -> CustomerChanges:
@@ -48,9 +54,11 @@ class CustomerOut(BaseModel):
     id: int
     name: str
     phone: str | None
+    # The phone grouped by its own country's rule, for reading only; null with no phone.
+    phone_display: str | None
     vip: bool
     customer_type_id: int | None
-    balance: int
+    balance: MoneyOut
     owing_since: date | None
     standing: Standing
 
@@ -68,9 +76,10 @@ class CustomerOut(BaseModel):
             id=customer.id,
             name=customer.name.value,
             phone=customer.phone.value if customer.phone is not None else None,
+            phone_display=customer.phone.display if customer.phone is not None else None,
             vip=vip_type_id is not None and customer.customer_type_id == vip_type_id,
             customer_type_id=customer.customer_type_id,
-            balance=balance.balance,
+            balance=Decimal(balance.balance),
             owing_since=balance.owing_since,
             standing=balance.standing,
         )

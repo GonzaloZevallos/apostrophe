@@ -9,7 +9,7 @@
 
 import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, HOME, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { expectPath } from './helpers/url.js'
@@ -36,10 +36,10 @@ const ORIGIN_PATH = { customers: CUSTOMERS, home: HOME, card: CUSTOMER } as cons
 async function makeDebtor(page: Page): Promise<void> {
   await signUpNewBusiness(page)
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Name').fill('Rosa')
-  await page.getByRole('button', { name: 'Add the variety' }).click()
-  await expect(page.getByText('Variety saved')).toBeVisible()
+  await page.getByRole('link', { name: 'New product' }).click()
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
+  await page.getByRole('button', { name: 'Add the product' }).click()
+  await expect(page.getByText('Product saved')).toBeVisible()
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')
@@ -47,7 +47,7 @@ async function makeDebtor(page: Page): Promise<void> {
   await expect(page.getByText('Price saved')).toBeVisible()
 
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Name').fill('Carla Cobrar')
+  await page.getByLabel('Name', { exact: true }).fill('Carla Cobrar')
   await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'New sale to Carla Cobrar' }).click()
@@ -117,8 +117,8 @@ for (const viewport of VIEWPORTS) {
         await makeDebtor(page)
         await openFrom(page, origin)
 
-        await page.getByLabel('Amount').fill('2000')
-        await page.getByRole('radio', { name: 'Cash' }).check()
+        await page.getByLabel('Amount', { exact: true }).fill('2000')
+        await choosePaymentMethod(page, 'Cash')
         await page.getByRole('button', { name: 'Save' }).click()
 
         await expectPath(page, ORIGIN_PATH[origin])
@@ -131,7 +131,7 @@ for (const viewport of VIEWPORTS) {
         await openFrom(page, origin)
 
         await page.getByRole('button', { name: 'All: $ 5.000' }).click()
-        await page.getByRole('radio', { name: 'Transfer' }).check()
+        await choosePaymentMethod(page, 'Transfer')
         await page.getByRole('button', { name: 'Save' }).click()
 
         await expectPath(page, ORIGIN_PATH[origin])
@@ -143,7 +143,7 @@ for (const viewport of VIEWPORTS) {
         await makeDebtor(page)
         await openFrom(page, origin)
 
-        await page.getByRole('radio', { name: 'Cash' }).check()
+        await choosePaymentMethod(page, 'Cash')
         await page.getByRole('button', { name: 'Close' }).click()
         await expect(page.getByText('Discard the payment?')).toBeVisible()
         await page.getByRole('button', { name: 'No, keep entering' }).click()
@@ -175,7 +175,7 @@ async function owingCustomers(page: Page, count: number): Promise<void> {
     const sold = await page.request.post('/sales', {
       data: {
         customer_id: customer.id,
-        payment: 'owing',
+        payment: { kind: 'owing' },
         lines: [{ product_id: rosa.id, quantity: '1', gift: false, special_price: null }],
       },
     })
@@ -206,7 +206,7 @@ async function moreSalesFor(page: Page, name: string, count: number): Promise<vo
     const sold = await page.request.post('/sales', {
       data: {
         customer_id: customer.id,
-        payment: 'owing',
+        payment: { kind: 'owing' },
         lines: [{ product_id: rosa.id, quantity: '1', gift: false, special_price: null }],
       },
     })
@@ -257,8 +257,6 @@ for (const viewport of VIEWPORTS) {
           if (origin === 'customers') {
             await opener.scrollIntoViewIfNeeded()
           } else {
-            // Home draws its setup notice above the figures once /first-run answers; the seller scrolls a drawn page.
-            if (origin === 'home') await expect(page.getByText('Go on to the setup')).toBeVisible()
             // Home and the card keep the control near the top; scroll so it sits 100 px below it, or as far as the page goes.
             await opener.evaluate((element) => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY - 100))
             await expect(opener).toBeInViewport()
@@ -272,8 +270,8 @@ for (const viewport of VIEWPORTS) {
             await page.getByRole('button', { name: 'Close' }).click()
           } else {
             const pays = how === 'partial' ? 2000 : owed
-            await page.getByLabel('Amount').fill(String(pays))
-            await page.getByRole('radio', { name: 'Cash' }).check()
+            await page.getByLabel('Amount', { exact: true }).fill(String(pays))
+            await choosePaymentMethod(page, 'Cash')
             await page.getByRole('button', { name: 'Save' }).click()
             owed -= pays
           }
@@ -314,8 +312,8 @@ test.describe('Record payment on a phone over a long breakdown', () => {
     await moreSalesFor(page, 'Carla Cobrar', 8)
     await openFrom(page, 'card')
 
-    await page.getByLabel('Amount').fill('13000')
-    await page.getByRole('radio', { name: 'Cash' }).check()
+    await page.getByLabel('Amount', { exact: true }).fill('13000')
+    await choosePaymentMethod(page, 'Cash')
     const save = page.getByRole('button', { name: 'Save' })
     await save.scrollIntoViewIfNeeded()
     await expect(save).toBeInViewport()
@@ -326,3 +324,4 @@ test.describe('Record payment on a phone over a long breakdown', () => {
     await expect(page.getByText(/Payment saved/)).toBeVisible()
   })
 })
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'

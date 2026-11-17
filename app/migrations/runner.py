@@ -20,13 +20,17 @@ class MigrationLeftBrokenReferences(RuntimeError):
 
 
 def upgrade_to_head(engine: Engine) -> None:
+    upgrade_to(engine, "head")
+
+
+def upgrade_to(engine: Engine, revision: str) -> None:
     with engine.connect() as connection:
         sqlite = connection.dialect.name == "sqlite"
         if sqlite:
             _pragma(connection, "foreign_keys=OFF")
         try:
             with connection.begin():
-                command.upgrade(_config(connection), "head")
+                command.upgrade(_config(connection), revision)
             if sqlite:
                 _check_foreign_keys(connection)
         finally:

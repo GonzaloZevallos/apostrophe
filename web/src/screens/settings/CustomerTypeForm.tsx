@@ -24,11 +24,8 @@ import Icono from '../../components/Icono'
 import { SheetActions } from '../../components/Sheet'
 import SinConexion from '../../components/SinConexion'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
-import {
-  CUSTOMER_TYPE_ICONS,
-  CUSTOMER_TYPE_ICON_ORDER,
-  DEFAULT_CUSTOMER_TYPE_ICON,
-} from './customerTypeIcons'
+import { CUSTOMER_TYPE_ICON_SET } from '../../components/fixedSets'
+import { CUSTOMER_TYPE_ICONS, DEFAULT_CUSTOMER_TYPE_ICON } from './customerTypeIcons'
 
 export type CustomerTypeTarget = 'new' | CustomerType
 
@@ -138,19 +135,21 @@ export default function CustomerTypeForm({
       <div className="campo">
         <span className="campo__rotulo">{t('customerTypes:form.iconLabel')}</span>
         <div className="selector-pago tipo-cliente-iconos" role="radiogroup" aria-label={t('customerTypes:form.iconLabel')}>
-          {CUSTOMER_TYPE_ICON_ORDER.map((key) => (
+          {CUSTOMER_TYPE_ICON_SET.map((option) => (
             <button
-              key={key}
+              key={option.value}
               type="button"
               role="radio"
-              aria-checked={icon === key}
-              aria-label={t(`customerTypes:icon.${key}`)}
+              aria-checked={icon === option.value}
+              aria-label={option.label()}
               className={
-                icon === key ? 'selector-pago__opcion selector-pago__opcion--activa' : 'selector-pago__opcion'
+                icon === option.value
+                  ? 'selector-pago__opcion selector-pago__opcion--activa'
+                  : 'selector-pago__opcion'
               }
-              onClick={() => setIcon(key)}
+              onClick={() => setIcon(option.value)}
             >
-              <Icono nombre={CUSTOMER_TYPE_ICONS[key]} />
+              <Icono nombre={CUSTOMER_TYPE_ICONS[option.value]} />
             </button>
           ))}
         </div>

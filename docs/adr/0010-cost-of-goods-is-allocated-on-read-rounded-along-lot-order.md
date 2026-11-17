@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-03
+summary: "el costo se reparte al leer, en una función pura, siguiendo el orden de los lotes"
 ---
 
 # Cost of goods is allocated on read, in one pure function, rounded along lot order

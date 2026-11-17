@@ -6,11 +6,14 @@
  * `customerSheet.spec.ts` and `cobroHoja.spec.ts` do.
  */
 
+import { VARIETY_NAME_LABEL } from './labels.js'
+import { OWING } from './paymentMethod.js'
 import type { Page } from '@playwright/test'
-import { VARIETIES } from '../../src/routes.js'
+import { VARIETIES, VARIETY_NEW } from '../../src/routes.js'
 import { expect } from '../fixtures.js'
 import { signUpNewBusiness } from './signup.js'
 import { expectToast } from './toast.js'
+import { expectPath } from './url.js'
 
 /** How many customers, sales or varieties a long list has. */
 export const LONG = 40
@@ -32,9 +35,11 @@ async function inBatches<T>(items: readonly T[], run: (item: T) => Promise<void>
 async function businessWithRosa(page: Page): Promise<void> {
   await signUpNewBusiness(page)
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await page.getByRole('link', { name: 'New product' }).click()
+  await expectPath(page, VARIETY_NEW)
+  // The exact fill below is what waits for the form: an earlier screen's "Edit name" button is not a "Name" field.
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')
@@ -53,7 +58,7 @@ async function owingSale(page: Page, customerId: number, varietyId: number): Pro
   const sold = await page.request.post('/sales', {
     data: {
       customer_id: customerId,
-      payment: 'owing',
+      payment: OWING,
       lines: [{ product_id: varietyId, quantity: '1', gift: false, special_price: null }],
     },
   })

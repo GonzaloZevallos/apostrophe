@@ -20,11 +20,12 @@ describe('renderSaleBill against the hand-written reference set', () => {
 
 const bulkBill: SaleBill = {
   business_name: 'Flores Test',
+  number: 1,
   date: '2026-09-18',
   shipping_charged: 0,
   total: 31500,
   lines: [{ product: 'Luna', quantity: 3.5, amount: 31500, rule: 'bulk', unit_price: 9000 }],
-  payment: { state: 'cash', still_owed: null },
+  payment: { state: 'paid', still_owed: null },
   balance: null,
 }
 

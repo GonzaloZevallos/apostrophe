@@ -14,8 +14,10 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { SALE_NEW } from '../../routes'
 import NuevaVenta from './NuevaVenta'
+import { withPaymentMethods } from '../../test-payment-methods'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 
 class FakeVisualViewport extends EventTarget {
   offsetTop = 0
@@ -31,11 +33,11 @@ beforeEach(() => {
   Object.defineProperty(window, 'innerHeight', { configurable: true, value: 800 })
   vi.stubGlobal(
     'fetch',
-    vi.fn(() =>
+    vi.fn(withPaymentMethods(() =>
       Promise.resolve(
         new Response('[]', { status: 200, headers: { 'Content-Type': 'application/json' } }),
       ),
-    ),
+    )),
   )
 })
 
@@ -48,7 +50,7 @@ afterEach(() => {
 function renderForm() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(
-    [{ element: <Outlet context={ME} />, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
+    [{ element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
     { initialEntries: [SALE_NEW] },
   )
   render(

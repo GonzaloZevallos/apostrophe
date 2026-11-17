@@ -3,17 +3,20 @@
  * computed only here, in integer hundredths of a gram, with no `Math.round`,
  * `toFixed` or float multiplication on grams anywhere in this module. It mirrors
  * `app/sales/domain/pricing.py` exactly (gift, then special price, then the lowest of
- * list, bulk — measured per line, never summed across a sale — and VIP; a VIP-bulk tie
- * is stored as VIP), so a rule change there is caught here too, through the one matrix both sides run
+ * list, bulk — measured per line, never summed across a sale — and the Customer's type
+ * price; a type-bulk tie is stored as the type, a tie with list cannot arise), so a rule change there is caught here too, through the one matrix both sides run
  * (`pricing-matrix.json`, read by this module's tests and by `tests/sales/test_pricing_matrix.py`).
  *
  * What the API answers after a save, an assign or a delete always wins (plan,
  * invariants): nothing here runs again once a sale is saved.
  */
 
+import type { PaymentMethod } from '../api/payments'
 import { noPriceMessage, OWING_HINT } from '../copy/sales'
 
-export type PricingRule = 'list' | 'bulk' | 'vip' | 'gift' | 'special'
+/** `'vip'` is only read, from lines saved before customer types; a new line priced by a type's
+ * price is `'type'` and carries the type's name (ADR-0059). */
+export type PricingRule = 'list' | 'bulk' | 'vip' | 'type' | 'gift' | 'special'
 
 /** CONTEXT.md: Bulk price, Bulk minimum. `minimumHundredths` is the bulk minimum in
  * hundredths of a gram, the same unit every grams figure in this module uses. */
@@ -27,7 +30,8 @@ export interface BulkQuote {
 export interface PriceQuote {
   listPrice: number
   bulk: BulkQuote | null
-  /** The VIP price per gram, or `null` for none. Never 0 as a stand-in. */
+  /** The price per gram the Customer's type has in this entry, or `null` for none. Never 0 as a
+   * stand-in. The shared matrix still names it `vipPrice`. */
   vipPrice: number | null
 }
 
@@ -73,6 +77,7 @@ export class NoPriceThatDay extends SaleRuleBroken {
 export interface LineInput {
   gift: boolean
   specialPrice: number | null
+  /** Whether the Customer has a type (the shared matrix still names it `customerIsVip`). */
   customerIsVip: boolean
   settings: PricingSettings
   quote: PriceQuote | null
@@ -110,14 +115,14 @@ export function priceLine(input: LineInput): LinePricing {
     }
   }
   if (quote === null) throw new NoPriceThatDay()
-  // Start from list; bulk replaces it only when strictly lower; VIP replaces whatever
-  // is best when not higher, so a VIP-bulk tie is stored as VIP.
+  // Start from list; bulk replaces it only when strictly lower; the type's price replaces
+  // whatever is best when not higher, so a type-bulk tie is stored as the type.
   let best: { rule: PricingRule; price: number } = { rule: 'list', price: quote.listPrice }
   if (settings.bulk && quote.bulk !== null && gramsHundredths >= quote.bulk.minimumHundredths) {
     if (quote.bulk.price < best.price) best = { rule: 'bulk', price: quote.bulk.price }
   }
   if (settings.vip && customerIsVip && quote.vipPrice !== null) {
-    if (quote.vipPrice <= best.price) best = { rule: 'vip', price: quote.vipPrice }
+    if (quote.vipPrice <= best.price) best = { rule: 'type', price: quote.vipPrice }
   }
   return {
     rule: best.rule,
@@ -205,9 +210,12 @@ export function hundredthsOfApiGrams(apiGrams: number): number {
   return toHundredths(String(apiGrams))
 }
 
-/** The two errors `validateSale` checks, each on its own field (plan: the only
- * screen-side checks before saving; every other refusal comes back from the API). */
-export type SaleError = { field: 'customer' | `line:${string}`; message: string }
+/** The errors `validateSale` checks, each on its own field (plan: the only screen-side checks
+ * before saving; every other refusal comes back from the API). The missing method carries no
+ * wording: the field draws its own refusal from the Copy module. */
+export type SaleError =
+  | { field: 'customer' | `line:${string}`; message: string }
+  | { field: 'method' }
 
 export interface LineValidation {
   id: string
@@ -217,14 +225,34 @@ export interface LineValidation {
   quote: PriceQuote | null
 }
 
-export type PaymentChoice = 'cash' | 'transfer' | 'owing'
+/** The wire payment of a sale (`PaidIn | OwingIn`, discriminated on `kind`). */
+export type PaymentChoice = { kind: 'paid'; payment_method_id: PaymentMethod } | { kind: 'owing' }
 
-/** The two rules the sale screen checks before saving (sales.md criterion 7):
- * Debiendo needs a customer, and every line that is priced from the day's prices
- * (not a gift, no special price) needs one. Any other refusal comes back from the
- * API, with its own code. */
+/** The state of "how paid": Paid or Owing, or nothing chosen yet. */
+export type PayState = 'paid' | 'owing'
+
+/** The wire payment of a sale, derived from (state, method, total). A method held while the state
+ * is not Paid is never sent; Paid with no method gives null (the screen allows that only at $0,
+ * and the API refuses it otherwise); an unchosen state gives null. */
+export function paymentChoiceOf(
+  payState: PayState | null,
+  method: PaymentMethod | null,
+  // The total takes part in the rule `validateSale` applies, not in the value: Paid sends its
+  // method whatever the total, and a $0 sale with no method sends none.
+  _total: number,
+): PaymentChoice | null {
+  if (payState === 'owing') return { kind: 'owing' }
+  if (payState === 'paid') return method === null ? null : { kind: 'paid', payment_method_id: method }
+  return null
+}
+
+/** The rules the sale screen checks before saving (sales.md): Owing needs a customer, Paid above
+ * $0 needs a method, and every line that is priced from the day's prices (not a gift, no special
+ * price) needs one. Any other refusal comes back from the API, with its own code. */
 export function validateSale(input: {
-  method: PaymentChoice | null
+  payState: PayState | null
+  method: PaymentMethod | null
+  total: number
   hasCustomer: boolean
   lines: readonly LineValidation[]
 }): SaleError[] {
@@ -238,8 +266,11 @@ export function validateSale(input: {
       })
     }
   }
-  if (input.method === 'owing' && !input.hasCustomer) {
+  if (input.payState === 'owing' && !input.hasCustomer) {
     errors.push({ field: 'customer', message: OWING_HINT })
+  }
+  if (input.payState === 'paid' && input.method === null && input.total > 0) {
+    errors.push({ field: 'method' })
   }
   return errors
 }

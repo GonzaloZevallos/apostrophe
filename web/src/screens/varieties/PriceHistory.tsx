@@ -19,6 +19,7 @@ import type { Variety } from '../Variedades'
 import PriceRows, { type PriceRow } from './PriceRows'
 import { PRICE_HISTORY_HELP } from '../../copy/varieties'
 import { COMMON_TEXT } from '../../copy/common'
+import ContentArea from '../../components/ContentArea'
 
 export default function PriceHistory({ varietyId }: { varietyId: number }) {
   const id = String(varietyId)
@@ -32,25 +33,25 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
   if (failure !== null) {
     if (failure instanceof ApiError && isGone(failure.code)) return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">{failure instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}</div>
-      </main>
+      </ContentArea>
     )
   }
   if (varietyQuery.data === undefined || pricesQuery.data === undefined) {
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <Loading />
         </div>
-      </main>
+      </ContentArea>
     )
   }
   const variety = varietyQuery.data
   const history = pricesQuery.data
 
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">
         <span className="encabezado__titulo">{COMMON_TEXT.prices}</span>
         <PriceRows
@@ -61,6 +62,6 @@ export default function PriceHistory({ varietyId }: { varietyId: number }) {
         />
         <span className="campo__ayuda" data-copy="help">{PRICE_HISTORY_HELP}</span>
       </div>
-    </main>
+    </ContentArea>
   )
 }

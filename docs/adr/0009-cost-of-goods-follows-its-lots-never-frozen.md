@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-03
+summary: "el costo de lo vendido sigue a sus lotes tal como están"
 ---
 
 # Cost of goods sold follows its lots as they stand; a stock entry is never frozen

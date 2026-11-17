@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-06
+summary: "el contraste del texto es una tabla del README vigilada por una sola prueba"
 ---
 
 # Text contrast is a README table checked by one pytest guard; surfaces are a closed list; `--tenue` is icon-only

@@ -21,7 +21,6 @@ export const ICON_NAMES = [
   'ventas',
   'clientes',
   'variedades',
-  'mas',
   'atras',
   'chevron',
   'abajo',
@@ -47,7 +46,6 @@ export const ICON_NAMES = [
   'precio',
   'gastos',
   'analisis',
-  'configuracion',
   'negocio',
   'usuarios',
   'integraciones',
@@ -65,6 +63,14 @@ export const ICON_NAMES = [
   'etiqueta',
   'corona',
   'campana',
+  'billete',
+  'monedas',
+  'tarjeta',
+  'banco',
+  'telefono',
+  'billetera',
+  'codigoQr',
+  'otro',
 ] as const
 
 export type NombreIcono = (typeof ICON_NAMES)[number]
@@ -75,14 +81,6 @@ export interface IconoProps {
    * Omitted, it is purely decorative. */
   label?: string
 }
-
-const DOTS: ReactNode = (
-  <>
-    <circle cx="5" cy="12" r="0.75" />
-    <circle cx="12" cy="12" r="0.75" />
-    <circle cx="19" cy="12" r="0.75" />
-  </>
-)
 
 const TRAZOS: Record<NombreIcono, ReactNode> = {
   inicio: (
@@ -106,7 +104,6 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
     </>
   ),
   variedades: <path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5z" />,
-  mas: DOTS,
   atras: <path d="m15 5-7 7 7 7" />,
   chevron: <path d="m9 5 7 7-7 7" />,
   abajo: <path d="m5 9 7 7 7-7" />,
@@ -192,9 +189,6 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
   analisis: (
     <><path d="M5 20v-8" /><path d="M12 20V5" /><path d="M19 20v-9" /></>
   ),
-  configuracion: (
-    <><path d="M4 7h9" /><path d="M17 7h3" /><circle cx="15" cy="7" r="2" /><path d="M4 17h3" /><path d="M11 17h9" /><circle cx="9" cy="17" r="2" /></>
-  ),
   negocio: (
     <><path d="M4 9.5 5.5 4h13L20 9.5" /><path d="M4 9.5a2.7 2.7 0 0 0 5.3 0 2.7 2.7 0 0 0 5.4 0 2.7 2.7 0 0 0 5.3 0" /><path d="M5.5 12.5V20h13v-7.5" /><path d="M10 20v-4.5h4V20" /></>
   ),
@@ -226,6 +220,30 @@ const TRAZOS: Record<NombreIcono, ReactNode> = {
   etiqueta: <><path d="M4 4h8l8 8-8 8-8-8z" /><circle cx="8.5" cy="8.5" r="1" /></>,
   corona: <path d="M4 18 3.5 8l5 4 3.5-6 3.5 6 5-4L20 18z" />,
   campana: <><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15z" /><path d="M10 21h4" /></>,
+  billete: (
+    <><rect x="3" y="6.5" width="18" height="11" rx="1.5" /><circle cx="12" cy="12" r="2.3" /><path d="M6.5 12h.01" /><path d="M17.5 12h.01" /></>
+  ),
+  monedas: (
+    <><ellipse cx="9.5" cy="8" rx="5.5" ry="2.5" /><path d="M4 8v4c0 1.4 2.5 2.5 5.5 2.5s5.5-1.1 5.5-2.5V8" /><path d="M15 12.4c.6.1 1.2.1 1.5.1 3 0 4.5-1.1 4.5-2.5V6" /><path d="M4 12v4c0 1.4 2.5 2.5 5.5 2.5s5.5-1.1 5.5-2.5v-4" /></>
+  ),
+  tarjeta: (
+    <><rect x="3" y="5.5" width="18" height="13" rx="2.5" /><path d="M3 10h18" /><path d="M7 15h4" /></>
+  ),
+  banco: (
+    <><path d="M3.5 9.5 12 4l8.5 5.5z" /><path d="M6 12v5" /><path d="M10 12v5" /><path d="M14 12v5" /><path d="M18 12v5" /><path d="M3.5 20h17" /></>
+  ),
+  telefono: (
+    <><rect x="7" y="3" width="10" height="18" rx="2.5" /><path d="M11 18h2" /></>
+  ),
+  billetera: (
+    <><path d="M4 7.5A1.5 1.5 0 0 1 5.5 6H18a2 2 0 0 1 2 2v1.5" /><path d="M4 7.5v10A2 2 0 0 0 6 19.5h12a2 2 0 0 0 2-2v-8H6a2 2 0 0 1-2-2" /><path d="M16 14.5h.01" /></>
+  ),
+  codigoQr: (
+    <><rect x="4" y="4" width="6" height="6" rx="1" /><rect x="14" y="4" width="6" height="6" rx="1" /><rect x="4" y="14" width="6" height="6" rx="1" /><path d="M14 14h2.5v2.5H14z" /><path d="M20 14v.01" /><path d="M17 20h3v-3" /></>
+  ),
+  otro: (
+    <><rect x="4" y="4" width="16" height="16" rx="4" /><path d="M8.5 12h.01" /><path d="M12 12h.01" /><path d="M15.5 12h.01" /></>
+  ),
 }
 
 export default function Icono({ nombre, label }: IconoProps) {

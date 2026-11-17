@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
 import { VARIETIES as VARIETIES_PATH, WITHDRAWAL as WITHDRAWAL_PATH, pathTo } from '../../routes'
-import { jsonResponse, renderWithdrawals, type FetchImpl } from './renderWithdrawals'
+import { jsonResponse, reasonField, renderWithdrawals, type FetchImpl } from './renderWithdrawals'
 import { LIMITS } from '../../copy/limits'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 
@@ -50,7 +50,7 @@ test('shows the date, the reason by word, every line and the note, with the bar 
 test('the "‹" back goes to the page it was opened from', async () => {
   const { router } = renderWithdrawals([VARIETIES_PATH, ONE], serving(WITHDRAWAL))
 
-  await userEvent.click(await screen.findByRole('button', { name: '‹ Varieties' }))
+  await userEvent.click(await screen.findByRole('button', { name: '‹ Products' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
@@ -58,7 +58,7 @@ test('the "‹" back goes to the page it was opened from', async () => {
 test('with no history, back goes to Variedades', async () => {
   const { router } = renderWithdrawals([ONE], serving(WITHDRAWAL))
 
-  await userEvent.click(await screen.findByRole('button', { name: '‹ Varieties' }))
+  await userEvent.click(await screen.findByRole('button', { name: '‹ Products' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES_PATH))
 })
@@ -121,8 +121,7 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Wit
 
   expect(await screen.findByLabelText('Grams 1')).toHaveValue('5.5')
   expect(screen.getByLabelText('Note')).toHaveValue('Para la fiesta')
-  expect(await screen.findByRole('button', { name: 'Marketing' })).toHaveAttribute('aria-pressed', 'true')
-  expect(screen.getByRole('button', { name: 'Own use' })).toHaveAttribute('aria-pressed', 'false')
+  expect(await reasonField()).toHaveTextContent('Marketing')
   await userEvent.clear(screen.getByLabelText('Grams 1'))
   await userEvent.type(screen.getByLabelText('Grams 1'), '6')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
@@ -147,11 +146,11 @@ test('Editar opens the form filled in; saving is confirmed first and toasts "Wit
   ])
 })
 
-test('opening a withdrawal that is gone shows "That is gone." and "Back to Varieties"', async () => {
+test('opening a withdrawal that is gone shows "That is gone." and "Back to Products"', async () => {
   renderWithdrawals([ONE], async () => jsonResponse(404, { code: 'stock.withdrawal_not_found' }))
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toHaveAttribute('href', VARIETIES_PATH)
+  expect(screen.getByRole('link', { name: 'Back to Products' })).toHaveAttribute('href', VARIETIES_PATH)
 })
 
 test('deleting a withdrawal that is gone goes to Variedades with "That is gone. The list is up to date."', async () => {
@@ -177,6 +176,6 @@ test('the detail keeps the icon and text rule: Delete carries its icon and word,
 
   const borrar = await screen.findByRole('button', { name: 'Delete' })
   expect(borrar.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
-  expect(screen.getByRole('button', { name: '‹ Varieties' })).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: '‹ Products' })).toBeInTheDocument()
   expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
 })

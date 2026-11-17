@@ -32,8 +32,10 @@ import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
 import { VARIETIES_TEXT } from '../../copy/varieties'
 import { COMMON_TEXT } from '../../copy/common'
+import ContentArea from '../../components/ContentArea'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage }
+export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage, money: { symbol: '$', decimals: 0 } }
 
 export const VARIETY_ROW = {
   id: 1,
@@ -57,6 +59,9 @@ export function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
+/** The Business's VIP type: the "VIP price" field shows only while it exists. */
+export const VIP_TYPE = { id: 2, name: 'Mayoristas', icon: 'star', is_vip: true }
+
 export type FetchImpl = (url: string, init?: RequestInit) => Promise<Response>
 
 /** The faked API for variety 1: `overrides` replaces any one of its answers. */
@@ -65,6 +70,7 @@ export function api(overrides: Record<string, () => Response> = {}): FetchImpl {
     const key = `${init?.method ?? 'GET'} ${url}`
     const override = overrides[key]
     if (override !== undefined) return Promise.resolve(override())
+    if (key === 'GET /api/customer-types') return Promise.resolve(jsonResponse(200, [VIP_TYPE]))
     if (key === 'GET /pricing-settings') return Promise.resolve(jsonResponse(200, SETTINGS_ON))
     if (key === 'GET /api/products/1') return Promise.resolve(jsonResponse(200, VARIETY_ROW))
     if (key === 'GET /api/products/1/prices') return Promise.resolve(jsonResponse(200, HISTORY))
@@ -83,7 +89,7 @@ export function renderVarieties(initialEntries: string[], fetchImpl: FetchImpl) 
         element: (
           <QueryClientProvider client={queryClient}>
             <FlashProvider>
-              <Outlet context={ME} />
+              <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
             </FlashProvider>
           </QueryClientProvider>
         ),
@@ -94,17 +100,17 @@ export function renderVarieties(initialEntries: string[], fetchImpl: FetchImpl) 
               {
                 path: relative(VARIETIES),
                 handle: { screen: 'varieties' },
-                element: <main>{VARIETIES_TEXT.pantallaVariedades}</main>,
+                element: <ContentArea as="main">{VARIETIES_TEXT.pantallaVariedades}</ContentArea>,
               },
               {
                 path: relative(VARIETY),
                 handle: { screen: 'variety' },
                 element: (
-                  <main>
+                  <ContentArea as="main">
                     <span>{VARIETIES_TEXT.paginaDeLaVariedad}</span>
                     <InAppLink to={pathTo(VARIETY_PRICES, { id: 1 })}>{VARIETIES_TEXT.verTodosLosPrecios}</InAppLink>
                     <InAppLink to={pathTo(VARIETY_PRICE_NEW, { id: 1 })}>{COMMON_TEXT.newPrice}</InAppLink>
-                  </main>
+                  </ContentArea>
                 ),
               },
               {
@@ -169,7 +175,7 @@ export function renderVarietiesInShell(initialEntries: string[], fetchImpl: Fetc
         element: (
           <QueryClientProvider client={queryClient}>
             <FlashProvider>
-              <Outlet context={ME} />
+              <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
             </FlashProvider>
           </QueryClientProvider>
         ),
@@ -177,10 +183,10 @@ export function renderVarietiesInShell(initialEntries: string[], fetchImpl: Fetc
           {
             element: <Shell />,
             children: [
-              { path: relative(VARIETIES), element: <main>{VARIETIES_TEXT.pantallaVariedades}</main>, handle: { screen: 'varieties' } },
+              { path: relative(VARIETIES), element: <ContentArea as="main">{VARIETIES_TEXT.pantallaVariedades}</ContentArea>, handle: { screen: 'varieties' } },
               {
                 path: relative(ARCHIVED_VARIETIES),
-                element: <main>{VARIETIES_TEXT.pantallaArchivadas}</main>,
+                element: <ContentArea as="main">{VARIETIES_TEXT.pantallaArchivadas}</ContentArea>,
                 handle: { screen: 'varieties-archived' },
               },
               {

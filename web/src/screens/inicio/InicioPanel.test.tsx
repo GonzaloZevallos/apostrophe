@@ -5,6 +5,8 @@
  * (`data-tema`, set the way the Configuración switch does).
  */
 
+import { SheetRouterProvider } from '../../components/useSheetStack'
+import { choosePaymentMethod } from '../../components/selectorTestKit'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -14,6 +16,7 @@ import panelFixture from '../../api/fixtures/panel.json'
 import paymentFixture from '../../api/fixtures/payment.json'
 import type { Me } from '../../api/me'
 import { SHOWN_EN } from '../../test/shownLanguage'
+import { screenRoute } from '../../test/screenRoute'
 import type { PanelAnswer, PanelDebts } from '../../api/panel'
 import FlashProvider from '../../flash/FlashProvider'
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, VARIETY, pathTo } from '../../routes'
@@ -22,9 +25,11 @@ import CobroRoute from '../clientes/CobroRoute'
 import Inicio from '../Inicio'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 import { baselineText } from '../../i18n/testing'
+import { METHODS_ANSWER } from '../../test-payment-methods'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 const RESULT_LABELS = [
   'Profit',
@@ -73,6 +78,7 @@ const OWING_CUSTOMER = {
   id: 1,
   name: 'Ana Pérez',
   phone: '+5491122334455',
+  phone_display: '+54 9 11 2233-4455',
   vip: false,
   balance: 11000,
   owing_since: '2026-09-14',
@@ -89,7 +95,7 @@ const OWING_ACCOUNT = {
       date: '2026-09-14',
       running_balance: 11000,
       standing: 'owes',
-      sale: { id: 10, total: 11000, how_paid: 'owing' },
+      sale: { id: 10, total: 11000, how_paid: 'owing', payment_method: null },
     },
   ],
 }
@@ -113,7 +119,7 @@ function VarietyStub() {
 function Provide() {
   return (
     <FlashProvider>
-      <Outlet context={ME} />
+      <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
     </FlashProvider>
   )
 }
@@ -125,7 +131,7 @@ function renderInicio() {
       {
         element: <Provide />,
         children: [
-          { path: HOME, element: <Inicio /> },
+          screenRoute('home', <Inicio />),
           { path: CUSTOMERS, element: <span>pantalla clientes</span> },
           { path: CUSTOMER, element: <CustomerStub /> },
           { path: CUSTOMER_PAYMENT, element: <CobroRoute /> },
@@ -137,7 +143,9 @@ function renderInicio() {
   )
   const view = render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
   return { router, ...view }
@@ -151,6 +159,7 @@ beforeEach(() => {
   api.mockImplementation((input, init) => {
     const url = String(input)
     const method = init?.method ?? 'GET'
+    if (url === '/api/payment-methods') return Promise.resolve(jsonResponse(200, METHODS_ANSWER))
     if (url === '/panel') return Promise.resolve(jsonResponse(200, panelNow))
     if (url === '/api/products') return Promise.resolve(jsonResponse(200, [{ current_price: { id: 1 } }]))
     if (url === '/pinned-catalog/status') return Promise.resolve(jsonResponse(200, { status: null }))
@@ -371,7 +380,7 @@ async function payFromInicio(amount: string): Promise<void> {
   const inside = within(sheet as HTMLElement)
   await userEvent.clear(inside.getByLabelText('Amount'))
   await userEvent.type(inside.getByLabelText('Amount'), amount)
-  await userEvent.click(inside.getByRole('radio', { name: 'Cash' }))
+  await choosePaymentMethod(userEvent, 'Cash')
   await userEvent.click(inside.getByRole('button', { name: 'Save' }))
 }
 

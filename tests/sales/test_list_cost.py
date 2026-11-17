@@ -38,16 +38,16 @@ from sqlalchemy.engine import Engine
 
 from app.db import make_engine
 
-SALES_INDEX = "ix_sale_business_id_sale_date"
+SALES_INDEX = "ix_sale_business_id_sold_on"
 LINES_INDEX = "ix_sale_line_sale_id"
 PAYMENT_INDEX = "ix_payment_sale_id"
 LIST_TABLES = ("sale", "sale_line", "payment")
 
 # The statements `GET /sales` emits for a signed-in request: the session's user and
 # business (2), the VIP type (1), the two list statements (2), then the settlement's
-# three reads (3).
+# three reads (3), and the business's money scale (1), looked up once per unit of work.
 # Pinned so a constant increase fails too, not only one that grows with the data.
-PINNED_STATEMENTS = 8
+PINNED_STATEMENTS = 9
 
 PERIOD = {"date_from": "2026-09-01", "date_to": "2026-09-30"}
 
@@ -117,8 +117,8 @@ def plan_problems(plan_lines: Sequence[str], statement: Literal["sales", "lines"
 
 
 INDEXED_SALES = [
-    "SEARCH sale USING INDEX ix_sale_business_id_sale_date "
-    "(business_id=? AND sale_date>? AND sale_date<?)",
+    "SEARCH sale USING INDEX ix_sale_business_id_sold_on "
+    "(business_id=? AND sold_on>? AND sold_on<?)",
     "SEARCH customer USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
     "SEARCH payment USING INDEX ix_payment_sale_id (sale_id=?) LEFT-JOIN",
 ]
@@ -213,10 +213,16 @@ def _seed(client: TestClient, sales: int) -> None:
         json={"effective_from": "2026-01-01", "list_price": 10_000},
     )
     assert priced.status_code == 201, priced.text
+    method = client.get("/api/payment-methods").json()[0]["id"]
     customers: list[int] = []
     for number in range(max(sales // 3, 1)):
         created = client.post(
-            "/customers", json={"name": f"Cliente {number}", "phone": f"11 {2000 + number}-6789"}
+            "/customers",
+            json={
+                "name": f"Cliente {number}",
+                "phone": f"11 {2000 + number}-6789",
+                "phone_country": "AR",
+            },
         )
         assert created.status_code == 201, created.text
         customers.append(int(created.json()["id"]))
@@ -226,7 +232,9 @@ def _seed(client: TestClient, sales: int) -> None:
         is_owing = customer is not None and number % 2 == 1
         body: dict[str, object] = {
             "date": (date(2026, 9, 1) + timedelta(days=number % 28)).isoformat(),
-            "payment": "owing" if is_owing else "cash",
+            "payment": {"kind": "owing"}
+            if is_owing
+            else {"kind": "paid", "payment_method_id": method},
             "lines": [
                 {"product_id": variety, "quantity": "2"},
                 {"product_id": variety, "quantity": "1"},
@@ -241,7 +249,7 @@ def _seed(client: TestClient, sales: int) -> None:
     for customer in owing[::3]:
         paid = client.post(
             f"/customers/{customer}/payments",
-            json={"paid_on": "2026-10-01", "amount": 1, "method": "cash"},
+            json={"paid_on": "2026-10-01", "amount": 1, "payment_method_id": method},
         )
         assert paid.status_code == 201, paid.text
 

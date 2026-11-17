@@ -108,7 +108,7 @@ def _assert_typed_as_the_vip_mark(engine: Engine) -> None:
             )
         ).all()
         members = connection.execute(
-            text("SELECT id, business_id, customer_type_id, vip FROM customer ORDER BY id")
+            text("SELECT id, business_id, customer_type_id, is_vip FROM customer ORDER BY id")
         ).all()
         type_ids = {
             row.business_id: row.id
@@ -120,10 +120,10 @@ def _assert_typed_as_the_vip_mark(engine: Engine) -> None:
     ]
     for row in members:
         in_vip_type = row.customer_type_id == type_ids[row.business_id]
-        assert in_vip_type == bool(row.vip)
+        assert in_vip_type == bool(row.is_vip)
         assert row.customer_type_id is None or in_vip_type
     assert {
-        business_id: {row.id for row in members if row.business_id == business_id and row.vip}
+        business_id: {row.id for row in members if row.business_id == business_id and row.is_vip}
         for business_id in (1, 2)
     } == VIP_IDS_BY_BUSINESS
     assert [tuple(r) for r in members if r.customer_type_id is not None] == [
@@ -136,7 +136,7 @@ def _assert_schema(engine: Engine) -> None:
     inspector = inspect(engine)
     assert {
         tuple(u["column_names"]): u["name"] for u in inspector.get_unique_constraints("customer")
-    } == {("business_id", "phone"): "uq_customer_business_phone"}
+    } == {("business_id", "phone"): "uq_customer_business_id_phone"}
     assert "ix_customer_customer_type_id" in {i["name"] for i in inspector.get_indexes("customer")}
     foreign_keys = {
         fk["name"]: (fk["referred_table"], fk["options"])
@@ -149,6 +149,20 @@ def _assert_schema(engine: Engine) -> None:
         assert dbapi_connection.execute("PRAGMA foreign_key_check").fetchall() == []
 
 
+def _under_the_old_names(after: Snapshot) -> Snapshot:
+    """0026 renamed `sale.sale_date`, 0027 `customer.vip` and `catalog_attributes.shown`: read
+    them under their 0019 names, as the walk compares."""
+    for row in after["sale"].values():
+        row["sale_date"] = row.pop("sold_on", row.get("sale_date"))
+    for row in after["customer"].values():
+        row["vip"] = row.pop("is_vip", row.get("vip"))
+    attributes = after.pop("catalog_attribute", {})
+    for row in attributes.values():
+        row["shown"] = row.pop("is_shown")
+    after["catalog_attributes"] = attributes
+    return after
+
+
 def _run_upgrade(url: str) -> None:
     engine = make_engine(url)
     _migrate(engine, "up", "0019")
@@ -157,7 +171,7 @@ def _run_upgrade(url: str) -> None:
 
     upgrade_to_head(engine)
 
-    assert changed_values(before, snapshot(engine)) == []
+    assert changed_values(before, _under_the_old_names(snapshot(engine))) == []
     _assert_typed_as_the_vip_mark(engine)
     _assert_schema(engine)
     engine.dispose()

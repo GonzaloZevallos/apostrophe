@@ -78,14 +78,9 @@ WRITES: dict[str, Entry] = {
     # web/package.json:11 `test` is `vitest run`, which keeps its cache in node_modules/.vite.
     "web-tests": Entry(frozenset({VITE_CACHE}), frozenset(), "web/package.json:11"),
     # `web-build` (web/package.json:8, `tsc -b && vite build`) has no entry on purpose: it wrote
-    # web/dist beside `web-e2e` and the buildinfo beside `web-types` (GH-543). A check added back
+    # web/dist beside `web-e2e` and the buildinfo beside `web-types` (GH-543). Since GH-699
+    # `web-e2e` is no longer a local check, so no local check writes web/dist. A check added back
     # needs an entry, and the writer rules below refuse it while it shares a path.
-    # web/package.json:14 `e2e` is `sh scripts/e2e.sh`; web/scripts/e2e.sh:23 runs `npx vite
-    # build` (web/dist), and Playwright then serves web/dist from uvicorn (app/main.py:336-347)
-    # and writes its run directory (web/scripts/e2e.sh:19).
-    "web-e2e": Entry(
-        frozenset({DIST, E2E_RESULTS}), frozenset({DIST, VENV}), "web/package.json:14"
-    ),
 }
 
 # What a resolved command's text shows it writes: (pattern, path, what it is).
@@ -314,5 +309,6 @@ def test_nothing_is_checked_when_the_checks_do_not_run_at_once() -> None:
 
 def test_a_check_that_writes_only_what_it_declares_passes() -> None:
     stack = _stack(**{"web-types": TYPES, "web-e2e": E2E})
-    writes = {k: WRITES[k] for k in ("web-types", "web-e2e")}
+    e2e_entry = Entry(frozenset({DIST, E2E_RESULTS}), frozenset({DIST, VENV}), "x")
+    writes = {"web-types": WRITES["web-types"], "web-e2e": e2e_entry}
     assert parallel_writer_problems(stack, writes, SCRIPTS, WEB_FILES) == []

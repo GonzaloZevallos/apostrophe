@@ -5,6 +5,7 @@ import { expect, test } from 'vitest'
 import { markGone, useGoneNotice } from './goneExit'
 import { gone } from './feedback'
 import { SheetRouterProvider } from './useSheetStack'
+import ContentArea from './ContentArea'
 
 const LIST = '/lista'
 const OTHER = '/otra'
@@ -13,10 +14,10 @@ const FORM = '/forma'
 function Page({ name }: { name: string }) {
   const shown = useGoneNotice()
   return (
-    <main>
+    <ContentArea as="main">
       <h1>{name}</h1>
       {shown && <p role="status">That is gone.</p>}
-    </main>
+    </ContentArea>
   )
 }
 

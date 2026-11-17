@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-30
+summary: "la integración continua corre solo las suites que un cambio afecta"
 ---
 
 # CI corre solo las suites que un cambio afecta, en shards y con cobertura
@@ -93,7 +94,7 @@ libre al rebasar.
   están. No hace checkout, no usa `uv` y no corre ningún check. `ci-ok` depende de ambos y
   `scripts/ci_verdict.py` juzga ambos con la bandera `e2e`, de modo que una matriz cancelada con un
   agregador en rojo se nombra en las dos líneas.
-- **`ci_covers`.** `.agentic/stack.yaml` declara, como última clave,
+- **`ci_covers`** (`ci_covers` was removed by GH-699; see ADR-0054.) `.agentic/stack.yaml` declara, como última clave,
   `ci_covers: {web-e2e: {job: e2e, failed: '✘|^\s*\d+ failed\b'}}`. Si `web-e2e` agota el tiempo en
   local, el sistema difiere a CI cuando el check-run `e2e` está en verde, salvo que la salida local ya
   contenga una línea que cumpla `failed`. Con `retries: 0`, el reporter de lista imprime cada falla final
@@ -104,7 +105,8 @@ libre al rebasar.
   `stack.yaml`, nunca la copia.
   *Adenda (2026-11-07, GH-563).* `retries` vale 1 solo bajo `CI` (ADR-0040, adenda). Un `web-e2e`
   local sigue con 0, por lo que un `✘` en la salida local sigue siendo una falla final y
-  `ci_covers.web-e2e.failed` no cambia.
+  `ci_covers.web-e2e.failed` no cambia (GH-699 retiró después `ci_covers`; el reintento de CI no
+  depende de él).
 - **Riesgos conocidos.** (1) Un head que solo toca el backend, o cualquiera cuyo diff no seleccione
   ningún spec, omite `e2e`: no queda cubierto. (2) "Cubierto" es la selección que `scripts/ci_changes.py`
   calculó para el diff de ese head, no la suite completa local; es la misma selección que el Gate ya acepta

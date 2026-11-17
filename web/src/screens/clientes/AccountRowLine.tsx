@@ -7,6 +7,7 @@
 import type { ReactNode } from 'react'
 import type { AccountRow } from '../../api/payments'
 import { formatDateShort } from '../../format/dates'
+import { useMoney } from '../../format/moneyContext'
 import { type BalanceTone, ledgerRowView } from './accountRows'
 
 /** The balance line's class, by the tone `ledgerRowView` chose: amber only for what is
@@ -18,7 +19,8 @@ const BALANCE_TONE_CLASS: Record<BalanceTone, string> = {
 }
 
 export default function AccountRowLine({ row, children }: { row: AccountRow; children?: ReactNode }) {
-  const view = ledgerRowView(row)
+  const money = useMoney()
+  const view = ledgerRowView(row, money)
   return (
     <div className="cuenta-cliente__fila">
       <span className="cuenta-cliente__fecha">{formatDateShort(row.date)}</span>

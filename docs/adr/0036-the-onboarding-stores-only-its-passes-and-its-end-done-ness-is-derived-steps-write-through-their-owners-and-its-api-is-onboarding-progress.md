@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-07
+summary: "el Onboarding guarda solo sus pasos y su final; lo hecho se deriva"
 ---
 
 # The Onboarding stores only its passes and its end; done-ness is derived, steps write through their owners, and its API is `/onboarding-progress`

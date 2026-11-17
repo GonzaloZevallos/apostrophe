@@ -1,0 +1,9 @@
+
+ RUN  v5.0.5 /home/zeta/dev/repos/apostrophe/.agentic/worktrees/GH-645/web
+
+
+ Test Files  1 passed (1)
+      Tests  11 passed (11)
+   Start at  12:48:48
+   Duration  10.04s (tests 54%, environment 28%, import 8%, setup 6%, transform 4%)
+

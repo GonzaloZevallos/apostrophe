@@ -16,6 +16,16 @@ export type LayerMetrics = {
   frame_inside_viewport: boolean;
   scroll_containers: ScrollContainer[];
 };
+export type PinnedRecord = {
+  path: string;
+  position: 'fixed' | 'sticky';
+  inset_top: number | 'auto';
+  inset_bottom: number | 'auto';
+  margin_top: number | 'auto';
+  margin_bottom: number | 'auto';
+  transform: string;
+  pinned_class: 'chrome' | 'content';
+};
 export type CensusRecord = {
   device_scale_factor?: number;
   viewport_before?: Viewport | null;
@@ -29,6 +39,7 @@ export type CensusRecord = {
   fits_viewport_after?: string | null;
   class?: CensusClass;
   layer_metrics?: LayerMetrics;
+  pinned?: PinnedRecord[];
   sizes_changed?: Array<SizeChange | CountChange>;
   census_error?: string;
   census_settle?: 'unsettled' | 'rejected' | 'other';

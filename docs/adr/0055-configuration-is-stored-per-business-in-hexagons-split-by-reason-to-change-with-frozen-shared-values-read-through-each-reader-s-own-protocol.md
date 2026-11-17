@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-28
+summary: "la configuración se guarda por Business en hexágonos separados por motivo de cambio"
 ---
 
 # Configuration is stored per business in hexagons split by reason to change, with frozen shared values read through each reader's own Protocol
@@ -86,3 +87,9 @@ where that configuration lives and how code reads it. No code changes here.
   foreign key or tested for isolation, and an amount held there would break docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md.
 - **Reading configuration through the owning hexagon's own classes**: docs/adr/0006-capabilities-meet-through-ports.md forbids a capability
   from importing another's internals; the per-reader Protocol is what keeps the readers apart.
+
+## Amendment (2026-11-01, GH-318 part 13)
+
+docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md withdraws the
+planned "Product word" of this ADR: no product word is stored or read, and no "Variety" / "Varieties"
+row is written for an existing business. The rest of this ADR holds.

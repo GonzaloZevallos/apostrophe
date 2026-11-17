@@ -73,7 +73,7 @@ export const onboardingProgressQuery = queryOptions({
 /** Keeps the answer a write returned, so the next screen reads it without asking again. */
 export function keepProgress(queryClient: QueryClient, answer: OnboardingProgress): void {
   queryClient.setQueryData(keys.onboardingProgress(), answer)
-  // Any Onboarding write can end it, and what ends it changes `GET /first-run`'s slot 1.
+  // Any Onboarding write can end it, and the Shell and Products still read `GET /first-run`.
   void queryClient.invalidateQueries({ queryKey: keys.firstRun() })
 }
 

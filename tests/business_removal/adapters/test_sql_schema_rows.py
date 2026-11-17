@@ -27,6 +27,7 @@ from app.main import create_app
 from app.settings import Settings
 from tests.conftest import NOW, PASSWORD, TEST_HASHER, MovableClock, open_business, signed_in
 from tests.fakes.telegram import FakeTelegram
+from tests.payment_body import payment_body
 from tests.pricing_switches import set_switches
 
 SETTINGS = Settings(secret_key="removal-test-secret", database_url="sqlite://")
@@ -49,6 +50,7 @@ def _seed_everything(client: TestClient, owner_email: str) -> dict[str, int]:
         json={
             "name": "Removal customer",
             "phone": "11 2345-6789",
+            "phone_country": "AR",
             "customer_type_id": customer_type["id"],
         },
     ).json()
@@ -74,19 +76,26 @@ def _seed_everything(client: TestClient, owner_email: str) -> dict[str, int]:
     client.put("/catalog/header-footer", json={"header": "removal", "footer": "removal"})
     cash_sale = client.post(
         "/sales",
-        json={"payment": "cash", "lines": [{"product_id": variety["id"], "quantity": "5"}]},
+        json={
+            "payment": payment_body("cash", client),
+            "lines": [{"product_id": variety["id"], "quantity": "5"}],
+        },
     ).json()
     client.post(
         "/sales",
         json={
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "customer_id": customer["id"],
             "lines": [{"product_id": variety["id"], "quantity": "5"}],
         },
     )
     client.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": "2026-09-20", "amount": 1_000, "method": "cash"},
+        json={
+            "paid_on": "2026-09-20",
+            "amount": 1_000,
+            "payment_method_id": client.get("/api/payment-methods").json()[0]["id"],
+        },
     )
     # A failed login against the business's own user: `login_guard` is keyed by email,
     # so this is the row the removal must take along with that user (round-3 Q3's
@@ -207,6 +216,17 @@ def seeded(
                 text("INSERT INTO first_run (business_id, imported_at) VALUES (:b, :at)"),
                 {"b": _business_id(file_engine, email), "at": "2026-10-01 12:00:00"},
             )
+        # One type price each, tied to the business's Price entry (no route writes one yet).
+        connection.execute(
+            text(
+                "INSERT INTO customer_type_price (business_id, variety_id, customer_type_id, "
+                "price, effective_on, price_entry_id) "
+                "SELECT price_entry.business_id, price_entry.variety_id, customer_type.id, "
+                "price_entry.list_price / 2, price_entry.effective_on, price_entry.id "
+                "FROM price_entry JOIN customer_type "
+                "ON customer_type.business_id = price_entry.business_id"
+            )
+        )
     return {"leaving": leaving_records, "staying": staying_records}
 
 
@@ -435,7 +455,8 @@ def test_rows_parses_bool_date_and_naive_datetime_columns(tmp_path: Path) -> Non
         signed = signed_in(client, token)
         set_switches(engine, bulk=False, vip=True, business_name="Types Business")
         customer = signed.post(
-            "/customers", json={"name": "Vip customer", "phone": "11 2345-6789"}
+            "/customers",
+            json={"name": "Vip customer", "phone": "11 2345-6789", "phone_country": "AR"},
         ).json()
         variety = signed.post("/api/products", json={"name": "Types variety"}).json()
         entry = signed.post(
@@ -456,15 +477,15 @@ def test_rows_parses_bool_date_and_naive_datetime_columns(tmp_path: Path) -> Non
         [customer_row] = rows.rows("customer", business.id)
         assert customer_row["id"] == customer["id"]
         # The frozen mark is read back as a bool and never written: it stays False.
-        assert type(customer_row["vip"]) is bool
-        assert customer_row["vip"] is False
+        assert type(customer_row["is_vip"]) is bool
+        assert customer_row["is_vip"] is False
         [settings_row] = rows.rows("pricing_settings", business.id)
         assert settings_row["is_vip_customers"] is True
 
         [entry_row] = rows.rows("stock_entry", business.id)
         assert entry_row["id"] == entry["id"]
-        assert type(entry_row["entry_date"]) is date
-        assert entry_row["entry_date"] == date(2026, 1, 1)
+        assert type(entry_row["entered_on"]) is date
+        assert entry_row["entered_on"] == date(2026, 1, 1)
 
         recorded_at = entry_row["recorded_at"]
         assert type(recorded_at) is datetime

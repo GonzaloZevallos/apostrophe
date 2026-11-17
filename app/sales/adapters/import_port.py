@@ -6,25 +6,32 @@ import adapter writes only its own hexagon's tables).
 maps each distinct variety key to a local ordinal that never leaves this call, and
 replays `Sale.record` — the same aggregate constructor `write_sale` uses through
 `record_sale` — so a row's refusal, when there is one, is always the rule `Sale.record`
-itself would raise. `write_sale` is always given a vip fact built from the row's own
-`vip` (the plan's invariant: never from the customer's stored VIP flag).
+itself would raise. `write_sale` is always given a type fact built from the row's own
+`vip` and the business's VIP type (the plan's invariant: never from the customer's stored
+VIP flag).
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from datetime import date, datetime
-from typing import assert_never
+from decimal import Decimal
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.customer_types.adapters.import_port import VIP_TYPE_NAME
+from app.customer_types.adapters.tables import CustomerTypeRow
+from app.payment_methods.adapters.import_port import Holder, PaymentMethodsForImport
 from app.sales.adapters.price_book import PlannedPriceBook, SqlPriceBook
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.adapters.tables import SaleRow
+from app.sales.application.ports import MoneyFormatReader
 from app.sales.application.record_sale import LineInput, record_sale
-from app.sales.domain.pricing import SaleRuleBroken
-from app.sales.domain.sale import CustomerFact, LineRequest, PaymentMethod, Sale
+from app.sales.domain.pricing import CustomerTypeFact, SaleRuleBroken
+from app.sales.domain.sale import CustomerFact, LineRequest, Sale
+from app.shared.money import MoneyFormat
+from app.shared.payment_method import PaymentMethodId, PaymentMethodUnavailable
 from app.shared.pricing_settings import PricingSettings
 from app.shared.transaction import Transaction
 from app.spreadsheet_import.application.ports import Refusal, SaleCheck, SaleCheckInput
@@ -39,30 +46,39 @@ _UNUSED_RECORDED_AT = datetime(1970, 1, 1)
 # resolves a real customer, so any id that is not `None` tells `Sale.record` a customer
 # is present, and never leaves this module (the plan's invariant).
 _CHECK_CUSTOMER_ID = 1
+# The VIP type's id for the duration of one check only: no type exists yet in the plan phase.
+_CHECK_VIP_TYPE = CustomerTypeFact(id=1, name=VIP_TYPE_NAME.value)
 
 
-def _payment_method(method: OnTheSpotMethod | None) -> PaymentMethod | None:
-    """`method` is already closed to `OnTheSpotMethod | None` by every hop before this
-    one (the plan's invariant), so this is the only place `PaymentMethod` is ever built
-    from an import value, and it can never raise: `assert_never` makes a third sheet
-    word unreachable rather than a `ValueError` at runtime."""
-    match method:
-        case None:
-            return None
-        case "cash":
-            return PaymentMethod.CASH
-        case "transfer":
-            return PaymentMethod.TRANSFER
-        case _:
-            assert_never(method)
+# The sheet's own words are the only place "cash" and "transfer" survive: each names the
+# default method the business holds under its Stored-language default name
+# (docs/adr/20261111-payment-methods-by-id).
+# A caller that knows the business's language passes those names; without them English's.
+ENGLISH_DEFAULT_NAMES: Mapping[str, str] = {"cash": "Cash", "transfer": "Transfer"}
+# Stands in for a method id while a plan is only checked: nothing is written then.
+_CHECKED_METHOD = PaymentMethodId(1)
+
+
+def _check_method(method: OnTheSpotMethod | None) -> PaymentMethodId | None:
+    return None if method is None else _CHECKED_METHOD
 
 
 class SalesImport:
     """`SalesImport` for one business."""
 
-    def __init__(self, session: Session, business_id: int) -> None:
+    def __init__(
+        self,
+        session: Session,
+        business_id: int,
+        money_format: MoneyFormatReader | None = None,
+        default_names: Mapping[str, str] | None = None,
+    ) -> None:
+        self._default_names = default_names or ENGLISH_DEFAULT_NAMES
         self._session = session
         self._business_id = business_id
+        # The command line hangs the business's own format here; a caller that has none
+        # gets the whole-amount one, which accepts a sheet's whole amounts all the same.
+        self._money_format: MoneyFormatReader = money_format or _SheetAmounts()
 
     def has_records(self) -> bool:
         statement = (
@@ -71,6 +87,15 @@ class SalesImport:
             .where(SaleRow.business_id == self._business_id)
         )
         return bool(self._session.scalar(statement))
+
+    def archived_method_words(self, words: Collection[str]) -> Collection[str]:
+        methods = PaymentMethodsForImport(self._session, self._business_id)
+        return sorted(
+            word
+            for word in set(words)
+            if word in self._default_names
+            and methods.holder_of(self._default_names[word]).holder is Holder.ARCHIVED
+        )
 
     def check_sales(
         self,
@@ -94,7 +119,10 @@ class SalesImport:
                     customer_id=_CHECK_CUSTOMER_ID if sale.has_customer else None,
                     settings=settings,
                     customer=(
-                        CustomerFact(id=_CHECK_CUSTOMER_ID, vip=sale.vip)
+                        CustomerFact(
+                            id=_CHECK_CUSTOMER_ID,
+                            customer_type=_CHECK_VIP_TYPE if sale.vip else None,
+                        )
                         if sale.has_customer
                         else None
                     ),
@@ -109,7 +137,7 @@ class SalesImport:
                             special_price=sale.special_total,
                         )
                     ],
-                    method=_payment_method(sale.method),
+                    method=_check_method(sale.method),
                     left_owing=sale.left_owing,
                     recorded_at=_UNUSED_RECORDED_AT,
                 )
@@ -118,6 +146,20 @@ class SalesImport:
                 continue
             results.append(SaleCheck(total=built.total, refusal=None))
         return results
+
+    def _method_for(self, word: OnTheSpotMethod | None) -> PaymentMethodId | None:
+        """The business's method for a sheet word: the offered one holding the default
+        name, or one added last when nobody holds it. An archived holder refuses."""
+        if word is None:
+            return None
+        methods = PaymentMethodsForImport(self._session, self._business_id)
+        name = self._default_names[word]
+        holding = methods.holder_of(name)
+        if holding.holder is Holder.OFFERED and holding.method_id is not None:
+            return PaymentMethodId(holding.method_id)
+        if holding.holder is Holder.ARCHIVED:
+            raise PaymentMethodUnavailable()
+        return PaymentMethodId(methods.add(name))
 
     def write_sale(
         self,
@@ -132,27 +174,41 @@ class SalesImport:
         stored = record_sale(
             SqlSales(self._session, self._business_id),
             SqlPriceBook(self._session, self._business_id),
-            _FixedVip(sale.vip),
+            _FixedType(self._vip_type_fact() if sale.vip else None),
             _FixedSettings(settings),
+            self._money_format,
             transaction,
             sale_date=sale.sale_date,
             today=today,
             customer_id=customer_id,
-            shipping_charged=sale.shipping,
+            shipping_charged=Decimal(sale.shipping),
             note=sale.note,
             lines=[
                 LineInput(
                     variety_id=variety_id,
                     quantity=sale.quantity,
                     gift=sale.gift,
-                    special_price=sale.special_total,
+                    special_price=(
+                        None if sale.special_total is None else Decimal(sale.special_total)
+                    ),
                 )
             ],
-            method=_payment_method(sale.method),
+            method=self._method_for(sale.method),
             left_owing=sale.left_owing,
             recorded_at=recorded_at,
         )
         return stored.total
+
+    def _vip_type_fact(self) -> CustomerTypeFact | None:
+        """The business's VIP type with its current name, as a hand-entered sale to a VIP
+        customer would read it."""
+        found = self._session.execute(
+            select(CustomerTypeRow.id, CustomerTypeRow.name).where(
+                CustomerTypeRow.business_id == self._business_id,
+                CustomerTypeRow.is_vip.is_(True),
+            )
+        ).first()
+        return None if found is None else CustomerTypeFact(id=found[0], name=found[1])
 
 
 class _FixedSettings:
@@ -166,16 +222,16 @@ class _FixedSettings:
         return self._settings
 
 
-class _FixedVip:
-    """A `CustomerFacts` of one fixed answer: `sale.vip`, decided by the sheet's row
-    type ("Amigo") rather than any customer's stored flag (the plan's invariant: a
-    sale is priced with vip = (row type is "Amigo"), never from the stored flag)."""
+class _FixedType:
+    """A `CustomerFacts` of one fixed answer: the customer type decided by the sheet's row
+    type ("Amigo" is the VIP type) rather than any customer's stored flag (the plan's
+    invariant: a sale is priced from the row's own type, never from the stored flag)."""
 
-    def __init__(self, vip: bool) -> None:
-        self._vip = vip
+    def __init__(self, customer_type: CustomerTypeFact | None) -> None:
+        self._customer_type = customer_type
 
     def get(self, customer_id: int) -> CustomerFact | None:
-        return CustomerFact(id=customer_id, vip=self._vip)
+        return CustomerFact(id=customer_id, customer_type=self._customer_type)
 
 
 def _assign_ordinals(
@@ -194,3 +250,12 @@ def _assign_ordinals(
         if sale.variety_key not in ordinals:
             ordinals[sale.variety_key] = len(ordinals) + 1
     return ordinals
+
+
+class _SheetAmounts:
+    """A sheet's amounts are whole currency units already, so any format accepts them: the
+    use case's check passes by value, and this hexagon never reads the money format table
+    it does not own (docs/adr/0055)."""
+
+    def current(self) -> MoneyFormat:
+        return MoneyFormat(symbol="#", decimals=0)

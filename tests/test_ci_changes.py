@@ -15,6 +15,7 @@ import pytest
 from scripts.affected import REPO_ROOT, CommandResult, Runner, run_command
 from scripts.ci_areas import ALWAYS_DIRS, areas
 from scripts.ci_changes import (
+    DESIGN_LABEL_CHECK,
     MOBILE_PAIR,
     SELECTOR_INPUTS,
     Selection,
@@ -205,6 +206,37 @@ def test_a_design_path_gives_the_always_shard_and_the_mobile_pair(
     assert shards(result) == ["always"]
     assert result.e2e_specs == MOBILE
     assert result.e2e_shards == 1
+
+
+@pytest.mark.parametrize("path", ["scripts/design/screens.json", "scripts/design/comparisons.mjs"])
+def test_a_design_script_path_selects_the_screen_images_label_check_in_vitest(
+    tmp_path: Path, path: str
+) -> None:
+    root = make_tree(tmp_path)
+    for name in DESIGN_LABEL_CHECK:
+        write(root, f"web/{name}")
+
+    result = selected([path], root)
+
+    assert result.vitest
+    assert not result.vitest_changed
+    assert set(DESIGN_LABEL_CHECK) <= set(result.vitest_files)
+
+
+def test_a_design_script_path_drops_a_label_check_file_that_does_not_exist(
+    tmp_path: Path,
+) -> None:
+    root = make_tree(tmp_path)
+
+    result = selected(["scripts/design/screens.json"], root)
+
+    assert not set(DESIGN_LABEL_CHECK) & set(result.vitest_files)
+
+
+def test_every_file_the_design_label_check_names_exists_under_web() -> None:
+    missing = [name for name in DESIGN_LABEL_CHECK if not (REPO_ROOT / "web" / name).is_file()]
+
+    assert missing == [], f"the design label check names files that do not exist: {missing}"
 
 
 @pytest.mark.parametrize(
@@ -987,6 +1019,15 @@ def test_the_real_tree_selects_only_the_always_shard_for_a_screen_or_the_app_she
         assert result.vitest and result.e2e
 
 
+def test_the_real_tree_runs_pytest_in_the_always_shard_for_a_new_adr() -> None:
+    # The staleness test reads docs/adr through REPO_ROOT / "docs" / "adr", so a new ADR file
+    # (not yet in the tree at this base) still selects the reader.
+    result = select(["docs/adr/20261112-x.md"], REPO_ROOT)
+
+    assert result.pytest
+    assert "always" in shards(result)
+
+
 def test_the_screen_map_guard_is_a_reader_of_the_screens_and_the_specs() -> None:
     readers = pytest_readers(REPO_ROOT)
 
@@ -1187,3 +1228,43 @@ def test_a_dispatch_reads_only_the_head_tree_it_is_given(
     assert json.loads(printed["e2e_matrix"]) == [1, 2, 3, 4]
     assert printed["base_ref"] == BASE_SHA
     assert runner.cwds == [tree, tree, tree]
+
+
+# --- docs-only diffs keep reaching tests/docs (GH-742, the docs word check) ----------------------
+
+DOCS_ONLY_PATHS = [
+    "README.md",
+    "CONTEXT.md",
+    "docs/product/x.md",
+    "docs/product/design-system/dominio.ts",
+]
+
+
+def assert_selects_pytest_with_the_always_set(printed: dict[str, str]) -> None:
+    assert printed["pytest"] == "true"
+    matrix = json.loads(printed["pytest_matrix"])["include"]
+    always = [entry for entry in matrix if entry["shard"] == "always"]
+    assert len(always) == 1
+    assert "tests/docs" in always[0]["paths"].split()
+
+
+@pytest.mark.parametrize("path", DOCS_ONLY_PATHS)
+@pytest.mark.parametrize("event", ["pull_request", "agentic_ci_push", "master_dispatch"])
+def test_a_docs_only_diff_selects_pytest_with_the_always_set_on_every_event(
+    capsys: pytest.CaptureFixture[str], event: str, path: str
+) -> None:
+    """Pins existing behaviour so docs-only diffs keep reaching `tests/docs`, the word check."""
+    diff = CommandResult(0, f"{path}\n")
+    if event == "pull_request":
+        _, printed = run_main(event, diff, REPO_ROOT, capsys, PR_REF)
+    elif event == "agentic_ci_push":
+        _, printed = run_main(
+            "push", CommandResult(0, f"{SHA}\n"), REPO_ROOT, capsys, AGENTIC_REF, diff
+        )
+        assert printed["base_ref"] == SHA
+    else:
+        runner = DispatchRunner(diff=diff)
+        printed = dispatch(runner, REPO_ROOT, capsys)
+        assert printed["base_ref"] == BASE_SHA
+
+    assert_selects_pytest_with_the_always_set(printed)

@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-07
+summary: "el botón dibuja la regla de ícono y texto como un tipo"
 ---
 
 # `Boton` draws the icon and text rule as a type: a closed action map, an icon on every action, four text-only kinds

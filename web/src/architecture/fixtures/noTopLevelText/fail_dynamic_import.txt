@@ -1,0 +1,7 @@
+// expect: locale-import@3, locale-import@6
+export async function load() {
+  return import('../copy/locales/en/common.json')
+}
+export async function loadAny(path: string) {
+  return import(path)
+}

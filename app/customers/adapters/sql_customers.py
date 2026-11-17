@@ -16,7 +16,7 @@ class SqlCustomers:
     active exception being handled, so it carries no `__cause__` and no `__context__`
     of the driver's message. There is no `rollback`, `commit` or `begin_nested` here:
     the session is left to its owner (`app.db.get_session`), and this translation is
-    correct only because `uq_customer_business_phone` is the only constraint valid code
+    correct only because `uq_customer_business_id_phone` is the only constraint valid code
     can break.
     """
 

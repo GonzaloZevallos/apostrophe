@@ -1,10 +1,12 @@
 {
   "id": 10,
+  "number": 2,
   "date": "2026-09-14",
   "customer": { "id": 1, "name": "Ana Pérez", "vip": false },
   "shipping_charged": 500,
   "note": null,
   "payment": "owing",
+  "payment_method": null,
   "total": 11000,
   "lines": [
     {
@@ -12,6 +14,7 @@
       "product_name": "Flor A",
       "quantity": 3.5,
       "pricing_rule": "list",
+      "customer_type_name": null,
       "price_per_gram": 3000,
       "line_total": 10500
     }

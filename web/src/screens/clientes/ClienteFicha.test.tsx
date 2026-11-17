@@ -13,6 +13,7 @@
  * number.
  */
 
+import { choosePaymentMethod } from '../../components/selectorTestKit'
 import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SALE_NEW, pathTo } from '../../routes'
 import { consumePaymentReturn, setPaymentReturn } from '../../paymentReturn'
 import { inAppState } from '../../components/inAppState'
@@ -41,12 +42,13 @@ import ClienteFicha from './ClienteFicha'
 import CobroRoute from './CobroRoute'
 import Shell from '../../shell/Shell'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 
-const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN }
+const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function Context() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
 function NuevaVentaStub() {
@@ -88,7 +90,9 @@ function renderFicha(id: string, entries: string[] = [pathTo(CUSTOMER, { id })])
   )
   render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
   return router
@@ -98,6 +102,7 @@ const SETTLED_CUSTOMER = {
   id: 3,
   name: 'Fer',
   phone: '+5491158423310',
+  phone_display: '+54 9 11 5842-3310',
   vip: true,
   balance: 0,
   owing_since: null,
@@ -162,11 +167,26 @@ const NO_PHONE_CUSTOMER = {
   id: 4,
   name: 'Caro',
   phone: null,
+  phone_display: null,
   vip: false,
   balance: 0,
   owing_since: null,
   standing: 'settled',
 }
+
+test('the card shows phone_display, never the stored phone, whatever country the number is from', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/5': () =>
+        jsonResponse(200, { ...SETTLED_CUSTOMER, id: 5, phone: '+59899123456', phone_display: '+598 99 123 456' }),
+      'GET /customers/5/account': () => jsonResponse(200, EMPTY_ACCOUNT),
+    }),
+  )
+  renderFicha('5')
+
+  expect(await screen.findByText('+598 99 123 456')).toBeInTheDocument()
+  expect(screen.queryByText('+59899123456')).not.toBeInTheDocument()
+})
 
 test('a customer with no phone shows no phone element, no dash, no empty label', async () => {
   api.mockImplementation(
@@ -267,6 +287,7 @@ const OWING_CUSTOMER = {
   id: 1,
   name: 'Ana',
   phone: '+5491122334455',
+  phone_display: '+54 9 11 2233-4455',
   vip: false,
   balance: 11000,
   owing_since: '2026-09-14',
@@ -283,7 +304,7 @@ const OWING_ACCOUNT = {
       date: '2026-09-14',
       running_balance: 11000,
       standing: 'owes',
-      sale: { id: 10, total: 11000, how_paid: 'owing' },
+      sale: { id: 10, total: 11000, how_paid: 'owing', payment_method: null },
     },
   ],
 }
@@ -313,6 +334,7 @@ const CREDIT_CUSTOMER = {
   id: 2,
   name: 'Lu',
   phone: '+5491100000000',
+  phone_display: '+54 9 11 0000-0000',
   vip: false,
   balance: -2000,
   owing_since: null,
@@ -357,8 +379,8 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   const inAccount = within(account as HTMLElement)
   // The joined "Payment · cash · On account of …" line is now two lines: the
   // title, and the sub-line under it.
-  expect(inAccount.getByText('Payment · cash')).toBeInTheDocument()
-  expect(inAccount.getAllByText('Payment · transfer')).toHaveLength(2)
+  expect(inAccount.getByText('Payment · Cash')).toBeInTheDocument()
+  expect(inAccount.getAllByText('Payment · Transfer')).toHaveLength(2)
   expect(inAccount.getAllByText('On account of the sale of 14/09')).toHaveLength(2)
   expect(inAccount.getByText('Credit')).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: 'Account · running balance' })).toBeInTheDocument()
@@ -401,14 +423,14 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   expect(creditFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 2.000')
   expect(creditFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('Credit $ 2.000')
 
-  // Title over sub-line on the left, the sale naming no variety and no grams.
+  // Title over sub-line on the left, the sale naming no product and no grams.
   expect(saleFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Sale')
   expect(saleFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('Left owing')
-  expect(firstPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · cash')
+  expect(firstPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · Cash')
   expect(firstPaymentFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('On account of the sale of 14/09')
-  expect(secondPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · transfer')
+  expect(secondPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · Transfer')
   expect(secondPaymentFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('On account of the sale of 14/09')
-  expect(creditFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · transfer')
+  expect(creditFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · Transfer')
   expect(creditFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent(/^Credit$/)
 
   // Amber marks only what is owed: the owed balance and the settled one are not
@@ -444,7 +466,7 @@ test('Delete payment asks before deleting, then shows "Payment deleted" and refr
                     date: '2026-09-20',
                     running_balance: 6000,
                     standing: 'owes',
-                    payment: { id: 5, paid_on: '2026-09-20', amount: 5000, method: 'cash' },
+                    payment: { id: 5, paid_on: '2026-09-20', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
                     applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
                   },
                 ],
@@ -462,7 +484,7 @@ test('Delete payment asks before deleting, then shows "Payment deleted" and refr
   await userEvent.click(borrar)
 
   expect(
-    screen.getByText('Delete the payment of $ 5.000 (cash) from 20/09?'),
+    screen.getByText('Delete the payment of $ 5.000 (Cash) from 20/09?'),
   ).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
@@ -491,7 +513,7 @@ const CREDIT_ONLY_ACCOUNT = {
       date: '2026-10-06',
       running_balance: -44000,
       standing: 'credit',
-      payment: { id: 7, paid_on: '2026-10-06', amount: 44000, method: 'cash' },
+      payment: { id: 7, paid_on: '2026-10-06', amount: 44000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
       amount: 44000,
     },
   ],
@@ -516,7 +538,7 @@ test('a payment that shows only as "Credit" offers Delete payment, and deleting 
   await userEvent.click(borrar)
 
   expect(
-    screen.getByText('Delete the payment of $ 44.000 (cash) from 06/10?'),
+    screen.getByText('Delete the payment of $ 44.000 (Cash) from 06/10?'),
   ).toBeInTheDocument()
 
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
@@ -541,7 +563,7 @@ test('Delete payment on a credit-only payment already gone closes the dialog and
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
-  expect(screen.queryByText('Delete the payment of $ 44.000 (cash) from 06/10?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Delete the payment of $ 44.000 (Cash) from 06/10?')).not.toBeInTheDocument()
   expect(screen.queryByText('Payment deleted')).not.toBeInTheDocument()
 })
 
@@ -560,14 +582,14 @@ test('a payment split between a sale and a credit offers one Delete payment, on 
               date: '2026-10-01',
               running_balance: 5000,
               standing: 'owes',
-              sale: { id: 10, total: 5000, how_paid: 'owing' },
+              sale: { id: 10, total: 5000, how_paid: 'owing', payment_method: null },
             },
             {
               kind: 'payment',
               date: '2026-10-05',
               running_balance: 0,
               standing: 'settled',
-              payment: { id: 8, paid_on: '2026-10-05', amount: 8000, method: 'cash' },
+              payment: { id: 8, paid_on: '2026-10-05', amount: 8000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
               applied_to: { sale_id: 10, sale_date: '2026-10-01', amount: 5000 },
             },
             {
@@ -575,7 +597,7 @@ test('a payment split between a sale and a credit offers one Delete payment, on 
               date: '2026-10-05',
               running_balance: -3000,
               standing: 'credit',
-              payment: { id: 8, paid_on: '2026-10-05', amount: 8000, method: 'cash' },
+              payment: { id: 8, paid_on: '2026-10-05', amount: 8000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
               amount: 3000,
             },
           ],
@@ -612,7 +634,7 @@ test('a sale paid on the spot offers no Delete payment', async () => {
               date: '2026-10-01',
               running_balance: 0,
               standing: 'settled',
-              sale: { id: 10, total: 5000, how_paid: 'cash' },
+              sale: { id: 10, total: 5000, how_paid: 'paid', payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
             },
           ],
         }),
@@ -620,7 +642,7 @@ test('a sale paid on the spot offers no Delete payment', async () => {
   )
   renderFicha('1')
 
-  expect(await screen.findByText('Paid in cash')).toBeInTheDocument()
+  expect(await screen.findByText('Paid · Cash')).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Delete payment' })).not.toBeInTheDocument()
 })
 
@@ -639,7 +661,7 @@ test('registering a payment shows "Payment saved · still owing $ X" when someth
   expect(sheet).not.toBeNull()
   await userEvent.clear(within(sheet as HTMLElement).getByLabelText('Amount'))
   await userEvent.type(within(sheet as HTMLElement).getByLabelText('Amount'), '5000')
-  await userEvent.click(within(sheet as HTMLElement).getByRole('radio', { name: 'Cash' }))
+  await choosePaymentMethod(userEvent, 'Cash')
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Save' }))
 
   // `payment.json`'s own `after.balance` (plan, invariants: "used by the front's
@@ -705,7 +727,7 @@ test('registering a payment that settles everything shows the plain "Payment sav
       'GET /customers/1/account': () => jsonResponse(200, OWING_ACCOUNT),
       'POST /customers/1/payments': () =>
         jsonResponse(201, {
-          payment: { id: 5, paid_on: '2026-10-03', amount: 11000, method: 'cash' },
+          payment: { id: 5, paid_on: '2026-10-03', amount: 11000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
           applied_to: [{ sale_id: 10, sale_date: '2026-09-14', amount: 11000 }],
           after: { balance: 0, owing_since: null, standing: 'settled' },
         }),
@@ -717,7 +739,7 @@ test('registering a payment that settles everything shows the plain "Payment sav
   const sheet = (await screen.findByRole('button', { name: 'Save' })).closest('form')
   expect(sheet).not.toBeNull()
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'All: $ 11.000' }))
-  await userEvent.click(within(sheet as HTMLElement).getByRole('radio', { name: 'Cash' }))
+  await choosePaymentMethod(userEvent, 'Cash')
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText('Payment saved')).toBeInTheDocument()
@@ -739,7 +761,7 @@ test('a payment deleted by a partner meanwhile shows the gone notice, never the 
               date: '2026-09-20',
               running_balance: 6000,
               standing: 'owes',
-              payment: { id: 5, paid_on: '2026-09-20', amount: 5000, method: 'cash' },
+              payment: { id: 5, paid_on: '2026-09-20', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
               applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
             },
           ],
@@ -767,7 +789,7 @@ const ACCOUNT_WITH_ONE_PAYMENT = {
       date: '2026-09-20',
       running_balance: 6000,
       standing: 'owes',
-      payment: { id: 5, paid_on: '2026-09-20', amount: 5000, method: 'cash' },
+      payment: { id: 5, paid_on: '2026-09-20', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
       applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
     },
   ],
@@ -835,7 +857,7 @@ test('a payment above the balance shows the fixed refusal inline and keeps what 
   expect(sheet).not.toBeNull()
   await userEvent.clear(within(sheet as HTMLElement).getByLabelText('Amount'))
   await userEvent.type(within(sheet as HTMLElement).getByLabelText('Amount'), '999000')
-  await userEvent.click(within(sheet as HTMLElement).getByRole('radio', { name: 'Cash' }))
+  await choosePaymentMethod(userEvent, 'Cash')
   await userEvent.click(within(sheet as HTMLElement).getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText('The amount is more than they owe you.')).toBeInTheDocument()
@@ -883,7 +905,7 @@ test('"Record payment" on the card opens the form as an in-app entry over the ca
 test('a touched sheet asks before history back leaves, "No" keeps what was typed and "Sí" leaves to Clientes, its parent', async () => {
   api.mockImplementation(dispatchFetch(OWING_FETCHES))
   const router = renderFicha('1', [pathTo(CUSTOMER, { id: 1 }), pathTo(CUSTOMER_PAYMENT, { id: 1 })])
-  await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
+  await choosePaymentMethod(userEvent, 'Cash')
   await act(() => router.navigate(-1))
 
   expect(await screen.findByText('Discard the payment?')).toBeInTheDocument()
@@ -895,7 +917,7 @@ test('a touched sheet asks before history back leaves, "No" keeps what was typed
   await waitFor(() => expect(screen.queryByText('Discard the payment?')).not.toBeInTheDocument())
   // A regression check that "No" did not navigate, not a sync point.
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER_PAYMENT, { id: 1 })))
-  expect(await screen.findByRole('radio', { name: 'Cash' })).toBeChecked()
+  expect(await screen.findByRole('button', { name: /^Payment method/ })).toHaveTextContent('Cash')
 
   await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
   await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
@@ -913,7 +935,7 @@ test('after a save the sheet is not in history: back from the card goes to what 
   await router.navigate(CUSTOMERS)
   await router.navigate(pathTo(CUSTOMER, { id: 1 }), { state: inAppState({ pathname: CUSTOMERS }) })
   await userEvent.click(await screen.findByRole('link', { name: 'Record payment' }))
-  await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
+  await choosePaymentMethod(userEvent, 'Cash')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(pathTo(CUSTOMER, { id: 1 })))
@@ -922,8 +944,8 @@ test('after a save the sheet is not in history: back from the card goes to what 
   await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
 })
 
-// The gone exit of "Record payment" (navigation.md, "A gone exit is the same move as
-// Cerrar"): its registered parent is Clientes.
+// The gone exit of "Record payment" (navigation.md, "Salir porque el registro ya no existe es el
+// mismo movimiento que "Close""): its registered parent is Clientes.
 type HistoryEntry = string | { pathname: string; state: unknown }
 
 function ListWithNotice() {
@@ -976,7 +998,7 @@ function renderGone(entries: HistoryEntry[]) {
 }
 
 async function saveTheGonePayment() {
-  await userEvent.click(await screen.findByRole('radio', { name: 'Cash' }))
+  await choosePaymentMethod(userEvent, 'Cash')
   await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 }
 
@@ -1024,7 +1046,7 @@ test('a gone cobro on a direct link replaces the sheet with Clientes and shows t
 test('after a reload of the sheet, the gone exit still goes back once', async () => {
   fakeGonePayment()
   const { router, view, app } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
-  await screen.findByRole('radio', { name: 'Cash' })
+  await screen.findByRole('button', { name: /^Payment method/ })
   view.unmount()
   render(app)
 
@@ -1039,10 +1061,10 @@ test('a resize across 900 px between opening and leaving does not change where t
   fakeGonePayment()
   stubViewport('phone')
   const { router } = renderGone([HOME, CUSTOMERS, { pathname: PAYMENT, state: inAppState({ pathname: CUSTOMERS }) }])
-  await screen.findByRole('radio', { name: 'Cash' })
+  await choosePaymentMethod(userEvent, 'Cash')
   stubViewport('computer')
 
-  await saveTheGonePayment()
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
 
   expect(await screen.findByText('la lista')).toBeInTheDocument()
   expect(router.state.historyAction).toBe('POP')
@@ -1079,7 +1101,7 @@ test('the card and its form follow the icon and text rule: Delete payment is ico
               date: '2026-09-20',
               running_balance: 6000,
               standing: 'owes',
-              payment: { id: 5, paid_on: '2026-09-20', amount: 5000, method: 'cash' },
+              payment: { id: 5, paid_on: '2026-09-20', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
               applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
             },
           ],
@@ -1100,6 +1122,7 @@ test('the card and its form follow the icon and text rule: Delete payment is ico
 
   await userEvent.click(registrar)
   await screen.findByRole('button', { name: 'Save' })
+  await waitFor(() => expect(screen.getByRole('button', { name: /^Payment method/ })).toBeEnabled())
   expectIconAndTextRule(document.body, RULE)
 })
 

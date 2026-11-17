@@ -104,13 +104,6 @@ body {
   color: var(--acento);
 }
 
-.brand-mark--mark {
-  display: block;
-  flex: none;
-  width: var(--marca-tamano);
-  height: var(--marca-tamano);
-}
-
 .subtitulo {
   font-size: 16px;
   color: var(--tinta2);
@@ -133,6 +126,11 @@ body {
 .campo__rotulo {
   font-size: 14px;
   color: var(--tinta2);
+}
+
+/* The Customer's number on the card and the card behind: whole, on one line, never cut. */
+.campo__valor-telefono {
+  white-space: nowrap;
 }
 
 /* The price form's "Rige desde" chip (`PrecioNuevoCompu.dc.html`): a 52 px rounded surface
@@ -224,6 +222,13 @@ body {
   color: var(--deuda);
 }
 
+/* A field's own refusal (`FieldRefusal`): the Attention icon beside the sentence. */
+.campo__error:has(> .aviso-ambar__icono) {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-xs);
+}
+
 /* The customer form's focus state (`NuevaVentaCliente.dc.html`): a heavy inset ring on
  * the focused field. Only `CustomerFields` carries the class; the outline stays (made
  * transparent, so forced-colors still draws it) and is never removed. */
@@ -237,6 +242,37 @@ body {
   display: flex;
   align-items: flex-start;
   gap: 10px;
+}
+
+/* Phone country above the Phone field at full width; beside it at a fixed width from 900px. */
+.cliente-fila--telefono {
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--espacio-md);
+}
+
+.cliente-fila__pais {
+  min-width: 0;
+}
+
+.cliente-fila--telefono .cliente-fila__telefono {
+  flex: none;
+}
+
+@media (min-width: 900px) {
+  .cliente-fila--telefono {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .cliente-fila__pais {
+    flex: none;
+    width: 240px;
+  }
+
+  .cliente-fila--telefono .cliente-fila__telefono {
+    flex: 1;
+  }
 }
 
 .cliente-fila__telefono {
@@ -461,6 +497,56 @@ body {
   gap: var(--espacio-xl);
 }
 
+/* Home and Analysis put their header in `HomeLayout`, above the body, so the body's own top
+ * padding is the gap that header used to leave under it (the same `--espacio-xl`). */
+.cuerpo--bajo-cabecera {
+  padding-top: var(--espacio-xl);
+}
+
+/* The header of Home and Analysis (`HomeLayout`): a plain div above the body's `main`, scrolling
+ * with the page. It owns its own side and top spacing from tokens only; the safe-area insets
+ * come from `.disposicion`. On the computer it holds the business name and the title, stacked
+ * with no gap; on the phone a date row, the segment and the hidden title, a screen apart. */
+.inicio-cabecera {
+  display: flex;
+  flex-direction: column;
+  padding: var(--espacio-lg) var(--margen-pantalla) 0;
+}
+
+@media (max-width: 899.98px) {
+  .inicio-cabecera {
+    gap: var(--espacio-xl);
+  }
+}
+
+/* The date row: the date takes the free width and never wraps, the "Editar" slot is a
+ * zero-width inert box, and the avatar closes the row. The row has no gap of its own: the date
+ * keeps one `--espacio-md` after it: the two gaps around the empty slot left 212 px at 320 px. */
+.inicio-cabecera__fila {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+/* The long date is the `.cuerpo` text token (16 px) at weight 600, not `.titulo`: at 20 px even
+ * "Wednesday, September 30" measured 251 px in the 224 px the row leaves at 320 px. The text
+ * class is not used itself, because `.cuerpo` here is also the body's layout box. */
+.inicio-cabecera__fecha {
+  flex: 1;
+  margin-inline-end: var(--espacio-md);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inicio-cabecera__editar {
+  flex: 0 0 0;
+}
+
 .encabezado__negocio {
   display: block;
   font-size: 14px;
@@ -469,6 +555,8 @@ body {
 
 .encabezado__titulo {
   display: block;
+  margin: 0;
+  font: inherit;
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -502,7 +590,7 @@ body {
 
 .bar-inferior__item {
   /* Sized by the label, then the spare room shared out: the longest word ("Variedades")
-   * never has to give up a letter to the shortest ("Más"). */
+   * never has to give up a letter to the shortest ("Ventas"). */
   flex: 1 1 auto;
   min-width: min-content;
   min-height: var(--alto-tocable);
@@ -544,7 +632,8 @@ body {
   padding-bottom: 2px;
 }
 
-/* The "‹ parent" arrow a card shows above its own header (`navigation.md`, "Chrome and back"). */
+/* The "‹ parent" arrow a card shows above its own header (`navigation.md`,
+   "Marco y camino de vuelta"). */
 .flecha-atras {
   display: flex;
   padding: var(--espacio-md) var(--margen-pantalla) 0;
@@ -633,59 +722,147 @@ body {
   font-weight: 600;
 }
 
-/* Inicio's header on the phone (`Inicio.dc.html`): the name and title, and the business
- * avatar as a 44px touch target drawn at 38px (a transparent border the fill does not paint
- * under, in the phone block at the end of this file). The computer has the rail's row instead. */
-.inicio__cabecera {
+/* The trailing slot of a phone header: the title takes the room the avatar leaves and is cut
+ * with an ellipsis, so a long title never widens the page. Phone only: the computer draws no
+ * avatar and none of these rules apply there. `--envoltura` is a row added only to hold the
+ * title and the avatar; on the computer it dissolves, so the title is the flex or grid item
+ * of its header that it always was. */
+@media (max-width: 899.98px) {
+  .cabecera-fila {
+    display: flex;
+    align-items: center;
+    gap: var(--espacio-md);
+  }
+
+  .cabecera-fila--envoltura {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .cabecera-fila > .encabezado__titulo {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 900px) {
+  .cabecera-fila--envoltura {
+    display: contents;
+  }
+}
+
+/* The Expenses card on the phone's Analysis: a title and its two actions, stacked, each at the
+ * phone's tap height through `Boton`. */
+.tarjeta-gastos {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--espacio-md);
 }
 
-.inicio__cabecera-titulos {
-  flex: 1;
-}
-
-/* The business name and the mark share one box a single name line tall. When both do not fit
- * the mark wraps onto the clipped second line, so the name and the title stay where they are
- * with no mark at all; CSS decides, nothing is measured. `row-reverse` with `flex-end` draws
- * the mark before the name, the DOM keeps the name first so it takes the first line. */
-.inicio__cabecera-marca {
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: row-reverse;
-  justify-content: flex-end;
-  align-items: center;
-  align-content: flex-start;
-  gap: var(--espacio-sm);
-  font-size: 14px;
-  height: 1lh;
-  overflow: hidden;
-}
-
-.inicio__cabecera-marca .encabezado__negocio {
-  flex: 0 0 auto;
-  max-width: 100%;
-}
-
-.inicio__cabecera-marca .brand-mark--mark {
-  height: min(var(--marca-tamano), 1lh);
-  width: auto;
-  aspect-ratio: 1;
+/* "See expenses" is a text link: it keeps the phone's tap height like the other link-shaped
+ * buttons, shrinks to its words and leaves the underline to the text, not to the 44 px box. */
+.tarjeta-gastos .boton--enlace {
+  align-self: flex-start;
+  min-height: var(--alto-tocable);
+  box-shadow: none;
 }
 
 .inicio__avatar {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radio-pildora);
-  background: var(--superficie);
-  color: var(--tinta);
+  flex: none;
+  width: var(--alto-tocable);
+  height: var(--alto-tocable);
+  position: relative;
+  margin: -4px;
+  background: transparent;
+  border: 0;
   text-decoration: none;
-  font-size: 14px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The drawn disc: 36 px of --boton with the initials, the child of the 44 px touch box above. */
+.inicio__avatar-disc {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 18px;
+  background: var(--boton);
+  color: var(--boton-texto);
+  font-size: 13px;
   font-weight: 600;
+}
+
+/* The link draws no ring of its own; the focus ring is the disc's. */
+.inicio__avatar:focus-visible {
+  outline: none;
+}
+
+.inicio__avatar:focus-visible > .inicio__avatar-disc {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* The Home | Analysis segment (phone only: `HomeViewSwitch` draws nothing on a computer). Two
+ * links on an --acento-suave track, the palette's nearest step to the drawing's: a mixed colour
+ * would be read back by the mobile contrast check as `color(srgb …)`, which it cannot prove, and
+ * --linea would be the same fill as the --linea pressed cue, which would then show nothing. Each link is a 44 px box that paints the 36 px pill: its
+ * transparent block border keeps the fill off the extra 4 px, and its negative block margin
+ * gives that 4 px back, so the track stays as tall as the drawing (36 px pill + 3 px padding).
+ * The pill child holds the word. The marked option is the --superficie pill with the drawing's
+ * soft shadow, and bold, not color alone. */
+.inicio-segmentos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  background: var(--acento-suave);
+  border-radius: 12px;
+  padding: 3px;
+}
+
+.inicio-segmento {
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  min-width: var(--alto-tocable);
+  min-height: var(--alto-tocable);
+  margin-block: -4px;
+  border-block: 4px solid transparent;
+  border-radius: 10px;
+  background-clip: padding-box;
+  color: var(--tinta2);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.inicio-segmento--activa {
+  background-color: var(--superficie);
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.inicio-segmento--activa .inicio-segmento__pill {
+  border-radius: 10px;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--tinta) 12%, transparent);
+}
+
+.inicio-segmento__pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  text-align: center;
 }
 
 /* Below the rail's divider (`GastosCompu.dc.html`): smaller, no icon, the active one
@@ -922,6 +1099,11 @@ body {
   cursor: pointer;
 }
 
+/* The Home | Analysis segment draws these options as links. */
+a.ajustes-tema__opcion {
+  text-decoration: none;
+}
+
 .ajustes-tema__opcion--activa {
   background: var(--papel);
   color: var(--tinta);
@@ -932,6 +1114,27 @@ body {
   margin: 10px 0 0;
   font-size: 14px;
   color: var(--tinta2);
+}
+
+/* The phone field's example: the secondary ink, fully opaque, so it reads at 4.5:1 in both themes
+   (the browser's own placeholder grey does not in the dark one). */
+.campo__input[type='tel']::placeholder {
+  color: var(--tinta2);
+  opacity: 1;
+}
+
+/* The Phone country control: the same options, stacked, one per row (nine do not fit across). */
+.ajustes-tema--columna {
+  flex-direction: column;
+  border-radius: var(--radio-campo);
+}
+
+.ajustes-tema--columna .ajustes-tema__opcion {
+  flex: none;
+  justify-content: flex-start;
+  padding-inline: var(--espacio-md);
+  border-radius: var(--radio-campo);
+  text-align: start;
 }
 
 /* The language control under the name form: the same segments, at least 44px tall. */
@@ -1322,6 +1525,7 @@ body {
 .lista-clientes__telefono {
   font-size: 13px;
   color: var(--tinta2);
+  white-space: nowrap;
 }
 
 .vip-insignia {
@@ -1760,6 +1964,14 @@ body {
   color: var(--acento);
 }
 
+.insignia--truncable {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .insignia--deuda {
   background: var(--deuda-fondo);
   color: var(--deuda);
@@ -1790,6 +2002,8 @@ body {
   color: var(--tinta2);
   font-size: 14px;
   cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .selector-pago__opcion--activa {
@@ -2044,6 +2258,11 @@ body {
   color: var(--tinta2);
 }
 
+/* The sale's date, directly under the "Sale #N" title (sales.md, "Detalle de venta"). */
+.venta-detalle__fecha {
+  display: block;
+}
+
 .venta-detalle__encabezado-lineas {
   display: block;
   font-size: 14px;
@@ -2087,13 +2306,18 @@ body {
   letter-spacing: -0.035em;
 }
 
+/* The row wraps when its figures and the badge do not fit side by side, so a narrow screen
+ * never scrolls sideways; each figure stays whole on its own line. */
 .venta-detalle__linea-inferior {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--espacio-xs);
 }
 
 .venta-detalle__precio {
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: 14px;
   color: var(--tinta2);
 }
@@ -2375,6 +2599,11 @@ body {
   flex-direction: column;
 }
 
+.nueva-venta__agregar,
+.nueva-venta__lista {
+  display: contents;
+}
+
 .nueva-venta__disposicion {
   flex: 1 1 auto;
   min-height: 0;
@@ -2486,6 +2715,7 @@ body {
 .nueva-venta__cliente-telefono {
   font-size: 14px;
   color: var(--tinta2);
+  white-space: nowrap;
 }
 
 .nueva-venta__cliente-cambiar {
@@ -3592,10 +3822,6 @@ body {
     display: flex;
   }
 
-  .inicio__cabecera-marca .brand-mark--mark {
-    display: none;
-  }
-
   .inicio__avatar {
     display: none;
   }
@@ -3931,6 +4157,48 @@ body {
   letter-spacing: -0.03em;
   margin: var(--espacio-xs) 0 0;
 }
+/* "Forgot your password?" (GH-521): right-aligned under the password, a 44 px target at least 8 px
+ * from Show and from Sign in (the form's 14 px gap, no margin of its own), a tap and never a zoom or
+ * a selection. */
+.auth-page__olvido {
+  align-self: flex-end;
+}
+
+.auth-page__olvido .boton--enlace {
+  min-height: var(--alto-tocable);
+  min-width: var(--alto-tocable);
+  padding-inline: var(--espacio-sm);
+  box-shadow: none;
+  font-size: 14px;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.auth-page__olvido .boton--enlace:active {
+  opacity: 0.6;
+}
+
+/* Sign in's own form only: the other getting-in screens render as before. */
+.formulario--entrar .boton,
+.formulario--entrar .campo__mostrar .boton--enlace {
+  touch-action: manipulation;
+  user-select: none;
+}
+
+/* The Forgot sheet's paragraphs: plain text in the ink colour, nothing else. */
+.olvido {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+  font-size: 16px;
+  color: var(--tinta);
+}
+
+.olvido p {
+  margin: 0;
+}
+
 /* ===== end auth-layout ===== */
 
 /* A variety's page (VariedadDetalle.dc.html): one summary line, two equal actions and the
@@ -4674,6 +4942,7 @@ body {
   /* "Agregar otra variedad" and a line's "Quitar": the link buttons of this screen's
    * body and lines, at least 44 px tall. */
   .nueva-venta__cuerpo > .boton--enlace,
+  .nueva-venta__agregar > .boton--enlace,
   .nueva-venta__linea .boton--enlace {
     display: flex;
     align-items: center;
@@ -4742,6 +5011,7 @@ body {
  * items) keep their own height, and the body scrolls. */
 @media (max-width: 899.98px) {
   .nueva-venta__cuerpo > *,
+  .nueva-venta__agregar > *,
   .nueva-venta__resumen > * {
     flex-shrink: 0;
   }
@@ -5003,11 +5273,10 @@ body {
  *   .variedad-fila, .variedades__todas, .catalogo__fila-nombre, .pestanas__opcion,
  *   .selector-pago__opcion, .gastos__mes-boton, .encabezado__volver, .historial-fila__borrar;
  *   resting on --superficie or --papel itself, so --linea is the fill cue (these come after
- *   the --superficie group): .inicio__avatar and .ajustes-tema__opcion, plain and --activa (the track is
- *   --superficie, the selected option --papel), and the selected variants
+ *   the --superficie group): .ajustes-tema__opcion and .inicio-segmento, plain and
+ *   --activa (the Settings track is --superficie, its selected option --papel; the segment track is --acento-suave, its marked option is --superficie), and the selected variants
  *   .riel-lateral__item--activo, .riel-lateral__negocio--activo, .bar-inferior__item--activo,
- *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa;
- *   with the --linea cue and the scale as well, .aviso-onboarding (rests on --superficie).
+ *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa.
  * .opcion-interruptor is label-wrapped (its checkbox is stretched over it and must keep the
  * tap), so its cue is the fill only: its own rule below, with no `transform`.
  * A .boton--enlace inside .venta-guardada sits on the bar's own --boton fill, so it takes
@@ -5027,6 +5296,24 @@ body {
   transform: scale(0.98);
   box-shadow: inset 0 0 0 3px var(--papel);
   transition: none;
+}
+
+/* The avatar rests on a filled --boton disc, so its cue is the --papel ring, drawn over the disc by
+ * the link's own ::after (4 px in, 36 px round: exactly the disc) with the link scaled; the link
+ * itself paints no fill, border or outline. The pressed-state scan reads the last compound of a
+ * selector, so the cue is named on `.inicio__avatar`, not on the child. */
+.inicio__avatar:active:not([aria-disabled='true']) {
+  transform: scale(0.98);
+  transition: none;
+}
+
+.inicio__avatar:active:not([aria-disabled='true'])::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 18px;
+  box-shadow: inset 0 0 0 3px var(--papel);
+  pointer-events: none;
 }
 
 :is(
@@ -5056,7 +5343,8 @@ body {
     .selector-pago__opcion,
     .gastos__mes-boton,
     .encabezado__volver,
-    .historial-fila__borrar
+    .historial-fila__borrar,
+    .selector-lista__fila
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   background-color: var(--superficie);
@@ -5085,9 +5373,11 @@ body {
 :is(
     .ajustes-tema__opcion,
     .ajustes-tema__opcion--activa,
-    .inicio__avatar,
-    /* a whole-block control; nothing tappable may be nested in it (it would scale with it). */
-    .aviso-onboarding
+    .inicio-segmento,
+    .inicio-segmento--activa,
+    /* Expenses' month arrows rest on the --superficie pill, so the --superficie fill shows nothing. */
+    .gastos__mes-boton,
+    .selector__campo
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   background-color: var(--linea);
@@ -5100,7 +5390,8 @@ body {
     .bar-inferior__item--activo,
     .pestanas__opcion--activa,
     .variedad-fila--activa,
-    .selector-pago__opcion--activa
+    .selector-pago__opcion--activa,
+    .selector-lista__fila--activa
   ):active:not(:disabled):not([aria-disabled='true']) {
   background-color: var(--linea);
 }
@@ -5127,9 +5418,9 @@ body {
     .mas__item,
     .ajustes__item,
     .ajustes-tema__opcion,
+    .inicio-segmento,
     .opcion-interruptor,
     .mas-info__boton,
-    .aviso-onboarding,
     .inicio__avatar,
     .variedades__todas,
     .pestanas,
@@ -5137,7 +5428,9 @@ body {
     .gastos__mes-boton,
     .encabezado__volver,
     .historial-fila__borrar,
-    .fila-stock--enlace
+    .fila-stock--enlace,
+    .selector__campo,
+    .selector-lista__fila
   ) {
   -webkit-user-select: none;
   user-select: none;
@@ -5380,22 +5673,6 @@ body {
   text-decoration: none;
 }
 
-/* "Arrancá por las variedades": the attention icon beside its title and line. */
-.estado-vacio--atencion {
-  flex-direction: row;
-  align-items: flex-start;
-  text-align: left;
-  gap: 12px;
-}
-
-.estado-vacio--atencion .aviso-ambar__cuerpo {
-  gap: 10px;
-}
-
-.estado-vacio--atencion .estado-vacio__detalle {
-  max-width: none;
-}
-
 /* ===== end gh97-sales-home ===== */
 /* A host element that adds no box of its own: its children lay out as the parent's. */
 .sin-caja {
@@ -5592,8 +5869,9 @@ body {
   cursor: pointer;
 }
 
-/* On a computer the card stops at 560px, as `InicioPrimeraVezCompu.dc.html` draws it
- * (GH-188); it applies to every tappable notice. The same literal is `NOTICE_CAP` in
+/* On a computer the card stops at 560px (GH-188; the drawing that showed it left with the
+ * first-use notices); it applies to every tappable notice, today Inicio's "Your Telegram
+ * catalog is out of date". The same literal is `NOTICE_CAP` in
  * `web/src/architecture/noticeCap.ts`, which guards this block: change both together. */
 @media (min-width: 900px) {
   .boton-aviso {
@@ -5612,17 +5890,6 @@ body {
   flex: 1;
   font-size: 16px;
   font-weight: 600;
-}
-
-.aviso-onboarding__conteo {
-  font-size: 14px;
-  color: var(--tinta2);
-  margin: 3px 0 var(--espacio-md);
-}
-
-.aviso-onboarding__falta {
-  font-size: 13px;
-  margin-top: 10px;
 }
 
 .listo__lista {
@@ -5884,26 +6151,11 @@ body {
   opacity: 0;
 }
 
-/* The method: `SegmentedChoice` on the form's own surface, the chosen one on paper. */
+/* The method: the Payment method Selector and, under it, its refusal. */
 .cobro__metodo {
   display: flex;
   flex-direction: column;
   gap: var(--espacio-xs);
-}
-
-.cobro__metodo > .selector-pago {
-  background: var(--superficie);
-}
-
-.cobro__metodo .selector-pago__opcion {
-  min-height: var(--alto-tocable);
-  touch-action: manipulation;
-  padding: 0;
-  font-size: 15px;
-}
-
-.cobro__metodo .selector-pago__opcion--activa {
-  background: var(--papel);
 }
 
 .cobro__resumen {
@@ -5980,103 +6232,7 @@ body {
   outline: none;
 }
 
-/* The first-run checklist, the after-import notice and the missing line under "+ Nueva venta"
- * (`InicioPrimeraVez.dc.html`, `InicioPrimeraVezCompu.dc.html`), tokens only. */
-.checklist {
-  background: var(--superficie);
-  border-radius: var(--radio-panel-grande);
-  padding: var(--espacio-lg) var(--espacio-lg) var(--espacio-sm);
-  display: flex;
-  flex-direction: column;
-  gap: var(--espacio-sm);
-}
-
-.checklist__titulo {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--tinta);
-}
-
-.checklist__lista {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.checklist__paso {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--espacio-md);
-  padding: 10px 0;
-  border-bottom: 1px solid var(--linea);
-}
-
-.checklist__paso:last-child {
-  border-bottom: none;
-}
-
-.checklist__caja {
-  width: 22px;
-  height: 22px;
-  box-sizing: border-box;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  border: 2px solid var(--tinta2);
-}
-
-.checklist__caja--hecha {
-  background: var(--boton);
-  border-color: var(--boton);
-  color: var(--boton-texto);
-}
-
-.checklist__caja svg {
-  width: 16px;
-  height: 16px;
-}
-
-.checklist__texto {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.checklist__nombre {
-  font-size: 15px;
-  color: var(--tinta);
-}
-
-.checklist__requisito {
-  font-size: 13px;
-  color: var(--tinta2);
-}
-
-.checklist__hecho {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--tinta);
-}
-
-.aviso-importado {
-  flex-direction: row;
-  align-items: center;
-  gap: var(--espacio-md);
-  padding: 14px 16px;
-}
-
-.aviso-importado .aviso-ambar__cuerpo {
-  flex: 1;
-}
-
-.aviso-importado .aviso-ambar__titulo {
-  font-size: 14px;
-}
-
+/* The missing line under "+ Nueva venta", tokens only. */
 .nueva-venta__falta {
   display: block;
   margin: calc(-1 * var(--espacio-sm) + var(--espacio-xs)) var(--margen-pantalla) var(--espacio-md);
@@ -6106,16 +6262,6 @@ body {
  * long name cut with an ellipsis, a figure kept on one line at a size that follows the width it
  * has (a container query, so it also follows a larger text size), and "$" never alone. */
 @media (max-width: 899.98px) {
-  .inicio__cabecera-titulos {
-    min-width: 0;
-  }
-
-  .inicio__cabecera .encabezado__negocio {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
   .panel-ventas,
   .bloque-deben,
   .ventas__cabecera .ventas__resumen {
@@ -6268,9 +6414,8 @@ body {
     flex-shrink: 0;
   }
 
+  /* A number is never cut: it stays on one line whole (the names above keep their ellipsis). */
   .lista-clientes__telefono {
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
   }
 
@@ -6378,20 +6523,9 @@ body {
   }
 }
 
-/* Tap targets on Home (GH-319): the business avatar is a 44 px box that still draws the
- * 38 px disc (a transparent border the background does not paint under), and the
- * "Owed to you" title is a full-width, 44 px tall link. Phone only: the computer hides the
- * avatar and keeps the title as it is. */
+/* Tap targets on Home (GH-319): the "Owed to you" title is a full-width, 44 px tall link. Phone
+ * only: the computer keeps the title as it is. (The avatar's 44 px box is its own rule above.) */
 @media (max-width: 899.98px) {
-  .inicio__avatar {
-    box-sizing: border-box;
-    flex: none;
-    width: var(--alto-tocable);
-    height: var(--alto-tocable);
-    border: 3px solid transparent;
-    background-clip: padding-box;
-  }
-
   .bloque-deben__titulo {
     display: flex;
     align-items: center;
@@ -6552,6 +6686,24 @@ body {
   padding: 0;
 }
 
+/* Currency and decimals: every button on the form (its header Close, Save) takes no tap delay,
+ * and the Example's digits are tabular. Scoped to the screen, so no other screen's listed
+ * offender changes. */
+.moneda-pantalla button,
+.ajustes-grupo:has(.moneda-pantalla) .ajustes-grupo__encabezado button {
+  touch-action: manipulation;
+}
+
+.moneda-pantalla output {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Currency and decimals: the decimals radios (0 · 1 · 2) are at least as tall as a touch target. */
+.moneda-decimales .selector-pago__opcion {
+  min-height: var(--alto-tocable);
+  padding: 0 var(--espacio-md);
+}
+
 /* The group's own Close sits in the header above the wrapper; only this group's is scoped. */
 .ajustes-grupo:has(.tipos-cliente) .ajustes-grupo__encabezado button {
   touch-action: manipulation;
@@ -6561,3 +6713,360 @@ body {
 .tipos-cliente > button {
   min-height: 44px;
 }
+
+/* ===== Selector ===== */
+/* `Selector` (`docs/product/selector.md`): a field that opens a list on the phone (the shared
+ * `Sheet`) and a dropdown on a computer. Tokens only. Rows are 44 px, one line cut by an ellipsis;
+ * the rows are the only scroll region, so every row stays reachable above the keyboard. */
+.selector {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+  min-width: 0;
+}
+
+.selector__control {
+  position: relative;
+}
+
+.selector__campo {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  width: 100%;
+  min-height: var(--alto-boton);
+  box-sizing: border-box;
+  padding: 0 var(--espacio-lg);
+  border: 0;
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 17px;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.selector__campo:disabled,
+.selector__campo[aria-disabled='true'] {
+  cursor: default;
+}
+
+/* The reason a locked field cannot be changed: a visible sentence in the secondary ink (4.5:1 in
+ * both themes), never styled as a disabled label. */
+.selector__razon {
+  margin: 0;
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+/* A locked field has no chevron to invite a tap: the list never opens. */
+.selector__campo[aria-disabled='true'] .selector__chevron {
+  display: none;
+}
+
+.selector__valor {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-xs) var(--espacio-sm);
+  min-width: 0;
+}
+
+.selector__texto {
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selector__glifo {
+  flex: none;
+}
+
+/* A calling code inside an option's name never breaks across lines. */
+.selector__cifra {
+  white-space: nowrap;
+}
+
+.selector__marca {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--espacio-xs);
+  color: var(--tinta2);
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.selector__esqueleto {
+  display: block;
+}
+
+.selector__chevron {
+  display: inline-flex;
+  flex: none;
+  color: var(--tinta2);
+}
+
+.selector-lista {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--papel);
+}
+
+.selector-lista__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  padding: calc(var(--espacio-lg) + var(--inset-arriba)) 0 var(--espacio-sm);
+}
+
+.selector-lista__buscar {
+  position: sticky;
+  top: var(--inset-arriba);
+  flex: none;
+  height: var(--alto-tocable);
+  box-sizing: border-box;
+  padding: 0 var(--espacio-lg);
+  border: 0;
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 16px;
+}
+
+/* The default placeholder grey fails contrast on the dark surface: the same ink as the
+ * secondary text, which holds on both themes. */
+.selector-lista__buscar::placeholder {
+  color: var(--tinta2);
+  opacity: 1;
+}
+
+.selector-lista__filas {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.selector-lista__fila {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--espacio-sm);
+  width: 100%;
+  height: var(--alto-tocable);
+  box-sizing: border-box;
+  padding: 0 var(--espacio-lg);
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  font: inherit;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.selector-lista__fila--activa {
+  background: var(--superficie);
+}
+
+.selector-lista__nombre {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selector-lista__marca {
+  display: inline-flex;
+  flex: none;
+  color: var(--acento);
+}
+
+.selector-lista__mensaje {
+  margin: 0;
+  padding: var(--espacio-md) var(--espacio-lg);
+  color: var(--tinta2);
+  font-size: 15px;
+}
+
+@media (max-width: 899.98px) {
+  /* The list owns the body's scrolling: its rows scroll, nothing around them does. */
+  .sheet__body:has(> .selector-lista) {
+    overflow: hidden;
+  }
+}
+
+@media (min-width: 900px) {
+  .selector-desplegable {
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + var(--espacio-xs));
+    right: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(var(--alto-tocable) * 7);
+    overflow: hidden;
+    border-radius: var(--radio-campo);
+    background: var(--papel);
+    box-shadow: 0 0 0 1px var(--linea);
+  }
+
+  .selector-desplegable--arriba {
+    top: auto;
+    bottom: calc(100% + var(--espacio-xs));
+  }
+}
+/* ===== end Selector ===== */
+
+/* Settings → Payments and expenses: a row with its names beneath (`ConfiguracionCobros.dc.html`). */
+.ajustes__item-textos {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ajustes__item-detalle {
+  font-size: 13px;
+  color: var(--tinta2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Payment methods list: icon beside the name, 44 px move buttons, the row's action last. */
+.medio-pago-fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: 13px 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.medio-pago-fila:last-child {
+  border-bottom: 0;
+}
+
+.medio-pago-fila__nombre {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.medio-pago-fila__acciones {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+}
+
+.medio-pago-fila__acciones .boton {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.medio-pago-iconos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-sm);
+}
+
+/* ===== venta-gasto-telefono ===== */
+/* The Expense row of phone New sale (`NuevaVenta.dc.html`'s "Otras cosas para anotar") and the
+ * "Sale in progress" strip over the expense Sheet (`VentaEnCurso.dc.html`). Tokens only. */
+.otras-cosas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+  padding: var(--espacio-lg) 0;
+  border-top: 1px solid var(--linea);
+}
+
+.otras-cosas__titulo {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--tinta2);
+}
+
+.otras-cosas__fila {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(var(--alto-tocable), 1fr));
+  gap: var(--espacio-sm);
+}
+
+/* No tap delay or double-tap zoom on the tile, nor on the strip's button. */
+.otras-cosas button,
+button:has(> .venta-en-curso) {
+  touch-action: manipulation;
+}
+
+.otras-cosas__tile {
+  min-height: 72px;
+  width: 100%;
+  padding: var(--espacio-xs);
+  border-radius: var(--radio-campo);
+  background: var(--papel);
+  color: var(--tinta);
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-xs);
+}
+
+.otras-cosas__tile .icono {
+  color: var(--acento);
+}
+
+.venta-en-curso {
+  min-height: var(--alto-tocable);
+  width: 100%;
+  padding: 0 var(--espacio-md);
+  border-radius: var(--espacio-md);
+  background: var(--acento-suave);
+  color: var(--tinta);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  text-align: left;
+}
+
+/* The label wraps (two or more lines at 320 and 246 px); the figure never splits. */
+.venta-en-curso__texto {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: normal;
+}
+
+.venta-en-curso__cifra {
+  flex: none;
+  white-space: nowrap;
+}
+
+.venta-en-curso__volver {
+  flex: none;
+  color: var(--acento);
+  font-weight: 600;
+}
+/* ===== end venta-gasto-telefono ===== */

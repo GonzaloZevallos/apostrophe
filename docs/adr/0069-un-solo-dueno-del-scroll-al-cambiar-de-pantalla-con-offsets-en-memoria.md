@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-30
+summary: "un solo dueño del scroll al cambiar de pantalla, con los offsets solo en memoria"
 ---
 
 # Un solo dueño del scroll al cambiar de pantalla, con los offsets solo en memoria

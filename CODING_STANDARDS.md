@@ -3,7 +3,7 @@
 How code is written in this product. They apply to the code a task adds or touches. They
 replace the agentic system's default standards whole (agentic-system, ADR-0012): sections
 1 to 8 are those practices said for this stack; section 9 is this product's own and
-outranks every other; section 10 says the frontend's; section 11 names the database.
+outranks every other; 10 says the frontend's; 11 names the database; 12 the generated docs.
 
 ## 1. Hexagonal architecture
 
@@ -41,6 +41,14 @@ outranks every other; section 10 says the frontend's; section 11 names the datab
   the fixtures (`client`, `other_client`), never by building rows by hand.
 - Test-first at seams agreed in the plan. A test that breaks on a refactor without a
   change of behaviour is wrong.
+
+### Generated docs
+
+- The `docs.paths` of `.agentic/stack.yaml` are generated, never edited by hand (the staleness
+  check enforces it); `decisiones.md` comes from each ADR's `summary:`. The `regen` merge driver
+  takes the side merged in: master's copy in master-into-branch, the branch's copy in
+  branch-into-master (locally). Modify/delete still conflicts: regenerate, then commit
+  (ADR-20261112-generated-docs-and-the-adr-index-are-built-on-master).
 
 ## 6. Strict typing, without silencing
 
@@ -96,10 +104,9 @@ React, Vite and TypeScript in `web/`, built from the design in `docs/product/des
 - **Names in code are English**, the `CONTEXT.md` terms, as in the backend. **Every word
   on screen is English**, plain second person ("Save", "Owes you"), using the glossary's
   `_In the app_` word. Every text lives in `web/src/copy/`, keyed, never in a screen.
-- **The backend decides; the front shows.** A line's price, a sale's total, a balance and
-  where a payment goes come from the API. The front may preview a computation before
-  saving (the design's `precios.ts`), but what it shows after saving is what the API
-  answered.
+- **The backend decides; the front shows.** A line's price, a sale's total, a balance and where a
+  payment goes come from the API. The front may preview a computation before saving (the design's
+  `precios.ts`), but what it shows after saving is what the API answered.
 - **Color, type and spacing only from the design tokens.** No loose hex values in a
   component. The design README's accessibility rules are requirements: no state told by color alone: a sign, arrow or word on every gain, loss, debt or state; chart series labelled directly; text at
   4.5:1 at least.
@@ -108,9 +115,8 @@ React, Vite and TypeScript in `web/`, built from the design in `docs/product/des
 - **Section 9 holds in the browser too.** The business is never in a URL. No phone
   numbers, names, amounts or tokens in `console`, in `localStorage` or in error reports;
   the session lives in the backend's cookie, never in browser storage.
-- **Tests at the seams**: screens and components with Testing Library, through what the
-  user sees and does, with the API faked at `fetch`. Formats and previews with plain
-  unit tests.
+- **Tests at the seams**: screens and components with Testing Library, through what the user sees
+  and does, with the API faked at `fetch`. Formats and previews with plain unit tests.
 - **A screen looks like its design**, by eye: the same structure, hierarchy, type, colors,
   spacing and components as its file in `pantallas/`. Look at its comparison
   (`scripts/design/comparisons.mjs`, design README) before delivering, and keep its entry
@@ -131,7 +137,12 @@ doc may record a deliberate exception; without one, this standard wins over an a
 
 1. **Chrome.**
    - Checked: the bottom bar, the header and "+ Nueva venta" are inside the viewport at load
-     and after scrolling to the middle (`chrome-at-load`, `chrome-mid-scroll`).
+     and after scrolling to the middle (`chrome-at-load`, `chrome-mid-scroll`). Which kind
+     carries which chrome: a tab root has the bar and "+ Nueva venta"; a card or detail has
+     the bar and no "+ Nueva venta"; a form or a getting-in screen has neither; the header is
+     there where the screen has one. A sheet or confirmation is judged by the screen beneath
+     it, and covered chrome (inside `[inert]` or `[aria-hidden="true"]`, or beneath an open
+     modal dialog) passes; forbidden chrome that is present and uncovered is reported.
    - Review: the bar and header are fixed; content is padded so nothing sits behind them.
      Insets and `dvh` are the installed shell's (accounts.md): the `--inset-*` tokens, and
      never `100vh`.
@@ -148,7 +159,8 @@ doc may record a deliberate exception; without one, this standard wins over an a
      an `autocomplete` value on every visible input: `username` on the login email,
      `organization` on the business name, `current-password`, `new-password`, and `off` on a
      customer's name and phone (`autocomplete`); `inputmode="decimal"` on grams and
-     `inputmode="numeric"` on pesos (`inputmode`); `type="email"` and `type="tel"`
+     on money when the Money format has decimals, `inputmode="numeric"` on money when it has
+     0 decimals (`inputmode`); `type="email"` and `type="tel"`
      (`input-type`).
    - Review: `enterkeyhint`, except on Nueva venta's lines, which sales.md's tests check.
      The keyboard is by outcome only: the focused field stays in view and the submit is
@@ -208,7 +220,9 @@ step that cannot reach its screen is reported as `unreachable`, never skipped.
 
 **The offender list.** A failure the app has today is listed, never skipped:
 `web/src/mobile-standard/offenders/<rule>.json`, one file per rule, each entry one screen,
-rule, target and issue (an area issue from the fixed map #45-#49, #59, #60, #78), with
+rule, target and issue (the allowed numbers are `AREA_ISSUES` in `web/src/mobile-standard/offenders/index.ts`:
+an existing entry keeps its area issue, and a new finding cites the open follow-up opened
+for it), with
 optional `sizes` and `themes`. It can only shrink: the run fails on a new offender, on an
 entry whose cell now passes, and on an entry with no valid issue number. It grows only
 by a trade, or by the real cells of a row new to the screens registry (the conditions are in
@@ -219,7 +233,7 @@ pinned fixture and date (ADR-0048); a change to either is a change to the lists,
 same diff. One rule has no file: `tabular-figures` (a figure outside its figure class) is
 fixed, never listed, and the loader refuses an entry for it.
 
-**Attached.** Every area PR (#45-#49, #59, #60, #78) attaches the check's result: the
+**Attached.** Every area PR (one whose issue is in `AREA_ISSUES`) attaches the check's result: the
 `mobile` project of `npm --prefix web run e2e`, and the offender counts that
 `scripts/design/compare.sh` prints (`COMPARE_MOBILE=1` runs the check there too). The real
 keyboard and the real-device pass stay by eye (accounts.md, ADR-0028).
@@ -229,29 +243,25 @@ keyboard and the real-device pass stay by eye (accounts.md, ADR-0028).
 `tests/migrations/test_naming.py` machine-checks every rule below stated as **checked**,
 against a real SQLite schema reflected two ways (`upgrade_to_head` and
 `app.tables.metadata.create_all`), never against an object's `.name` in the metadata. A
-name on its allowlist is a known break, not a rule: #75 renames it, so it is never
-renamed as a side effect of another task, and no task other than #75 touches the
-allowlist.
+allowlist is empty, since #75 renamed the last two breaks: a new break is fixed in the
+schema, never listed, and no allowlist exists to put it on.
 
 ### Checked
 
 - Lowercase `snake_case` for every table, column, index and constraint name
   (`^[a-z][a-z0-9]*(_[a-z0-9]+)*$`).
-- A boolean column starts with `is_` (`is_vip`, `is_shown`), and only a boolean column
-  does.
+- A boolean column starts with `is_` (`is_vip`, `is_shown`), and only a boolean column does.
 - `_on` names a calendar date (`spent_on`), and only a date column ends in `_on`.
 - `_at` names a moment in time (`created_at`), and only a datetime column ends in `_at`.
-- A foreign key to `<t>.id` is `<t>_id`, or ends in `_<t>_id` when it needs a role
-  prefix (`assigned_app_user_id` referencing `app_user`), matched on whole
-  `_`-separated segments, so `wholesale_id` against `sale` fails. A foreign key to a
-  column other than `id` (only possible inside a composite key) carries that column's
-  own name instead. `_id` alone does not imply a foreign key (`pinned_catalog.message_id`
-  is not one, and passes).
+- A foreign key to `<t>.id` is `<t>_id`, or ends in `_<t>_id` when it needs a role prefix
+  (`assigned_app_user_id` referencing `app_user`), matched on whole `_`-separated segments, so
+  `wholesale_id` against `sale` fails. A foreign key to a column other than `id` (only possible
+  inside a composite key) carries that column's own name instead. `_id` alone does not imply a
+  foreign key (`pinned_catalog.message_id` is not one, and passes).
 - Every table's primary key is the single column `id`.
-- Names follow their pattern exactly: `ix_<table>_<columns>` for an index,
-  `uq_<table>_<columns>` for a unique constraint, `pk_<table>` for a primary key, and
-  `fk_<table>_<first column>_<referenced table>` for a foreign key (columns joined by
-  `_`, in their declared order).
+- Names follow their pattern exactly: `ix_<table>_<columns>` for an index, `uq_<table>_<columns>`
+  for a unique constraint, `pk_<table>` for a primary key, and `fk_<table>_<first
+  column>_<referenced table>` for a foreign key (columns joined by `_`, in their declared order).
 - A check constraint's name starts with `ck_<table>_` and is itself `snake_case`.
 - A unique, primary-key, foreign-key or check constraint always reflects with a name;
   one that does not is a break on its own.
@@ -260,34 +270,31 @@ allowlist.
 
 - Singular table names (`customer`, not `customers`); a junction table is `<a>_<b>`,
   with its own surrogate `id` and a `uq_<a>_<b>_<a>_id_<b>_id` on the pair.
-- `catalog_attributes` keeps its plural name until #75: no code can flag it, since the
-  rules above have nothing to say about plurals.
-- No `_until`, `_from` or `_start` for a moment in time or a calendar date (`_at` and
-  `_on` say both, with no third option): a reviewer reads it, since a column bearing one
-  of these and no date or datetime type (where the `_on`/`_at` rules would already catch
-  it) is not something the reflected schema alone can tell apart from an ordinary
-  integer or string column of the same name.
+- No `_until`, `_from` or `_start` for a moment in time or a calendar date (`_at` and `_on` say
+  both, with no third option): a reviewer reads it, since a column bearing one of these and no date
+  or datetime type (where the `_on`/`_at` rules would already catch it) is not something the
+  reflected schema alone can tell apart from an ordinary integer or string column of the same name.
 
 ### How a table class states a name
 
-- A table class never passes `name=` to a constraint or an index: `NAMING_CONVENTION`
-  (`app/db.py`) fills it in from the convention above. A check constraint passes only
-  its short rule name (the convention adds the `ck_<table>_` prefix). A composite index
-  is declared `Index(None, "a", "b")`, never with a literal name. Its migration spells
-  the convention's name out with `op.f(...)`, since Alembic cannot recompute a
-  naming-convention name from a bare string.
+- A table class never passes `name=` to a constraint or an index: `NAMING_CONVENTION` (`app/db.py`)
+  fills it in from the convention above. A check constraint passes only its short rule name (the
+  convention adds the `ck_<table>_` prefix). A composite index is declared `Index(None, "a", "b")`,
+  never with a literal name. Its migration spells the convention's name out with `op.f(...)`, since
+  Alembic cannot recompute a naming-convention name from a bare string.
 - A new column's mapped attribute has the column's own name.
 
 ### Scope
 
 - §11 applies to every new table, column, index and constraint, and to the ones a task
-  otherwise touches — except a name already on `test_naming.py`'s allowlist, which stays
-  as it is even when the task changes its column. Only #75 removes an allowlist entry;
-  no other task adds or empties one.
-- A new index or unique constraint added on an allowlisted column is still named from
-  that column's current (unrenamed) name, e.g. `ix_sale_business_id_sale_date` next to
-  the allowlisted `sale.sale_date`.
-- Old and new names coexist until #75: new code says `app_user_id` while
-  `reset_link.user_id` stays as it is, and a new date column ends in `_on` while
-  `sale.sale_date` stays `sale_date`. Existing hand-written names
-  (`uq_customer_business_phone`, `expense`'s two indexes) are not rewritten either.
+  otherwise touches. A name that breaks a checked rule is renamed in the task that finds it,
+  with a migration, never listed.
+- Existing hand-written names (`uq_customer_business_phone`, the `spent_on` index of
+  `expense`) keep the names they reflect today; they pass the checked rules as they are.
+
+## 12. Generated documentation
+
+- `docs/architecture/generated/**`, `docs/api/**` and `docs/architecture/decisiones.md` are
+  written only by `scripts.docs.generate`, never edited by hand and never committed in a feature
+  pull request: master regenerates them after each merge (docs/adr/0066). A branch that changed
+  one restores it from its merge-base; CI warns on a pull request that touches one.

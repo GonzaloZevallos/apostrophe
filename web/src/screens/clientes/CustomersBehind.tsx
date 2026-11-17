@@ -16,13 +16,14 @@ import { keys } from '../../api/keys'
 import { debtorsQuery } from '../../api/payments'
 import { useIsVipCustomers } from '../../api/pricingSettings'
 import { salesOwingCount } from '../../format/counts'
-import { formatMoney } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { COMMON_TEXT } from '../../copy/common'
 import { EVERYONE } from '../../copy/customers'
 import ClienteFila from './ClienteFila'
 import { useCustomerSearch } from './CustomerSearch'
 
 export default function CustomersBehind() {
+  const money = useMoney()
   const { query } = useCustomerSearch()
   const vipCustomers = useIsVipCustomers()
   const { data } = useQuery({
@@ -55,7 +56,7 @@ export default function CustomersBehind() {
               <span>{salesOwingCount(owed.sales_owing_count)}</span>
             </div>
             <div className="ventas__resumen">
-              <span className="cifra-xl monto-deuda">{formatMoney(owed.total_owed)}</span>
+              <span className="cifra-xl monto-deuda">{money.money(owed.total_owed)}</span>
             </div>
             <div className="lista-clientes">
               {owed.debtors.map((debtor) => (
@@ -79,7 +80,7 @@ export default function CustomersBehind() {
                 key={customer.id}
                 id={customer.id}
                 name={customer.name}
-                phone={customer.phone}
+                phoneDisplay={customer.phone_display}
                 vip={vipCustomers && customer.vip}
                 balance={customer.balance}
                 owingSince={customer.owing_since}

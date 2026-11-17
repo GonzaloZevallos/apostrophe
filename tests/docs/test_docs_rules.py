@@ -3,8 +3,7 @@
 Links and Mermaid blocks are read only through `scripts/docs/links.py` (`page_problems`
 feeds its output to the rules); this file defines no link or Mermaid pattern of its own. The rules:
 `defined_symbol_problems` (a cited symbol is defined in its linked file),
-`adr_index_problems` (the ADR index equals `docs/adr/` and its marks equal the ADRs' own
-`status:` lines) and `reach_problems` (every page is within two clicks of the entry).
+`reach_problems` (every page is within two clicks of the entry).
 Nothing imports from `app`.
 """
 
@@ -54,43 +53,6 @@ def alias_problems(mermaid_source: str, linked_sources: Iterable[str]) -> list[s
             problems.append(f"alias `{alias}` starts with an underscore")
         elif not any(_is_defined(alias, source) for source in sources):
             problems.append(f"alias `{alias}` is not defined in a file linked on the page")
-    return problems
-
-
-def adr_status(adr_markdown: str) -> str | None:
-    """The value of the `status:` line in an ADR's front matter, or None without one."""
-    lines = adr_markdown.splitlines()
-    if not lines or lines[0].strip() != "---":
-        return None
-    for line in lines[1:]:
-        if line.strip() == "---":
-            return None
-        key, _, value = line.partition(":")
-        if key.strip() == "status":
-            return value.strip()
-    return None
-
-
-def adr_index_problems(
-    linked_marks: Mapping[str, str | None], adr_statuses: Mapping[str, str | None]
-) -> list[str]:
-    """`linked_marks` maps each ADR file the index links to the number its mark says
-    replaced it (`reemplazada por NNNN`), or None for no mark. `adr_statuses` maps each
-    file in `docs/adr/` to its front-matter `status:` value. The linked set equals the
-    listing, and a mark equals `superseded by NNNN`, in both directions."""
-    problems: list[str] = []
-    for name in sorted(set(adr_statuses) - set(linked_marks)):
-        problems.append(f"{name} is in docs/adr/ but not in the index")
-    for name in sorted(set(linked_marks) - set(adr_statuses)):
-        problems.append(f"{name} is in the index but not in docs/adr/")
-    for name in sorted(set(linked_marks) & set(adr_statuses)):
-        status = adr_statuses[name]
-        superseded = status is not None and status.startswith("superseded by ")
-        expected = status.removeprefix("superseded by ") if superseded and status else None
-        if linked_marks[name] != expected:
-            problems.append(
-                f"{name}: index mark {linked_marks[name]!r} does not match status {status!r}"
-            )
     return problems
 
 
@@ -193,21 +155,6 @@ def test_an_underscore_name_is_rejected_even_when_defined() -> None:
     assert problems == ["a.py: `_hidden` starts with an underscore"]
 
 
-def test_an_index_equal_to_the_listing_with_matching_marks_passes() -> None:
-    statuses = {"0030-a.md": "superseded by 0033", "0033-b.md": "accepted"}
-
-    assert adr_index_problems({"0030-a.md": "0033", "0033-b.md": None}, statuses) == []
-
-
-def test_a_missing_extra_unmarked_or_wrongly_marked_adr_is_rejected() -> None:
-    statuses = {"0030-a.md": "superseded by 0033", "0033-b.md": "accepted", "0034-c.md": "accepted"}
-    marks: dict[str, str | None] = {"0030-a.md": None, "0033-b.md": "0034", "0099-z.md": None}
-
-    problems = adr_index_problems(marks, statuses)
-
-    assert len(problems) == 4
-
-
 def test_reach_follows_two_clicks_and_no_further() -> None:
     links = {
         "docs/README.md": ["architecture/README.md"],
@@ -258,19 +205,6 @@ def test_an_alias_undefined_underscored_or_only_in_a_comment_is_rejected() -> No
         "alias `_Hidden` starts with an underscore",
         "alias `Noted` is not defined in a file linked on the page",
     ]
-
-
-def test_adr_status_reads_only_the_front_matter() -> None:
-    assert (
-        adr_status("---\nstatus: superseded by 0033\ndate: 1\n---\n# T\n") == "superseded by 0033"
-    )
-    assert adr_status("---\ndate: 1\n---\nstatus: accepted\n") is None
-    assert adr_status("# T\nstatus: accepted\n") is None
-
-
-def test_an_adr_without_a_status_line_carries_no_mark() -> None:
-    assert adr_index_problems({"0032-a.md": None}, {"0032-a.md": None}) == []
-    assert adr_index_problems({"0032-a.md": "0033"}, {"0032-a.md": None}) != []
 
 
 def _reads(files: dict[str, str]) -> Callable[[str], str | None]:

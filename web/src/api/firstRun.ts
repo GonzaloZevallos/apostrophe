@@ -1,6 +1,8 @@
 /**
- * `GET /first-run` (docs/adr/0046): the one answer Inicio, the Shell and Variedades read
- * the first-run element from. Matches `web/src/api/fixtures/firstRun.json` and
+ * `GET /first-run` (docs/adr/0046): the one answer the Shell (the missing-price line on
+ * "+ New sale") and Variedades (the disabled "Send catalog" with its reason) read the first-run
+ * checklist's side rules from. Inicio reads none of it (GH-560); the
+ * dismissal endpoint has no caller and `import_notice` no reader. Matches `web/src/api/fixtures/firstRun.json` and
  * `app/onboarding/adapters/first_run_schemas.py` field for field. The front decides no
  * step, no kind and no notice: it shows what this answers. No path, query or body
  * parameter: the business comes from the session. No answer carries an amount, grams,
@@ -12,10 +14,10 @@
  */
 
 import { queryOptions } from '@tanstack/react-query'
-import { get, post } from './client'
+import { get } from './client'
 import { keys } from './keys'
 
-/** Slot 1 of Inicio's notices: at most one of these shows at a time. */
+/** Slot 1 of the first-run element: at most one of these at a time. */
 export type FirstRunKind = 'onboarding' | 'checklist' | 'start_varieties' | 'none'
 
 export type ChecklistStepName = 'priced_variety' | 'stock_entry' | 'published' | 'second_user'
@@ -30,7 +32,7 @@ export interface FirstRunAnswer {
   kind: FirstRunKind
   /** The four steps, in order, only while `kind` is `checklist`; empty otherwise. */
   checklist: ChecklistStepAnswer[]
-  /** The after-import notice to connect the bot, shown beside any slot-1 element. */
+  /** The after-import notice flag: no screen reads it any more. */
   import_notice: boolean
   /** True only while the checklist shows and the catalog has nothing to send. */
   nothing_qualifies: boolean
@@ -38,11 +40,6 @@ export interface FirstRunAnswer {
 
 export function getFirstRun(): Promise<FirstRunAnswer> {
   return get<FirstRunAnswer>('/first-run')
-}
-
-/** `POST /first-run/import-notice/dismissal` (204, idempotent): the business's notice is over. */
-export function sendImportNoticeDismissal(): Promise<void> {
-  return post<void>('/first-run/import-notice/dismissal')
 }
 
 export const firstRunQuery = queryOptions({

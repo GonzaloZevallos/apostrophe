@@ -46,10 +46,17 @@ export async function guardWrites(context: BrowserContext, stubs: readonly Write
 export async function stubReads(context: BrowserContext, stubs: readonly ReadStub[]): Promise<Undo> {
   const handler = async (route: Route): Promise<void> => {
     const request = route.request()
-    const { pathname } = new URL(request.url())
-    const stub = request.method() === 'GET' && ['fetch', 'xhr'].includes(request.resourceType()) ? stubs.find((s) => s.path.test(pathname)) : undefined
+    const { pathname, search } = new URL(request.url())
+    const stub =
+      request.method() === 'GET' && ['fetch', 'xhr'].includes(request.resourceType())
+        ? stubs.find((s) => s.path.test(pathname) && (s.query === undefined || s.query.test(search)))
+        : undefined
     if (stub === undefined) {
       await route.fallback()
+      return
+    }
+    if (stub.offline === true) {
+      await route.abort('internetdisconnected')
       return
     }
     await route.fulfill({
@@ -130,6 +137,18 @@ export function holdApi(context: BrowserContext): Promise<Held> {
       request.method() === 'GET' &&
       ['fetch', 'xhr'].includes(request.resourceType()) &&
       new URL(request.url()).pathname !== SESSION_PATH,
+    (route) => route.fallback(),
+  )
+}
+
+/** Holds the GETs whose path matches `path` until `release()`; everything else passes, so the rest of the screen loads. */
+export function holdReads(context: BrowserContext, path: RegExp): Promise<Held> {
+  return holdRequests(
+    context,
+    (request) =>
+      request.method() === 'GET' &&
+      ['fetch', 'xhr'].includes(request.resourceType()) &&
+      path.test(new URL(request.url()).pathname),
     (route) => route.fallback(),
   )
 }

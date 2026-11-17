@@ -1,0 +1,1994 @@
+[
+  {
+    "screen": "Entrar",
+    "file": "Entrar.png",
+    "notes": [],
+    "design": "Entrar.design.png",
+    "built": "Entrar.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "EntrarOscuro",
+    "file": "EntrarOscuro.png",
+    "notes": [],
+    "design": "EntrarOscuro.design.png",
+    "built": "EntrarOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "NegocioNuevo",
+    "file": "NegocioNuevo.png",
+    "notes": [],
+    "design": "NegocioNuevo.design.png",
+    "built": "NegocioNuevo.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Invitacion",
+    "file": "Invitacion.png",
+    "notes": [],
+    "design": "Invitacion.design.png",
+    "built": "Invitacion.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Reset",
+    "file": "Reset.png",
+    "notes": [],
+    "design": "Reset.design.png",
+    "built": "Reset.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ResetOscuro",
+    "file": "ResetOscuro.png",
+    "notes": [],
+    "design": "ResetOscuro.design.png",
+    "built": "ResetOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioHoy",
+    "file": "InicioHoy.png",
+    "notes": [],
+    "design": "InicioHoy.design.png",
+    "built": "InicioHoy.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioOscuro",
+    "file": "InicioOscuro.png",
+    "notes": [],
+    "design": "InicioOscuro.design.png",
+    "built": "InicioOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioHoyCompu",
+    "file": "InicioHoyCompu.png",
+    "notes": [],
+    "design": "InicioHoyCompu.design.png",
+    "built": "InicioHoyCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioHoyCompuOscuro",
+    "file": "InicioHoyCompuOscuro.png",
+    "notes": [],
+    "design": "InicioHoyCompuOscuro.design.png",
+    "built": "InicioHoyCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioPrimeraVez",
+    "file": "InicioPrimeraVez.png",
+    "notes": [],
+    "design": "InicioPrimeraVez.design.png",
+    "built": "InicioPrimeraVez.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioPrimeraVezCompu",
+    "file": "InicioPrimeraVezCompu.png",
+    "notes": [],
+    "design": "InicioPrimeraVezCompu.design.png",
+    "built": "InicioPrimeraVezCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioPrimeraVezOscuro",
+    "file": "InicioPrimeraVezOscuro.png",
+    "notes": [],
+    "design": "InicioPrimeraVezOscuro.design.png",
+    "built": "InicioPrimeraVezOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioOnboardingEnCurso",
+    "file": "InicioOnboardingEnCurso.png",
+    "notes": [],
+    "design": "InicioOnboardingEnCurso.design.png",
+    "built": "InicioOnboardingEnCurso.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioOnboardingEnCursoCompu",
+    "file": "InicioOnboardingEnCursoCompu.png",
+    "notes": [],
+    "design": "InicioOnboardingEnCursoCompu.design.png",
+    "built": "InicioOnboardingEnCursoCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioOnboardingEnCursoOscuro",
+    "file": "InicioOnboardingEnCursoOscuro.png",
+    "notes": [],
+    "design": "InicioOnboardingEnCursoOscuro.design.png",
+    "built": "InicioOnboardingEnCursoOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioOnboardingCompleto",
+    "file": "InicioOnboardingCompleto.png",
+    "notes": [],
+    "design": "InicioOnboardingCompleto.design.png",
+    "built": "InicioOnboardingCompleto.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioOnboardingCompletoCompu",
+    "file": "InicioOnboardingCompletoCompu.png",
+    "notes": [],
+    "design": "InicioOnboardingCompletoCompu.design.png",
+    "built": "InicioOnboardingCompletoCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioOnboardingCompletoOscuro",
+    "file": "InicioOnboardingCompletoOscuro.png",
+    "notes": [],
+    "design": "InicioOnboardingCompletoOscuro.design.png",
+    "built": "InicioOnboardingCompletoOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioChecklist",
+    "file": "InicioChecklist.png",
+    "notes": [],
+    "design": "InicioChecklist.design.png",
+    "built": "InicioChecklist.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioChecklistCompu",
+    "file": "InicioChecklistCompu.png",
+    "notes": [],
+    "design": "InicioChecklistCompu.design.png",
+    "built": "InicioChecklistCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioChecklistOscuro",
+    "file": "InicioChecklistOscuro.png",
+    "notes": [],
+    "design": "InicioChecklistOscuro.design.png",
+    "built": "InicioChecklistOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioImportado",
+    "file": "InicioImportado.png",
+    "notes": [],
+    "design": "InicioImportado.design.png",
+    "built": "InicioImportado.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioImportadoCompu",
+    "file": "InicioImportadoCompu.png",
+    "notes": [],
+    "design": "InicioImportadoCompu.design.png",
+    "built": "InicioImportadoCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioImportadoOscuro",
+    "file": "InicioImportadoOscuro.png",
+    "notes": [],
+    "design": "InicioImportadoOscuro.design.png",
+    "built": "InicioImportadoOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Ventas",
+    "file": "Ventas.png",
+    "notes": [],
+    "design": "Ventas.design.png",
+    "built": "Ventas.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VentasCompu",
+    "file": "VentasCompu.png",
+    "notes": [],
+    "design": "VentasCompu.design.png",
+    "built": "VentasCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "NuevaVenta",
+    "file": "NuevaVenta.png",
+    "notes": [],
+    "design": "NuevaVenta.design.png",
+    "built": "NuevaVenta.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "NuevaVentaCliente",
+    "file": "NuevaVentaCliente.png",
+    "notes": [],
+    "design": "NuevaVentaCliente.design.png",
+    "built": "NuevaVentaCliente.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "NuevaVentaCompu",
+    "file": "NuevaVentaCompu.png",
+    "notes": [],
+    "design": "NuevaVentaCompu.design.png",
+    "built": "NuevaVentaCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VentaDetalle",
+    "file": "VentaDetalle.png",
+    "notes": [],
+    "design": "VentaDetalle.design.png",
+    "built": "VentaDetalle.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VentaDetalleCompu",
+    "file": "VentaDetalleCompu.png",
+    "notes": [],
+    "design": "VentaDetalleCompu.design.png",
+    "built": "VentaDetalleCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VentasOscuro",
+    "file": "VentasOscuro.png",
+    "notes": [],
+    "design": "VentasOscuro.design.png",
+    "built": "VentasOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VentasCompuOscuro",
+    "file": "VentasCompuOscuro.png",
+    "notes": [],
+    "design": "VentasCompuOscuro.design.png",
+    "built": "VentasCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "NuevaVentaOscuro",
+    "file": "NuevaVentaOscuro.png",
+    "notes": [],
+    "design": "NuevaVentaOscuro.design.png",
+    "built": "NuevaVentaOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "NuevaVentaClienteOscuro",
+    "file": "NuevaVentaClienteOscuro.png",
+    "notes": [],
+    "design": "NuevaVentaClienteOscuro.design.png",
+    "built": "NuevaVentaClienteOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "NuevaVentaCompuOscuro",
+    "file": "NuevaVentaCompuOscuro.png",
+    "notes": [],
+    "design": "NuevaVentaCompuOscuro.design.png",
+    "built": "NuevaVentaCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VentaDetalleOscuro",
+    "file": "VentaDetalleOscuro.png",
+    "notes": [],
+    "design": "VentaDetalleOscuro.design.png",
+    "built": "VentaDetalleOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VentaDetalleCompuOscuro",
+    "file": "VentaDetalleCompuOscuro.png",
+    "notes": [],
+    "design": "VentaDetalleCompuOscuro.design.png",
+    "built": "VentaDetalleCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VentaGuardada",
+    "file": "VentaGuardada.png",
+    "notes": [],
+    "design": "VentaGuardada.design.png",
+    "built": "VentaGuardada.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VentaGuardadaOscuro",
+    "file": "VentaGuardadaOscuro.png",
+    "notes": [],
+    "design": "VentaGuardadaOscuro.design.png",
+    "built": "VentaGuardadaOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Clientes",
+    "file": "Clientes.png",
+    "notes": [],
+    "design": "Clientes.design.png",
+    "built": "Clientes.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ClientesCompu",
+    "file": "ClientesCompu.png",
+    "notes": [],
+    "design": "ClientesCompu.design.png",
+    "built": "ClientesCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ClienteFicha",
+    "file": "ClienteFicha.png",
+    "notes": [],
+    "design": "ClienteFicha.design.png",
+    "built": "ClienteFicha.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ClienteNuevo",
+    "file": "ClienteNuevo.png",
+    "notes": [],
+    "design": "ClienteNuevo.design.png",
+    "built": "ClienteNuevo.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ClienteNuevoCompu",
+    "file": "ClienteNuevoCompu.png",
+    "notes": [],
+    "design": "ClienteNuevoCompu.design.png",
+    "built": "ClienteNuevoCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ClienteEditar",
+    "file": "ClienteEditar.png",
+    "notes": [],
+    "design": "ClienteEditar.design.png",
+    "built": "ClienteEditar.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ClienteEditarCompu",
+    "file": "ClienteEditarCompu.png",
+    "notes": [],
+    "design": "ClienteEditarCompu.design.png",
+    "built": "ClienteEditarCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Cobro",
+    "file": "Cobro.png",
+    "notes": [],
+    "design": "Cobro.design.png",
+    "built": "Cobro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "CobroCompu",
+    "file": "CobroCompu.png",
+    "notes": [],
+    "design": "CobroCompu.design.png",
+    "built": "CobroCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ClientesOscuro",
+    "file": "ClientesOscuro.png",
+    "notes": [],
+    "design": "ClientesOscuro.design.png",
+    "built": "ClientesOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ClientesCompuOscuro",
+    "file": "ClientesCompuOscuro.png",
+    "notes": [],
+    "design": "ClientesCompuOscuro.design.png",
+    "built": "ClientesCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ClienteFichaOscuro",
+    "file": "ClienteFichaOscuro.png",
+    "notes": [],
+    "design": "ClienteFichaOscuro.design.png",
+    "built": "ClienteFichaOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "CobroOscuro",
+    "file": "CobroOscuro.png",
+    "notes": [],
+    "design": "CobroOscuro.design.png",
+    "built": "CobroOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "CobroCompuOscuro",
+    "file": "CobroCompuOscuro.png",
+    "notes": [],
+    "design": "CobroCompuOscuro.design.png",
+    "built": "CobroCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "EntradaStock",
+    "file": "EntradaStock.png",
+    "notes": [],
+    "design": "EntradaStock.design.png",
+    "built": "EntradaStock.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "EntradaStockEditar",
+    "file": "EntradaStockEditar.png",
+    "notes": [],
+    "design": "EntradaStockEditar.design.png",
+    "built": "EntradaStockEditar.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "EntradaStockCompu",
+    "file": "EntradaStockCompu.png",
+    "notes": [],
+    "design": "EntradaStockCompu.design.png",
+    "built": "EntradaStockCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "EntradaStockSinEntradas",
+    "file": "EntradaStockSinEntradas.png",
+    "notes": [],
+    "design": "EntradaStockSinEntradas.design.png",
+    "built": "EntradaStockSinEntradas.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "EntradaStockSinEntradasOscuro",
+    "file": "EntradaStockSinEntradasOscuro.png",
+    "notes": [],
+    "design": "EntradaStockSinEntradasOscuro.design.png",
+    "built": "EntradaStockSinEntradasOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "EntradaStockSinEntradasCompu",
+    "file": "EntradaStockSinEntradasCompu.png",
+    "notes": [],
+    "design": "EntradaStockSinEntradasCompu.design.png",
+    "built": "EntradaStockSinEntradasCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "EntradaStockSinEntradasCompuOscuro",
+    "file": "EntradaStockSinEntradasCompuOscuro.png",
+    "notes": [],
+    "design": "EntradaStockSinEntradasCompuOscuro.design.png",
+    "built": "EntradaStockSinEntradasCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "TodasLasEntradas",
+    "file": "TodasLasEntradas.png",
+    "notes": [],
+    "design": "TodasLasEntradas.design.png",
+    "built": "TodasLasEntradas.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "TodasLasEntradasVariedad",
+    "file": "TodasLasEntradasVariedad.png",
+    "notes": [],
+    "design": "TodasLasEntradasVariedad.design.png",
+    "built": "TodasLasEntradasVariedad.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "SacarDelStock",
+    "file": "SacarDelStock.png",
+    "notes": [],
+    "design": "SacarDelStock.design.png",
+    "built": "SacarDelStock.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "SacarDelStockCompu",
+    "file": "SacarDelStockCompu.png",
+    "notes": [],
+    "design": "SacarDelStockCompu.design.png",
+    "built": "SacarDelStockCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "RetiroDetalle",
+    "file": "RetiroDetalle.png",
+    "notes": [],
+    "design": "RetiroDetalle.design.png",
+    "built": "RetiroDetalle.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VerTodas",
+    "file": "VerTodas.png",
+    "notes": [],
+    "design": "VerTodas.design.png",
+    "built": "VerTodas.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "PrecioNuevo",
+    "file": "PrecioNuevo.png",
+    "notes": [],
+    "design": "PrecioNuevo.design.png",
+    "built": "PrecioNuevo.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "PrecioNuevoCompu",
+    "file": "PrecioNuevoCompu.png",
+    "notes": [],
+    "design": "PrecioNuevoCompu.design.png",
+    "built": "PrecioNuevoCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "PrecioNuevoOscuro",
+    "file": "PrecioNuevoOscuro.png",
+    "notes": [],
+    "design": "PrecioNuevoOscuro.design.png",
+    "built": "PrecioNuevoOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "PrecioNuevoCompuOscuro",
+    "file": "PrecioNuevoCompuOscuro.png",
+    "notes": [],
+    "design": "PrecioNuevoCompuOscuro.design.png",
+    "built": "PrecioNuevoCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VariedadNueva",
+    "file": "VariedadNueva.png",
+    "notes": [],
+    "design": "VariedadNueva.design.png",
+    "built": "VariedadNueva.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VariedadNuevaCompu",
+    "file": "VariedadNuevaCompu.png",
+    "notes": [],
+    "design": "VariedadNuevaCompu.design.png",
+    "built": "VariedadNuevaCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Variedades",
+    "file": "Variedades.png",
+    "notes": [],
+    "design": "Variedades.design.png",
+    "built": "Variedades.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VariedadesCompu",
+    "file": "VariedadesCompu.png",
+    "notes": [],
+    "design": "VariedadesCompu.design.png",
+    "built": "VariedadesCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VariedadDetalle",
+    "file": "VariedadDetalle.png",
+    "notes": [],
+    "design": "VariedadDetalle.design.png",
+    "built": "VariedadDetalle.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Archivadas",
+    "file": "Archivadas.png",
+    "notes": [],
+    "design": "Archivadas.design.png",
+    "built": "Archivadas.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ArchivadasCompu",
+    "file": "ArchivadasCompu.png",
+    "notes": [],
+    "design": "ArchivadasCompu.design.png",
+    "built": "ArchivadasCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Gastos",
+    "file": "Gastos.png",
+    "notes": [],
+    "design": "Gastos.design.png",
+    "built": "Gastos.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "GastosCompu",
+    "file": "GastosCompu.png",
+    "notes": [],
+    "design": "GastosCompu.design.png",
+    "built": "GastosCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "GastoNuevo",
+    "file": "GastoNuevo.png",
+    "notes": [],
+    "design": "GastoNuevo.design.png",
+    "built": "GastoNuevo.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "GastoNuevoCompu",
+    "file": "GastoNuevoCompu.png",
+    "notes": [],
+    "design": "GastoNuevoCompu.design.png",
+    "built": "GastoNuevoCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Catalogo",
+    "file": "Catalogo.png",
+    "notes": [],
+    "design": "Catalogo.design.png",
+    "built": "Catalogo.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "CatalogoCompu",
+    "file": "CatalogoCompu.png",
+    "notes": [],
+    "design": "CatalogoCompu.design.png",
+    "built": "CatalogoCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Analisis",
+    "file": "Analisis.png",
+    "notes": [],
+    "design": "Analisis.design.png",
+    "built": "Analisis.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "AnalisisCompu",
+    "file": "AnalisisCompu.png",
+    "notes": [],
+    "design": "AnalisisCompu.design.png",
+    "built": "AnalisisCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "AnalisisOscuro",
+    "file": "AnalisisOscuro.png",
+    "notes": [],
+    "design": "AnalisisOscuro.design.png",
+    "built": "AnalisisOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "AnalisisCompuOscuro",
+    "file": "AnalisisCompuOscuro.png",
+    "notes": [],
+    "design": "AnalisisCompuOscuro.design.png",
+    "built": "AnalisisCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Mas",
+    "file": "Mas.png",
+    "notes": [],
+    "design": "Mas.design.png",
+    "built": "Mas.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "Configuracion",
+    "file": "Configuracion.png",
+    "notes": [],
+    "design": "Configuracion.design.png",
+    "built": "Configuracion.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionCompu",
+    "file": "ConfiguracionCompu.png",
+    "notes": [],
+    "design": "ConfiguracionCompu.design.png",
+    "built": "ConfiguracionCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionNegocio",
+    "file": "ConfiguracionNegocio.png",
+    "notes": [],
+    "design": "ConfiguracionNegocio.design.png",
+    "built": "ConfiguracionNegocio.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionNegocioCompu",
+    "file": "ConfiguracionNegocioCompu.png",
+    "notes": [],
+    "design": "ConfiguracionNegocioCompu.design.png",
+    "built": "ConfiguracionNegocioCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionUsuarios",
+    "file": "ConfiguracionUsuarios.png",
+    "notes": [],
+    "design": "ConfiguracionUsuarios.design.png",
+    "built": "ConfiguracionUsuarios.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionUsuariosCompu",
+    "file": "ConfiguracionUsuariosCompu.png",
+    "notes": [],
+    "design": "ConfiguracionUsuariosCompu.design.png",
+    "built": "ConfiguracionUsuariosCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionPrecios",
+    "file": "ConfiguracionPrecios.png",
+    "notes": [],
+    "design": "ConfiguracionPrecios.design.png",
+    "built": "ConfiguracionPrecios.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionPreciosCompu",
+    "file": "ConfiguracionPreciosCompu.png",
+    "notes": [],
+    "design": "ConfiguracionPreciosCompu.design.png",
+    "built": "ConfiguracionPreciosCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionIntegraciones",
+    "file": "ConfiguracionIntegraciones.png",
+    "notes": [],
+    "design": "ConfiguracionIntegraciones.design.png",
+    "built": "ConfiguracionIntegraciones.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionIntegracionesCompu",
+    "file": "ConfiguracionIntegracionesCompu.png",
+    "notes": [],
+    "design": "ConfiguracionIntegracionesCompu.design.png",
+    "built": "ConfiguracionIntegracionesCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionIntegracionesOscuro",
+    "file": "ConfiguracionIntegracionesOscuro.png",
+    "notes": [],
+    "design": "ConfiguracionIntegracionesOscuro.design.png",
+    "built": "ConfiguracionIntegracionesOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionIntegracionesCompuOscuro",
+    "file": "ConfiguracionIntegracionesCompuOscuro.png",
+    "notes": [],
+    "design": "ConfiguracionIntegracionesCompuOscuro.design.png",
+    "built": "ConfiguracionIntegracionesCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionMensaje",
+    "file": "ConfiguracionMensaje.png",
+    "notes": [],
+    "design": "ConfiguracionMensaje.design.png",
+    "built": "ConfiguracionMensaje.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionMensajeCompu",
+    "file": "ConfiguracionMensajeCompu.png",
+    "notes": [],
+    "design": "ConfiguracionMensajeCompu.design.png",
+    "built": "ConfiguracionMensajeCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionCategorias",
+    "file": "ConfiguracionCategorias.png",
+    "notes": [],
+    "design": "ConfiguracionCategorias.design.png",
+    "built": "ConfiguracionCategorias.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionCategoriasCompu",
+    "file": "ConfiguracionCategoriasCompu.png",
+    "notes": [],
+    "design": "ConfiguracionCategoriasCompu.design.png",
+    "built": "ConfiguracionCategoriasCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionApariencia",
+    "file": "ConfiguracionApariencia.png",
+    "notes": [],
+    "design": "ConfiguracionApariencia.design.png",
+    "built": "ConfiguracionApariencia.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionAparienciaCompu",
+    "file": "ConfiguracionAparienciaCompu.png",
+    "notes": [],
+    "design": "ConfiguracionAparienciaCompu.design.png",
+    "built": "ConfiguracionAparienciaCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionCuenta",
+    "file": "ConfiguracionCuenta.png",
+    "notes": [],
+    "design": "ConfiguracionCuenta.design.png",
+    "built": "ConfiguracionCuenta.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionCuentaCompu",
+    "file": "ConfiguracionCuentaCompu.png",
+    "notes": [],
+    "design": "ConfiguracionCuentaCompu.design.png",
+    "built": "ConfiguracionCuentaCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingStock",
+    "file": "OnboardingStock.png",
+    "notes": [],
+    "design": "OnboardingStock.design.png",
+    "built": "OnboardingStock.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingMensaje",
+    "file": "OnboardingMensaje.png",
+    "notes": [],
+    "design": "OnboardingMensaje.design.png",
+    "built": "OnboardingMensaje.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingBot",
+    "file": "OnboardingBot.png",
+    "notes": [],
+    "design": "OnboardingBot.design.png",
+    "built": "OnboardingBot.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingSocio",
+    "file": "OnboardingSocio.png",
+    "notes": [],
+    "design": "OnboardingSocio.design.png",
+    "built": "OnboardingSocio.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingCategorias",
+    "file": "OnboardingCategorias.png",
+    "notes": [],
+    "design": "OnboardingCategorias.design.png",
+    "built": "OnboardingCategorias.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingStockOscuro",
+    "file": "OnboardingStockOscuro.png",
+    "notes": [],
+    "design": "OnboardingStockOscuro.design.png",
+    "built": "OnboardingStockOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingMensajeOscuro",
+    "file": "OnboardingMensajeOscuro.png",
+    "notes": [],
+    "design": "OnboardingMensajeOscuro.design.png",
+    "built": "OnboardingMensajeOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingBotOscuro",
+    "file": "OnboardingBotOscuro.png",
+    "notes": [],
+    "design": "OnboardingBotOscuro.design.png",
+    "built": "OnboardingBotOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingSocioOscuro",
+    "file": "OnboardingSocioOscuro.png",
+    "notes": [],
+    "design": "OnboardingSocioOscuro.design.png",
+    "built": "OnboardingSocioOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingCategoriasOscuro",
+    "file": "OnboardingCategoriasOscuro.png",
+    "notes": [],
+    "design": "OnboardingCategoriasOscuro.design.png",
+    "built": "OnboardingCategoriasOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingStockCompu",
+    "file": "OnboardingStockCompu.png",
+    "notes": [],
+    "design": "OnboardingStockCompu.design.png",
+    "built": "OnboardingStockCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingMensajeCompu",
+    "file": "OnboardingMensajeCompu.png",
+    "notes": [],
+    "design": "OnboardingMensajeCompu.design.png",
+    "built": "OnboardingMensajeCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingBotCompu",
+    "file": "OnboardingBotCompu.png",
+    "notes": [],
+    "design": "OnboardingBotCompu.design.png",
+    "built": "OnboardingBotCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingSocioCompu",
+    "file": "OnboardingSocioCompu.png",
+    "notes": [],
+    "design": "OnboardingSocioCompu.design.png",
+    "built": "OnboardingSocioCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingCategoriasCompu",
+    "file": "OnboardingCategoriasCompu.png",
+    "notes": [],
+    "design": "OnboardingCategoriasCompu.design.png",
+    "built": "OnboardingCategoriasCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingStockCompuOscuro",
+    "file": "OnboardingStockCompuOscuro.png",
+    "notes": [],
+    "design": "OnboardingStockCompuOscuro.design.png",
+    "built": "OnboardingStockCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingMensajeCompuOscuro",
+    "file": "OnboardingMensajeCompuOscuro.png",
+    "notes": [],
+    "design": "OnboardingMensajeCompuOscuro.design.png",
+    "built": "OnboardingMensajeCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingBotCompuOscuro",
+    "file": "OnboardingBotCompuOscuro.png",
+    "notes": [],
+    "design": "OnboardingBotCompuOscuro.design.png",
+    "built": "OnboardingBotCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingSocioCompuOscuro",
+    "file": "OnboardingSocioCompuOscuro.png",
+    "notes": [],
+    "design": "OnboardingSocioCompuOscuro.design.png",
+    "built": "OnboardingSocioCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingCategoriasCompuOscuro",
+    "file": "OnboardingCategoriasCompuOscuro.png",
+    "notes": [],
+    "design": "OnboardingCategoriasCompuOscuro.design.png",
+    "built": "OnboardingCategoriasCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingStockTexto130",
+    "file": "OnboardingStockTexto130.png",
+    "notes": [],
+    "design": "OnboardingStockTexto130.design.png",
+    "built": "OnboardingStockTexto130.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingMensajeTexto130",
+    "file": "OnboardingMensajeTexto130.png",
+    "notes": [
+      "lo construido no se pudo capturar: shot: the page scrolls inside an element (built)"
+    ],
+    "design": "OnboardingMensajeTexto130.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: the page scrolls inside an element (built)"
+    }
+  },
+  {
+    "screen": "OnboardingBotTexto130",
+    "file": "OnboardingBotTexto130.png",
+    "notes": [],
+    "design": "OnboardingBotTexto130.design.png",
+    "built": "OnboardingBotTexto130.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingSocioTexto130",
+    "file": "OnboardingSocioTexto130.png",
+    "notes": [],
+    "design": "OnboardingSocioTexto130.design.png",
+    "built": "OnboardingSocioTexto130.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingCategoriasTexto130",
+    "file": "OnboardingCategoriasTexto130.png",
+    "notes": [],
+    "design": "OnboardingCategoriasTexto130.design.png",
+    "built": "OnboardingCategoriasTexto130.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingVariedad",
+    "file": "OnboardingVariedad.png",
+    "notes": [],
+    "design": "OnboardingVariedad.design.png",
+    "built": "OnboardingVariedad.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingVariedadOscuro",
+    "file": "OnboardingVariedadOscuro.png",
+    "notes": [],
+    "design": "OnboardingVariedadOscuro.design.png",
+    "built": "OnboardingVariedadOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingVariedadCompu",
+    "file": "OnboardingVariedadCompu.png",
+    "notes": [],
+    "design": "OnboardingVariedadCompu.design.png",
+    "built": "OnboardingVariedadCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingVariedadTexto130",
+    "file": "OnboardingVariedadTexto130.png",
+    "notes": [],
+    "design": "OnboardingVariedadTexto130.design.png",
+    "built": "OnboardingVariedadTexto130.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingVariedadCompuOscuro",
+    "file": "OnboardingVariedadCompuOscuro.png",
+    "notes": [],
+    "design": "OnboardingVariedadCompuOscuro.design.png",
+    "built": "OnboardingVariedadCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingPrecio",
+    "file": "OnboardingPrecio.png",
+    "notes": [],
+    "design": "OnboardingPrecio.design.png",
+    "built": "OnboardingPrecio.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingListo",
+    "file": "OnboardingListo.png",
+    "notes": [],
+    "design": "OnboardingListo.design.png",
+    "built": "OnboardingListo.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingListoCompu",
+    "file": "OnboardingListoCompu.png",
+    "notes": [],
+    "design": "OnboardingListoCompu.design.png",
+    "built": "OnboardingListoCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingListoOscuro",
+    "file": "OnboardingListoOscuro.png",
+    "notes": [],
+    "design": "OnboardingListoOscuro.design.png",
+    "built": "OnboardingListoOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingListoCompuOscuro",
+    "file": "OnboardingListoCompuOscuro.png",
+    "notes": [],
+    "design": "OnboardingListoCompuOscuro.design.png",
+    "built": "OnboardingListoCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "OnboardingListoTexto130",
+    "file": "OnboardingListoTexto130.png",
+    "notes": [],
+    "design": "OnboardingListoTexto130.design.png",
+    "built": "OnboardingListoTexto130.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "EstadosSinConexion",
+    "file": "EstadosSinConexion.png",
+    "notes": [],
+    "design": "EstadosSinConexion.design.png",
+    "built": "EstadosSinConexion.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "EstadosSinConexionCompu",
+    "file": "EstadosSinConexionCompu.png",
+    "notes": [],
+    "design": "EstadosSinConexionCompu.design.png",
+    "built": "EstadosSinConexionCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "EstadosGone",
+    "file": "EstadosGone.png",
+    "notes": [],
+    "design": "EstadosGone.design.png",
+    "built": "EstadosGone.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "EstadosConfirmar",
+    "file": "EstadosConfirmar.png",
+    "notes": [],
+    "design": "EstadosConfirmar.design.png",
+    "built": "EstadosConfirmar.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "MasOscuro",
+    "file": "MasOscuro.png",
+    "notes": [],
+    "design": "MasOscuro.design.png",
+    "built": "MasOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VariedadDetalleOscuro",
+    "file": "VariedadDetalleOscuro.png",
+    "notes": [],
+    "design": "VariedadDetalleOscuro.design.png",
+    "built": "VariedadDetalleOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ArchivadasOscuro",
+    "file": "ArchivadasOscuro.png",
+    "notes": [],
+    "design": "ArchivadasOscuro.design.png",
+    "built": "ArchivadasOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ArchivadasCompuOscuro",
+    "file": "ArchivadasCompuOscuro.png",
+    "notes": [],
+    "design": "ArchivadasCompuOscuro.design.png",
+    "built": "ArchivadasCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "CatalogoOscuro",
+    "file": "CatalogoOscuro.png",
+    "notes": [],
+    "design": "CatalogoOscuro.design.png",
+    "built": "CatalogoOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "CatalogoCompuOscuro",
+    "file": "CatalogoCompuOscuro.png",
+    "notes": [],
+    "design": "CatalogoCompuOscuro.design.png",
+    "built": "CatalogoCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VerTodasOscuro",
+    "file": "VerTodasOscuro.png",
+    "notes": [],
+    "design": "VerTodasOscuro.design.png",
+    "built": "VerTodasOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "TodasLasEntradasOscuro",
+    "file": "TodasLasEntradasOscuro.png",
+    "notes": [],
+    "design": "TodasLasEntradasOscuro.design.png",
+    "built": "TodasLasEntradasOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "TodasLasEntradasVariedadOscuro",
+    "file": "TodasLasEntradasVariedadOscuro.png",
+    "notes": [],
+    "design": "TodasLasEntradasVariedadOscuro.design.png",
+    "built": "TodasLasEntradasVariedadOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "RetiroDetalleOscuro",
+    "file": "RetiroDetalleOscuro.png",
+    "notes": [],
+    "design": "RetiroDetalleOscuro.design.png",
+    "built": "RetiroDetalleOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "EstadosSinConexionOscuro",
+    "file": "EstadosSinConexionOscuro.png",
+    "notes": [],
+    "design": "EstadosSinConexionOscuro.design.png",
+    "built": "EstadosSinConexionOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "EstadosSinConexionCompuOscuro",
+    "file": "EstadosSinConexionCompuOscuro.png",
+    "notes": [],
+    "design": "EstadosSinConexionCompuOscuro.design.png",
+    "built": "EstadosSinConexionCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VariedadArchivada",
+    "file": "VariedadArchivada.png",
+    "notes": [],
+    "design": "VariedadArchivada.design.png",
+    "built": "VariedadArchivada.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VariedadArchivadaOscuro",
+    "file": "VariedadArchivadaOscuro.png",
+    "notes": [],
+    "design": "VariedadArchivadaOscuro.design.png",
+    "built": "VariedadArchivadaOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VariedadArchivadaCompu",
+    "file": "VariedadArchivadaCompu.png",
+    "notes": [],
+    "design": "VariedadArchivadaCompu.design.png",
+    "built": "VariedadArchivadaCompu.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "VariedadArchivadaCompuOscuro",
+    "file": "VariedadArchivadaCompuOscuro.png",
+    "notes": [],
+    "design": "VariedadArchivadaCompuOscuro.design.png",
+    "built": "VariedadArchivadaCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioHoyCompu960",
+    "file": "InicioHoyCompu960.png",
+    "notes": [],
+    "design": "InicioHoyCompu960.design.png",
+    "built": "InicioHoyCompu960.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioHoyCompu960Texto130",
+    "file": "InicioHoyCompu960Texto130.png",
+    "notes": [],
+    "design": "InicioHoyCompu960Texto130.design.png",
+    "built": "InicioHoyCompu960Texto130.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioHoyCompuTexto130",
+    "file": "InicioHoyCompuTexto130.png",
+    "notes": [],
+    "design": "InicioHoyCompuTexto130.design.png",
+    "built": "InicioHoyCompuTexto130.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionOscuro",
+    "file": "ConfiguracionOscuro.png",
+    "notes": [],
+    "design": "ConfiguracionOscuro.design.png",
+    "built": "ConfiguracionOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "ConfiguracionCompuOscuro",
+    "file": "ConfiguracionCompuOscuro.png",
+    "notes": [],
+    "design": "ConfiguracionCompuOscuro.design.png",
+    "built": "ConfiguracionCompuOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "GastoNuevoOscuro",
+    "file": "GastoNuevoOscuro.png",
+    "notes": [],
+    "design": "GastoNuevoOscuro.design.png",
+    "built": "GastoNuevoOscuro.built.png",
+    "capture": "captured"
+  },
+  {
+    "screen": "InicioEditar",
+    "file": "InicioEditar.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "InicioEditar.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "InicioEditarOscuro",
+    "file": "InicioEditarOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "InicioEditarOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "WidgetCatalogo",
+    "file": "WidgetCatalogo.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "WidgetCatalogo.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "WidgetCatalogoOscuro",
+    "file": "WidgetCatalogoOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "WidgetCatalogoOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "WidgetPaso2",
+    "file": "WidgetPaso2.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "WidgetPaso2.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "WidgetPaso2Oscuro",
+    "file": "WidgetPaso2Oscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "WidgetPaso2Oscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "WidgetPaso5",
+    "file": "WidgetPaso5.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "WidgetPaso5.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "WidgetPaso5Oscuro",
+    "file": "WidgetPaso5Oscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "WidgetPaso5Oscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "WidgetTema",
+    "file": "WidgetTema.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "WidgetTema.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "WidgetTemaOscuro",
+    "file": "WidgetTemaOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "WidgetTemaOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "Pedidos",
+    "file": "Pedidos.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "Pedidos.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "PedidosOscuro",
+    "file": "PedidosOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "PedidosOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "PedidosCompu",
+    "file": "PedidosCompu.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "PedidosCompu.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "PedidosCompuOscuro",
+    "file": "PedidosCompuOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "PedidosCompuOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "PedidosVista",
+    "file": "PedidosVista.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "PedidosVista.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "PedidosVistaOscuro",
+    "file": "PedidosVistaOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "PedidosVistaOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "PedidosArmarVista",
+    "file": "PedidosArmarVista.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "PedidosArmarVista.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "PedidosArmarVistaOscuro",
+    "file": "PedidosArmarVistaOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "PedidosArmarVistaOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "PedidoDetalle",
+    "file": "PedidoDetalle.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "PedidoDetalle.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "PedidoDetalleOscuro",
+    "file": "PedidoDetalleOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "PedidoDetalleOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "Productos",
+    "file": "Productos.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "Productos.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ProductosOscuro",
+    "file": "ProductosOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ProductosOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ProductosCompu",
+    "file": "ProductosCompu.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ProductosCompu.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ProductosCompuOscuro",
+    "file": "ProductosCompuOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ProductosCompuOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ProductoDetalle",
+    "file": "ProductoDetalle.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ProductoDetalle.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ProductoDetalleOscuro",
+    "file": "ProductoDetalleOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ProductoDetalleOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "Stock",
+    "file": "Stock.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "Stock.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "StockOscuro",
+    "file": "StockOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "StockOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "PromocionNueva",
+    "file": "PromocionNueva.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "PromocionNueva.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "PromocionNuevaOscuro",
+    "file": "PromocionNuevaOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "PromocionNuevaOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "TiendaTelegram",
+    "file": "TiendaTelegram.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "TiendaTelegram.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "TiendaTelegramOscuro",
+    "file": "TiendaTelegramOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "TiendaTelegramOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ConfiguracionBuscar",
+    "file": "ConfiguracionBuscar.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ConfiguracionBuscar.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ConfiguracionBuscarOscuro",
+    "file": "ConfiguracionBuscarOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ConfiguracionBuscarOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ConfiguracionCobros",
+    "file": "ConfiguracionCobros.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ConfiguracionCobros.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ConfiguracionCobrosOscuro",
+    "file": "ConfiguracionCobrosOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ConfiguracionCobrosOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ConfiguracionEstados",
+    "file": "ConfiguracionEstados.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ConfiguracionEstados.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ConfiguracionEstadosOscuro",
+    "file": "ConfiguracionEstadosOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ConfiguracionEstadosOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ConfiguracionEstadosCompu",
+    "file": "ConfiguracionEstadosCompu.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ConfiguracionEstadosCompu.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ConfiguracionEstadosCompuOscuro",
+    "file": "ConfiguracionEstadosCompuOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ConfiguracionEstadosCompuOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ConfiguracionEstadoPaso",
+    "file": "ConfiguracionEstadoPaso.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ConfiguracionEstadoPaso.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "ConfiguracionEstadoPasoOscuro",
+    "file": "ConfiguracionEstadoPasoOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "ConfiguracionEstadoPasoOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "Marca",
+    "file": "Marca.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "Marca.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "Onboarding",
+    "file": "Onboarding.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "Onboarding.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "OnboardingOscuro",
+    "file": "OnboardingOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "OnboardingOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "OnboardingCompu",
+    "file": "OnboardingCompu.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "OnboardingCompu.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  },
+  {
+    "screen": "OnboardingCompuOscuro",
+    "file": "OnboardingCompuOscuro.png",
+    "notes": [
+      "todavía no existe en la app"
+    ],
+    "design": "OnboardingCompuOscuro.design.png",
+    "built": null,
+    "capture": "not-captured",
+    "reasons": {
+      "built": "shot: no built screen yet (built)"
+    }
+  }
+]

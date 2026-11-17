@@ -28,6 +28,7 @@ from app.business_removal.domain.schema import Column, ColumnType, ForeignKey, S
 from app.shared.copy import MissingOperatorKey
 from app.shared.transaction import Transaction
 from tests.business_removal.english_words import baseline_text, english_words
+from tests.business_removal.money_fakes import FakeMoneyFormat
 
 NOW = datetime(2026, 10, 2, 18, 0, tzinfo=UTC)
 EMAIL = "owner@example.com"
@@ -37,7 +38,7 @@ INTERRUPTED_MESSAGE = baseline_text("operator.removal.interrupted")
 BUSY_MESSAGE = baseline_text("operator.removal.busy")
 FAILED_MESSAGE = baseline_text("operator.removal.failed")
 RECORDS_CHANGED_MESSAGE = baseline_text("operator.removal.records_changed")
-BUSINESS = BusinessRef(id=1, name="La Huerta", language="en")
+BUSINESS = BusinessRef(id=1, name="La Huerta", language="en", default_phone_country="AR")
 
 
 def _col(name: str, type_: ColumnType = ColumnType.INTEGER) -> Column:
@@ -267,6 +268,7 @@ def _remove(
         english_words(),
         _clock,
         email,
+        money_format=FakeMoneyFormat(),
     )
 
 
@@ -684,6 +686,7 @@ def test_a_failure_line_that_cannot_be_rendered_falls_back_to_refused_and_the_cl
         BrokenWords(),
         _clock,
         EMAIL,
+        money_format=FakeMoneyFormat(),
     )
 
     assert (dry, real) == (1, 1)
@@ -706,6 +709,7 @@ def test_an_unknown_outcome_whose_lines_cannot_be_rendered_ends_in_one_refused_l
         _ConfirmingWords(),
         _clock,
         EMAIL,
+        money_format=FakeMoneyFormat(),
     )
 
     assert result == 1

@@ -1,0 +1,2 @@
+// expect: locale-import@2
+export const bundles = import.meta.glob<object>(['../copy/locales/*/*.json'], { eager: true })

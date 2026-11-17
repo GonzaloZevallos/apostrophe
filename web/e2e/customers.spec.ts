@@ -19,7 +19,7 @@
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import type { Locator, Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -31,7 +31,7 @@ import { seedLedger } from './helpers/ledger.js'
 /** The customer's card, never the list beside it on a computer (the list holds the search box):
  * its "Te debe" and "Credit" are what these specs read. */
 function cardOf(page: Page) {
-  return page.locator('main').filter({ hasNot: page.getByLabel('Search customer') })
+  return page.locator('main').filter({ hasNot: page.getByLabel('Search customer', { exact: true }) })
 }
 
 test('a customer with no phone number is registered, edited, sold to, paid and shown in Te deben', async ({
@@ -48,9 +48,9 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
 
   // One priced variety, $1.000/g — round figures for every assertion below.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Name').fill('Jazmín')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await page.getByRole('link', { name: 'New product' }).click()
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Jazmín')
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')
@@ -58,7 +58,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
 
   // Registered with no phone number at all.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Name').fill('Noe Sinnumero')
+  await page.getByLabel('Name', { exact: true }).fill('Noe Sinnumero')
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
@@ -79,7 +79,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Edited: still no phone number, and the edit form shows no required marker on
   // the phone field while it stays usable.
   await page.getByRole('link', { name: 'Edit' }).click()
-  await expect(page.getByLabel('Phone')).toHaveValue('')
+  await expect(page.getByLabel('Phone', { exact: true })).toHaveValue('')
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expect(page.getByText('Customer saved')).toBeVisible()
   await expect(page.getByText('Phone')).toHaveCount(0)
@@ -121,7 +121,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Paid in full through Registrar cobro.
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByRole('button', { name: 'All: $ 4.000' }).click()
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await choosePaymentMethod(page, 'Cash')
   await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
   await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
 
@@ -130,7 +130,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await page.goto(SALE_NEW)
   await page.getByRole('button', { name: 'Pick a customer' }).click()
   await page.getByRole('button', { name: 'New customer' }).click()
-  await page.getByLabel('Name').fill('Sol Sinnumero')
+  await page.getByLabel('Name', { exact: true }).fill('Sol Sinnumero')
   await page.getByRole('button', { name: 'Create customer' }).click()
   await expect(page.getByRole('button', { name: /Sol Sinnumero/ })).toBeVisible()
   // The chosen chip carries no phone element either.
@@ -275,3 +275,4 @@ test.describe('the card\'s pinned "New sale to <name>" on a computer', () => {
     expect(end.x + end.width).toBeLessThanOrEqual(pane.x + pane.width + SUBPIXEL)
   })
 })
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'

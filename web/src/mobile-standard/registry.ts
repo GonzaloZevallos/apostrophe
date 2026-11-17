@@ -14,6 +14,10 @@ export const SKIP_NO_ROUTE = 'not built yet: route is null'
 export const SKIP_COMPUTER_VIEWPORT = 'computer layout: viewport width of 900 px or more'
 /** Both themes run in every cell, so a dark twin of a registry entry would repeat its walk. */
 export const SKIP_THEME_TWIN = 'dark twin: every cell already runs both themes'
+/** A walked state proves this row's screen, so walking the row too would repeat it. */
+export function skipWalkedAs(state: string): string {
+  return `walked as its state ${state}`
+}
 /** The computer breakpoint, in CSS px (design README, accounts.md). */
 export const COMPUTER_MIN_WIDTH = 900
 
@@ -34,6 +38,8 @@ export interface RegistryScreen {
   signedOut: boolean
   theme: string | null
   steps: readonly RegistryStep[]
+  /** The walked state (`STATE_NAMES`) that proves this row's screen, or `null`. */
+  walkedAs: string | null
 }
 
 /**
@@ -59,6 +65,8 @@ export const STATE_NAMES: readonly string[] = [
   'VentasFechas',
   // Getting in and the shared Estados (`states-getting-in`).
   'EntrarFreno',
+  'EntrarOlvido',
+  'EntrarFrenoOlvido',
   'InvitacionMuerta',
   'ResetMuerto',
   'EstadosReintento',
@@ -66,6 +74,29 @@ export const STATE_NAMES: readonly string[] = [
   // Records areas (`states-records`).
   'ClientesBusqueda',
   'EntradasTodas',
+  'stock-entry/variety-selector-open',
+  'new-sale/line-variety-selector-open',
+  'new-sale/method-selector-open',
+  'new-sale/method-selector-failed',
+  'new-sale/method-selector-offline',
+  'new-sale/method-no-longer-available',
+  'payment/method-selector-failed',
+  'payment/method-selector-offline',
+  'payment/method-no-longer-available',
+  'stock-entry/edit-archived-variety',
+  'stock-entry/edit-archived-variety-failed',
+  'withdrawal/reason-selector-open',
+  'expense/category-selector-empty',
+  'withdrawal/line-archived-variety',
+  'customer/type-selector-open',
+  'customer/country-selector-open',
+  'customer/country-selector-loading',
+  'customer/country-selector-locked',
+  'sale/customer-country-selector-open',
+  'sale/expense-discard',
+  'DescartarGastoEnVenta',
+  'sale/expense-strip',
+  'sale/expense-returned',
   'EntradaStockConfirmarCambios',
   'EntradaStockConfirmarBorrado',
   'PrecioNuevoFormulario',
@@ -74,7 +105,6 @@ export const STATE_NAMES: readonly string[] = [
   'VariedadRenombrar',
   'VariedadUmbral',
   'CatalogoAtributos',
-  'GastoDesdeMas',
   'GastoDesdeGastos',
   'GastoEditar',
   'GastoConfirmarBorrado',
@@ -83,7 +113,19 @@ export const STATE_NAMES: readonly string[] = [
   'ConfiguracionTipoClienteNuevo',
   'ConfiguracionTipoClienteLista',
   'ConfiguracionTipoClienteEnUso',
+  'ConfiguracionPagosGrupo',
+  'ConfiguracionMediosPagoLista',
+  'ConfiguracionMediosPagoNuevo',
+  'ConfiguracionMediosPagoEditar',
+  'ConfiguracionMediosPagoNombreRepetido',
+  'ConfiguracionMediosPagoConfirmarArchivar',
+  'ConfiguracionMediosPagoConfirmarBorrado',
+  'ConfiguracionMediosPagoUltimo',
+  'ConfiguracionMediosPagoArchivados',
+  'ConfiguracionMediosPagoArchivadosVacio',
   'ConfiguracionContrasena',
+  'ConfiguracionMonedaSimboloInvalido',
+  'ConfiguracionMonedaNoBajar',
   'ConfiguracionMotivos',
   'ConfiguracionMotivoNuevo',
   'ConfiguracionMotivoRenombrar',
@@ -170,6 +212,11 @@ export function parseRegistry(
     const path = row['path']
     if (typeof path !== 'string') throw new Error(`${name}: path is not a string`)
     const theme = row['tema']
+    const walkedAs = row['walked_as']
+    if (walkedAs !== undefined && typeof walkedAs !== 'string') throw new Error(`${name}: walked_as is not text`)
+    if (typeof walkedAs === 'string' && !stateNames.includes(walkedAs)) {
+      throw new Error(`${name}: walked_as "${walkedAs}" is not a walked state`)
+    }
     return {
       screen: name,
       route,
@@ -178,6 +225,7 @@ export function parseRegistry(
       signedOut: row['signed_out'] === true,
       theme: typeof theme === 'string' ? theme : null,
       steps: parseSteps(row['steps'], name),
+      walkedAs: walkedAs ?? null,
     }
   })
 }
@@ -197,6 +245,7 @@ export function resolvePlaceholders(
 /** Why the phone walk leaves a screen out, or `null` when it visits it. The one place that decides. */
 function skipReason(screen: RegistryScreen): string | null {
   if (screen.route === null) return SKIP_NO_ROUTE
+  if (screen.walkedAs !== null) return skipWalkedAs(screen.walkedAs)
   if (screen.theme !== null) return SKIP_THEME_TWIN
   if (screen.viewport !== null && screen.viewport[0] >= COMPUTER_MIN_WIDTH) return SKIP_COMPUTER_VIEWPORT
   return null
@@ -218,7 +267,10 @@ export function skippedScreens(
 /** One front route of the registry's `registry[]` list: the one place the route patterns live. */
 export interface RouteRegistryEntry {
   path: string
+  /** The PHONE's kind: the Mobile check judges only the phone. */
   kind: 'root' | 'card' | 'form'
+  /** The kind on a computer, when it is not the phone's (Gastos: a card on the phone, a root there). */
+  computerKind: 'root' | 'card' | 'form' | null
   parent: string | null
   /** The parent on a computer, when it is not the phone's. */
   computerParent: string | null
@@ -250,11 +302,21 @@ export function parseRouteRegistry(raw: unknown): readonly RouteRegistryEntry[] 
     if (kind !== 'root' && kind !== 'card' && kind !== 'form') {
       throw new Error(`${path}: kind is not root, card or form`)
     }
+    const computerKind = row['computer_kind']
+    if (
+      computerKind !== undefined &&
+      computerKind !== 'root' &&
+      computerKind !== 'card' &&
+      computerKind !== 'form'
+    ) {
+      throw new Error(`${path}: computer_kind is not root, card or form`)
+    }
     const parent = optionalText(row, 'parent', path)
     if (kind !== 'root' && parent === null) throw new Error(`${path}: a ${kind} needs a parent`)
     return {
       path,
       kind,
+      computerKind: computerKind ?? null,
       parent,
       computerParent: optionalText(row, 'computer_parent', path),
       archivedParent: optionalText(row, 'archived_parent', path),

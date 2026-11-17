@@ -57,8 +57,20 @@ describe('parseOffenders', () => {
   })
 
   test('refuses an issue outside the fixed area map', () => {
-    expect(AREA_ISSUES).toEqual([45, 46, 47, 48, 49, 59, 60, 78])
+    expect(AREA_ISSUES).toEqual([45, 46, 47, 48, 49, 59, 60, 78, 600])
     expect(() => parseOffenders(filesWith('touch-target', [entry({ issue: 12 })]))).toThrow(/area map/)
+  })
+
+  test('takes a chrome entry citing the chrome follow-up #600, and refuses one citing a number beside it', () => {
+    const chrome = { rule: 'chrome-at-load', target: 'chrome:bar' }
+    const parsed = parseOffenders(filesWith('chrome-at-load', [entry({ ...chrome, issue: 600 })]))
+    // An entry with no sizes or themes lists every cell: all of them cite #600.
+    const cells = parsed.filter((offender) => offender.rule === 'chrome-at-load')
+    expect(cells).not.toHaveLength(0)
+    expect(new Set(cells.map((offender) => offender.issue))).toEqual(new Set([600]))
+    expect(() => parseOffenders(filesWith('chrome-at-load', [entry({ ...chrome, issue: 601 })]))).toThrow(
+      /#601 is not in the area map/,
+    )
   })
 
   test('refuses an unknown screen, rule, size or theme', () => {
@@ -189,10 +201,10 @@ describe('the offender files', () => {
 
 /**
  * The rows new to the screens registry whose real cells came in with the change that added
- * them (`docs/product/gate.md`, "A new registry row brings its cells"). Each states the
+ * them (`docs/product/gate.md`, "Una fila nueva del registro trae sus celdas"). Each states the
  * fault its entries observed. When an area issue removes a screen's last entry, its name goes.
  */
-const NEW_ROW_SCREENS = ['InicioChecklist', 'InicioImportado']
+const NEW_ROW_SCREENS: readonly string[] = []
 
 /** The cells of `screen` that state no fault. */
 function withoutReason(offenders: readonly Offender[], screen: string): Offender[] {

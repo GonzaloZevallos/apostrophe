@@ -9,7 +9,8 @@ Pinned ahead of `period_figures` and the route so the front (`analysis-front`) a
 backend (`results-backend`) build against the same frozen contract. Bare (ADR-0005):
 no length or pattern constraint, so a refusal is always the domain's, never pydantic's.
 
-Money is `int`. Quantity reuse `QuantityOut` (`app/products/adapters/schemas.py`) rather than
+Money is `MoneyOut`: the value in currency units, an integer on the wire while it is whole
+(docs/adr/0058). Quantity reuse `QuantityOut` (`app/products/adapters/schemas.py`) rather than
 a second float-serialising decimal. Percentages are `int | None`, never a float: this
 file answers results figures (CODING_STANDARDS.md's "no float ... in any results money,
 grams or percentage path"), it does not compute them.
@@ -18,9 +19,11 @@ grams or percentage path"), it does not compute them.
 from __future__ import annotations
 
 from datetime import date
+from decimal import Decimal
 
 from pydantic import BaseModel
 
+from app.money_schema import MoneyOut
 from app.products.adapters.schemas import QuantityOut
 from app.results.application.ports import DebtorRow, StockRow
 from app.results.application.read_panel import CostLineFigures, DebtsSummary, Panel, PeriodFigures
@@ -56,7 +59,7 @@ class PanelProductOut(BaseModel):
 class DebtorOut(BaseModel):
     customer_id: int
     name: str
-    balance: int
+    balance: MoneyOut
     owing_since: date
 
     @classmethod
@@ -64,13 +67,13 @@ class DebtorOut(BaseModel):
         return cls(
             customer_id=row.customer_id,
             name=row.name,
-            balance=row.balance,
+            balance=Decimal(row.balance),
             owing_since=row.owing_since,
         )
 
 
 class DebtsOut(BaseModel):
-    total_owed: int
+    total_owed: MoneyOut
     sales_owing_count: int
     oldest: date | None
     teaser: list[DebtorOut]
@@ -78,7 +81,7 @@ class DebtsOut(BaseModel):
     @classmethod
     def of(cls, debts: DebtsSummary) -> DebtsOut:
         return cls(
-            total_owed=debts.total_owed,
+            total_owed=Decimal(debts.total_owed),
             sales_owing_count=debts.sales_owing_count,
             oldest=debts.oldest,
             teaser=[DebtorOut.of(row) for row in debts.teaser],
@@ -90,12 +93,12 @@ class CostLineOut(BaseModel):
     exactly when the period has none of that line's records. `pending` is decided from
     that line's own pending grams (plan invariant); no grams cross the wire (PM)."""
 
-    amount: int
+    amount: MoneyOut
     pending: bool
 
     @classmethod
     def of(cls, line: CostLineFigures | None) -> CostLineOut | None:
-        return None if line is None else cls(amount=line.amount, pending=line.pending)
+        return None if line is None else cls(amount=Decimal(line.amount), pending=line.pending)
 
 
 class ReasonCostOut(BaseModel):
@@ -105,7 +108,7 @@ class ReasonCostOut(BaseModel):
 
     reason_id: int
     name: str
-    amount: int | None
+    amount: MoneyOut | None
     pending: bool
     pending_quantity: QuantityOut
 
@@ -114,7 +117,7 @@ class ReasonCostOut(BaseModel):
         return cls(
             reason_id=cost.reason_id,
             name=cost.name,
-            amount=cost.amount,
+            amount=None if cost.amount is None else Decimal(cost.amount),
             pending=cost.pending,
             pending_quantity=cost.pending_quantity.as_decimal(),
         )
@@ -127,40 +130,40 @@ def reason_costs(costs: tuple[ReasonCost, ...]) -> list[ReasonCostOut]:
 class PeriodOut(BaseModel):
     start: date
     end: date
-    sales: int
+    sales: MoneyOut
     sales_count: int
-    average_sale: int | None
+    average_sale: MoneyOut | None
     quantity_sold: QuantityOut
     quantity_gifted: QuantityOut
-    cost_of_goods: int
+    cost_of_goods: MoneyOut
     pending_cost: bool
     shortfall: CostLineOut | None
     withdrawals: list[ReasonCostOut]
-    expenses: int
-    purchases: int
-    profit: int
+    expenses: MoneyOut
+    purchases: MoneyOut
+    profit: MoneyOut
     profit_pending: bool
-    cash: int
+    cash: MoneyOut
 
     @classmethod
     def of(cls, figures: PeriodFigures) -> PeriodOut:
         return cls(
             start=figures.period.start,
             end=figures.period.end,
-            sales=figures.sales,
+            sales=Decimal(figures.sales),
             sales_count=figures.sales_count,
-            average_sale=figures.average_sale,
+            average_sale=(None if figures.average_sale is None else Decimal(figures.average_sale)),
             quantity_sold=figures.quantity_sold.as_decimal(),
             quantity_gifted=figures.quantity_gifted.as_decimal(),
-            cost_of_goods=figures.cost_of_goods,
+            cost_of_goods=Decimal(figures.cost_of_goods),
             pending_cost=figures.pending_cost,
             shortfall=CostLineOut.of(figures.shortfall),
             withdrawals=reason_costs(figures.withdrawals),
-            expenses=figures.expenses,
-            purchases=figures.purchases,
-            profit=figures.profit,
+            expenses=Decimal(figures.expenses),
+            purchases=Decimal(figures.purchases),
+            profit=Decimal(figures.profit),
             profit_pending=figures.profit_pending,
-            cash=figures.cash,
+            cash=Decimal(figures.cash),
         )
 
 
@@ -194,13 +197,13 @@ class MarginOut(BaseModel):
     is taken over are $0; `pending_quantity` is the sold-or-gifted grams behind it that are
     not costed yet."""
 
-    amount: int
+    amount: MoneyOut
     percent: int | None
     pending_quantity: QuantityOut
 
 
 class CostOut(BaseModel):
-    costed: int
+    costed: MoneyOut
     pending_quantity: QuantityOut
 
 
@@ -208,7 +211,7 @@ class AmountWithPendingOut(BaseModel):
     """A money figure (profit) together with the pending grams behind it, for one
     period."""
 
-    amount: int
+    amount: MoneyOut
     pending_quantity: QuantityOut
 
 
@@ -218,7 +221,7 @@ class RowCostOut(BaseModel):
     the domain's answer (`row_cost`) that every gram behind the line is pending, so the
     screen says "N g sin costo" and never "$ 0"."""
 
-    amount: int
+    amount: MoneyOut
     pending_quantity: QuantityOut
     all_pending: bool
 
@@ -226,7 +229,7 @@ class RowCostOut(BaseModel):
 class ProductRowOut(BaseModel):
     product_id: int
     name: str
-    sales_without_shipping: int
+    sales_without_shipping: MoneyOut
     share_percent: int | None
     quantity_sold: QuantityOut
     quantity_gifted: QuantityOut
@@ -238,8 +241,8 @@ class AnalysisMonthOut(BaseModel):
     month: str
     previous: str | None
     next: str | None
-    sales: int
-    sales_without_shipping: int
+    sales: MoneyOut
+    sales_without_shipping: MoneyOut
     quantity_sold: QuantityOut
     quantity_gifted: QuantityOut
     average_margin: MarginOut
@@ -251,14 +254,14 @@ class AnalysisMonthOut(BaseModel):
 class WeekOut(BaseModel):
     first_day: date
     last_day: date
-    sales: int
+    sales: MoneyOut
     quantity: QuantityOut
     cost_of_goods: RowCostOut
     shortfall: RowCostOut | None
     withdrawals: list[ReasonCostOut]
-    expenses: int
+    expenses: MoneyOut
     profit: AmountWithPendingOut
-    cash: int
+    cash: MoneyOut
     best: bool
 
 
@@ -266,28 +269,28 @@ class MonthRowOut(BaseModel):
     month: str
     first_day: date
     last_day: date
-    sales: int
+    sales: MoneyOut
     quantity: QuantityOut
     cost_of_goods: RowCostOut
     shortfall: RowCostOut | None
     withdrawals: list[ReasonCostOut]
-    expenses: int
+    expenses: MoneyOut
     profit: AmountWithPendingOut
-    cash: int
+    cash: MoneyOut
 
 
 class WeekdayOut(BaseModel):
     weekday: int
-    sales: int
+    sales: MoneyOut
     count: int
     best: bool
 
 
 class SinceFirstRecordOut(BaseModel):
-    sales: int
-    expenses: int
+    sales: MoneyOut
+    expenses: MoneyOut
     profit: AmountWithPendingOut
-    cash: int
+    cash: MoneyOut
     shortfall: RowCostOut | None
     withdrawals: list[ReasonCostOut]
 
@@ -295,7 +298,7 @@ class SinceFirstRecordOut(BaseModel):
 class ExpenseCategoryTotalOut(BaseModel):
     category_id: int
     name: str
-    total: int
+    total: MoneyOut
 
 
 class ExpenseBreakdownOut(BaseModel):
@@ -303,8 +306,8 @@ class ExpenseBreakdownOut(BaseModel):
     `purchases` is always present, $0 included, and never counted inside `total`."""
 
     categories: list[ExpenseCategoryTotalOut]
-    total: int
-    purchases: int
+    total: MoneyOut
+    purchases: MoneyOut
 
 
 class AnalysisOut(BaseModel):

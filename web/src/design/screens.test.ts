@@ -7,6 +7,8 @@ import {
   assertScreens,
   assertSelectedAccounts,
   assertSelectedNeeds,
+  captureSelection,
+  screenImageRows,
   sectionOccurrences,
 } from '../../../scripts/design/screens.mjs'
 import { ROUTE_REGISTRY } from '../mobile-standard/registry'
@@ -14,6 +16,12 @@ import { COMPUTER_MIN_WIDTH } from '../shell/useViewport'
 import screens from '../../../scripts/design/screens.json'
 import { TEXT_SCALE } from '../../../scripts/design/textScale.mjs'
 import { textsOf } from './copyTexts'
+import { formatDateShort } from '../format/dates'
+import { formatGrams, formatQuantity, moneyFormatter } from '../format/money'
+import { isKeyShaped } from '../i18n/keyShape'
+import type { Bundle } from '../i18n/resolve'
+import { isConvertedRow, rowProblems } from '../i18n/step'
+import { loadBundle } from '../../scripts/i18n/loadBundle'
 
 type CopyFile = Record<string, unknown>
 
@@ -21,42 +29,99 @@ const copyFiles = import.meta.glob<CopyFile>(['/src/copy/*.ts', '!/src/copy/limi
   eager: true,
 })
 
-// The sample's own names (scripts/design/sample_app.py), seller data a step may name.
-const SAMPLE_NAMES = ['Blue Dream', 'Gelato']
+// The sample's own names (scripts/design/sample_app.py), seller data a step may name. 'Packaging' is the
+// expense category the sample makes (sample_app.py, `category("Packaging")`), which VentaVuelve picks.
+const SAMPLE_NAMES = ['Blue Dream', 'Gelato', 'Sir Jack', 'Packaging']
 const HOLE = '\u0001'
+/** Stands for the business's currency symbol, so the check names no symbol of its own: a Money format
+ * value is built with it and `moneyFormatter` writes the figure around it. */
+const MONEY_SYMBOL_SLOT = '\u0002'
 
 const escapeRegExp = (text: string): string => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
-/** The texts of the copy a step may name: each value as a pattern, a hole being any text. */
-function copyPatterns(modules: Record<string, CopyFile>): RegExp[] {
+/** A text the front's formatters wrote, as the shape of every text they write alike: its digit runs may be
+ * any digits, and the symbol slot any run of signs that are no letter, digit, space or separator (a word is no symbol). */
+function shapeOf(written: string): string {
+  return escapeRegExp(written).replace(/\d+/g, '\\d+').replaceAll(MONEY_SYMBOL_SLOT, '[^\\s\\p{L}\\p{N}_.,-]+')
+}
+
+const shapesOf = (writings: string[]): string[] => [...new Set(writings.map(shapeOf))]
+
+/** What a hole of a copy template may hold: the only texts a step can name through one. Every part says
+ * where it comes from; none is added to make a step pass. */
+const HOLE_VOCABULARY: readonly string[] = [
+  // The sample's own names (SAMPLE_NAMES above).
+  ...SAMPLE_NAMES.map(escapeRegExp),
+  // A `{word}` placeholder the registry leaves unresolved, as `{email}` or `{customer_id}` (assertScreens reads the same shape).
+  '\\{\\w+\\}',
+  // A money figure, written by `moneyFormatter` (format/money.ts) for a Money format value, at 0 and 2 decimals,
+  // below and above a thousand, in the app's form and the attached one.
+  ...shapesOf(
+    [0, 2].flatMap((decimals) => {
+      const money = moneyFormatter({ symbol: MONEY_SYMBOL_SLOT, decimals })
+      return [5, 12345].flatMap((amount) => [money.money(amount), money.attached(amount)])
+    }),
+  ),
+  // Grams, written by `formatGrams` (format/money.ts): whole, with decimals, with a thousands dot.
+  ...shapesOf([5, 3.5, 1234, 1234.25].map((grams) => formatGrams(grams))),
+  // A count or a quantity, written by `formatQuantity` (format/money.ts) from whole hundredths: a line number, a unit count.
+  ...shapesOf([100, 350, 123450].map((hundredths) => formatQuantity(hundredths))),
+  // A `dd/mm` date, written by `formatDateShort` (format/dates.ts).
+  ...shapesOf([formatDateShort('2026-10-09')]),
+]
+
+const HOLE_PATTERN = `(?:${HOLE_VOCABULARY.join('|')})`
+
+const templateOf = (text: string): RegExp => new RegExp(`^${text.split(HOLE).map(escapeRegExp).join(HOLE_PATTERN)}$`, 'u')
+
+/** The texts of the copy a step may name: each value of the copy files as a pattern, a hole being a text of
+ * `HOLE_VOCABULARY`, and each text of the English bundle (`{{name}}` being a hole), where the copy moves to. */
+function copyPatterns(modules: Record<string, CopyFile>, bundle: Bundle): RegExp[] {
   const patterns: RegExp[] = []
   for (const [path, mod] of Object.entries(modules)) {
-    for (const text of textsOf(path, mod, HOLE).values()) {
-      patterns.push(new RegExp(`^${text.split(HOLE).map(escapeRegExp).join('.+')}$`))
-    }
+    for (const text of textsOf(path, mod, HOLE).values()) patterns.push(templateOf(text))
   }
+  const walk = (node: unknown): void => {
+    if (typeof node === 'string') patterns.push(templateOf(node.replace(/\{\{\s*\w+\s*\}\}/g, HOLE)))
+    else if (typeof node === 'object' && node !== null) Object.values(node).forEach(walk)
+  }
+  walk(bundle)
   return patterns
 }
 
 type StepRow = { screen: string; steps?: Record<string, unknown>[] }
 
+const en = loadBundle('en')
+
 /** Invariant 12: the string a click, press, wait or fill.label of a registry row names
- * is a copy value or a sample name. (`section` names a block of the Spanish drawing in
- * pantallas/, which stays as drawn, so it is judged against that file by `assertScreens`.) */
-function stepTextProblems(rows: StepRow[], modules: Record<string, CopyFile>): string[] {
-  const patterns = copyPatterns(modules)
+ * is a copy value or a sample name; a converted row (one that names a key) is judged by
+ * `rowProblems` against the English bundle instead. (`section` names a block of the Spanish drawing in
+ * pantallas/, which stays as drawn, so it is judged against that file by `assertScreens`.)
+ *
+ * What it proves: each text a step names is one the copy can produce (a hole taking only `HOLE_VOCABULARY`),
+ * or a sample name. What it does not prove: that the row's own screen shows that text; the capture does.
+ * A problem names the row, the step index and kind; it prints the text of a click, press or wait only, never
+ * the label or the value of a fill step. */
+function stepTextProblems(rows: StepRow[], modules: Record<string, CopyFile>, bundle: Bundle = en): string[] {
+  const patterns = copyPatterns(modules, bundle)
   const known = (text: string): boolean => SAMPLE_NAMES.includes(text) || patterns.some((p) => p.test(text))
   const problems: string[] = []
   for (const row of rows) {
-    for (const step of row.steps ?? []) {
+    if (isConvertedRow(row)) {
+      problems.push(...rowProblems(row, en))
+      continue
+    }
+    ;(row.steps ?? []).forEach((step, index) => {
       const named: [string, unknown][] = []
       for (const kind of ['click', 'press', 'wait']) if (kind in step) named.push([kind, step[kind]])
       const fill = step.fill
       if (typeof fill === 'object' && fill !== null && 'label' in fill) named.push(['fill.label', fill.label])
       for (const [kind, text] of named) {
-        if (typeof text !== 'string' || !known(text)) problems.push(`${row.screen}: ${kind} "${String(text)}" is no copy value`)
+        if (typeof text === 'string' && known(text)) continue
+        const shown = typeof text === 'string' && kind !== 'fill.label' ? ` "${text}"` : ''
+        problems.push(`${row.screen}: step ${index} ${kind}${shown} is no copy value`)
       }
-    }
+    })
   }
   return problems
 }
@@ -361,6 +426,9 @@ describe('assertScreens', () => {
 })
 
 describe('the registry step rule', () => {
+  const one = (steps: Record<string, unknown>[], copy: CopyFile): string[] => stepTextProblems([{ screen: 'A', steps }], { '/src/copy/a.ts': copy }, {})
+  const slotted = moneyFormatter({ symbol: MONEY_SYMBOL_SLOT, decimals: 2 })
+
   it('accepts the real screens.json: every step names a copy value or a sample name', () => {
     expect(stepTextProblems(screens.screens as StepRow[], copyFiles)).toEqual([])
   })
@@ -370,18 +438,100 @@ describe('the registry step rule', () => {
       { screen: 'A', steps: [{ click: 'Guardar cambios' }, { press: 'Blue Dream' }, { wait: 'Cerrar el día' }] },
       { screen: 'B', steps: [{ fill: { label: 'Nombre raro', value: 'x' } }, { click: 'Save' }] },
     ]
-    expect(stepTextProblems(rows, { '/src/copy/a.ts': { A: { save: 'Save' } } })).toEqual([
-      'A: click "Guardar cambios" is no copy value',
-      'A: wait "Cerrar el día" is no copy value',
-      'B: fill.label "Nombre raro" is no copy value',
+    expect(stepTextProblems(rows, { '/src/copy/a.ts': { A: { save: 'Save' } } }, {})).toEqual([
+      'A: step 0 click "Guardar cambios" is no copy value',
+      'A: step 2 wait "Cerrar el día" is no copy value',
+      'B: step 0 fill.label is no copy value',
     ])
   })
 
-  it('reads a function value as a pattern, so a name in a template is accepted', () => {
-    const rows: StepRow[] = [{ screen: 'A', steps: [{ wait: 'Variety: Gelato' }, { wait: 'Variety' }] }]
-    expect(stepTextProblems(rows, { '/src/copy/a.ts': { A: { of: (name: string) => `Variety: ${name}` } } })).toEqual([
-      'A: wait "Variety" is no copy value',
+  it('names the step kind and index, and prints the text only for a click, a press or a wait', () => {
+    const problems = stepTextProblems(
+      [{ screen: 'R', steps: [{ click: 'Save' }, { press: 'Nope press' }, { fill: { label: 'Secret label', value: 'secret-value' } }, { wait: 'Nope wait' }] }],
+      { '/src/copy/a.ts': { A: { save: 'Save' } } },
+      {},
+    )
+    expect(problems).toEqual([
+      'R: step 1 press "Nope press" is no copy value',
+      'R: step 2 fill.label is no copy value',
+      'R: step 3 wait "Nope wait" is no copy value',
     ])
+    expect(problems.join('\n')).not.toMatch(/Secret label|secret-value/)
+  })
+
+  it('judges a converted row by its keys: a row of resolving keys passes', () => {
+    const rows: StepRow[] = [
+      { screen: 'A', steps: [{ click: 'common:close' }, { press: 'common:home' }, { fill: { label: 'common:variety', value: 'Blue Dream' } }, { wait: 'common:done' }] },
+    ]
+    expect(stepTextProblems(rows, {})).toEqual([])
+  })
+
+  it('refuses a mixed row and a typo key, naming the screen, step and field and no text', () => {
+    const rows: StepRow[] = [
+      { screen: 'A', steps: [{ click: 'common:close' }, { press: 'Save' }] },
+      { screen: 'B', steps: [{ wait: 'comon:close' }, { click: 'common:home' }] },
+    ]
+    expect(stepTextProblems(rows, { '/src/copy/a.ts': { A: { save: 'Save' } } })).toEqual([
+      'A: step 1 press is not a resolving key',
+      'B: step 0 wait is not a resolving key',
+    ])
+  })
+
+  describe('a hole of a template takes a sample name, a placeholder, a money figure, grams or a date, never words', () => {
+    it.each([
+      ['a literal prefix', (name: string) => `Product: ${name}`, 'Product: Gelato', 'Product: the new one'],
+      ['a literal suffix', (n: string) => `${n} sales`, '{count} sales', 'many sales'],
+      ['a hole in the middle', (x: string) => `Delete ${x}?`, 'Delete Blue Dream?', 'Delete the sale?'],
+      ['holes only', (a: string) => a, 'Gelato', 'Go on to the setup'],
+    ])('%s', (_shape, template, accepted, refused) => {
+      expect(one([{ wait: accepted }], { T: template })).toEqual([])
+      expect(one([{ wait: refused }], { T: template })).toEqual([`A: step 0 wait "${refused}" is no copy value`])
+    })
+
+    it('refuses the text a free hole used to accept: a retired notice against a template made of one hole', () => {
+      const copy = { settings: { languageName: (name: string) => name } }
+      expect(one([{ click: 'Go on to the setup' }], copy)).toEqual(['A: step 0 click "Go on to the setup" is no copy value'])
+    })
+
+    it('takes a money figure the formatter writes, with a symbol and with none attached, and refuses words in its place', () => {
+      const copy = { total: (x: string) => `Total ${x}` }
+      expect(one([{ wait: `Total ${slotted.money(12500)}` }, { wait: `Total ${slotted.attached(5)}` }], copy)).toEqual([])
+      expect(one([{ wait: 'Total a lot' }], copy)).toEqual(['A: step 0 wait "Total a lot" is no copy value'])
+      expect(one([{ wait: 'Total Go 5' }, { wait: 'Total Gelato5' }, { wait: 'Total ñandú 5' }], copy)).toEqual([
+        'A: step 0 wait "Total Go 5" is no copy value',
+        'A: step 1 wait "Total Gelato5" is no copy value',
+        'A: step 2 wait "Total ñandú 5" is no copy value',
+      ])
+      expect(one([{ wait: 'Setup 5' }, { wait: 'Setup 12.345' }], { name: (x: string) => x })).toEqual([
+        'A: step 0 wait "Setup 5" is no copy value',
+        'A: step 1 wait "Setup 12.345" is no copy value',
+      ])
+    })
+
+    it('takes grams and a dd/mm date in the front\'s own shapes, and refuses a unit alone or a year', () => {
+      const copy = { amount: (x: string) => `Left: ${x}`, since: (x: string) => `Since ${x}` }
+      expect(one([{ wait: `Left: ${formatGrams(3.5)}` }, { wait: `Left: ${formatGrams(1234)}` }, { wait: `Since ${formatDateShort('2026-10-09')}` }], copy)).toEqual([])
+      expect(one([{ wait: 'Left: g' }, { wait: 'Since 09/10/2026' }], copy)).toEqual([
+        'A: step 0 wait "Left: g" is no copy value',
+        'A: step 1 wait "Since 09/10/2026" is no copy value',
+      ])
+    })
+
+    it('takes an unresolved {placeholder} by its shape and refuses a brace with words in it', () => {
+      const copy = { hi: (x: string) => `Hi ${x}` }
+      expect(one([{ wait: 'Hi {name}' }], copy)).toEqual([])
+      expect(one([{ wait: 'Hi {the name}' }], copy)).toEqual(['A: step 0 wait "Hi {the name}" is no copy value'])
+    })
+  })
+})
+
+describe('the real screens.json and the sample names carry no key yet', () => {
+  it('converts no row', () => {
+    expect((screens.screens as StepRow[]).filter((row) => isConvertedRow(row)).map((row) => row.screen)).toEqual([])
+  })
+
+  it('has no key-shaped sample name', () => {
+    expect(SAMPLE_NAMES.filter((name) => isKeyShaped(name))).toEqual([])
   })
 })
 
@@ -514,12 +664,13 @@ describe('the Inicio rows of the real screens.json', () => {
   }
   const clicks = (r: Row): unknown[] => (r.steps ?? []).flatMap((step) => ('click' in step ? [step.click] : []))
   // GH-526: the 2026-10-29 drawings of Inicio and InicioCompu draw one frame, Hoy, so no Inicio row crops to
-  // a section any more: `section` is absent on every row of both drawings.
+  // a section any more: `section` is absent on every row of both drawings. GH-731 adds the one exception: the phone
+  // rows InicioHoy and InicioOscuro crop to the segment's own tablist, found by its label 'Análisis' (once each).
 
   it('captures Hoy, the tab Inicio opens on, with no step, on phone and computer', () => {
     expect(clicks(row('InicioHoy'))).toEqual([])
     expect(row('InicioHoy')).toMatchObject({ design: 'Inicio' })
-    expect(row('InicioHoy').section).toBeUndefined()
+    expect(row('InicioHoy').section).toBe('Análisis')
     expect(clicks(row('InicioHoyCompu'))).toEqual([])
     expect(row('InicioHoyCompu')).toMatchObject({
       design: 'InicioCompu',
@@ -551,6 +702,7 @@ describe('the Inicio rows of the real screens.json', () => {
   it('captures the dark Hoy against the dark drawing, which draws Hoy alone', () => {
     expect(clicks(row('InicioOscuro'))).toEqual([])
     expect(row('InicioOscuro').tema).toBe('oscuro')
+    expect(row('InicioOscuro').section).toBe('Análisis')
   })
 
   // GH-526: the 2026-10-29 Inicio and InicioCompu draw one frame, Hoy: there is no Semana or Mes block, so the
@@ -1045,60 +1197,28 @@ describe('assertSelectedAccounts', () => {
       ...Object.fromEntries(open.map((name) => [name, 'open' as const])),
       ...Object.fromEntries(ended.map((name) => [name, 'ended' as const])),
     }
-    // GH-274, deliberate: the original two-kind map cannot hold, the registry now names more accounts.
     // `assertSelectedAccounts` throws, and this fails, when a registry row names an account the sample
-    // declares under none of the five kinds.
-    const all: Record<string, 'open' | 'ended' | 'pre_onboarding' | 'imported' | 'onboarding'> = {
-      ...real,
-      ...Object.fromEntries(namesOf('PRE_ONBOARDING_ACCOUNTS').map((name) => [name, 'pre_onboarding' as const])),
-      ...Object.fromEntries(namesOf('IMPORTED_ACCOUNTS').map((name) => [name, 'imported' as const])),
-      ...Object.fromEntries(namesOf('ONBOARDING_FRAME_ACCOUNTS').map((name) => [name, 'onboarding' as const])),
-    }
-    expect(() => assertSelectedAccounts(screens.screens, all)).not.toThrow()
+    // declares under neither kind.
+    expect(() => assertSelectedAccounts(screens.screens, real)).not.toThrow()
   })
 
-  it('puts the four Inicio rows on an ended account and each first-run frame on its own account', () => {
+  it('puts the four Inicio rows on an ended account', () => {
     const accountOf = (key: string) => (screens.screens.find((s) => s.screen === key) as { account?: string }).account
     for (const key of ['InicioHoy', 'InicioOscuro', 'InicioHoyCompu', 'InicioHoyCompuOscuro']) {
       expect(accountOf(key), key).toBe('inicio')
     }
-    const frames: Record<string, string[]> = {
-      primera_vez: ['InicioPrimeraVez', 'InicioPrimeraVezCompu', 'InicioPrimeraVezOscuro'],
-      en_curso: ['InicioOnboardingEnCurso', 'InicioOnboardingEnCursoCompu', 'InicioOnboardingEnCursoOscuro'],
-      completo: ['InicioOnboardingCompleto', 'InicioOnboardingCompletoCompu', 'InicioOnboardingCompletoOscuro'],
-    }
-    for (const [account, keys] of Object.entries(frames)) {
-      for (const key of keys) expect(accountOf(key), key).toBe(account)
-    }
   })
 
-  it('names a section and an account on every row drawn against a first-run file, and refuses one that does not', () => {
-    const firstRunRows = (rows: { screen: string; design?: string; section?: string; account?: string }[]) =>
-      rows.filter((s) => ['InicioPrimeraVez', 'InicioPrimeraVezCompu'].includes(s.design ?? s.screen))
-    const missing = (rows: { screen: string; design?: string; section?: string; account?: string }[]) =>
-      firstRunRows(rows)
-        .filter((s) => !s.section || !s.account)
-        .map((s) => s.screen)
-    const rows = screens.screens as { screen: string; design?: string; section?: string; account?: string }[]
-    expect(firstRunRows(rows).map((s) => s.screen)).toHaveLength(9)
-    expect(missing(rows)).toEqual([])
-    // the check itself: a row with no account, or no section, is caught.
+  it('names a section and an account on every row drawn against a multi-state file, and refuses one that does not', () => {
+    // The check itself: a row with no account, or no section, is caught (synthetic names, no drawing read).
+    const needsBoth = (rows: { screen: string; design?: string; section?: string; account?: string }[]) =>
+      rows.filter((s) => !s.section || !s.account).map((s) => s.screen)
     const broken = [
-      { screen: 'InicioPrimeraVez', section: 'x' },
-      { screen: 'InicioOnboardingEnCurso', design: 'InicioPrimeraVez', account: 'en_curso' },
+      { screen: 'Alfa', section: 'x' },
+      { screen: 'Beta', design: 'Alfa', account: 'una_cuenta' },
+      { screen: 'Gamma', design: 'Alfa', section: 'x', account: 'una_cuenta' },
     ]
-    expect(missing(broken)).toEqual(['InicioPrimeraVez', 'InicioOnboardingEnCurso'])
-  })
-
-  it('draws each Onboarding frame from its own block: the dark rows from the "· tema oscuro" one, the others not', () => {
-    const rows = screens.screens as { screen: string; section?: string; tema?: string }[]
-    for (const key of ['InicioOnboardingEnCurso', 'InicioOnboardingCompleto']) {
-      for (const suffix of ['', 'Compu', 'Oscuro']) {
-        const row = rows.find((s) => s.screen === key + suffix)
-        expect(row?.section?.endsWith('· tema oscuro'), key + suffix).toBe(suffix === 'Oscuro')
-        expect(row?.tema === 'oscuro', key + suffix).toBe(suffix === 'Oscuro')
-      }
-    }
+    expect(needsBoth(broken)).toEqual(['Alfa', 'Beta'])
   })
 })
 
@@ -1145,8 +1265,9 @@ describe('the customer dark twins of the real screens.json', () => {
     ['ClientesCompu', 'ClientesCompuOscuro'],
     ['ClienteFicha', 'ClienteFichaOscuro'],
     ['Cobro', 'CobroOscuro'],
+    ['CobroCompu', 'CobroCompuOscuro'],
   ] as const
-  const lightKept = [['CobroCompu', 'CobroCompuOscuro']] as const
+  const lightKept: readonly (readonly [string, string])[] = []
   const pairs = [...ownDark, ...lightKept]
   const entry = (key: string) => screens.screens.find((s) => s.screen === key)
 
@@ -1191,7 +1312,7 @@ describe('the customer dark twins of the real screens.json', () => {
   })
 })
 
-describe.each(['pre_onboarding', 'imported', 'onboarding'] as const)('the %s account kind (GH-274, GH-303)', (kind) => {
+describe.each(['ended'] as const)('the %s account kind (GH-274)', (kind) => {
   const accounts = { listo: {}, inicio: {}, capture: {} }
   const kinds = { listo: 'open', inicio: 'ended', capture: kind } as const
 
@@ -1250,50 +1371,93 @@ describe('the capture accounts of sample_app.py (GH-274)', () => {
     return declared.match(/"[^"]+"/g)?.map((name) => name.slice(1, -1)) ?? []
   }
 
-  it('declares the checklist and the imported accounts, apart from every other kind', () => {
-    const groups = [
-      'ONBOARDING_ACCOUNTS',
-      'ENDED_ONBOARDING_ACCOUNTS',
-      'PRE_ONBOARDING_ACCOUNTS',
-      'IMPORTED_ACCOUNTS',
-      'ONBOARDING_FRAME_ACCOUNTS',
-    ]
-    expect(namesOf('PRE_ONBOARDING_ACCOUNTS')).toEqual(['checklist', 'primera_vez'])
-    expect(namesOf('ONBOARDING_FRAME_ACCOUNTS')).toEqual(['en_curso', 'completo'])
-    expect(namesOf('IMPORTED_ACCOUNTS')).toEqual(['importada'])
+  it('declares the open and the ended accounts, apart from each other', () => {
+    const groups = ['ONBOARDING_ACCOUNTS', 'ENDED_ONBOARDING_ACCOUNTS']
+    expect(namesOf('ENDED_ONBOARDING_ACCOUNTS')).toEqual(['inicio'])
     const all = groups.flatMap(namesOf)
     expect(new Set(all).size).toBe(all.length)
   })
 
-  it('names each of them on exactly its three rows, each cropped to a label of its own drawing', () => {
-    const rows = screens.screens as { screen: string; account?: string; design?: string; section?: string }[]
-    const named = (account: string) => rows.filter((r) => r.account === account).map((r) => r.screen)
-    expect(named('checklist')).toEqual(['InicioChecklist', 'InicioChecklistCompu', 'InicioChecklistOscuro'])
-    expect(named('importada')).toEqual(['InicioImportado', 'InicioImportadoCompu', 'InicioImportadoOscuro'])
-    expect(named('primera_vez')).toEqual(['InicioPrimeraVez', 'InicioPrimeraVezCompu', 'InicioPrimeraVezOscuro'])
-    expect(named('en_curso')).toEqual(['InicioOnboardingEnCurso', 'InicioOnboardingEnCursoCompu', 'InicioOnboardingEnCursoOscuro'])
-    expect(named('completo')).toEqual(['InicioOnboardingCompleto', 'InicioOnboardingCompletoCompu', 'InicioOnboardingCompletoOscuro'])
-    for (const r of rows.filter((x) => ['checklist', 'importada', 'primera_vez', 'en_curso', 'completo'].includes(x.account ?? ''))) {
-      expect(typeof r.section, r.screen).toBe('string')
-    }
-  })
-
-  it('refuses a first-run row whose label is not in its drawing, or occurs twice', () => {
-    const row = { screen: 'InicioChecklist', route: 'ruta', account: 'checklist' }
+  it('refuses a row whose label is not in its drawing, or occurs twice', () => {
+    const row = { screen: 'Inicio', route: 'ruta' }
     expect(() => assertScreens([{ ...row, section: 'Una etiqueta que no está dibujada' }])).toThrow(
-      /^InicioChecklist: section "Una etiqueta que no está dibujada" is not in InicioChecklist\.dc\.html$/,
+      /^Inicio: section "Una etiqueta que no está dibujada" is not in Inicio\.dc\.html$/,
     )
     expect(() => assertScreens([{ screen: 'InicioHoyCompu', design: 'InicioCompu', route: 'ruta', section: 'Hoy' }])).toThrow(
       /InicioHoyCompu: section "Hoy" occurs \d+ times in InicioCompu\.dc\.html, expected exactly once/,
     )
   })
 
-  it('names none of them on a Listo entry of the real registry', () => {
-    const capture = [...namesOf('PRE_ONBOARDING_ACCOUNTS'), ...namesOf('IMPORTED_ACCOUNTS'), ...namesOf('ONBOARDING_FRAME_ACCOUNTS')]
-    const real = Object.fromEntries(capture.map((name) => [name, 'imported' as const]))
+  it('names no ended account on a Listo entry of the real registry', () => {
+    const capture = namesOf('ENDED_ONBOARDING_ACCOUNTS')
     const listo = screens.screens.filter((s) => (s as { design?: string }).design === 'OnboardingListo' || s.screen === 'OnboardingListo')
     expect(listo.length).toBeGreaterThan(0)
     for (const entry of listo) expect(capture).not.toContain((entry as { account?: string }).account)
-    expect(() => assertSelectedAccounts(screens.screens, { ...real, ...Object.fromEntries(namesOf('ONBOARDING_ACCOUNTS').map((n) => [n, 'open' as const])), inicio: 'ended' })).not.toThrow()
+  })
+})
+
+describe('the screen image rows', () => {
+  const names = (rows: ReadonlyArray<Record<string, unknown>>) => rows.map((r) => r.screen)
+
+  it('keeps a plain row, a row with a phone viewport and a row 899 wide, in file order', () => {
+    const rows = [
+      { screen: 'A', route: '/a' },
+      { screen: 'B', route: '/b', viewport: [390, 844] },
+      { screen: 'C', route: '/c', viewport: [899, 700] },
+    ]
+    expect(names(screenImageRows(rows))).toEqual(['A', 'B', 'C'])
+  })
+
+  it('leaves out a dark row, a computer row at width 900, a large-text row and a row with no route', () => {
+    const rows = [
+      { screen: 'Dark', route: '/a', tema: 'oscuro' },
+      { screen: 'Computer', route: '/b', viewport: [900, 700] },
+      { screen: 'Large', route: '/c', text_scale: 1.3 },
+      { screen: 'NoRoute', route: null },
+      { screen: 'Kept', route: '/d' },
+    ]
+    expect(names(screenImageRows(rows))).toEqual(['Kept'])
+  })
+
+  it('adds, to the image rows, every row they need transitively: an included row, a dark row, a computer row', () => {
+    const rows = [
+      { screen: 'Unrelated', route: null },
+      { screen: 'Computer', route: '/a', viewport: [1280, 920] },
+      { screen: 'Dark', route: '/a', tema: 'oscuro', needs: 'Computer' },
+      { screen: 'Phone', route: '/a', needs: 'Dark' },
+    ]
+    expect(names(screenImageRows(rows))).toEqual(['Phone'])
+    expect(names(captureSelection(rows))).toEqual(['Computer', 'Dark', 'Phone'])
+  })
+
+  it('lists a row needed by two image rows once, in its own place in the file', () => {
+    const rows = [
+      { screen: 'Base', route: null },
+      { screen: 'Left', route: '/l', needs: 'Base' },
+      { screen: 'Right', route: '/r', needs: 'Base' },
+    ]
+    expect(names(captureSelection(rows))).toEqual(['Base', 'Left', 'Right'])
+  })
+
+  it('refuses a name with a character outside letters, digits and hyphens, naming the row', () => {
+    expect(() => assertScreens([{ screen: 'Inicio Hoy' }])).toThrow(
+      /^Inicio Hoy: screen must match \^\[A-Za-z0-9-\]\+\$$/,
+    )
+    expect(() => assertScreens([{ screen: 'Inicio_Hoy' }])).toThrow(/Inicio_Hoy: screen must match/)
+  })
+
+  it('refuses two names equal ignoring case, naming both', () => {
+    expect(() => assertScreens([{ screen: 'Ventas' }, { screen: 'ventas' }])).toThrow(
+      /^ventas: screen is equal to Ventas ignoring case$/,
+    )
+  })
+
+  it('accepts the real screens.json whole, and its selection never needs a row it does not hold', () => {
+    const real = screens.screens as Array<Record<string, unknown>>
+    expect(() => assertScreens(real)).not.toThrow()
+    expect(() => assertSelectedNeeds(captureSelection(real), real)).not.toThrow()
+    const included = new Set(names(screenImageRows(real)))
+    expect(included.size).toBeGreaterThan(0)
+    expect(captureSelection(real).length).toBeGreaterThanOrEqual(included.size)
   })
 })

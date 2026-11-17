@@ -7,16 +7,19 @@
  * screen never shows more than one progressbar.
  */
 
+import { pickProduct, productField } from './lineProduct'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { CUSTOMERS, pathTo, SALE_NEW } from '../../routes'
 import NuevaVenta from './NuevaVenta'
+import { withPaymentMethods } from '../../test-payment-methods'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 const price = (list: number) => ({
   id: 9,
   effective_from: '2026-09-01',
@@ -26,7 +29,7 @@ const price = (list: number) => ({
 })
 const ROSA_TODAY = { id: 1, name: 'Rosa', current_price: price(1000) }
 const ROSA_YESTERDAY = { id: 1, name: 'Rosa', current_price: price(1500) }
-const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', vip: false }
+const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', phone_display: '+54 9 11 0000-0000', vip: false }
 
 function jsonResponse(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
@@ -46,14 +49,14 @@ beforeEach(() => {
   pending = new Map()
   vi.stubGlobal(
     'fetch',
-    vi.fn(
+    vi.fn(withPaymentMethods(
       (path: string) =>
         path === '/pricing-settings'
           ? Promise.resolve(jsonResponse({ is_bulk_pricing: true, is_vip_customers: true }))
           : new Promise<Response>((resolve) => {
               pending.set(path, (body) => resolve(jsonResponse(body)))
             }),
-    ),
+    )),
   )
 })
 
@@ -64,7 +67,7 @@ afterEach(() => {
 function renderForm() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(
-    [{ element: <Outlet context={ME} />, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
+    [{ element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
     { initialEntries: [SALE_NEW] },
   )
   render(
@@ -109,7 +112,7 @@ test('once the prices arrive the loading state gives way to the form', async () 
 test('a date change keeps what was typed and shows compact bars where prices were, then reprices', async () => {
   const user = userEvent.setup()
   await openAndPriceToday()
-  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2')
   await user.type(screen.getByLabelText('Shipping'), '00')
   expect(screen.getAllByText('$ 2.000').length).toBeGreaterThanOrEqual(1)
@@ -118,7 +121,7 @@ test('a date change keeps what was typed and shows compact bars where prices wer
 
   // Everything typed is still there, and the form never went blank.
   expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
-  expect(screen.getByLabelText('Line 1 variety')).toHaveValue('1')
+  expect(productField(1)).toHaveTextContent('Rosa')
   expect(screen.getByLabelText('Shipping')).toHaveValue('000')
   // Exactly one progressbar, the visually hidden announcer; the figures wait behind bars.
   expect(screen.getAllByRole('progressbar')).toHaveLength(1)
@@ -142,6 +145,25 @@ test('a date change keeps what was typed and shows compact bars where prices wer
   expect(document.querySelector('.cargando--compacto')).toBeNull()
   expect(screen.getByLabelText('Line 1 grams')).toHaveValue('2')
   expect(screen.getByRole('button', { name: 'Save sale' })).toBeEnabled()
+})
+
+test('the content area is busy while the first prices come, and a date change over the form never marks it', async () => {
+  renderForm()
+  const main = screen.getByRole('main')
+  expect(main).toHaveAttribute('aria-busy', 'true')
+
+  answer(`/api/products?on=2026-10-02`, [ROSA_TODAY])
+  await screen.findByRole('button', { name: 'Save sale' })
+  expect(main).not.toHaveAttribute('aria-busy')
+
+  fireEvent.change(screen.getByLabelText('Date'), { target: { value: '2026-10-01' } })
+  // The announcer is up (the refresh is under way), and the area already shown is not busy.
+  expect(screen.getAllByRole('progressbar')).toHaveLength(1)
+  expect(screen.getByRole('main')).not.toHaveAttribute('aria-busy')
+
+  answer(`/api/products?on=2026-10-01`, [ROSA_YESTERDAY])
+  await waitFor(() => expect(screen.queryByRole('progressbar')).not.toBeInTheDocument())
+  expect(screen.getByRole('main')).not.toHaveAttribute('aria-busy')
 })
 
 test('Pick a customer shows the loading state before its first answer', async () => {

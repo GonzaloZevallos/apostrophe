@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-02
+summary: "ningún dato del pedido aparece en respuestas de error ni en registros"
 ---
 
 # No request data in error answers or logs: 422 without `input`, no access log

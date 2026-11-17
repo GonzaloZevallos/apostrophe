@@ -47,7 +47,6 @@ classDiagram
   analyse --> ports
   assemble --> figures
   assemble --> schemas
-  costed_sales --> rounding
   period_figures --> costed_sales
   period_figures --> figures
   period_figures --> ledger
@@ -439,7 +438,7 @@ classDiagram
 ```mermaid
 classDiagram
   class AmountWithPendingOut {
-    amount : int
+    amount
     pending_quantity
   }
   class AnalysisMonthOut {
@@ -450,8 +449,8 @@ classDiagram
     products : list~ProductRowOut~
     quantity_gifted
     quantity_sold
-    sales : int
-    sales_without_shipping : int
+    sales
+    sales_without_shipping
     shortfall : RowCostOut #124; None
     withdrawals : list~ReasonCostOut~
   }
@@ -467,16 +466,16 @@ classDiagram
     weeks : list~WeekOut~
   }
   class CostLineOut {
-    amount : int
+    amount
     pending : bool
     of(line: CostLineFigures #124; None) CostLineOut #124; None
   }
   class CostOut {
-    costed : int
+    costed
     pending_quantity
   }
   class DebtorOut {
-    balance : int
+    balance
     customer_id : int
     name : str
     owing_since : date
@@ -486,34 +485,34 @@ classDiagram
     oldest : date #124; None
     sales_owing_count : int
     teaser : list~DebtorOut~
-    total_owed : int
+    total_owed
     of(debts: DebtsSummary) DebtsOut
   }
   class ExpenseBreakdownOut {
     categories : list~ExpenseCategoryTotalOut~
-    purchases : int
-    total : int
+    purchases
+    total
   }
   class ExpenseCategoryTotalOut {
     category_id : int
     name : str
-    total : int
+    total
   }
   class MarginOut {
-    amount : int
+    amount
     pending_quantity
     percent : int #124; None
   }
   class MonthRowOut {
-    cash : int
+    cash
     cost_of_goods
-    expenses : int
+    expenses
     first_day : date
     last_day : date
     month : str
     profit
     quantity
-    sales : int
+    sales
     shortfall : RowCostOut #124; None
     withdrawals : list~ReasonCostOut~
   }
@@ -534,18 +533,18 @@ classDiagram
     of_row(row: StockRow) PanelProductOut
   }
   class PeriodOut {
-    average_sale : int #124; None
-    cash : int
-    cost_of_goods : int
+    average_sale : MoneyOut #124; None
+    cash
+    cost_of_goods
     end : date
-    expenses : int
+    expenses
     pending_cost : bool
-    profit : int
+    profit
     profit_pending : bool
-    purchases : int
+    purchases
     quantity_gifted
     quantity_sold
-    sales : int
+    sales
     sales_count : int
     shortfall : CostLineOut #124; None
     start : date
@@ -564,11 +563,11 @@ classDiagram
     product_id : int
     quantity_gifted
     quantity_sold
-    sales_without_shipping : int
+    sales_without_shipping
     share_percent : int #124; None
   }
   class ReasonCostOut {
-    amount : int #124; None
+    amount : MoneyOut #124; None
     name : str
     pending : bool
     pending_quantity
@@ -577,34 +576,34 @@ classDiagram
   }
   class RowCostOut {
     all_pending : bool
-    amount : int
+    amount
     pending_quantity
   }
   class SinceFirstRecordOut {
-    cash : int
-    expenses : int
+    cash
+    expenses
     profit
-    sales : int
+    sales
     shortfall : RowCostOut #124; None
     withdrawals : list~ReasonCostOut~
   }
   class WeekOut {
     best : bool
-    cash : int
+    cash
     cost_of_goods
-    expenses : int
+    expenses
     first_day : date
     last_day : date
     profit
     quantity
-    sales : int
+    sales
     shortfall : RowCostOut #124; None
     withdrawals : list~ReasonCostOut~
   }
   class WeekdayOut {
     best : bool
     count : int
-    sales : int
+    sales
     weekday : int
   }
   AnalysisMonthOut --> MarginOut : average_margin

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from fractions import Fraction
 
-from app.results.domain.rounding import half_up
+from app.shared.money import round_half_up_to_units
 from app.shared.quantity import Quantity
 
 
@@ -20,4 +20,4 @@ def costed_sales(line_total: int, quantity: Quantity, pending: Quantity) -> int:
         return line_total
     if costed_hundredths == 0:
         return 0
-    return half_up(Fraction(line_total * costed_hundredths, quantity.hundredths))
+    return round_half_up_to_units(Fraction(line_total * costed_hundredths, quantity.hundredths))

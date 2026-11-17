@@ -16,10 +16,10 @@ drawn, across however many draws it takes, always sums to exactly its own cost.
 
 from __future__ import annotations
 
-import math
 from dataclasses import dataclass
 from fractions import Fraction
 
+from app.shared.money import round_half_up_to_units
 from app.shared.quantity import Quantity
 from app.stock.domain.lot_order import Draw, Lot
 
@@ -45,11 +45,6 @@ class DrawCost:
     costed: int | None
     pending: Quantity
     lot_draws: tuple[LotDraw, ...]
-
-
-def _half_up(amount: Fraction) -> int:
-    """`floor(amount + 1/2)`, exact over `Fraction` — no float anywhere."""
-    return math.floor(amount + Fraction(1, 2))
 
 
 def allocate(lots: list[Lot], draws: list[Draw]) -> list[DrawCost]:
@@ -86,7 +81,7 @@ def allocate(lots: list[Lot], draws: list[Draw]) -> list[DrawCost]:
                 lot_index += 1
                 drawn_from_lot = 0
 
-        rounded = _half_up(cumulative_cost)
+        rounded = round_half_up_to_units(cumulative_cost)
         costed = rounded - previous_rounded if lot_draws else None
         previous_rounded = rounded
         results.append(DrawCost(costed, Quantity(remaining), tuple(lot_draws)))

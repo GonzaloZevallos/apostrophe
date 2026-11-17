@@ -2,7 +2,7 @@
  * "Registrar cobro" (`Cobro`, `payments.md`): the form, drawn inside `CobroFrame` by its host
  * `CobroRoute` (`Cobro.dc.html` on a phone, `CobroCompu.dc.html` on a computer). "All: $ X"
  * fills the amount with the customer's own `balance` (never typed in by the seller for that
- * case); the date defaults to today; Cash · Transfer is required. The host owns how it
+ * case); the date defaults to today; the Payment method (a Selector, no default) is required. The host owns how it
  * is left (the leave guard, Escape, the backdrop, where "Cerrar" goes): this form only says
  * through `onDone`, `onCancel`, `onGone`, `onDirtyChange` and `onSendingChange` what happened.
  *
@@ -20,9 +20,10 @@
  * through `refusals.ts`'s contract-backed `RefusalCode`.
  */
 
-import { type FormEvent, type RefObject, useEffect, useId, useLayoutEffect, useState } from 'react'
+import { type FormEvent, type RefObject, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AMOUNT_REFUSAL_CODE, tooManyDecimalsMessage } from '../../api/amountRefusal'
 import { ApiError, NetworkError } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
 import {
@@ -35,13 +36,21 @@ import {
 import Boton from '../../components/Boton'
 import { SheetActions } from '../../components/Sheet'
 import { useViewport } from '../../shell/useViewport'
-import SegmentedChoice from '../../components/SegmentedChoice'
+import FieldRefusal from '../../components/FieldRefusal'
+import Selector from '../../components/Selector'
 import SinConexion from '../../components/SinConexion'
 import { useFlash } from '../../flash/useFlash'
 import { chipDate, formatDateShort } from '../../format/dates'
-import { formatMoney } from '../../format/money'
-import { readMoneyInput } from '../../format/parse'
+import type { MoneyFormat } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
+import { formatMoneyInput, moneyInputMode, parseMoneyInput, readMoneyInput } from '../../format/parse'
 import { GENERIC_REFUSAL } from './ClienteForm'
+import {
+  paymentMethodName,
+  paymentMethodOf,
+  paymentMethodValue,
+  usePaymentMethodOptions,
+} from '../../sales/paymentMethods'
 import { COMMON_TEXT } from '../../copy/common'
 import { PAYMENTS_TEXT } from '../../copy/payments'
 
@@ -92,12 +101,12 @@ const AMOUNT_MESSAGES: Partial<Record<PaymentRefusalCode, string>> = {
   'payment.above_balance': PAYMENTS_TEXT.amountOverBalance,
   'payment.amount_invalid': PAYMENTS_TEXT.enterValidAmount,
 }
-const METHOD_REQUIRED_MESSAGE = PAYMENTS_TEXT.chooseCashOrTransfer
 
 /** `code` comes off the wire as a plain `string` (`ApiError.code`): this only
  * narrows it enough to index `AMOUNT_MESSAGES` safely, never asserting it is a
  * `payment.*` code the backend actually answers. */
-function amountMessage(code: string): string | undefined {
+function amountMessage(code: string, format: MoneyFormat): string | undefined {
+  if (code === AMOUNT_REFUSAL_CODE) return tooManyDecimalsMessage(format)
   return Object.prototype.hasOwnProperty.call(AMOUNT_MESSAGES, code)
     ? AMOUNT_MESSAGES[code as PaymentRefusalCode]
     : undefined
@@ -120,16 +129,24 @@ export default function Cobro({
   onSendingChange,
 }: CobroProps) {
   const { t } = useTranslation()
+  const money = useMoney()
   // Only the phone standard asks for `autocomplete`; the computer form's DOM stays as it was.
   const phoneAutoComplete = useViewport() === 'phone' ? 'off' : undefined
   const balance = customer.balance
-  // The number the API receives: the field's text is only how it is shown (`formatMoney`).
+  // The number the API receives: the field's text is only how it is shown (`money.money`).
   const [amount, setAmount] = useState<number | null>(balance)
+  // What was typed, while the business keeps decimals: there the field shows the text as typed (and
+  // as `formatMoneyInput` writes it on leaving it), not a figure re-formatted on every key.
+  const [typed, setTyped] = useState<string | null>(null)
+  const { decimals } = money.format
   const [date, setDate] = useState(today)
   const [method, setMethod] = useState<PaymentMethod | null>(null)
   const [amountError, setAmountError] = useState<string | null>(null)
   const [dateError, setDateError] = useState<string | null>(null)
-  const [methodError, setMethodError] = useState<string | null>(null)
+  const [methodRefused, setMethodRefused] = useState(false)
+  const [methodGone, setMethodGone] = useState<string | null>(null)
+  const methodField = useRef<HTMLButtonElement>(null)
+  const methodOptions = usePaymentMethodOptions()
   const [offline, setOffline] = useState(false)
   const queryClient = useQueryClient()
   const flash = useFlash()
@@ -143,7 +160,14 @@ export default function Cobro({
   // shows the choice: a passive effect leaves a window in which a Back leaves unasked.
   useLayoutEffect(() => onDirtyChange(dirty), [dirty, onDirtyChange])
 
-  const previewAmount = amount !== null && Number.isSafeInteger(amount) && amount > 0 ? amount : null
+  const previewAmount =
+    amount !== null && Number.isSafeInteger(Math.round(amount * 10 ** decimals)) && amount > 0 ? amount : null
+  const shownAmount =
+    decimals === 0
+      ? amount === null
+        ? ''
+        : money.money(amount)
+      : (typed ?? (amount === null ? '' : formatMoneyInput(amount, money.format)))
 
   // Debounced 150 ms behind the amount/date the seller is typing (same delay as
   // `Clientes`' search box): the preview's own query key only moves once typing
@@ -175,22 +199,28 @@ export default function Cobro({
     event.preventDefault()
     setAmountError(null)
     setDateError(null)
-    setMethodError(null)
+    setMethodRefused(false)
     setOffline(false)
     if (previewAmount === null) {
-      setAmountError(PAYMENTS_TEXT.enterValidAmount)
+      const refused = typed === null ? undefined : parseMoneyInput(typed, money.format)
+      setAmountError(
+        refused?.ok === false && refused.tooManyDecimals
+          ? tooManyDecimalsMessage(money.format)
+          : PAYMENTS_TEXT.enterValidAmount,
+      )
       return
     }
     if (method === null) {
-      setMethodError(METHOD_REQUIRED_MESSAGE)
+      setMethodRefused(true)
+      methodField.current?.focus()
       return
     }
     try {
-      const recorded = await record.mutateAsync({ paid_on: date, amount: previewAmount, method })
+      const recorded = await record.mutateAsync({ paid_on: date, amount: previewAmount, payment_method_id: method })
       invalidateResource(queryClient, 'payments')
       flash.armAfterLeaving(
         recorded.after.standing === 'owes'
-          ? PAYMENTS_TEXT.savedStillOwing(formatMoney(recorded.after.balance))
+          ? PAYMENTS_TEXT.savedStillOwing(money.money(recorded.after.balance))
           : PAYMENTS_TEXT.saved,
       )
       onDone()
@@ -198,9 +228,15 @@ export default function Cobro({
       if (caught instanceof ApiError && isPaymentGone(caught.code)) {
         onGone()
       } else if (caught instanceof ApiError) {
-        if (caught.code === 'payment.method_required') setMethodError(METHOD_REQUIRED_MESSAGE)
+        if (caught.code === 'payment.method_required') setMethodRefused(true)
+        else if (caught.code === 'payment_method.unavailable') {
+          // The method was archived or deleted meanwhile: the form stays and the field keeps the
+          // chosen method with the "no longer available" mark until the person picks another.
+          if (method !== null) setMethodGone(paymentMethodName(queryClient, method) ?? '')
+          void queryClient.invalidateQueries({ queryKey: keys.paymentMethods() })
+        }
         else if (caught.code === 'payment.future_date') setDateError(PAYMENTS_TEXT.dateInFuture)
-        else setAmountError(amountMessage(caught.code) ?? GENERIC_REFUSAL)
+        else setAmountError(amountMessage(caught.code, money.format) ?? GENERIC_REFUSAL)
       } else if (caught instanceof NetworkError) {
         setOffline(true)
       } else {
@@ -220,7 +256,7 @@ export default function Cobro({
       <span className="cobro__cliente">
         {customer.name}
         {customer.standing === 'owes' && customer.owing_since !== null
-          ? owesLine(formatMoney(customer.balance), formatDateShort(customer.owing_since))
+          ? owesLine(money.money(customer.balance), formatDateShort(customer.owing_since))
           : ''}
       </span>
         <form className="formulario" onSubmit={(event) => void onSubmit(event)}>
@@ -229,10 +265,20 @@ export default function Cobro({
             <input
               className="campo__input cobro__monto"
               type="text"
-              inputMode="numeric"
+              inputMode={moneyInputMode(money.format)}
               autoComplete={phoneAutoComplete}
-              value={amount === null ? '' : formatMoney(amount)}
+              value={shownAmount}
+              onBlur={() => {
+                const parsed = typed === null ? undefined : parseMoneyInput(typed, money.format)
+                if (parsed?.ok) setTyped(formatMoneyInput(parsed.value, money.format))
+              }}
               onChange={(event) => {
+                if (decimals > 0) {
+                  const parsed = parseMoneyInput(event.target.value, money.format)
+                  setTyped(event.target.value)
+                  setAmount(parsed.ok ? parsed.value : null)
+                  return
+                }
                 const native = event.nativeEvent
                 const deleting =
                   'inputType' in native && typeof native.inputType === 'string' && native.inputType.startsWith('delete')
@@ -243,8 +289,8 @@ export default function Cobro({
             />
           </label>
           <div className="cobro__todo">
-            <Boton variant="link" onClick={() => setAmount(balance)}>
-              {PAYMENTS_TEXT.all}{formatMoney(balance)}
+            <Boton variant="link" onClick={() => { setAmount(balance); setTyped(null) }}>
+              {PAYMENTS_TEXT.all}{money.money(balance)}
             </Boton>
           </div>
           {amountError !== null && (
@@ -278,21 +324,26 @@ export default function Cobro({
           )}
 
           <div className="cobro__metodo">
-            <SegmentedChoice
-              options={[
-                { value: 'cash', label: COMMON_TEXT.cashMethod },
-                { value: 'transfer', label: COMMON_TEXT.transfer },
-              ]}
-              value={method}
-              onChange={setMethod}
-              ariaLabel={PAYMENTS_TEXT.method}
-              required
-              describedBy={methodError !== null ? methodErrorId : undefined}
-            />
-            {methodError !== null && (
-              <span id={methodErrorId} className="campo__error" role="alert">
-                {methodError}
-              </span>
+            {methodOptions.failure === 'offline' && <SinConexion />}
+            <div onClickCapture={methodOptions.failure === null ? undefined : methodOptions.reload}>
+              <Selector
+                {...methodOptions.selector}
+                label={t('common:paymentMethod')}
+                value={paymentMethodValue(method)}
+                onChange={(next) => {
+                  setMethod(paymentMethodOf(next))
+                  setMethodRefused(false)
+                  setMethodGone(null)
+                }}
+                fieldRef={methodField}
+                selected={method !== null && methodGone !== null ? { value: String(method), label: methodGone } : undefined}
+                describedBy={methodRefused || methodGone !== null ? methodErrorId : undefined}
+              />
+            </div>
+            {methodGone !== null ? (
+              <FieldRefusal id={methodErrorId}>{t('common:paymentMethodUnavailable')}</FieldRefusal>
+            ) : (
+              methodRefused && <FieldRefusal id={methodErrorId}>{t('common:chooseHowTheyPaid')}</FieldRefusal>
             )}
           </div>
 
@@ -301,11 +352,11 @@ export default function Cobro({
               <span className="campo__rotulo">{PAYMENTS_TEXT.takenFromOldestDebt}</span>
               {preview.data.applied_to.map((split) => (
                 <span key={split.sale_id}>
-                  {formatMoney(split.amount)}{PAYMENTS_TEXT.toTheSaleOf}{formatDateShort(split.sale_date)}
+                  {money.money(split.amount)}{PAYMENTS_TEXT.toTheSaleOf}{formatDateShort(split.sale_date)}
                 </span>
               ))}
               {preview.data.after.standing === 'owes' && (
-                <span>{PAYMENTS_TEXT.stillOwes}{formatMoney(preview.data.after.balance)}</span>
+                <span>{PAYMENTS_TEXT.stillOwes}{money.money(preview.data.after.balance)}</span>
               )}
             </div>
           )}

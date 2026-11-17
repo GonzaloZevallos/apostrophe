@@ -37,6 +37,12 @@ export function writePricingSettings(queryClient: QueryClient, view: PricingSett
 /** Whether Clientes VIP is on, for the screens that show a customer's VIP mark or field.
  * Until the answer comes, and if it fails, the mark stays hidden: the safe side, since a
  * mark for a rule that is off must never show (`pricing-settings.md`). */
+/** True until the pricing settings have answered (or failed): the screens that gate a field on
+ * `useIsVipCustomers` are still waiting while it is. */
+export function usePricingSettingsPending(): boolean {
+  return useQuery(pricingSettingsQueryOptions()).isPending
+}
+
 export function useIsVipCustomers(): boolean {
   return useQuery(pricingSettingsQueryOptions()).data?.is_vip_customers === true
 }

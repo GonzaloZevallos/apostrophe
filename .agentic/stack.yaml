@@ -11,18 +11,15 @@ setup:
   deps: uv sync --locked --extra dev
   web: npm --prefix web ci --no-fund --no-audit
   web-browsers: npx --prefix web playwright install chromium
+  merge-driver: git config merge.regen.driver "cp %B %A"
 checks:
   tests: uv run --no-project pytest -n 8
-  tests-fast: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py tests/test_stack_parallel_writers.py
+  tests-fast: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/docs/test_parallel_branches.py tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py tests/test_stack_parallel_writers.py
   lint: uv run --no-project ruff check .
   types: uv run --no-project mypy app tests scripts
   web-types: npm --prefix web run typecheck
   web-lint: npm --prefix web run lint
   web-tests: npm --prefix web test
-  # web-e2e is back (GH-476, after #428): it is a check of the full tier and of CI's `e2e` aggregator
-  # over the `e2e-shard` matrix, and it gates the merge through `ci-ok`. It is not in
-  # `delivery_checks`.
-  web-e2e: npm --prefix web run e2e
 # `parallel_checks`: the gate runs the checks above at once (agentic-system ADR-0044),
 # so a gate takes the slowest check instead of the sum (passing-gate median 16.1 min, 2026-10-12
 # to 26). Shared-state inventory, 2026-10-26, 16 cores, each check run alone: every cache has one
@@ -36,7 +33,8 @@ checks:
 # `web-types` both wrote the `tsc -b` buildinfo. `web-build` is therefore not a local check: no
 # local check is lost, because `web-types` runs the same `tsc -b` over the same tsconfig
 # references and `web-e2e` runs `vite build`; CI's `web` job still runs `npm --prefix web run
-# build`. Every path now has one writer, pinned by tests/test_stack_parallel_writers.py (it is in
+# build`. Since GH-699 no local check writes web/dist: `web-e2e` left `checks`; CI's `web` and
+# `e2e-shard` jobs build it on their own runners. Every path now has one writer, pinned by tests/test_stack_parallel_writers.py (it is in
 # `tests-fast`); a check added here needs an entry there. Evidence:
 # docs/evidence/GH-543-e2e-flake.md. The 5-serial/5-parallel medians were not taken: the load
 # average was 33-148 from other worktrees the whole time, far over the 2.0 cut-off. Parallel runs
@@ -66,7 +64,7 @@ parallel_checks: true
 # the subtasks are integrated, not at the Developer's delivery. `web-tests` stays in: on a
 # web diff its affected form took 83.9-90.4 s (loads 41.00 -> 38.37 and 53.46 -> 47.99), and
 # an app-only diff selects nothing, so it reruns in full (180.3 s alone, load 40.89 -> 41.12).
-# `web-e2e` is not here: it runs in the full tier and in CI (GH-476). `web-build` leaves the
+# `web-e2e` is no longer a local check: GitHub CI judges e2e (GH-699). `web-build` leaves the
 # fast tier too (GH-476) and, after GH-543, the checks altogether; it still runs in CI's `web` job.
 # The shared-state inventory above holds:
 # `tests-fast` carries `-p no:cacheprovider`, so `.pytest_cache` keeps one writer (`tests`).
@@ -85,7 +83,6 @@ delivery_checks:
 # Each form exits non-zero when it selects nothing. `tests` (pytest) has none, on purpose.
 affected_checks:
   web-tests: uv run --no-project python scripts/affected.py vitest {base}
-  web-e2e: uv run --no-project python scripts/affected.py e2e {base}
 # Paths whose change can affect anything, so a gate runs everything. Here `*` crosses `/`.
 affected_fallback:
   - .github/workflows/*
@@ -142,30 +139,39 @@ forbidden:
       code instead; nothing is silenced in this product, front included.
 # `docs` (agentic-system #398, ADR-0066): the one command that rewrites every generated doc
 # and the paths it owns. The system adds the reserved `docs` check to `checks` and to
-# `delivery_checks` from this block, so this file never declares a check named `docs`. The
-# check runs `generate`, fails with DOCS_STALE when anything under `paths` changed, and puts
-# the paths back as HEAD has them. Measured 2026-10-31, 16 cores, `generate` alone, 5 runs, load
+# `delivery_checks` from this block, so this file never declares a check named `docs`.
+# `mode: validate` (agentic-system commit b273ac6e, PR #609, GH-603; GH-708): the check runs
+# `generate`, fails only when generation fails, and puts the paths back as HEAD has them; there
+# is no DOCS_STALE. Master regenerates the docs after each merge, and the owner's rule is that
+# generated docs are never committed in a feature pull request. Measured 2026-10-31, 16 cores,
+# `generate` alone, 5 runs, load
 # average (1 min) before -> after each: 202.3 s (16.43 -> 34.65), 245.6 s (34.36 -> 35.53),
 # 187.2 s (34.92 -> 28.70), 241.9 s (28.70 -> 33.69), 192.7 s (33.69 -> 27.65). Median 202.3 s,
 # worst 245.6 s (load 34.36 -> 35.53); the machine was never idle, so these are upper bounds. That
 # median is above `tests-fast` alone (94.8 s): the reserved `docs` check is now the slowest check
 # of a delivery, and the gate takes its time instead of `tests-fast`'s. This is the known cost
-# of part 4 (GH-468). No other check may read `docs/architecture/generated/**` or `docs/api/**`
+# of part 4 (GH-468). Validate mode removes only the 0.09 s stale comparison (ADR-0066
+# measurements table), so the check's cost is unchanged. No other check may read
+# `docs/architecture/generated/**` or `docs/api/**`
 # (tests/test_stack_ci.py checks the declared commands). `parallel_checks` stays true: `generate`
 # writes only inside those paths and temporary directories (ADR-0066 item 4), so the paths have
 # one writer; this extends the shared-state inventory above.
 docs:
   generate: uv run --no-project python -m scripts.docs.generate
-  paths: ["docs/architecture/generated/**", "docs/api/**"]
+  paths: ["docs/architecture/generated/**", "docs/api/**", "docs/architecture/decisiones.md"]
+  mode: validate
 # `ci`: the check-run name of ci.yml that gates a merge (agentic-system ADR-0045, GH-216
 # amendment): with it, `agentic merge` decides from GitHub's CI on the reviewed head instead of
 # rerunning every check locally. Only `ci-ok` is named: it `needs` every other job (changes,
 # checks, web, docs, pytest, vitest, e2e-shard, e2e, coverage) and reads the `changes` flags, so a suite
 # skipped as unaffected counts as passed and a suite that failed or was skipped without a "false"
 # flag does not. Every check below runs in a job `ci-ok` needs, in full or in shards
-# (tests/test_stack_ci.py, CI_FORMS; ADR-0054, ADR-0067). `docs` runs no declared check: the
-# generator's stale check, the Mermaid render, the offline link check and the OpenAPI
-# breaking-change check (ADR-0066). e2e gates again (#428 fixed the flake).
+# (tests/test_stack_ci.py, CI_FORMS; ADR-0054, ADR-0067). `docs` runs no declared check:
+# `generate`, which fails only when generation fails, the owned-path guard (warnings only), the
+# Mermaid render, the offline link check and the OpenAPI breaking-change check (ADR-0066). e2e runs only in CI, as CI_ONLY (tests/test_stack_ci.py): the
+# owner's rule is that GitHub CI judges end-to-end tests (GH-699), and it gates the merge through
+# `ci-ok`, which needs `e2e`. `ci-ok` needs every job except those `UNGATED_JOBS` declares
+# (tests/test_stack_ci.py): `regen` commits master's owned docs after a merge and gates nothing.
 ci: [ci-ok]
 # `ci_dispatch` (agentic-system commit 0ca8e14c, PR #476, GH-462): how the system judges a head that
 # touches `.github/` without trusting that head's own workflow. It dispatches the base's
@@ -194,23 +200,3 @@ ci_dispatch:
 # `--stepwise`) nor `--reruns`, and exit 0 on nothing. The human moved the declaration to #602,
 # which waits for agentic-system #530 (a failed-ids token in `rerun_checks`).
 # Read at a task's base, like every key here.
-# `ci_covers` (agentic-system GH-453): when `web-e2e` times out locally, the check defers to CI's
-# `e2e` check-run, matched by exact name; a skipped, missing or pending job never covers. The
-# matrix is `e2e-shard` and reports `e2e-shard (N)`; `e2e` is the aggregator over it, green only
-# when every shard is (GH-557). Limits on `failed`: it must compile, be at most 200 characters and
-# have no nested unbounded repetition, and `web-e2e` must be in `checks`. It is matched per line
-# over the whole local output of the row that timed out; a match means a real failure and the row
-# is not deferred. On a timeout the `✘` branch is the one that fires: with `retries: 0` the list
-# reporter prints each final failure as the test ends, and the `N failed` summary may never print.
-# `✘` is unanchored on purpose: an extra match only refuses the deferral, which costs a rerun and
-# never a wrong merge (an anchor that tolerates colour codes would need the nested repetition the
-# limits forbid). `retries` is 0 locally and 1 only under `CI` (GH-563), so a local `✘` is still a
-# final failure and a retried test never reaches this output; if a local `retries` ever goes above 0,
-# a retried `✘` also refuses the deferral. "Covered"
-# means the e2e selection CI computed for this head's diff (scripts/ci_changes.py, ADR-0067), not
-# the full local run. Residual: a head whose diff selects no e2e spec skips `e2e`, so it is not
-# covered; a cancelled run does not cover either. Read at a task's base, like every key here.
-ci_covers:
-  web-e2e:
-    job: e2e
-    failed: '✘|^\s*\d+ failed\b'

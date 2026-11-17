@@ -1,9 +1,9 @@
 /**
  * The bottom bar on the phone, the side rail on a computer (`componentes.ts`'s `Destino`);
  * CSS alone switches between them (`styles/app.css`). Only destinations that exist show.
- * The bar is Inicio, Ventas, Clientes, Variedades and Más; the rail is "+ Nueva venta", the
+ * The bar is Inicio, Ventas, Clientes and Variedades; the rail is "+ Nueva venta", the
  * same first four, a divider, Gastos and Análisis, and the business row (avatar and name) at
- * the bottom, which opens Configuración. There is no Más on a computer.
+ * the bottom, which opens Configuración (on the phone a header avatar opens it).
  *
  * Everything the shell decides comes from the leaf route's registry entry (`routes.ts`),
  * found through the route's `handle.screen`: `chromeOf` (`chrome.ts`) turns it into the
@@ -23,7 +23,7 @@
 import { Fragment, useCallback, useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link, Outlet, useMatches, useOutletContext } from 'react-router'
+import { Link, Outlet, useOutletContext } from 'react-router'
 import { actionableFirstRun, firstRunQuery } from '../api/firstRun'
 import type { Me } from '../api/me'
 import Icono, { type NombreIcono } from '../components/Icono'
@@ -32,17 +32,13 @@ import {
   ANALYSIS,
   EXPENSES,
   HOME,
-  isScreenId,
-  MORE,
   placeOf,
   SALE_NEW,
   SALES,
-  screenOf,
   CUSTOMERS,
   SETTINGS,
   VARIETIES,
   type RailPlace,
-  type Screen,
 } from '../routes'
 import BrandMark from '../components/BrandMark'
 import BotonLink from '../components/BotonLink'
@@ -52,6 +48,7 @@ import { NUEVA_VENTA_MISSING } from '../copy/inicio'
 import { chromeOf } from './chrome'
 import { initialsOf } from '../format/initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
+import { useLeafScreen } from './useLeafScreen'
 import { useViewport } from './useViewport'
 import { useVisualViewport } from '../components/useVisualViewport'
 import type { CopyKey } from '../i18n/resources.generated'
@@ -61,8 +58,8 @@ type CommonKey = Extract<CopyKey, `common:${string}`>
 
 type Placement = 'bar' | 'rail' | 'both'
 
-/** `main` entries sit above the rail's divider with their icon, `more` ones below it. */
-type Group = 'main' | 'more'
+/** `main` entries sit above the rail's divider with their icon, `secondary` ones below it. */
+type Group = 'main' | 'secondary'
 
 interface Item {
   to: string
@@ -94,28 +91,16 @@ const NAV_ITEMS: Item[] = [
     group: 'main',
     place: 'varieties',
   },
-  { to: EXPENSES, labelKey: 'common:expenses', icono: 'gastos', placement: 'rail', group: 'more', place: 'expenses' },
-  { to: ANALYSIS, labelKey: 'common:analysis', icono: 'analisis', placement: 'rail', group: 'more', place: 'analysis' },
-  { to: MORE, labelKey: 'common:more', icono: 'mas', placement: 'bar', group: 'more', place: 'more' },
+  { to: EXPENSES, labelKey: 'common:expenses', icono: 'gastos', placement: 'rail', group: 'secondary', place: 'expenses' },
+  { to: ANALYSIS, labelKey: 'common:analysis', icono: 'analisis', placement: 'rail', group: 'secondary', place: 'analysis' },
 ]
 
 const BAR_ITEMS = NAV_ITEMS.filter((item) => item.placement !== 'rail')
 const RAIL_ITEMS = NAV_ITEMS.filter((item) => item.placement !== 'bar')
 
-/** The registry entry of the leaf route: the deepest match that names a screen. */
-function leafScreen(matches: readonly { handle: unknown }[]): Screen {
-  for (const match of [...matches].reverse()) {
-    const { handle } = match
-    if (typeof handle === 'object' && handle !== null && 'screen' in handle && isScreenId(handle.screen)) {
-      return screenOf(handle.screen)
-    }
-  }
-  throw new Error('Shell: the leaf route does not declare a screen (routes.ts)')
-}
-
 function railClassName(item: Item, active: boolean): string {
   const base =
-    item.group === 'more'
+    item.group === 'secondary'
       ? 'riel-lateral__item riel-lateral__item--secundario'
       : 'riel-lateral__item'
   return active ? `${base} riel-lateral__item--activo` : base
@@ -165,7 +150,7 @@ function useNuevaVentaMissing(enabled: boolean): boolean {
 export default function Shell() {
   const { t } = useTranslation()
   const me = useOutletContext<Me>()
-  const leaf = leafScreen(useMatches())
+  const leaf = useLeafScreen()
   const barPlace = placeOf(leaf.id, 'phone').bar
   const railPlace = placeOf(leaf.id, 'computer').rail
   const chrome = chromeOf(leaf, useViewport())
@@ -182,7 +167,7 @@ export default function Shell() {
     <div className="disposicion" ref={layoutRef}>
       {chrome.rail && (
         <nav className="riel-lateral" aria-label={t('shell:navigation')} data-menu>
-          <BrandMark variant="lockup" />
+          <BrandMark />
           {chrome.railNuevaVenta && (
             <>
               <BotonLink

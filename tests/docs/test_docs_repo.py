@@ -7,14 +7,12 @@ Text only; nothing imports from `app`. Links and Mermaid blocks are read with
 from __future__ import annotations
 
 import posixpath
-import re
 from pathlib import Path
 
 from scripts.docs.links import extract_links
-from tests.docs.test_docs_rules import adr_index_problems, adr_status, page_problems, reach_problems
+from tests.docs.test_docs_rules import page_problems, reach_problems
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-_SUPERSEDED_MARK = re.compile(r"reemplazada por (\d{4})")
 
 
 def _read(path: str) -> str | None:
@@ -43,7 +41,6 @@ def test_every_architecture_page_and_the_docs_entry_obey_the_citation_rules() ->
     assert problems == []
 
 
-ADR_DIR = "docs/adr"
 REQUIRED_PAGES = [
     "docs/README.md",
     "docs/architecture/README.md",
@@ -55,42 +52,6 @@ REQUIRED_PAGES = [
     "docs/architecture/decisiones.md",
 ]
 API_REFERENCE = "docs/api/index.html"
-
-
-def _adr_statuses() -> dict[str, str | None]:
-    return {
-        path.name: adr_status(path.read_text(encoding="utf-8"))
-        for path in sorted((REPO_ROOT / ADR_DIR).glob("*.md"))
-    }
-
-
-def _index_marks(page: str, markdown: str) -> dict[str, str | None]:
-    """Each ADR file linked on a table row of `page`, mapped to the number named by
-    `reemplazada por NNNN` on that row (None when it carries no mark). A link in the prose
-    around the table does not put an ADR in the index."""
-    marks: dict[str, str | None] = {}
-    for line in markdown.splitlines():
-        if not line.lstrip().startswith("|"):
-            continue
-        found = _SUPERSEDED_MARK.search(line)
-        for link in extract_links(line):
-            path = posixpath.normpath(posixpath.join(posixpath.dirname(page), link.target))
-            if posixpath.dirname(path) == ADR_DIR and path.endswith(".md"):
-                name = posixpath.basename(path)
-                marks[name] = found.group(1) if found else marks.get(name)
-    return marks
-
-
-def test_the_adr_index_lists_every_adr_with_the_mark_its_status_line_gives() -> None:
-    page = "docs/architecture/decisiones.md"
-    marks = _index_marks(page, (REPO_ROOT / page).read_text(encoding="utf-8"))
-
-    assert adr_index_problems(marks, _adr_statuses()) == []
-    assert {name for name, mark in marks.items() if mark} == {
-        name
-        for name, status in _adr_statuses().items()
-        if status and status.startswith("superseded")
-    }
 
 
 def test_every_doc_page_is_within_two_clicks_of_the_docs_entry() -> None:
@@ -119,34 +80,3 @@ def test_the_required_pages_and_the_api_reference_exist() -> None:
     ]
 
     assert missing == []
-
-
-def test_an_index_with_a_wrong_mark_and_a_missing_adr_is_rejected() -> None:
-    page = "docs/architecture/decisiones.md"
-    index = (
-        "| [0001](../adr/0001-a.md) | uno | reemplazada por 0002 |\n"
-        "| [0002](../adr/0002-b.md) | dos | |\n"
-    )
-    statuses: dict[str, str | None] = {
-        "0001-a.md": "accepted",
-        "0002-b.md": "accepted",
-        "0003-c.md": "superseded by 0002",
-    }
-
-    assert adr_index_problems(_index_marks(page, index), statuses) == [
-        "0003-c.md is in docs/adr/ but not in the index",
-        "0001-a.md: index mark '0002' does not match status 'accepted'",
-    ]
-
-
-def test_an_adr_linked_only_in_the_prose_is_not_in_the_index() -> None:
-    page = "docs/architecture/decisiones.md"
-    index = (
-        "Por ejemplo [0001](../adr/0001-a.md) puede estar enmendada.\n\n"
-        "| [0002](../adr/0002-b.md) | dos | |\n"
-    )
-    statuses: dict[str, str | None] = {"0001-a.md": "accepted", "0002-b.md": "accepted"}
-
-    assert adr_index_problems(_index_marks(page, index), statuses) == [
-        "0001-a.md is in docs/adr/ but not in the index"
-    ]

@@ -14,16 +14,11 @@
  * measurement in code). Without it the output is the plain list above.
  */
 
-import type { ReactNode } from 'react'
 import { botonClass } from './botonVisual'
+import type { FixedSet } from './fixedSets'
 
-export interface PestanaItem<T extends string> {
-  value: T
-  label: ReactNode
-}
-
-export interface PestanasProps<T extends string> {
-  items: readonly PestanaItem<T>[]
+interface PestanasProps<T extends string> {
+  items: FixedSet<T>
   value: T
   onChange: (value: T) => void
   ariaLabel: string
@@ -49,7 +44,7 @@ export default function Pestanas<T extends string>({
       aria-pressed={item.value === value}
       onClick={() => onChange(item.value)}
     >
-      {item.label}
+      {item.label()}
     </button>
   ))
   if (ajuste === 'celdas') {

@@ -38,7 +38,7 @@ test('back goes by history to where the seller came from', async () => {
 
   await user.click(await screen.findByRole('button', { name: '‹ 24K Gold' }))
 
-  expect(await screen.findByText('Variety page')).toBeInTheDocument()
+  expect(await screen.findByText('Product page')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 1 }))
   expect(router.state.historyAction).toBe('POP')
 })
@@ -69,7 +69,7 @@ test('a variety that is gone shows no back, only its own way out', async () => {
     api({ 'GET /api/products/1': gone, 'GET /api/products/1/prices': gone }),
   )
 
-  expect(await screen.findByRole('link', { name: 'Back to Varieties' })).toBeInTheDocument()
+  expect(await screen.findByRole('link', { name: 'Back to Products' })).toBeInTheDocument()
   expect(screen.queryByText(/‹/)).not.toBeInTheDocument()
 })
 
@@ -79,7 +79,7 @@ test('back with no history goes to the variety\'s page', async () => {
 
   await user.click(await screen.findByRole('button', { name: '‹ 24K Gold' }))
 
-  expect(await screen.findByText('Variety page')).toBeInTheDocument()
+  expect(await screen.findByText('Product page')).toBeInTheDocument()
   expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 1 }))
 })
 
@@ -127,7 +127,7 @@ test('a variety that is gone says "That is gone." and goes back to Variedades', 
   )
 
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Products' })).toBeInTheDocument()
 })
 
 test('an id that is not a number is gone too, and asks the API nothing', async () => {

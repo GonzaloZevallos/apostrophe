@@ -37,6 +37,7 @@ class ShapeOf:
 NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     "account": {
         "owing_since": "string",
+        "rows[sale].sale.payment_method": ShapeOf("sale-detail-gift", "payment_method"),
     },
     "analysis": {
         "first_record": "string",
@@ -76,12 +77,14 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     },
     "customer": {
         "phone": "string",
+        "phone_display": "string",
         "customer_type_id": "integer",
         "owing_since": "string",
     },
     "customer-no-phone": {
         # A customer with no phone (ADR-0021): every nullable field is `null` here.
         "phone": "string",
+        "phone_display": "string",
         "customer_type_id": "integer",
         "owing_since": "string",
     },
@@ -142,12 +145,16 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     },
     "sale": {
         "customer": ShapeOf("sale", "customer"),
+        "payment_method": ShapeOf("sale-detail-gift", "payment_method"),
         "note": "string",
+        "lines[].customer_type_name": "string",
     },
     "sale-detail": {
         "customer": ShapeOf("sale-detail", "customer"),
+        "payment_method": ShapeOf("sale-detail-gift", "payment_method"),
         "note": "string",
         "lines[].cost.costed": "integer",
+        "lines[].customer_type_name": "string",
         "bill": ShapeOf("sale-detail", "bill"),
         "bill.lines[].rule": "string",
         "bill.lines[].unit_price": "integer",
@@ -155,11 +162,13 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "bill.balance": "integer",
     },
     "sale-detail-gift": {
+        "payment_method": ShapeOf("sale-detail-gift", "payment_method"),
         # `sale-detail-gift.json`'s own `customer` is `null`: the sibling fixture
         # `sale-detail` is the one that shows the object non-null.
         "customer": ShapeOf("sale-detail", "customer"),
         "note": "string",
         "lines[].cost.costed": "integer",
+        "lines[].customer_type_name": "string",
         "bill": ShapeOf("sale-detail", "bill"),
         "bill.lines[].rule": "string",
         "bill.lines[].unit_price": "integer",

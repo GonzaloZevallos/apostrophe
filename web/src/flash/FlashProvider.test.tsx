@@ -9,6 +9,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { createMemoryRouter, Link, Outlet, RouterProvider, useNavigate } from 'react-router'
 import FlashProvider from './FlashProvider'
 import { useFlash } from './useFlash'
+import ContentArea from '../components/ContentArea'
 
 function Layout() {
   return (
@@ -22,7 +23,7 @@ function Origin() {
   const flash = useFlash()
   const navigate = useNavigate()
   return (
-    <main>
+    <ContentArea as="main">
       <h1>Origen</h1>
       <button
         onClick={() => {
@@ -34,17 +35,17 @@ function Origin() {
       </button>
       <button onClick={() => flash.armAfterLeaving('Expense saved')}>armar y quedarse</button>
       <button onClick={() => flash.showNow('Expense deleted')}>mostrar ya</button>
-    </main>
+    </ContentArea>
   )
 }
 
 function Destination() {
   return (
-    <main>
+    <ContentArea as="main">
       <h1>Destino</h1>
       <Link to="/origin">ir al origen</Link>
       <Link to="/other">ir a otra</Link>
-    </main>
+    </ContentArea>
   )
 }
 

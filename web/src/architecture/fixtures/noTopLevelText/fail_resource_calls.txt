@@ -1,0 +1,7 @@
+// expect: resource-read@3, resource-read@4, resource-read@5, resource-read@6, resource-read@7
+import i18next from 'i18next'
+export const a = i18next.getResourceBundle('en', 'common')
+export const b = i18next.getFixedT('en')
+export const c = i18next.store
+export const d = i18next.services
+export const e = resolveKey('common:close')

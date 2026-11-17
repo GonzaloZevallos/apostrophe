@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-03
+summary: "la importación de planillas planifica por los puertos de cada dueño y escribe una vez"
 ---
 
 # The spreadsheet import plans through each owner's ports, then writes once through their own use cases

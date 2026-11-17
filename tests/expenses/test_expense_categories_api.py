@@ -1,13 +1,9 @@
 """Expense categories through the HTTP API, over a real database."""
 
-from datetime import UTC, date, datetime
 from typing import Any
 
 from fastapi.testclient import TestClient
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session
 
-from app.expenses.adapters.tables import ExpenseRow
 from tests.conftest import PASSWORD
 
 DEFAULTS = ["Growing supplies", "Other", "Packaging", "Shipping and transport"]
@@ -121,24 +117,19 @@ def test_another_businesss_category_id_is_not_found_on_rename_or_remove(
 
 
 def test_removing_a_category_with_a_filed_expense_is_refused_until_it_has_none(
-    client: TestClient, engine: Engine
+    client: TestClient,
 ) -> None:
-    # Recording an expense is the next subtask's route; here the row is inserted
-    # directly, the same as the repository seam test, to exercise this subtask's own
-    # 409 translation over HTTP.
     category = _add(client, "Fletes")
-    with Session(engine) as session:
-        expense = ExpenseRow(
-            business_id=1,
-            category_id=category["id"],
-            spent_on=date(2026, 10, 1),
-            amount=100,
-            detail="una compra",
-            recorded_at=datetime(2026, 10, 1, tzinfo=UTC),
-        )
-        session.add(expense)
-        session.commit()
-        expense_id = expense.id
+    recorded = client.post(
+        "/expenses",
+        json={
+            "spent_on": "2026-10-01",
+            "category_id": category["id"],
+            "amount": 100,
+            "detail": "una compra",
+        },
+    )
+    assert recorded.status_code == 201, recorded.text
 
     refused = client.delete(f"/expense-categories/{category['id']}")
 
@@ -149,9 +140,7 @@ def test_removing_a_category_with_a_filed_expense_is_refused_until_it_has_none(
     }
     assert "Fletes" not in refused.text
 
-    with Session(engine) as session:
-        session.delete(session.get_one(ExpenseRow, expense_id))
-        session.commit()
+    assert client.delete(f"/expenses/{recorded.json()['id']}").status_code == 204
 
     removed = client.delete(f"/expense-categories/{category['id']}")
     assert removed.status_code == 204

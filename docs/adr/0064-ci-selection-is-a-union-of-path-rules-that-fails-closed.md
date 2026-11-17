@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-29
+summary: "la selección de CI es una unión de reglas por ruta que falla cerrada"
 ---
 
 # CI selection is a union of path rules that fails closed

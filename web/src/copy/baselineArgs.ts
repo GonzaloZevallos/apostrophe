@@ -125,4 +125,12 @@ export function counted<const A extends readonly unknown[]>(build: (n: number) =
 /** The readable fixtures shared by the `BASELINE_ARGS` tables, written once here because a
  * copy file may not repeat a literal another one holds (`architecture/copyOwnership.test.ts`).
  * They are not `limits.SAMPLES`, the worst-case fills. */
-export const FIXTURE = { money: '$ 11.000', date: '28/09', grams: '3,5 g' } as const
+export const FIXTURE = {
+  money: '$ 11.000',
+  /** The spaced zero of an amount, as the app writes it. */
+  zero: '$ 0',
+  /** The attached zero of an amount inside a sentence. */
+  attachedZero: '$0',
+  date: '28/09',
+  grams: '3,5 g',
+} as const

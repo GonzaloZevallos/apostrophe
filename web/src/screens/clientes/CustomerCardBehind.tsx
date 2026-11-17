@@ -13,12 +13,12 @@ import CustomerTypeLine from './CustomerTypeLine'
 import { getAccount } from '../../api/payments'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { formatDateShort } from '../../format/dates'
-import { formatMoney, formatMoneyMagnitude } from '../../format/money'
-import { formatPhone } from '../../format/phone'
+import { useMoney } from '../../format/moneyContext'
 import AccountRowLine from './AccountRowLine'
 import { rowKey } from './accountRows'
 
 export default function CustomerCardBehind({ customerId }: { customerId: string }) {
+  const money = useMoney()
   const customer = useQuery({
     queryKey: keys.customer(customerId),
     queryFn: () => getCustomer(customerId),
@@ -43,7 +43,7 @@ export default function CustomerCardBehind({ customerId }: { customerId: string 
         {data.standing === 'owes' && (
           <div className="ficha-deuda">
             <span className="rotulo ficha-deuda__rotulo">{CUSTOMERS_TEXT.owesYou}</span>
-            <span className="cifra-l monto-deuda">{formatMoney(data.balance)}</span>
+            <span className="cifra-l monto-deuda">{money.money(data.balance)}</span>
             {data.owing_since !== null && (
               <span className="rotulo">{CUSTOMERS_TEXT.since}{formatDateShort(data.owing_since)}</span>
             )}
@@ -52,14 +52,14 @@ export default function CustomerCardBehind({ customerId }: { customerId: string 
         {data.standing === 'credit' && (
           <div className="ficha-deuda ficha-deuda--credito">
             <span className="rotulo ficha-deuda__rotulo">{CUSTOMERS_TEXT.creditLabel}</span>
-            <span className="cifra-l monto-credito">{formatMoneyMagnitude(data.balance)}</span>
+            <span className="cifra-l monto-credito">{money.magnitude(data.balance)}</span>
           </div>
         )}
         <div className="formulario">
-          {data.phone !== null && (
+          {data.phone_display !== null && (
             <div className="campo">
               <span className="campo__rotulo">{CUSTOMERS_TEXT.phone}</span>
-              <span>{formatPhone(data.phone)}</span>
+              <span className="campo__valor-telefono">{data.phone_display}</span>
             </div>
           )}
           <CustomerTypeLine typeId={data.customer_type_id} />

@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-06
+summary: "el formulario de ventas se ancla al viewport visual"
 ---
 
 # The sales form pins itself to the visual viewport; the viewport meta stays

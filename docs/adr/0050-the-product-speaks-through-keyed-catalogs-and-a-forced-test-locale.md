@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-24
+summary: "el producto habla con catálogos con claves y un idioma de prueba forzado"
 ---
 
 # The product speaks through keyed catalogs, and a test locale is forced, never requested

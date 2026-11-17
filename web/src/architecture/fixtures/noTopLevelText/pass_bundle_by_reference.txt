@@ -1,0 +1,5 @@
+// expect: none
+import common from '../copy/locales/en/common.json' with { type: 'json' }
+import { refusals } from '../i18n/englishStatic.ts'
+export const bundle = register(common, refusals)
+export const both = { common, refusals }

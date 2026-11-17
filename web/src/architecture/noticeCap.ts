@@ -1,6 +1,6 @@
 /**
  * The notice cap (GH-188): the tappable notice card, `.boton-aviso`, is at most 560px wide
- * on a computer, as `InicioPrimeraVezCompu.dc.html` draws it. jsdom reads no stylesheet, so
+ * on a computer (today the one on Inicio, "Your Telegram catalog is out of date"). jsdom reads no stylesheet, so
  * no render test can prove a width; this checker reads the CSS text instead and says
  * whether the cap is there, once, in the one place it belongs.
  *

@@ -14,7 +14,7 @@ import {
 } from '../copy/analysis'
 import { COMMON_TEXT } from '../copy/common'
 import { formatDateShort, formatMonthLong } from '../format/dates'
-import { formatGrams, formatMoney } from '../format/money'
+import { formatGrams, type MoneyFormatter } from '../format/money'
 import { BEST_WEEK_MARK } from './analisis/marks'
 import { type AmountParts, amountParts, reasonCostParts, rowCostParts } from './analisisCost'
 
@@ -52,7 +52,7 @@ const plain = (figure: string, before = '', after = ''): CardRow => ({
   pending: null,
 })
 
-export function varietyCard(variety: VarietyRow): CardProps {
+export function varietyCard(variety: VarietyRow, money: MoneyFormatter): CardProps {
   const rows: CardRow[] = []
   if (variety.share_percent !== null) {
     rows.push(plain(String(variety.share_percent), '', ANALYSIS_TEXT.delMes))
@@ -60,52 +60,52 @@ export function varietyCard(variety: VarietyRow): CardProps {
   rows.push(
     plain(formatGrams(variety.quantity_sold), '', COMMON_TEXT.soldSuffix),
     plain(formatGrams(variety.quantity_gifted), '', ANALYSIS_TEXT.regalados),
-    row(ANALYSIS_TEXT.costo, amountParts(variety.cost.costed, variety.cost.pending_quantity)),
+    row(ANALYSIS_TEXT.costo, amountParts(variety.cost.costed, variety.cost.pending_quantity, money)),
     row(
       ANALYSIS_TEXT.margen,
-      amountParts(variety.margin.amount, variety.margin.pending_quantity),
+      amountParts(variety.margin.amount, variety.margin.pending_quantity, money),
       variety.margin.percent !== null ? ` (${variety.margin.percent}%)` : '',
     ),
   )
   return {
     title: variety.name,
-    headline: formatMoney(variety.sales_without_shipping),
+    headline: money.money(variety.sales_without_shipping),
     rows,
   }
 }
 
 type Period = AnalysisWeek | AnalysisMonthRow
 
-function periodRows(period: Period): CardRow[] {
+function periodRows(period: Period, money: MoneyFormatter): CardRow[] {
   const optional = (label: string, cost: RowCost | null): CardRow[] =>
-    cost === null ? [] : [row(`${label} `, rowCostParts(cost))]
+    cost === null ? [] : [row(`${label} `, rowCostParts(cost, money))]
   return [
     plain(formatGrams(period.quantity), `${COMMON_TEXT.grams} `),
-    row(`${COST_OF_GOODS_LABEL} `, rowCostParts(period.cost_of_goods)),
+    row(`${COST_OF_GOODS_LABEL} `, rowCostParts(period.cost_of_goods, money)),
     ...optional(SHORTFALL_LABEL, period.shortfall),
-    ...period.withdrawals.map((line) => row(`${line.name} `, reasonCostParts(line))),
-    plain(formatMoney(period.expenses), ANALYSIS_TEXT.gastos),
-    row(ANALYSIS_TEXT.ganancia, amountParts(period.profit.amount, period.profit.pending_quantity)),
-    plain(formatMoney(period.cash), ANALYSIS_TEXT.caja),
+    ...period.withdrawals.map((line) => row(`${line.name} `, reasonCostParts(line, money))),
+    plain(money.money(period.expenses), ANALYSIS_TEXT.gastos),
+    row(ANALYSIS_TEXT.ganancia, amountParts(period.profit.amount, period.profit.pending_quantity, money)),
+    plain(money.money(period.cash), ANALYSIS_TEXT.caja),
   ]
 }
 
 /** `current` is the position of the week in the list (the last one), which the screen
  * knows; `best` is the backend's answer. */
-export function weekCard(week: AnalysisWeek, current: boolean): CardProps {
+export function weekCard(week: AnalysisWeek, current: boolean, money: MoneyFormatter): CardProps {
   return {
     title: formatDateShort(week.first_day),
-    headline: formatMoney(week.sales),
-    rows: periodRows(week),
+    headline: money.money(week.sales),
+    rows: periodRows(week, money),
     current,
     ...(week.best ? { mark: BEST_WEEK_MARK } : {}),
   }
 }
 
-export function monthCard(month: AnalysisMonthRow): CardProps {
+export function monthCard(month: AnalysisMonthRow, money: MoneyFormatter): CardProps {
   return {
     title: formatMonthLong(month.month),
-    headline: formatMoney(month.sales),
-    rows: periodRows(month),
+    headline: money.money(month.sales),
+    rows: periodRows(month, money),
   }
 }

@@ -168,6 +168,8 @@ def test_a_language_without_a_po_misses_every_key(locales: Path) -> None:
         "expenses.default_category.other",
         "stock.default_reason.marketing",
         "stock.default_reason.own_use",
+        "payment_methods.default_method.cash",
+        "payment_methods.default_method.transfer",
     )
 
 

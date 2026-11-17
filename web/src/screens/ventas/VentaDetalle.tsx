@@ -1,6 +1,6 @@
 /**
  * `VentaDetalle` (`sales.md`, "On screen: Detalle de venta"; `VentaDetalle.dc.html`):
- * the title with the sale's date, the total, a summary line of grams (the API's
+ * the title "Sale #N" with the sale's date under it, the total, a summary line of grams (the API's
  * `total_quantity`, never summed here) · the customer or "Sin cliente" · how it was
  * paid (`paymentSummary`, dropping `payment: 'none'`'s part), each line with its
  * price per gram, `ReglaInsignia` and line total, shipping, a final Total row and
@@ -52,12 +52,14 @@ import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { formatDateShort } from '../../format/dates'
-import { formatGrams, formatMoney } from '../../format/money'
+import { formatGrams, type MoneyFormatter } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { GENERIC_REFUSAL } from './NuevaVenta'
 import NuevaVentaCliente from './NuevaVentaCliente'
 import SaleBillButton from './SaleBillButton'
 import { COMMON_TEXT } from '../../copy/common'
 import { SALE_BILL_TEXT, SALES_TEXT } from '../../copy/sales'
+import ContentArea from '../../components/ContentArea'
 
 export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = SALES_TEXT.saleHasCustomer
 const ASSIGN_TOAST_MS = 2500
@@ -79,10 +81,8 @@ export const UNDO_WINDOW_MS = 5000
  * line entirely, replacing `PAYMENT_LABEL` and its own row (plan, "sale-detail"). */
 function paymentSummary(payment: Sale['payment']): string {
   switch (payment) {
-    case 'cash':
-      return SALES_TEXT.paidInCash
-    case 'transfer':
-      return SALES_TEXT.paidByTransfer
+    case 'paid':
+      return SALES_TEXT.paid
     case 'owing':
       return SALES_TEXT.leftOwing
     case 'none':
@@ -102,11 +102,11 @@ function summaryLine(sale: SaleDetail): string {
   return parts.filter((part) => part !== '').join(' · ')
 }
 
-function deleteTitle(sale: SaleDetail): string {
-  const money = formatMoney(sale.total)
+function deleteTitle(sale: SaleDetail, money: MoneyFormatter): string {
+  const total = money.money(sale.total)
   const day = formatDateShort(sale.date)
   const grams = formatGrams(sale.total_quantity)
-  return SALES_TEXT.deleteSaleConfirm(money, day, grams)
+  return SALES_TEXT.deleteSaleConfirm(total, day, grams)
 }
 
 const DELETE_TOAST = 'common:saleDeleted'
@@ -122,6 +122,7 @@ export default function VentaDetalle() {
 }
 
 function VentaDetalleScreen() {
+  const money = useMoney()
   const { id } = useParams<{ id: string }>()
   const saleId = id ?? ''
   const location = useLocation()
@@ -256,26 +257,26 @@ function VentaDetalleScreen() {
     }
     if (error instanceof NetworkError) {
       return (
-        <main className="pantalla">
+        <ContentArea as="main" className="pantalla">
           <div className="cuerpo">
             <SinConexion />
           </div>
-        </main>
+        </ContentArea>
       )
     }
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <ErrorGenerico />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
   if (isPending || data === undefined) {
     return (
-      <main className="pantalla">
-        <div className="cuerpo" aria-busy="true">
+      <ContentArea as="main" className="pantalla">
+        <div className="cuerpo">
           <div className="encabezado__fila">
             <span className="encabezado__titulo" />
           </div>
@@ -284,18 +285,19 @@ function VentaDetalleScreen() {
             <SaleBillButton state={{ kind: 'loading' }} refreshing={false} onCopied={() => undefined} />
           </div>
         </div>
-      </main>
+      </ContentArea>
     )
   }
   const sale = data
   const refreshing = assignMutation.isPending || (awaitingAssigned && sale.customer === null)
 
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">
         <div className="encabezado__fila">
-          <span className="encabezado__titulo">{SALES_TEXT.saleOf(formatDateShort(sale.date))}</span>
+          <span className="encabezado__titulo">{SALES_TEXT.saleNumber(sale.number)}</span>
         </div>
+        <span className="rotulo venta-detalle__fecha">{formatDateShort(sale.date)}</span>
 
         {undoAvailable && (
           <div className="venta-guardada" role="status">
@@ -310,7 +312,7 @@ function VentaDetalleScreen() {
 
         <div className="venta-detalle__resumen">
           <span className="campo__rotulo">{SALES_TEXT.total}</span>
-          <span className="cifra-xl">{formatMoney(sale.total)}</span>
+          <span className="cifra-xl">{money.money(sale.total)}</span>
           <span className="venta-detalle__subtitulo">{summaryLine(sale)}</span>
         </div>
 
@@ -329,22 +331,22 @@ function VentaDetalleScreen() {
                 </div>
                 <div className="venta-detalle__linea-inferior">
                   <span className="venta-detalle__precio cifra-n">
-                    {formatMoney(line.price_per_gram)}{SALES_TEXT.perGram}
+                    {money.money(line.price_per_gram)}{SALES_TEXT.perGram}
                   </span>
-                  <ReglaInsignia rule={line.pricing_rule} />
-                  <span className="venta-detalle__total cifra-s">{formatMoney(line.line_total)}</span>
+                  <ReglaInsignia rule={line.pricing_rule} typeName={line.customer_type_name} />
+                  <span className="venta-detalle__total cifra-s">{money.money(line.line_total)}</span>
                 </div>
               </div>
             ))}
             <div className="venta-detalle__renglon">
               <span>{SALES_TEXT.shippingCharged}</span>
               <span className="venta-detalle__renglon-monto cifra-s">
-                {formatMoney(sale.shipping_charged)}
+                {money.money(sale.shipping_charged)}
               </span>
             </div>
             <div className="venta-detalle__renglon venta-detalle__renglon--total">
               <span>{SALES_TEXT.total}</span>
-              <span className="venta-detalle__renglon-monto cifra-s">{formatMoney(sale.total)}</span>
+              <span className="venta-detalle__renglon-monto cifra-s">{money.money(sale.total)}</span>
             </div>
           </div>
         </div>
@@ -387,7 +389,7 @@ function VentaDetalleScreen() {
 
       {confirmingDelete && (
         <ConfirmDialog
-          title={deleteTitle(sale)}
+          title={deleteTitle(sale, money)}
           detail={COMMON_TEXT.cannotUndo}
           confirmText={COMMON_TEXT.yesDelete}
           cancelText={COMMON_TEXT.noKeep}
@@ -397,6 +399,6 @@ function VentaDetalleScreen() {
           onCancel={() => setConfirmingDelete(false)}
         />
       )}
-    </main>
+    </ContentArea>
   )
 }

@@ -4,11 +4,13 @@
  * from `noPriceMessage`), registered here and measured with `SAMPLES` by
  * `copy/copyLimits.test.ts`, never with fixture or API data. */
 
-import { baselineArgs, FIXTURE } from './baselineArgs.ts'
+import { baselineArgs, counted, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './sales.ts'
 import { SAMPLES, type LimitedCopy } from './limits.ts'
 import { COMMON_TEXT } from './common.ts'
 import { CUSTOMERS_TEXT } from './customers.ts'
+import { ONBOARDING_TEXT } from './onboarding.ts'
+import { STOCK_TEXT } from './stock.ts'
 import { VARIETIES_TEXT } from './varieties.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
@@ -32,7 +34,7 @@ export const SALE_BILL_TEXT = {
   shareFailed: "Couldn't share. Tap Copy and paste it into the chat.",
   copyFailed: "Couldn't copy. Select the text below and copy it by hand.",
   blockName: 'Sale bill',
-  header: (business: string, date: string) => `${business}\n${date}`,
+  header: (business: string, saleNumber: string, date: string) => `${business}\n${saleNumber} · ${date}`,
   item: (product: string, quantity: string, unit: string, amount: string) =>
     `${product} ${quantity} ${unit} · ${amount}`,
   bulk: (product: string, quantity: string, unit: string, unitPrice: string, amount: string) =>
@@ -40,9 +42,7 @@ export const SALE_BILL_TEXT = {
   gift: (product: string, quantity: string, unit: string) => `${product} ${quantity} ${unit} · Gift · $ 0`,
   shipping: (amount: string) => `Shipping · ${amount}`,
   total: (amount: string) => `Total · ${amount}`,
-  paidCash: CUSTOMERS_TEXT.paidInCash,
-  paidTransfer: CUSTOMERS_TEXT.paidByTransfer,
-  paid: 'Paid',
+  paid: CUSTOMERS_TEXT.paid,
   stillOwed: (amount: string) => `Still owed on this sale: ${amount}`,
   balance: (amount: string) => `Your balance: ${amount}`,
   credit: (amount: string) => `In your favor: ${amount}`,
@@ -61,7 +61,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
 export const LONG_REFUSALS: readonly string[] = []
 
 
-const { money: M, date: D, grams: G } = FIXTURE
+const { money: M, attachedZero: AZ, date: D, grams: G } = FIXTURE
 
 /** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({
@@ -69,14 +69,20 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.giftGrams': [[G]],
   'SALES_TEXT.lineLabel': [['2', 'Rosa']],
   'SALES_TEXT.withUnit': [['3,5']],
+  'SALES_TEXT.specialPriceAboveZero': [[AZ]],
   'SALES_TEXT.lineVariety': [['2']],
   'SALES_TEXT.lineGrams': [['2']],
   'SALES_TEXT.lineGift': [['2']],
   'SALES_TEXT.lineSpecialPrice': [['2']],
   'SALES_TEXT.removeLine': [['2']],
-  'SALES_TEXT.saleOf': [[D]],
+  'SALES_TEXT.products': counted((n) => [n]),
+  'SALES_TEXT.saleInProgressName': [
+    ['2 products', M],
+    ['1 product', null],
+  ],
+  'SALES_TEXT.saleNumber': [[1284]],
   'SALES_TEXT.deleteSaleConfirm': [[M, D, G]],
-  'SALE_BILL_TEXT.header': [['Flores Test', D]],
+  'SALE_BILL_TEXT.header': [['Flores Test', 'Sale #1284', D]],
   'SALE_BILL_TEXT.item': [['Rosa', '3,5', 'g', M]],
   'SALE_BILL_TEXT.bulk': [['Rosa', '10', 'g', M, M]],
   'SALE_BILL_TEXT.gift': [['Rosa', '1', 'g']],
@@ -106,14 +112,14 @@ export const SALES_TEXT = {
   createCustomer: 'Create customer',
   lineLabel: (n: string | number, displayName: string | number) => `Line ${n}: ${displayName}`,
   withUnit: (grams: string | number) => `${grams} g`,
-  lineVariety: (n: string | number) => `Line ${n} variety`,
+  lineVariety: (n: string | number) => `Line ${n} product`,
   lineGrams: (n: string | number) => `Line ${n} grams`,
   lineGift: (n: string | number) => `Line ${n} gift`,
   gift: 'Gift',
   lineSpecialPrice: (n: string | number) => `Line ${n} special price`,
   specialPrice: 'Special price',
   removeLine: (n: string | number) => `Remove line ${n}`,
-  saleOf: (date: string | number) => `Sale of ${date}`,
+  saleNumber: (n: number) => `Sale #${n}`,
   undo: 'Undo',
   lines: 'Lines',
   perGram: VARIETIES_TEXT.elGramo,
@@ -123,18 +129,28 @@ export const SALES_TEXT = {
   from: 'From',
   to: 'To',
   owesYou: 'owes you',
-  addAtLeastOne: 'Add at least one variety.',
+  addAtLeastOne: 'Add at least one product.',
   pickHowPaid: 'Pick how it was paid, or leave the sale owing',
-  specialPriceAboveZero: 'The special price must be more than $0',
+  /** `zero` is the business's zero amount written attached to its symbol (`useMoney().attached(0)`). */
+  specialPriceAboveZero: (zero: string) => `The special price must be more than ${zero}`,
   enterGrams: 'Enter the grams: comma, up to two decimals',
   shippingNotNegative: 'Shipping cannot be negative',
   noteTooLong: 'The note is too long',
-  noVariety: 'No variety',
+  noVariety: 'No product',
   saleHasCustomer: 'This sale already has a customer.',
   leftOwing: 'left owing',
-  paidInCash: 'paid in cash',
-  paidByTransfer: 'paid by transfer',
+  paid: 'paid',
   deleteSaleConfirm: (money: string | number, day: string | number, grams: string | number) =>
     `Delete the sale of ${money} from ${day}? ${grams} go back to stock.`,
   dates: 'Dates',
+  otherThingsToRecord: 'Other things to record',
+  expense: 'Expense',
+  saleInProgress: 'Sale in progress',
+  products: (n: number) => [n, n === 1 ? STOCK_TEXT.varietyOne : STOCK_TEXT.varietyMany].join(' '),
+  back: ONBOARDING_TEXT.back,
+  expenseRecorded: 'Expense recorded',
+  /** The strip's accessible name; the first argument is the count line from `SALES_TEXT.products(n)`; `amount` is the Total row's
+   * figure, or `null` while the prices are being recalculated (the amount clause is dropped). */
+  saleInProgressName: (products: string, amount: string | null) =>
+    amount === null ? `Sale in progress, ${products}. Back` : `Sale in progress, ${products}, ${amount}. Back`,
 } as const

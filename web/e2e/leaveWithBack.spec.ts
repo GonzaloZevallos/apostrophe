@@ -5,9 +5,10 @@
  * what was typed.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { CUSTOMER, CUSTOMER_NEW, CUSTOMERS, SALE_NEW, VARIETIES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { newBusinessInvitationUrl } from './backend.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -22,24 +23,24 @@ test('Back on a dirty Record payment and on a dirty New sale asks, and "No" keep
   page,
 }) => {
   await page.goto(newBusinessInvitationUrl())
-  await page.getByLabel('Business name').fill(`Flores del Norte ${uniqueTag()}`)
-  await page.getByLabel('Email address').fill(`duena-volver-${uniqueTag()}@example.com`)
-  await page.getByLabel('Password').fill(PASSWORD)
+  await page.getByLabel('Business name', { exact: true }).fill(`Flores del Norte ${uniqueTag()}`)
+  await page.getByLabel('Email address', { exact: true }).fill(`duena-volver-${uniqueTag()}@example.com`)
+  await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
   await page.getByRole('button', { name: 'Create the business' }).click()
   // A new business lands in the Onboarding; this spec is about something else.
   await leaveOnboarding(page)
 
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await page.getByRole('link', { name: 'New product' }).click()
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')
   await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Name').fill('Carla Volver')
+  await page.getByLabel('Name', { exact: true }).fill('Carla Volver')
   await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'New sale to Carla Volver' }).click()
@@ -51,13 +52,13 @@ test('Back on a dirty Record payment and on a dirty New sale asks, and "No" keep
   // A dirty Record payment, reached from Customers' "Collect from".
   await page.goto(CUSTOMERS)
   await page.getByRole('link', { name: 'Collect from Carla Volver' }).first().click()
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await choosePaymentMethod(page, 'Cash')
   // Back only once the form has taken the choice: a Back sent before it counts the form clean leaves unasked.
-  await expect(page.getByRole('radio', { name: 'Cash' })).toBeChecked()
+  await expect(page.getByRole('button', { name: /^Payment method/ })).toHaveText('Cash')
   await page.goBack()
   await expect(page.getByText('Discard the payment?')).toBeVisible()
   await page.getByRole('button', { name: 'No, keep entering' }).click()
-  await expect(page.getByRole('radio', { name: 'Cash' })).toBeChecked()
+  await expect(page.getByRole('button', { name: /^Payment method/ })).toHaveText('Cash')
   await page.getByRole('button', { name: 'Close' }).click()
   await page.getByRole('button', { name: 'Yes, discard it' }).click()
   await expectPath(page, CUSTOMERS)
@@ -72,5 +73,5 @@ test('Back on a dirty Record payment and on a dirty New sale asks, and "No" keep
   await expect(page.getByText('Discard the sale?')).toBeVisible()
   await page.getByRole('button', { name: 'No, keep entering' }).click()
   await expectPath(page, SALE_NEW)
-  await expect(page.getByLabel('Line 1 grams')).toHaveValue('3')
+  await expect(page.getByLabel('Line 1 grams', { exact: true })).toHaveValue('3')
 })

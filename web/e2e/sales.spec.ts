@@ -11,7 +11,7 @@
  * the design's own 900px breakpoint.
  *
  * One business proves the PRD's own metrics in sequence:
- * - The shell: the bar shows exactly Inicio, Ventas, Clientes, Variedades and Más.
+ * - The shell: the bar shows exactly Inicio, Ventas, Clientes and Variedades.
  * - "Caught before save" (3): Debiendo disabled with no customer, and a line whose
  *   variety has no price that day, both shown before any save is attempted.
  * - "Under a minute" (1): each of the three sales below — a new customer, an
@@ -47,11 +47,13 @@
  * there.
  */
 
-import { CUSTOMERS, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
+import { paidInCash } from './helpers/paymentMethod.js'
+import { CUSTOMERS, SALE, SALES, SALE_NEW, VARIETIES, VARIETY_NEW } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expectToast } from './helpers/toast.js'
-import { expect, test, withToastRecorder } from './fixtures.js'
-import { signUpNewBusiness } from './helpers/signup.js'
+import { choosePaymentMethod, expect, test, withToastRecorder } from './fixtures.js'
+import { expectBusinessNameOnPhone, signUpNewBusiness } from './helpers/signup.js'
 import { setPriceDate } from './helpers/priceDate.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -124,7 +126,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // Accept a new-business invitation.
   await signUpNewBusiness(page, { businessName, email: ownerEmail })
-  await expect(page.locator('.encabezado__negocio')).toHaveText(businessName)
+  await expectBusinessNameOnPhone(page, businessName)
 
   // Two priced varieties and one with no price at all, for the "no price that day"
   // check below. Jazmín's own price is backdated well before this run's own week
@@ -133,9 +135,11 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // desde" of today would leave those earlier dates with no price of their own.
   async function addVariety(name: string, listPrice?: string, effectiveFrom?: string): Promise<void> {
     await page.goto(VARIETIES)
-    await page.getByRole('link', { name: 'New variety' }).click()
-    await page.getByLabel('Name').fill(name)
-    await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+    await page.getByRole('link', { name: 'New product' }).click()
+    await expectPath(page, VARIETY_NEW)
+    // The exact fill below is what waits for the form: an earlier screen's "Edit name" button is not a "Name" field.
+    await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill(name)
+    await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
     if (listPrice === undefined) return
     await page.getByRole('link', { name: new RegExp(name) }).click()
     await page.getByRole('link', { name: 'New price' }).click()
@@ -149,7 +153,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   await page.goto(SALES)
 
-  // Shell metric: the bar shows exactly Inicio, Ventas, Clientes, Variedades and Más, in that
+  // Shell metric: the bar shows exactly Inicio, Ventas, Clientes and Variedades, in that
   // order — the mobile bottom bar at this viewport (`Shell.tsx`'s `.bar-inferior`;
   // the side rail, `.riel-lateral`, shares the same `aria-label` but is hidden here).
   const tabBar = page.getByRole('navigation', { name: 'Navigation' }).last()
@@ -157,8 +161,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
     'Home',
     'Sales',
     'Customers',
-    'Varieties',
-    'More',
+    'Products',
   ])
 
   // --- Sale A: caught-before-save, a new customer, two varieties, one shipping. ---
@@ -166,7 +169,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // in `Shell.tsx`'s markup) is the one CSS hides; the fixed bottom button is last.
   await page.getByRole('link', { name: 'New sale' }).last().click()
   await expectPath(page, SALE_NEW)
-  const todayIso = await page.getByLabel('Date').inputValue()
+  const todayIso = await page.getByLabel('Date', { exact: true }).inputValue()
 
   const varieties: VarietyAnswer[] = await (
     await page.request.get(`/api/products?on=${todayIso}`)
@@ -186,25 +189,25 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // Swap it for a priced variety and add a second line.
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '10' })
   await fillSaleLine(page, 2, { variety: 'Lirio', grams: '20' })
-  await page.getByLabel('Shipping').fill('1000')
-  await page.getByLabel('Note').fill('Pedido para el grupo')
+  await page.getByLabel('Shipping', { exact: true }).fill('1000')
+  await page.getByLabel('Note', { exact: true }).fill('Pedido para el grupo')
 
   // A brand-new customer, created from inside the sheet, without leaving the sale.
   await page.getByRole('button', { name: 'Pick a customer' }).click()
   await page.getByRole('button', { name: 'New customer' }).click()
-  await page.getByLabel('Phone').fill('+5491155550010')
-  await page.getByLabel('Name').fill('Carla Pérez')
+  await page.getByLabel('Phone', { exact: true }).fill('+5491155550010')
+  await page.getByLabel('Name', { exact: true }).fill('Carla Pérez')
   await page.getByRole('button', { name: 'Create customer' }).click()
   await expect(page.getByText('Pick a customer')).toHaveCount(0)
   await expect(page.locator('.lista-clientes__nombre')).toHaveText('Carla Pérez')
 
   // Choosing a customer turns Debiendo back on; Efectivo is used here instead.
   await expect(page.getByRole('radio', { name: 'Owing' })).toBeEnabled()
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
 
   // The live preview, before saving — every line, not only the sale's own total:
   // PRD metric 2, "0 differences" against what the detail shows after saving.
-  // Line 1 (Jazmín) is now the closed row — "Add another variety" closed it
+  // Line 1 (Jazmín) is now the closed row — "Add another product" closed it
   // when line 2 opened (plan, "Line editor": one open line at a time); line 2
   // (Lirio) is still the open editor.
   const previewJazmin = page.getByRole('button', { name: /^Line 1: Jazmín/ })
@@ -212,7 +215,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(previewJazmin.getByText('$ 500 x g', { exact: true })).toBeVisible()
   await expect(previewJazmin.getByText('$ 5.000', { exact: true })).toBeVisible()
 
-  const previewLirio = page.locator('.nueva-venta__linea--abierta').filter({ has: page.getByLabel('Line 2 variety') })
+  const previewLirio = page.locator('.nueva-venta__linea--abierta').filter({ has: page.getByRole('button', { name: /^Line 2 product/ }) })
   await expect(previewLirio.locator('.insignia')).toHaveText('list')
   await expect(previewLirio.getByText('$ 300 x g', { exact: true })).toBeVisible()
   await expect(previewLirio.getByText('$ 6.000', { exact: true })).toBeVisible()
@@ -257,7 +260,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expect(page.locator('.lista-clientes__nombre')).toHaveText('Carla Pérez')
 
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '4', gift: true })
-  await expect(page.getByLabel('Line 1 special price')).toBeDisabled()
+  await expect(page.getByLabel('Line 1 special price', { exact: true })).toBeDisabled()
 
   // A $0 sale — a gift line marked by hand on a variety that does have a price
   // (Jazmín): saving is never blocked for a missing payment method when the total
@@ -276,7 +279,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await page.goto(SALES)
   await page.getByRole('link', { name: 'New sale' }).last().click()
   await fillSaleLine(page, 1, { variety: 'Jazmín', grams: '2' })
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
   await page.getByRole('button', { name: 'Save sale' }).click()
   await expectPath(page, SALE)
   await expect(page.getByText('Sale saved')).toBeVisible()
@@ -285,7 +288,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   // Assigning a customer: the sheet never offers "No customer" here.
   await page.getByRole('button', { name: 'Assign customer' }).click()
   await expect(page.getByRole('button', { name: 'No customer' })).toHaveCount(0)
-  await page.getByLabel('Search').fill('Carla')
+  await page.getByLabel('Search', { exact: true }).fill('Carla')
   await expectToast(page, 'Customer assigned', () => page.getByRole('button', { name: /Carla Pérez/ }).click())
   await expect(page.getByRole('button', { name: 'Assign customer' })).toHaveCount(0)
 
@@ -312,7 +315,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
         customer_id: null,
         shipping_charged: 0,
         note: null,
-        payment: 'cash',
+        payment: await paidInCash(page),
         lines: [{ product_id: jazminId, quantity: grams, gift: false, special_price: null }],
       },
     })
@@ -405,9 +408,9 @@ test('the Regalo switch is checked by a real tap, shows a press without flipping
     email: `duena-regalo-${uniqueTag()}@example.com`,
   })
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await page.getByRole('link', { name: 'New product' }).click()
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')
@@ -443,7 +446,7 @@ test('the Regalo switch is checked by a real tap, shows a press without flipping
   await expect(regalo).not.toBeChecked()
 
   // A special price makes the gift inert: pressing it shows nothing and changes nothing.
-  await page.getByLabel('Line 1 special price').fill('500')
+  await page.getByLabel('Line 1 special price', { exact: true }).fill('500')
   await expect(regalo).toBeDisabled()
   const inactive = await whilePressed(page, '.opcion-interruptor')
   expect(inactive.pressed.transform).toBe('none')

@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-04
+summary: "las cifras de un período se suman una sola vez en resultados"
 ---
 
 # Period figures are summed once, in a results hexagon, from one pass of draw costs

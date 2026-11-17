@@ -30,7 +30,7 @@ import { EMPTY_DETAIL, EMPTY_TITLE } from '../copy/varieties'
 import { LIMITS, SAMPLES } from '../copy/limits'
 import { chooseTheme } from '../theme'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 
 function price(list: number) {
   return { id: 1, effective_from: '2026-09-25', list_price: list, bulk_price: null, bulk_minimum: null, vip_price: null }
@@ -201,7 +201,7 @@ describe('the list', () => {
       },
     })
 
-    expect(await screen.findByText('2 varieties · all ok')).toBeInTheDocument()
+    expect(await screen.findByText('2 products · all ok')).toBeInTheDocument()
   })
 
   test('with no varieties there is no summary line, the fixed empty state, and the actions stay', async () => {
@@ -212,23 +212,23 @@ describe('the list', () => {
       },
     })
 
-    expect(await screen.findByText('No varieties yet')).toBeInTheDocument()
+    expect(await screen.findByText('No products yet')).toBeInTheDocument()
     expect(screen.queryByText(/all ok|no entries ·/)).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Send catalog' })).toHaveAttribute('href', CATALOG)
-    expect(screen.getByRole('link', { name: 'New variety' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'New product' })).toBeInTheDocument()
   })
 
-  test('the actions lead to the catalog, the entry form, the new variety form and every entry', async () => {
+  test('the actions lead to the catalog, the entry form, the new product form and every entry', async () => {
     renderApp(VARIETIES_PATH)
 
     await screen.findByText('24K Gold')
     expect(screen.getByRole('link', { name: 'Send catalog' })).toHaveAttribute('href', CATALOG)
     expect(screen.getByRole('link', { name: '+ Stock entry' })).toHaveAttribute('href', STOCK_ENTRY_NEW)
-    expect(screen.getByRole('link', { name: 'New variety' })).toHaveAttribute('href', VARIETY_NEW)
+    expect(screen.getByRole('link', { name: 'New product' })).toHaveAttribute('href', VARIETY_NEW)
     expect(screen.getByRole('link', { name: /All entries/ })).toHaveAttribute('href', STOCK_PATH)
   })
 
-  test('a secondary "Take from stock" opens the withdrawal form with no variety chosen', async () => {
+  test('a secondary "Take from stock" opens the withdrawal form with no product chosen', async () => {
     renderApp(VARIETIES_PATH)
 
     await screen.findByText('24K Gold')
@@ -237,7 +237,7 @@ describe('the list', () => {
     expect(link).toHaveClass('boton--suave')
   })
 
-  test('the bar has no Stock tab: Inicio, Ventas, Clientes, Variedades and Más', async () => {
+  test('the bar has no Stock tab: Inicio, Ventas, Clientes and Variedades', async () => {
     renderApp(VARIETIES_PATH)
 
     await screen.findByText('24K Gold')
@@ -246,8 +246,7 @@ describe('the list', () => {
       'Home',
       'Sales',
       'Customers',
-      'Varieties',
-      'More',
+      'Products',
     ])
   })
 
@@ -334,9 +333,9 @@ describe('on a computer: two panes', () => {
       },
     })
 
-    expect(await screen.findByText('No varieties yet')).toBeInTheDocument()
+    expect(await screen.findByText('No products yet')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(VARIETIES_PATH)
-    expect(screen.getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Varieties'])
+    expect(screen.getAllByRole('heading').map((heading) => heading.textContent)).toEqual(['Products'])
   })
 
   test('Back from a form opened over the page returns to the variety, both panes still there', async () => {
@@ -366,8 +365,8 @@ describe('removing the selected variety on a computer', () => {
   const BY_NAME = [ACIDO, BUBBA, CRITICAL, ZKITTLEZ]
 
   const WORDS = {
-    archive: { button: 'Archive variety', confirm: 'Yes, archive it', toast: 'Variety archived' },
-    delete: { button: 'Delete variety', confirm: 'Yes, delete it', toast: 'Variety deleted' },
+    archive: { button: 'Archive product', confirm: 'Yes, archive it', toast: 'Product archived' },
+    delete: { button: 'Delete product', confirm: 'Yes, delete it', toast: 'Product deleted' },
   }
 
   /** The left pane's links to the given variety. By href: a row's accessible name starts with its
@@ -459,7 +458,7 @@ describe('the icon and text rule', () => {
     renderApp(VARIETIES_PATH)
     await screen.findByText('24K Gold')
 
-    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas'] })
+    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas', 'inicio__avatar'] })
     for (const name of ['Send catalog', '+ Stock entry', 'Take from stock']) {
       const link = screen.getByRole('link', { name })
       expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
@@ -471,7 +470,7 @@ describe('the icon and text rule', () => {
     await screen.findByText('24K Gold')
     screen.getByRole('link', { name: 'Take from stock' }).querySelector('svg')?.remove()
 
-    const problems = iconAndTextProblems(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas'] })
+    const problems = iconAndTextProblems(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas', 'inicio__avatar'] })
     expect(problems).toHaveLength(1)
     expect(problems[0]).toContain('Take from stock')
   })
@@ -483,10 +482,10 @@ describe('the icon and text rule', () => {
         'GET /stock': () => json(200, { total: 0, products: [], entries: [] }),
       },
     })
-    await screen.findByText('No varieties yet')
+    await screen.findByText('No products yet')
 
     expectIconAndTextRule(screen.getByRole('main'), {
-      optionClasses: ['variedades__todas'],
+      optionClasses: ['variedades__todas', 'inicio__avatar'],
       limits: LIMITS,
       samples: SAMPLES,
     })
@@ -504,23 +503,23 @@ describe('the icon and text rule', () => {
     const title = await screen.findByText(EMPTY_TITLE)
     title.textContent = 'x'.repeat(LIMITS.emptyTitle + 1)
 
-    const problems = iconAndTextProblems(screen.getByRole('main'), { limits: LIMITS, samples: SAMPLES })
+    const problems = iconAndTextProblems(screen.getByRole('main'), { limits: LIMITS, samples: SAMPLES, optionClasses: ['inicio__avatar'] })
     expect(problems.filter((problem) => problem.includes('emptyTitle'))).toHaveLength(1)
   })
 })
 
-describe('New variety', () => {
-  test('saves the name, says "Variety saved" and goes back to the list', async () => {
+describe('New product', () => {
+  test('saves the name, says "Product saved" and goes back to the list', async () => {
     const { router, fetchMock } = renderApp(VARIETIES_PATH, {
       answers: { 'POST /api/products': () => json(201, { id: 9, name: 'Sour Diesel', current_price: null }) },
     })
-    await userEvent.click(await screen.findByRole('link', { name: 'New variety' }))
+    await userEvent.click(await screen.findByRole('link', { name: 'New product' }))
 
-    await userEvent.type(await screen.findByPlaceholderText('Variety name'), 'Sour Diesel')
+    await userEvent.type(await screen.findByPlaceholderText('Product name'), 'Sour Diesel')
     fetchMock.mockClear()
-    await userEvent.click(screen.getByRole('button', { name: 'Add the variety' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Add the product' }))
 
-    expect(await screen.findByText('Variety saved')).toBeInTheDocument()
+    expect(await screen.findByText('Product saved')).toBeInTheDocument()
     expect(writes(fetchMock)).toEqual([{ call: 'POST /api/products', body: { name: 'Sour Diesel' } }])
     expect(router.state.location.pathname).toBe(VARIETIES_PATH)
   })
@@ -530,11 +529,11 @@ describe('New variety', () => {
       answers: { 'POST /api/products': () => json(409, { code: 'variety.name_taken' }) },
     })
 
-    await userEvent.type(await screen.findByPlaceholderText('Variety name'), 'Sir Jack')
-    await userEvent.click(screen.getByRole('button', { name: 'Add the variety' }))
+    await userEvent.type(await screen.findByPlaceholderText('Product name'), 'Sir Jack')
+    await userEvent.click(screen.getByRole('button', { name: 'Add the product' }))
 
-    expect(await screen.findByText('A variety with that name already exists')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Variety name')).toHaveValue('Sir Jack')
+    expect(await screen.findByText('A product with that name already exists')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Product name')).toHaveValue('Sir Jack')
   })
 
   test('a name held by an archived variety shows its own refusal under the name and keeps what was typed', async () => {
@@ -542,22 +541,22 @@ describe('New variety', () => {
       answers: { 'POST /api/products': () => json(409, { code: 'variety.name_archived' }) },
     })
 
-    await userEvent.type(await screen.findByPlaceholderText('Variety name'), 'Sir Jack')
-    await userEvent.click(screen.getByRole('button', { name: 'Add the variety' }))
+    await userEvent.type(await screen.findByPlaceholderText('Product name'), 'Sir Jack')
+    await userEvent.click(screen.getByRole('button', { name: 'Add the product' }))
 
     const alert = await screen.findByRole('alert')
-    expect(alert).toHaveTextContent('That name belongs to an archived variety. Look for it in Archived.')
+    expect(alert).toHaveTextContent('That name belongs to an archived product. Look for it in Archived.')
     expect(alert.closest('label')).toHaveTextContent('Name')
-    expect(screen.getByPlaceholderText('Variety name')).toHaveValue('Sir Jack')
+    expect(screen.getByPlaceholderText('Product name')).toHaveValue('Sir Jack')
   })
 
   test('"Close" with something typed asks before discarding; with nothing, it just leaves', async () => {
     const { router } = renderApp(VARIETIES_PATH)
-    await userEvent.click(await screen.findByRole('link', { name: 'New variety' }))
-    await userEvent.type(await screen.findByPlaceholderText('Variety name'), 'Sour')
+    await userEvent.click(await screen.findByRole('link', { name: 'New product' }))
+    await userEvent.type(await screen.findByPlaceholderText('Product name'), 'Sour')
 
     await userEvent.click(screen.getByRole('button', { name: 'Close' }))
-    expect(await screen.findByText('Discard the variety?')).toBeInTheDocument()
+    expect(await screen.findByText('Discard the product?')).toBeInTheDocument()
     expect(router.state.location.pathname).toBe(VARIETY_NEW)
 
     await userEvent.click(screen.getByRole('button', { name: 'Yes, discard it' }))
@@ -577,14 +576,14 @@ describe('Nueva variety and the icon and text rule', () => {
   test('the form keeps its name help within the limit and the rule', async () => {
     renderApp(VARIETY_NEW)
 
-    await screen.findByRole('button', { name: 'Add the variety' })
+    await screen.findByRole('button', { name: 'Add the product' })
     expect(document.querySelectorAll('[data-copy="help"]')).toHaveLength(1)
-    expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS })
+    expectIconAndTextRule(screen.getByRole('main'), { limits: LIMITS, optionClasses: ['inicio__avatar'] })
   })
 })
 
-describe('"Send catalog" and the first-run checklist', () => {
-  const REASON = 'Add a variety with a price and its stock'
+describe('"Send catalog" while /first-run answers checklist and nothing qualifies', () => {
+  const REASON = 'Add a product with a price and its stock'
   const CHECKLIST_EMPTY: FirstRunAnswer = {
     kind: 'checklist',
     checklist: [

@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-02
+summary: "usuarios con correo y contraseña, solo se entra por invitación, sesión firmada"
 ---
 
 # Users with email and password, invitations as the only way in, a signed session
@@ -84,3 +85,5 @@ from Negocio (`POST /auth/password`)".
   issues a reset link with `scripts/reset-password.sh <email>`, nobody edits the
   database by hand, and a changed password hash still closes every session of that
   user.
+
+> Amended by ADR-0077: `login_guard` and `login_address_guard` now have a surrogate `id` primary key; `email` / `address_digest` are unique, and `locked_until` / `window_start` are `unlocks_at` / `window_started_at`.

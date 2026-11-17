@@ -21,6 +21,7 @@ import SinConexion from '../../components/SinConexion'
 import { HOME, ONBOARDING_DONE } from '../../routes'
 import { isListoState } from './afterProgress'
 import type { OnboardingContext } from './onboardingContext'
+import ContentArea from '../../components/ContentArea'
 
 export default function OnboardingLayout() {
   const me = useOutletContext<Me>()
@@ -32,14 +33,20 @@ export default function OnboardingLayout() {
 
   if (query.isError) {
     return (
-      <main className="pantalla onboarding">
+      <ContentArea as="main" className="pantalla onboarding">
         <div className="onboarding__columna">
           {query.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}
         </div>
-      </main>
+      </ContentArea>
     )
   }
-  if (query.data === undefined) return <Loading />
+  if (query.data === undefined) {
+    return (
+      <ContentArea as="main" className="pantalla onboarding">
+        <Loading />
+      </ContentArea>
+    )
+  }
 
   const progress = query.data
   if (closedOnEntry === null) setClosedOnEntry(!progress.offered || progress.over)

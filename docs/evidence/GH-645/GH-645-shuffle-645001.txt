@@ -1,0 +1,8 @@
+
+e2eToastRule: 115 sites observed in the page, 12 kept on page text, 4 pending
+
+ Test Files  289 passed | 1 skipped (290)
+      Tests  4558 passed | 4 skipped (4562)
+   Start at  12:52:55
+   Duration  422.27s (tests 43%, environment 38%, setup 8%, import 7%, transform 4%)
+

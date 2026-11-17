@@ -15,6 +15,7 @@ import { ApiError, NetworkError, UNKNOWN_CODE, post } from '../../api/client'
 import { invalidateResource } from '../../api/keys'
 import type { PricingSettings } from '../../api/pricingSettings'
 import { chipDate } from '../../format/dates'
+import { useMoney } from '../../format/moneyContext'
 import { isGone, kindOf } from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
@@ -23,6 +24,7 @@ import SinConexion from '../../components/SinConexion'
 import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'
 import Boton from '../../components/Boton'
 import PriceFields, { FieldError } from './PriceFields'
+import { useVipPriceSettings } from './useVipPriceField'
 import { PRICE_SAVED, VARIETIES_TEXT } from '../../copy/varieties'
 import {
   fieldOfCode,
@@ -51,7 +53,7 @@ export interface PriceFormProps {
 export default function PriceForm({
   varietyId,
   today,
-  settings,
+  settings: switches,
   onDone,
   onCancel,
   onDirtyChange,
@@ -60,8 +62,10 @@ export default function PriceForm({
   titleId,
   titleRef,
 }: PriceFormProps) {
+  const settings = useVipPriceSettings(switches)
   const queryClient = useQueryClient()
   const { t } = useTranslation()
+  const money = useMoney()
   const [effectiveFrom, setEffectiveFrom] = useState(today)
   const [values, setValues] = useState<PriceValues>({
     listPrice: '',
@@ -90,7 +94,7 @@ export default function PriceForm({
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setOffline(false)
-    const read = readPriceValues(values, settings)
+    const read = readPriceValues(values, settings, money.format)
     if (!read.ok) {
       setErrors(read.errors)
       return
@@ -109,7 +113,7 @@ export default function PriceForm({
         invalidateResource(queryClient, 'varieties')
         onGone()
       } else if (caught instanceof ApiError) {
-        const mapped = fieldOfCode(caught.code)
+        const mapped = fieldOfCode(caught.code, money.format)
         if (mapped !== undefined) setErrors({ [mapped.field]: messageText(t, mapped.message) })
         else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
           setErrors({ form: GENERIC_REFUSAL_MESSAGE })

@@ -9,14 +9,17 @@ from __future__ import annotations
 
 from collections.abc import Collection, Mapping, Sequence
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
 
 from app.customers.adapters.tables import CustomerRow
+from app.db import domain_amount, money_scale_factor, scaled
+from app.payment_methods.adapters.tables import PaymentMethodRow
 from app.payments.adapters.tables import PaymentRow
 from app.payments.application.ports import NamedLedger
-from app.payments.domain.settlement import LaterPaymentEntry, Ledger, OwedSale, PaymentMethod
+from app.payments.domain.settlement import LaterPaymentEntry, Ledger, OwedSale
 from app.sales.adapters.tables import SaleLineRow, SaleRow
+from app.shared.payment_method import PaymentMethodLabel
 
 
 class SqlLedgers:
@@ -54,24 +57,34 @@ class SqlLedgers:
         if not ids:
             return {}
 
+        factor = money_scale_factor(self._session, self._business_id)
         line_totals = dict(
             self._session.execute(
-                select(SaleLineRow.sale_id, func.sum(SaleLineRow.line_total))
+                select(SaleLineRow.sale_id, func.sum(scaled(SaleLineRow.line_total, factor)))
                 .where(SaleLineRow.business_id == self._business_id)
                 .group_by(SaleLineRow.sale_id)
             ).all()
         )
 
-        on_the_spot_methods: dict[int, PaymentMethod] = {}
+        on_the_spot_methods: dict[int, PaymentMethodLabel] = {}
         later_by_customer: dict[int, list[LaterPaymentEntry]] = {}
-        for payment in self._session.scalars(
-            select(PaymentRow).where(
+        for payment, amount, label in self._session.execute(
+            select(PaymentRow, scaled(PaymentRow.amount, factor), PaymentMethodRow)
+            .join(
+                PaymentMethodRow,
+                and_(
+                    PaymentMethodRow.business_id == PaymentRow.business_id,
+                    PaymentMethodRow.id == PaymentRow.payment_method_id,
+                ),
+            )
+            .where(
                 PaymentRow.business_id == self._business_id,
                 PaymentRow.customer_id.in_(ids),
             )
         ):
+            method = PaymentMethodLabel(id=label.id, name=label.name, icon=label.icon)
             if payment.sale_id is not None:
-                on_the_spot_methods[payment.sale_id] = PaymentMethod(payment.method)
+                on_the_spot_methods[payment.sale_id] = method
             else:
                 assert payment.customer_id is not None, "a later payment always names a customer"
                 later_by_customer.setdefault(payment.customer_id, []).append(
@@ -79,24 +92,26 @@ class SqlLedgers:
                         id=payment.id,
                         paid_on=payment.paid_on,
                         recorded_at=payment.recorded_at,
-                        amount=payment.amount,
-                        method=PaymentMethod(payment.method),
+                        amount=domain_amount(self._session, self._business_id, amount),
+                        method=method,
                     )
                 )
 
         sales_by_customer: dict[int, list[OwedSale]] = {}
-        for sale in self._session.scalars(
-            select(SaleRow).where(
+        for sale, shipping in self._session.execute(
+            select(SaleRow, scaled(SaleRow.shipping_charged, factor)).where(
                 SaleRow.business_id == self._business_id,
                 SaleRow.customer_id.in_(ids),
             )
         ):
             assert sale.customer_id is not None, "filtered to sales that have one"
-            total = sale.shipping_charged + line_totals.get(sale.id, 0)
+            total = domain_amount(
+                self._session, self._business_id, shipping + line_totals.get(sale.id, 0)
+            )
             sales_by_customer.setdefault(sale.customer_id, []).append(
                 OwedSale(
                     id=sale.id,
-                    date=sale.sale_date,
+                    date=sale.sold_on,
                     recorded_at=sale.recorded_at,
                     total=total,
                     on_the_spot_method=on_the_spot_methods.get(sale.id),

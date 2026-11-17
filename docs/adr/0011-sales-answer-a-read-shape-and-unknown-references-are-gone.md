@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-03
+summary: "las ventas responden una forma de lectura rotulada; una referencia desconocida es 404"
 ---
 
 # Sales answer a labelled read shape; an unknown customer or variety is gone (404); payment may be omitted

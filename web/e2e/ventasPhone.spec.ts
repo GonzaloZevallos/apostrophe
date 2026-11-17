@@ -8,6 +8,8 @@
  * nothing overflows the page sideways. On a computer the tabs keep the plain list.
  */
 
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'
+import { paidInCash } from './helpers/paymentMethod.js'
 import { SALES, VARIETIES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
@@ -52,9 +54,9 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
   await signUpNewBusiness(page, { businessName: `Vivero Telefono ${uniqueTag()}`, email: `duena-telefono-${uniqueTag()}@example.com` })
 
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Name').fill('Jazmín')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await page.getByRole('link', { name: 'New product' }).click()
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Jazmín')
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Jazmín/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await setPriceDate(page, '2000-01-01')
@@ -76,7 +78,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
       customer_id: null,
       shipping_charged: 0,
       note: null,
-      payment: 'cash',
+      payment: await paidInCash(page),
       lines: [{ product_id: jazmin.id, quantity: '10', gift: false, special_price: null }],
     },
   })

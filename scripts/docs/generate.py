@@ -28,6 +28,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
+from scripts.docs.adr_index import AdrIndexError, index_text
 from scripts.docs.discover import discover
 from scripts.docs.front import (
     direct_name,
@@ -72,6 +73,7 @@ from scripts.docs.writer import write_tree
 LAYERS = ("domain", "application", "adapters")
 GENERATED = PurePosixPath("docs/architecture/generated")
 API = PurePosixPath("docs/api")
+DECISIONES = PurePosixPath("docs/architecture/decisiones.md")
 FRONT_MODULES = GENERATED / "front-modules"
 SPLIT_NOTE = "Edges between children are not drawn."
 PACKAGES_SPLIT_NOTE = "Edges between layers are not drawn."
@@ -358,6 +360,7 @@ def produce(
     )
     outputs[API / "openapi.json"] = openapi()
     outputs.update(_reference_section(run_tool, outputs[API / "openapi.json"]))
+    outputs[DECISIONES] = index_text(repo_root / "docs" / "adr")
     return outputs
 
 
@@ -430,6 +433,9 @@ def run(
         outputs = produce(repo_root, run_tool, limits, openapi)
     except ToolError as error:
         report(f"<tools>: block 0: tool-failed: {error}")
+        return 1
+    except AdrIndexError as error:
+        report(f"docs/adr/{error}")
         return 1
     with tempfile.TemporaryDirectory(prefix="docs-stage-") as stage_name:
         stage = Path(stage_name)

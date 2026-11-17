@@ -3,7 +3,7 @@ agentic-system ADR-0064): structure only. The gate that reads them is another sy
 what this product owes is that every form can be substituted and exits non-zero on an
 empty selection (never `--passWithNoTests`), that the fallback globs never swallow what
 the e2e wrapper judges sound, and that `delivery_checks` names only declared checks, leaves
-`web-e2e` out (it is a check of the full tier and of CI only, GH-476) and still runs each sweep
+`web-e2e` out (end-to-end is judged by GitHub CI only, GH-699) and still runs each sweep
 file the fast tier must not lose."""
 
 from __future__ import annotations
@@ -244,9 +244,9 @@ def test_delivery_checks_are_not_empty_and_have_no_duplicates() -> None:
     assert len(DELIVERY) == len(set(DELIVERY))
 
 
-def test_web_e2e_is_a_full_tier_check_only() -> None:
-    assert "web-e2e" in CHECKS
-    assert "web-e2e" in AFFECTED
+def test_web_e2e_is_not_a_local_check() -> None:
+    assert "web-e2e" not in CHECKS
+    assert "web-e2e" not in AFFECTED
     assert "web-e2e" not in DELIVERY
 
 

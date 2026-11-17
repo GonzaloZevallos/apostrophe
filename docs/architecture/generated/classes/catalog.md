@@ -106,8 +106,8 @@ classDiagram
   }
   class CatalogPrice {
     bulk_minimum : Quantity #124; None
-    bulk_price : int #124; None
-    list_price : int
+    bulk_price : Money #124; None
+    list_price : Money
   }
   class CatalogProduct {
     id : int
@@ -169,6 +169,9 @@ classDiagram
   }
   class CatalogLanguage {
     language_of(business_id: int) Language
+  }
+  class CatalogMoneyFormat {
+    current() MoneyFormat
   }
   class CatalogPricingSettings {
     current() PricingSettings

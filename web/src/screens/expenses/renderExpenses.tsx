@@ -1,25 +1,31 @@
 /**
  * Test harness for the expense screens: the real data router (`createMemoryRouter`)
  * with the gated layout's flash provider and `Shell`, `Gastos` and the form route
- * mounted as `router.tsx` mounts them, `fetch` faked, and a stand-in for Más (the
- * screen that opens the form in the app, built by another subtask).
+ * mounted as `router.tsx` mounts them, `fetch` faked, and a stand-in for Analysis that holds
+ * the real Expenses card (the phone's entry that opens the form).
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render } from '@testing-library/react'
-import InAppLink from '../../components/InAppLink'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
-import { vi } from 'vitest'
+import { expect, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import type { ShownLanguage } from '../../api/language'
 import FlashProvider from '../../flash/FlashProvider'
-import { EXPENSES, EXPENSE_NEW, MORE, relative } from '../../routes'
+import { ANALYSIS, EXPENSES, EXPENSE_NEW, relative } from '../../routes'
 import Shell from '../../shell/Shell'
 import Gastos from '../Gastos'
 import ExpenseNewRoute from './ExpenseNewRoute'
-import { EXPENSES_TEXT } from '../../copy/expenses'
+import ExpensesCard from '../analisis/ExpensesCard'
+import ContentArea from '../../components/ContentArea'
+import { SheetRouterProvider } from '../../components/useSheetStack'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage }
+/** What the Analysis stand-in says, so a test can tell it is the screen the form went back to. */
+export const ANALYSIS_SCREEN = 'Analysis screen'
+
+export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage, money: { symbol: '$', decimals: 0 } }
 
 export function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -31,14 +37,14 @@ export function jsonResponse(status: number, body: unknown): Response {
 export type FetchImpl = (url: string, init?: RequestInit) => Promise<Response>
 
 /** Renders the app at `initialEntries` (the last one is current). */
-export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
+export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl, me: Me = ME) {
   vi.stubGlobal('fetch', vi.fn(fetchImpl))
   const router = createMemoryRouter(
     [
       {
         element: (
           <FlashProvider>
-            <Outlet context={ME} />
+            <MoneyFormatProvider format={me.money}><Outlet context={me} /></MoneyFormatProvider>
           </FlashProvider>
         ),
         children: [
@@ -46,15 +52,13 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
             element: <Shell />,
             children: [
               {
-                path: relative(MORE),
-                handle: { screen: 'more' },
+                path: relative(ANALYSIS),
+                handle: { screen: 'analysis' },
                 element: (
-                  <main>
-                    <span>{EXPENSES_TEXT.moreScreen}</span>
-                    <InAppLink to={EXPENSE_NEW}>
-                      {EXPENSES_TEXT.addExpenseFromMore}
-                    </InAppLink>
-                  </main>
+                  <ContentArea as="main">
+                    <span>{ANALYSIS_SCREEN}</span>
+                    <ExpensesCard />
+                  </ContentArea>
                 ),
               },
               { path: relative(EXPENSES), element: <Gastos />, handle: { screen: 'expenses' } },
@@ -72,8 +76,26 @@ export function renderExpenses(initialEntries: string[], fetchImpl: FetchImpl) {
   )
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
   return router
+}
+
+/** The Category field's button, found by its name (the Selector's field). */
+export async function categoryField(): Promise<HTMLElement> {
+  return screen.findByRole('button', { name: /^Category/ })
+}
+
+/**
+ * Chooses a Category the way a person does: opens the field, then picks the option, in the
+ * computer's dropdown (`option`) or the phone's list (a button in the list).
+ */
+export async function chooseCategory(name: string): Promise<void> {
+  await userEvent.click(await categoryField())
+  const option = screen.queryByRole('option', { name }) ?? (await screen.findByRole('button', { name }))
+  await userEvent.click(option)
+  await waitFor(() => expect(option).not.toBeInTheDocument())
 }

@@ -23,6 +23,7 @@ ALWAYS_DIRS = (
     "operator_copy",
     "shared",
     "docs",
+    "ci",
 )
 # Test directories that hold support code, not tests.
 SUPPORT_DIRS = ("fakes", "fixtures")

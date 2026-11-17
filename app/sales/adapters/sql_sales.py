@@ -14,14 +14,23 @@ from datetime import date, datetime
 from typing import cast
 
 from sqlalchemy import delete as sa_delete
-from sqlalchemy import select, update
+from sqlalchemy import exists, insert, literal, null, select, update
 from sqlalchemy.engine import CursorResult
 from sqlalchemy.orm import InstrumentedAttribute, Session
 from sqlalchemy.sql.elements import ColumnElement
 
+from app.accounts.adapters.tables import BusinessRow
 from app.customer_types.adapters.vip_type import SqlVipType
 from app.customers.adapters.tables import CustomerRow
-from app.db import flush_or_refuse
+from app.db import (
+    domain_amount,
+    flush_or_refuse,
+    money_of_domain,
+    money_scale_factor,
+    money_stored_value,
+    scaled,
+)
+from app.payment_methods.adapters.tables import PaymentMethodRow
 from app.payments.adapters.tables import PaymentRow
 from app.products.adapters.tables import ProductRow
 from app.sales.adapters.tables import SaleLineRow, SaleRow
@@ -30,9 +39,13 @@ from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import (
     CustomerAlreadyAssigned,
     OnTheSpotPayment,
-    PaymentMethod,
     Sale,
     SaleLine,
+)
+from app.shared.payment_method import (
+    PaymentMethodId,
+    PaymentMethodLabel,
+    PaymentMethodUnavailable,
 )
 from app.shared.quantity import Quantity
 
@@ -43,11 +56,21 @@ class SqlSales:
         self._business_id = business_id
 
     def add(self, sale: Sale) -> Sale:
+        # The only place a Sale number is given (docs/adr/0073): one UPDATE ... RETURNING
+        # on the business's counter, before anything else is written, inside the use
+        # case's single commit. A save that fails rolls the increment back with it.
+        number = self._session.execute(
+            update(BusinessRow)
+            .where(BusinessRow.id == self._business_id)
+            .values(last_sale_number=BusinessRow.last_sale_number + 1)
+            .returning(BusinessRow.last_sale_number)
+        ).scalar_one()
         row = SaleRow(
             business_id=self._business_id,
-            sale_date=sale.date,
+            number=number,
+            sold_on=sale.date,
             customer_id=sale.customer_id,
-            shipping_charged=sale.shipping_charged,
+            shipping_charged=self._stored(sale.shipping_charged),
             note=sale.note,
             recorded_at=sale.recorded_at,
         )
@@ -56,25 +79,31 @@ class SqlSales:
 
         for position, line in enumerate(sale.lines):
             self._session.add(self._line_row(row.id, line, position))
+        flush_or_refuse(self._session)
 
         if sale.payment is not None:
-            self._session.add(self._payment_row(row.id, sale.payment, sale.recorded_at))
+            self._insert_payment(row.id, sale.payment, sale.recorded_at)
 
         flush_or_refuse(self._session)
-        return self._assemble(row)
+        stored = self._assemble(row.id)
+        assert stored is not None, "the sale just added still exists"
+        return stored
 
     def get(self, sale_id: int) -> Sale | None:
-        row = self._row(sale_id)
-        return None if row is None else self._assemble(row)
+        return self._assemble(sale_id)
 
     def list(self, date_from: date | None, date_to: date | None) -> list[Sale]:
-        statement = select(SaleRow).where(SaleRow.business_id == self._business_id)
+        statement = select(SaleRow.id).where(SaleRow.business_id == self._business_id)
         if date_from is not None:
-            statement = statement.where(SaleRow.sale_date >= date_from)
+            statement = statement.where(SaleRow.sold_on >= date_from)
         if date_to is not None:
-            statement = statement.where(SaleRow.sale_date <= date_to)
-        statement = statement.order_by(SaleRow.sale_date.desc(), SaleRow.id.desc())
-        return [self._assemble(row) for row in self._session.scalars(statement)]
+            statement = statement.where(SaleRow.sold_on <= date_to)
+        statement = statement.order_by(SaleRow.sold_on.desc(), SaleRow.id.desc())
+        return [
+            sale
+            for sale_id in self._session.scalars(statement).all()
+            if (sale := self._assemble(sale_id)) is not None
+        ]
 
     def assign_customer(self, sale_id: int, customer_id: int) -> None:
         # `Session.execute` answers the generic `Result`; an `UPDATE` always gives
@@ -140,17 +169,19 @@ class SqlSales:
         The first joins the sale to its customer and its payment, both filtered on
         this business in their `ON` clause as well as the sale's own `WHERE`; the
         second joins every listed sale's lines to their variety, the same way."""
+        factor = money_scale_factor(self._session, self._business_id)
         statement = (
             select(
                 SaleRow,
+                scaled(SaleRow.shipping_charged, factor),
                 CustomerRow.id,
                 CustomerRow.name,
                 CustomerRow.customer_type_id,
                 PaymentRow.id,
                 PaymentRow.paid_on,
-                PaymentRow.amount,
-                PaymentRow.method,
+                scaled(PaymentRow.amount, factor),
                 PaymentRow.customer_id,
+                PaymentMethodRow,
             )
             .outerjoin(
                 CustomerRow,
@@ -161,12 +192,17 @@ class SqlSales:
                 PaymentRow,
                 (PaymentRow.sale_id == SaleRow.id) & (PaymentRow.business_id == self._business_id),
             )
+            .outerjoin(
+                PaymentMethodRow,
+                (PaymentMethodRow.id == PaymentRow.payment_method_id)
+                & (PaymentMethodRow.business_id == self._business_id),
+            )
             .where(SaleRow.business_id == self._business_id)
         )
         if sale_ids is not None:
             statement = statement.where(SaleRow.id.in_(sale_ids))
-        statement = statement.where(*_dated_conditions(SaleRow.sale_date, date_from, date_to))
-        statement = statement.order_by(SaleRow.sale_date.desc(), SaleRow.id.desc())
+        statement = statement.where(*_dated_conditions(SaleRow.sold_on, date_from, date_to))
+        statement = statement.order_by(SaleRow.sold_on.desc(), SaleRow.id.desc())
 
         rows = self._session.execute(statement).all()
         vip_type_id = SqlVipType(self._session, self._business_id).id()
@@ -175,9 +211,9 @@ class SqlSales:
 
         views = []
         for row in rows:
-            sale_row = row[0]
-            customer_id, customer_name, customer_type_id = row[1], row[2], row[3]
-            payment_id, paid_on, amount, method, payment_customer_id = row[4:9]
+            sale_row, shipping = row[0], self._units(row[1])
+            customer_id, customer_name, customer_type_id = row[2], row[3], row[4]
+            payment_id, paid_on, amount, payment_customer_id, method_row = row[5:10]
             customer = (
                 None
                 if customer_id is None
@@ -192,22 +228,26 @@ class SqlSales:
                 if payment_id is None
                 else OnTheSpotPayment(
                     paid_on=paid_on,
-                    amount=amount,
-                    method=PaymentMethod(method),
+                    amount=self._units(amount),
+                    method=PaymentMethodId(method_row.id),
                     customer_id=payment_customer_id,
                     id=payment_id,
+                    label=PaymentMethodLabel(
+                        id=method_row.id, name=method_row.name, icon=method_row.icon
+                    ),
                 )
             )
             lines = lines_by_sale.get(sale_row.id, ())
             sale = Sale(
-                date=sale_row.sale_date,
+                date=sale_row.sold_on,
                 customer_id=sale_row.customer_id,
-                shipping_charged=sale_row.shipping_charged,
+                shipping_charged=shipping,
                 note=sale_row.note,
                 lines=tuple(view_line.line for view_line in lines),
                 payment=payment,
                 recorded_at=sale_row.recorded_at,
                 id=sale_row.id,
+                number=sale_row.number,
             )
             views.append(SaleView(sale=sale, customer=customer, lines=lines))
         return views
@@ -215,8 +255,14 @@ class SqlSales:
     def _line_views_by_sale(self, sale_ids: Sequence[int]) -> dict[int, tuple[SaleViewLine, ...]]:
         if not sale_ids:
             return {}
+        factor = money_scale_factor(self._session, self._business_id)
         statement = (
-            select(SaleLineRow, ProductRow.name)
+            select(
+                SaleLineRow,
+                scaled(SaleLineRow.price_per_gram, factor),
+                scaled(SaleLineRow.line_total, factor),
+                ProductRow.name,
+            )
             .join(
                 ProductRow,
                 (ProductRow.id == SaleLineRow.variety_id)
@@ -229,47 +275,98 @@ class SqlSales:
             .order_by(SaleLineRow.sale_id, SaleLineRow.position)
         )
         grouped: dict[int, list[SaleViewLine]] = {}
-        for line_row, variety_name in self._session.execute(statement).all():
+        for line_row, price_per_gram, line_total, variety_name in self._session.execute(
+            statement
+        ).all():
             grouped.setdefault(line_row.sale_id, []).append(
-                SaleViewLine(line=_sale_line(line_row), variety_name=variety_name)
+                SaleViewLine(
+                    line=_sale_line(line_row, self._units(price_per_gram), self._units(line_total)),
+                    variety_name=variety_name,
+                )
             )
         return {sale_id: tuple(lines) for sale_id, lines in grouped.items()}
 
-    def _row(self, sale_id: int) -> SaleRow | None:
-        statement = select(SaleRow).where(
-            SaleRow.id == sale_id, SaleRow.business_id == self._business_id
-        )
-        return self._session.scalar(statement)
+    def _units(self, hundredths: int) -> int:
+        """A read amount as the domain's int, in the unit of the business's decimals."""
+        return domain_amount(self._session, self._business_id, hundredths)
 
-    def _line_rows(self, sale_id: int) -> Sequence[SaleLineRow]:
+    def _stored(self, units: int) -> int:
+        """A domain amount as the integer this business's column holds."""
+        return money_stored_value(
+            self._session,
+            self._business_id,
+            money_of_domain(self._session, self._business_id, units),
+        )
+
+    def _line_rows(self, sale_id: int) -> Sequence[SaleLine]:
         # A plain `list[...]` return annotation would, under `from __future__ import
         # annotations`, resolve `list` to `SqlSales.list` instead of the builtin,
         # since this class also has a method named `list`; `Sequence` sidesteps it.
+        factor = money_scale_factor(self._session, self._business_id)
         statement = (
-            select(SaleLineRow)
+            select(
+                SaleLineRow,
+                scaled(SaleLineRow.price_per_gram, factor),
+                scaled(SaleLineRow.line_total, factor),
+            )
             .where(SaleLineRow.sale_id == sale_id, SaleLineRow.business_id == self._business_id)
             .order_by(SaleLineRow.position)
         )
-        return [row for row in self._session.scalars(statement)]
+        return [
+            _sale_line(row, self._units(price_per_gram), self._units(line_total))
+            for row, price_per_gram, line_total in self._session.execute(statement).all()
+        ]
 
-    def _payment_row(
+    def _insert_payment(
         self, sale_id: int, payment: OnTheSpotPayment, recorded_at: datetime
-    ) -> PaymentRow:
-        return PaymentRow(
-            business_id=self._business_id,
-            paid_on=payment.paid_on,
-            amount=payment.amount,
-            method=payment.method.value,
-            customer_id=payment.customer_id,
-            sale_id=sale_id,
-            recorded_at=recorded_at,
+    ) -> None:
+        """The On-the-spot payment row, one guarded `INSERT … SELECT … RETURNING id`: it
+        is written only when the method is an offered one of this business
+        (docs/adr/20261111-payment-methods-by-id).
+        No row means `PaymentMethodUnavailable`, and the use case's single transaction
+        leaves the whole sale unwritten."""
+        guarded = select(
+            literal(self._business_id),
+            literal(payment.paid_on),
+            literal(self._stored(payment.amount)),
+            literal(payment.method.value),
+            null() if payment.customer_id is None else literal(payment.customer_id),
+            literal(sale_id),
+            literal(recorded_at),
+        ).where(
+            exists().where(
+                PaymentMethodRow.id == payment.method.value,
+                PaymentMethodRow.business_id == self._business_id,
+                PaymentMethodRow.archived_at.is_(None),
+            )
         )
+        statement = (
+            insert(PaymentRow)
+            .from_select(
+                [
+                    "business_id",
+                    "paid_on",
+                    "amount",
+                    "payment_method_id",
+                    "customer_id",
+                    "sale_id",
+                    "recorded_at",
+                ],
+                guarded,
+            )
+            .returning(PaymentRow.id)
+        )
+        if self._session.execute(statement).first() is None:
+            raise PaymentMethodUnavailable()
+        self._session.flush()
 
-    def _find_payment_row(self, sale_id: int) -> PaymentRow | None:
-        statement = select(PaymentRow).where(
+    def _find_payment(self, sale_id: int) -> OnTheSpotPayment | None:
+        factor = money_scale_factor(self._session, self._business_id)
+        statement = select(PaymentRow, scaled(PaymentRow.amount, factor)).where(
             PaymentRow.sale_id == sale_id, PaymentRow.business_id == self._business_id
         )
-        return self._session.scalar(statement)
+        found = self._session.execute(statement).first()
+        return None if found is None else _payment(found[0], self._units(found[1]))
 
     def _line_row(self, sale_id: int, line: SaleLine, position: int) -> SaleLineRow:
         return SaleLineRow(
@@ -278,24 +375,33 @@ class SqlSales:
             variety_id=line.variety_id,
             grams_hundredths=line.quantity.hundredths,
             pricing_rule=line.pricing_rule.value,
-            price_per_gram=line.price_per_gram,
-            line_total=line.line_total,
+            price_per_gram=self._stored(line.price_per_gram),
+            line_total=self._stored(line.line_total),
             position=position,
+            customer_type_id=line.customer_type_id,
+            customer_type_name=line.customer_type_name,
         )
 
-    def _assemble(self, row: SaleRow) -> Sale:
-        lines = tuple(_sale_line(r) for r in self._line_rows(row.id))
-        payment_row = self._find_payment_row(row.id)
-        payment = None if payment_row is None else _payment(payment_row)
+    def _assemble(self, sale_id: int) -> Sale | None:
+        factor = money_scale_factor(self._session, self._business_id)
+        found = self._session.execute(
+            select(SaleRow, scaled(SaleRow.shipping_charged, factor)).where(
+                SaleRow.id == sale_id, SaleRow.business_id == self._business_id
+            )
+        ).first()
+        if found is None:
+            return None
+        row, shipping = found
         return Sale(
-            date=row.sale_date,
+            date=row.sold_on,
             customer_id=row.customer_id,
-            shipping_charged=row.shipping_charged,
+            shipping_charged=self._units(shipping),
             note=row.note,
-            lines=lines,
-            payment=payment,
+            lines=tuple(self._line_rows(row.id)),
+            payment=self._find_payment(row.id),
             recorded_at=row.recorded_at,
             id=row.id,
+            number=row.number,
         )
 
 
@@ -315,22 +421,24 @@ def _dated_conditions(
     return tuple(conditions)
 
 
-def _sale_line(row: SaleLineRow) -> SaleLine:
+def _sale_line(row: SaleLineRow, price_per_gram: int, line_total: int) -> SaleLine:
     return SaleLine(
         variety_id=row.variety_id,
         quantity=Quantity(row.grams_hundredths),
         pricing_rule=PricingRule(row.pricing_rule),
-        price_per_gram=row.price_per_gram,
-        line_total=row.line_total,
+        price_per_gram=price_per_gram,
+        line_total=line_total,
         id=row.id,
+        customer_type_id=row.customer_type_id,
+        customer_type_name=row.customer_type_name,
     )
 
 
-def _payment(row: PaymentRow) -> OnTheSpotPayment:
+def _payment(row: PaymentRow, amount: int) -> OnTheSpotPayment:
     return OnTheSpotPayment(
         paid_on=row.paid_on,
-        amount=row.amount,
-        method=PaymentMethod(row.method),
+        amount=amount,
+        method=PaymentMethodId(row.payment_method_id),
         customer_id=row.customer_id,
         id=row.id,
     )

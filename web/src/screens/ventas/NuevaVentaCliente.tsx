@@ -29,12 +29,14 @@ import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
-import { useSheet } from '../../components/useSheetStack'
+import { SheetLevel, useSheet } from '../../components/useSheetStack'
 import CustomerFields, { type CustomerFieldsValue } from '../clientes/CustomerFields'
+import { usePhoneCountryField } from '../clientes/usePhoneCountryField'
 import {
   GENERIC_REFUSAL,
   NAME_REQUIRED,
   PHONE_INVALID,
+  PHONE_NEEDS_COUNTRY_CODE,
   PHONE_TAKEN,
 } from '../clientes/ClienteForm'
 import { SALES_TEXT } from '../../copy/sales'
@@ -56,6 +58,7 @@ const FIELD_OVERRIDES: Partial<Record<RefusalCode, { field: Field; message: stri
   'customer.name_missing': { field: 'name', message: NAME_REQUIRED },
   'customer.name_too_long': { field: 'name', message: COMMON_TEXT.nameTooLong },
   'customer.phone_invalid': { field: 'phone', message: PHONE_INVALID },
+  'customer.phone_needs_country_code': { field: 'phone', message: PHONE_NEEDS_COUNTRY_CODE },
   'customer.phone_taken': { field: 'phone', message: PHONE_TAKEN },
 }
 
@@ -66,10 +69,16 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
   const vipCustomers = useIsVipCustomers()
   const chooser = useSheet(1)
   const creator = useSheet(2)
+  // The Phone country list is a third sheet: it is drawn in `listHost`, outside the content, and the
+  // content beneath is `inert`, so what it covers is reported as covered and unreachable.
+  const countryList = useSheet(3)
+  const [listHost, setListHost] = useState<HTMLElement | null>(null)
   const [query, setQuery] = useState('')
   const [newCustomer, setNewCustomer] = useState<CustomerFieldsValue>(EMPTY_NEW_CUSTOMER)
+  const country = usePhoneCountryField(null)
   const [nameError, setNameError] = useState<string | null>(null)
   const [phoneError, setPhoneError] = useState<string | null>(null)
+  const [phoneInvalid, setPhoneInvalid] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
 
@@ -90,10 +99,11 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
     event.preventDefault()
     setNameError(null)
     setPhoneError(null)
+    setPhoneInvalid(false)
     setFormError(null)
     setOffline(false)
     try {
-      const customer = await create.mutateAsync(newCustomer)
+      const customer = await create.mutateAsync({ ...newCustomer, phone_country: country.requestCountry })
       onChosen(customer)
       // Read at call time from the router: a save that resolves after the user already
       // closed the sheets closes nothing more.
@@ -108,8 +118,10 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
         const override = resolveOverride(FIELD_OVERRIDES, caught.code)
         if (override !== undefined) {
           if (override.field === 'name') setNameError(override.message)
-          else if (override.field === 'phone') setPhoneError(override.message)
-          else setFormError(override.message)
+          else if (override.field === 'phone') {
+            if (caught.code === 'customer.phone_invalid') setPhoneInvalid(true)
+            else setPhoneError(override.message)
+          } else setFormError(override.message)
         } else {
           setFormError(GENERIC_REFUSAL)
         }
@@ -122,8 +134,9 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
   }
 
   return (
+    <SheetLevel.Provider value={1}>
     <div className="cliente-sheet" role="presentation">
-      <div className="cliente-sheet__contenido">
+      <div className="cliente-sheet__contenido" inert={countryList.isOpen}>
         <span className="cliente-sheet__manija" aria-hidden="true" />
         <div className="cliente-sheet__encabezado">
           <span className="panel__titulo">{SALES_TEXT.pickCustomer}</span>
@@ -158,8 +171,8 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
                   <span className="lista-clientes__nombre-texto">{customer.name}</span>
                   {vipCustomers && customer.vip && <span className="vip-insignia">{COMMON_TEXT.vip}</span>}
                 </span>
-                {customer.phone !== null && (
-                  <span className="lista-clientes__telefono">{customer.phone}</span>
+                {customer.phone_display !== null && (
+                  <span className="lista-clientes__telefono">{customer.phone_display}</span>
                 )}
               </span>
             </Boton>
@@ -182,25 +195,32 @@ export default function NuevaVentaCliente({ allowNone, onChosen }: NuevaVentaCli
             {COMMON_TEXT.newCustomer}
           </Boton>
         ) : (
-          <form className="formulario" onSubmit={onCreate}>
-            <CustomerFields
-              value={newCustomer}
-              onChange={setNewCustomer}
-              nameError={nameError}
-              phoneError={phoneError}
-            />
-            {formError !== null && (
-              <span className="campo__error" role="alert">
-                {formError}
-              </span>
-            )}
-            {offline && <SinConexion />}
-            <Boton textOnly="submit" type="submit" disabled={create.isPending}>
-              {SALES_TEXT.createCustomer}
-            </Boton>
-          </form>
+          <SheetLevel.Provider value={2}>
+            <form className="formulario" onSubmit={onCreate}>
+              <CustomerFields
+                value={newCustomer}
+                onChange={setNewCustomer}
+                nameError={nameError}
+                phoneError={phoneError}
+          phoneInvalid={phoneInvalid}
+                country={country}
+                listHost={listHost}
+              />
+              {formError !== null && (
+                <span className="campo__error" role="alert">
+                  {formError}
+                </span>
+              )}
+              {offline && <SinConexion />}
+              <Boton textOnly="submit" type="submit" disabled={create.isPending || !country.ready}>
+                {SALES_TEXT.createCustomer}
+              </Boton>
+            </form>
+          </SheetLevel.Provider>
         )}
       </div>
+      <div className="nueva-venta__lista" ref={setListHost} />
     </div>
+    </SheetLevel.Provider>
   )
 }

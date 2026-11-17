@@ -32,10 +32,10 @@ import Analisis from './screens/Analisis'
 import Entrar from './screens/Entrar'
 import EntradaStock from './screens/EntradaStock'
 import ExpenseNewRoute from './screens/expenses/ExpenseNewRoute'
+import HomeLayout from './screens/inicio/HomeLayout'
 import Gastos from './screens/Gastos'
 import Inicio from './screens/Inicio'
 import Invitacion from './screens/Invitacion'
-import Mas from './screens/Mas'
 import Listo from './screens/onboarding/Listo'
 import OnboardingLayout from './screens/onboarding/OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './screens/onboarding/OnboardingRoutes'
@@ -64,7 +64,11 @@ import ExpenseCategoriesGroup from './screens/settings/ExpenseCategoriesGroup'
 import IntegrationsGroup from './screens/settings/IntegrationsGroup'
 import PricingGroup from './screens/settings/PricingGroup'
 import CustomerTypes from './screens/settings/CustomerTypes'
+import PaymentMethods from './screens/settings/PaymentMethods'
+import PaymentMethodsArchived from './screens/settings/PaymentMethodsArchived'
+import PaymentsGroup from './screens/settings/PaymentsGroup'
 import UsersGroup from './screens/settings/UsersGroup'
+import CurrencyAndDecimals from './screens/settings/CurrencyAndDecimals'
 import WithdrawalReasons from './screens/settings/WithdrawalReasons'
 import WithdrawalDetail from './screens/withdrawals/WithdrawalDetail'
 import WithdrawalFormRoute from './screens/withdrawals/WithdrawalFormRoute'
@@ -89,7 +93,6 @@ import {
  * screen, does not type-check. */
 const ELEMENTS: Record<ScreenId, ReactElement> = {
   home: <Inicio />,
-  more: <Mas />,
   sales: <Ventas />,
   'sale-new': <NuevaVenta />,
   sale: <VentaDetalle />,
@@ -120,9 +123,13 @@ const ELEMENTS: Record<ScreenId, ReactElement> = {
   'settings-users': <UsersGroup />,
   'settings-prices': <PricingGroup />,
   'settings-customer-types': <CustomerTypes />,
+  'settings-payments': <PaymentsGroup />,
+  'settings-payment-methods': <PaymentMethods />,
+  'settings-payment-methods-archived': <PaymentMethodsArchived />,
   'settings-integrations': <IntegrationsGroup />,
   'settings-catalog-message': <CatalogMessageGroup />,
   'settings-expense-categories': <ExpenseCategoriesGroup />,
+  'settings-currency': <CurrencyAndDecimals />,
   'settings-withdrawal-reasons': <WithdrawalReasons />,
   'settings-appearance': <AppearanceGroup />,
   'settings-account': <AccountGroup />,
@@ -147,6 +154,9 @@ const WITH_VARIETIES_PANES: ReadonlySet<ScreenId> = new Set([
   'stock-entry',
 ])
 
+/** Home and Analysis share `HomeLayout`, which draws their one header. Expenses is never wrapped. */
+const WITH_HOME_SEGMENTS: ReadonlySet<ScreenId> = new Set(['home', 'analysis'])
+
 const WITH_CUSTOMER_SEARCH: ReadonlySet<ScreenId> = new Set([
   'customers',
   'customer-new',
@@ -164,8 +174,15 @@ function bind(entry: Screen): RouteObject {
 const shellChildren: RouteObject[] = [
   ...SCREENS.filter(
     (entry) =>
-      !WITH_CUSTOMER_SEARCH.has(entry.id) && !WITH_VARIETIES_PANES.has(entry.id) && !ONBOARDING_SCREENS.has(entry.id),
+      !WITH_CUSTOMER_SEARCH.has(entry.id) &&
+      !WITH_VARIETIES_PANES.has(entry.id) &&
+      !WITH_HOME_SEGMENTS.has(entry.id) &&
+      !ONBOARDING_SCREENS.has(entry.id),
   ).map(bind),
+  {
+    element: <HomeLayout />,
+    children: SCREENS.filter((entry) => WITH_HOME_SEGMENTS.has(entry.id)).map(bind),
+  },
   {
     element: <VarietiesLayout />,
     children: SCREENS.filter((entry) => WITH_VARIETIES_PANES.has(entry.id)).map(bind),

@@ -101,7 +101,7 @@ def test_an_exported_customer_has_no_channel_and_the_ids_exported_are_the_ids_de
     assert by_name[VIP_NAME]["phone"] == VIP_PHONE
     assert by_name[VIP_NAME]["customer_type_id"] == {"id": type_id, "name": "Friends"}
     # The frozen mark is kept as it was and never written for the typed customer.
-    assert by_name[VIP_NAME]["vip"] is False
+    assert by_name[VIP_NAME]["is_vip"] is False
     types = json.loads(export.read_text())["kinds"]["customer_type"]
     assert [(t["id"], t["name"], t["icon"]) for t in types] == [(type_id, "Friends", "heart")]
     assert _type_count(db_path, "La Huerta") == 0

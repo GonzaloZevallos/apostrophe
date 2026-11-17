@@ -17,10 +17,11 @@ from app.customers.adapters.tables import CustomerRow
 from app.customers.application.errors import PhoneTaken
 from app.customers.domain.customer import Customer, CustomerName, PhoneNumber
 from app.migrations.runner import upgrade_to_head
+from app.shared.phone_country import PhoneCountry
 
 
 def _customer(name: str, phone: str) -> Customer:
-    return Customer(name=CustomerName.of(name), phone=PhoneNumber.of(phone))
+    return Customer(name=CustomerName.of(name), phone=PhoneNumber.of(phone, PhoneCountry.AR))
 
 
 def _business_id_of(engine: Engine, customer_id: int) -> int:
@@ -35,7 +36,7 @@ def test_the_customer_table_has_no_constraint_other_than_the_phone_uniqueness(
 ) -> None:
     """Pins the table `SqlCustomers._flush_or_mark_taken` relies on: translating an
     `IntegrityError` straight into `PhoneTaken` is only correct because
-    `uq_customer_business_phone` is the only unique or check constraint a valid write
+    `uq_customer_business_id_phone` is the only unique or check constraint a valid write
     can break. A second constraint added to the table (and the migration) without
     changing the repository would make this test fail first."""
     upgrade_to_head(engine)
@@ -43,7 +44,7 @@ def test_the_customer_table_has_no_constraint_other_than_the_phone_uniqueness(
     inspector = inspect(engine)
 
     assert [c["name"] for c in inspector.get_unique_constraints("customer")] == [
-        "uq_customer_business_phone"
+        "uq_customer_business_id_phone"
     ]
     assert inspector.get_check_constraints("customer") == []
 
@@ -52,7 +53,7 @@ def test_a_second_customer_with_the_same_phone_is_refused_as_phone_taken(
     client: TestClient, engine: Engine
 ) -> None:
     registered = client.post(
-        "/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789"}
+        "/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789", "phone_country": "AR"}
     ).json()
     business_id = _business_id_of(engine, registered["id"])
     customers = SqlCustomers(Session(engine), business_id)
@@ -71,9 +72,11 @@ def test_a_second_customer_with_the_same_phone_is_refused_as_phone_taken(
 def test_the_same_phone_in_two_businesses_is_not_taken(
     client: TestClient, other_client: TestClient, engine: Engine
 ) -> None:
-    client.post("/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789"})
+    client.post(
+        "/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789", "phone_country": "AR"}
+    )
     other = other_client.post(
-        "/customers", json={"name": "Otro Fran", "phone": "11 1111-1111"}
+        "/customers", json={"name": "Otro Fran", "phone": "11 1111-1111", "phone_country": "AR"}
     ).json()
     other_business_id = _business_id_of(engine, other["id"])
 

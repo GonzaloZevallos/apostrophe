@@ -2,7 +2,7 @@
  * `Catalogo` at the screen seam (plan, "Front"): the preview built only from
  * `telegramPreview(text)`, Compartir and Copiar gated on the open's fetch and handed
  * the API's text without its paired `**`, "What does not go out and why" told by one word per variety, the
- * links out. It edits no variety attribute (that is the variety's own page). The API is faked at `fetch`, never
+ * links out. It edits no product attribute (that is the variety's own page). The API is faked at `fetch`, never
  * mocked deeper (CODING_STANDARDS §10).
  */
 
@@ -20,6 +20,7 @@ import Shell from '../shell/Shell'
 import Catalogo from './Catalogo'
 import { iconAndTextProblems } from '../test/iconAndTextRule'
 import { baselineText } from '../i18n/testing'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 const EMPTY_STATE_TITLE = baselineText('catalog.ts:EMPTY_STATE_TITLE')
 const EMPTY_STATE_DETAIL = baselineText('catalog.ts:EMPTY_STATE_DETAIL')
@@ -47,10 +48,10 @@ function VarietyLanding() {
   )
 }
 
-const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN }
+const ME: Me = { email: 'vos@lahuerta.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
 function renderCatalogo(
@@ -262,7 +263,7 @@ test('a variety left out opens its "In the catalog" section on its page', async 
   expect(await screen.findByText('Aterrizaste en /varieties/7#en-el-catalogo')).toBeInTheDocument()
 })
 
-test('the shell\'s "‹ Varieties" is the only back and goes to the list, by history and with none', async () => {
+test('the shell\'s "‹ Products" is the only back and goes to the list, by history and with none', async () => {
   vi.stubGlobal('fetch', vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
   const router = createMemoryRouter(
     [
@@ -288,7 +289,7 @@ test('the shell\'s "‹ Varieties" is the only back and goes to the list, by his
   )
 
   const backs = await screen.findAllByRole('button', { name: /^‹ / })
-  expect(backs.map((back) => back.textContent)).toEqual(['‹ Varieties'])
+  expect(backs.map((back) => back.textContent)).toEqual(['‹ Products'])
   await userEvent.click(backs[0]!)
 
   expect(await screen.findByText('Aterrizaste en Variedades')).toBeInTheDocument()
@@ -436,7 +437,7 @@ test('the catalog screen offers no bot settings: they live in Integraciones', as
   expect(screen.queryByLabelText('Your chat', { exact: false })).not.toBeInTheDocument()
 })
 
-test('the catalog screen edits no variety attribute: no Editar button and no field', async () => {
+test('the catalog screen edits no product attribute: no Editar button and no field', async () => {
   renderCatalogo(vi.fn((url: string) => Promise.resolve(defaultResponse(url))))
 
   await screen.findByRole('link', { name: 'Edit header and footer' })
@@ -490,7 +491,7 @@ test('Compartir keeps its word and Copiar is icon + text, the icons hidden; "Edi
   const edit = screen.getByRole('link', { name: 'Edit header and footer' })
   expect(edit.querySelector('svg')).toBeNull()
   expect(screen.queryByText('Volver')).not.toBeInTheDocument()
-  // The variety name links of "What does not go out and why" are plain row links, not controls of the rule.
+  // The product name links of "What does not go out and why" are plain row links, not controls of the rule.
   const problems = iconAndTextProblems(document.body).filter((problem) => !problem.includes('catalogo__fila-nombre'))
   expect(problems).toEqual([])
 })

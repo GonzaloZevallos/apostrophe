@@ -28,6 +28,8 @@ classDiagram
   }
   class schemas {
   }
+  class sql_customer_type_prices {
+  }
   class sql_customer_types {
   }
   class tables {
@@ -47,6 +49,7 @@ classDiagram
   router --> schemas
   router --> sql_customer_types
   schemas --> customer_type
+  sql_customer_type_prices --> tables
   sql_customer_types --> customer_type
   sql_customer_types --> tables
   tables --> customer_type
@@ -140,6 +143,15 @@ classDiagram
     icon : IconKey #124; None
     name : str #124; None
   }
+  class CustomerTypePriceRow {
+    business_id : Mapped~int~
+    customer_type_id : Mapped~int~
+    effective_on : Mapped~date~
+    id : Mapped~int~
+    price : Mapped~int~
+    price_entry_id : Mapped~int #124; None~
+    variety_id : Mapped~int~
+  }
   class CustomerTypeRow {
     business_id : Mapped~int~
     icon : Mapped~str~
@@ -147,6 +159,14 @@ classDiagram
     is_vip : Mapped~bool~
     name : Mapped~str~
     name_key : Mapped~str~
+  }
+  class SqlCustomerTypePrices {
+    add(type_id: int, product_id: int, effective_on: date, price: int, price_entry_id: int #124; None) None
+    prices_of_type(type_id: int, entry_ids: Sequence~int~) dict~int, int~
+    remove_for_entry(price_entry_id: int) None
+    remove_for_product(product_id: int) None
+    remove_for_type(type_id: int) None
+    tied_price(price_entry_id: int, type_id: int) int #124; None
   }
   class SqlCustomerTypes {
     add(customer_type: CustomerType) CustomerType

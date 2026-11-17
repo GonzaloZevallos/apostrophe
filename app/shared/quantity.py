@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
+from fractions import Fraction
 from typing import ClassVar
 
 HUNDREDTHS_PER_UNIT = 100
@@ -42,6 +43,12 @@ class Quantity:
     @property
     def is_positive(self) -> bool:
         return self.hundredths > 0
+
+    @property
+    def units(self) -> Fraction:
+        """The exact quantity in whole units: the one place a domain turns hundredths
+        into units (docs/adr/0056)."""
+        return Fraction(self.hundredths, HUNDREDTHS_PER_UNIT)
 
     def as_decimal(self) -> Decimal:
         return Decimal(self.hundredths) / HUNDREDTHS_PER_UNIT

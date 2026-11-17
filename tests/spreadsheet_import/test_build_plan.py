@@ -97,7 +97,7 @@ def test_a_variety_named_in_catalog_but_not_in_ajustes_blocks() -> None:
     plan = build_plan(split, mapping(), checks)
 
     assert not plan.writable
-    assert any(p.kind == "import.unknown_variety" for p in plan.problems)
+    assert any(p.kind == "import.unknown_product" for p in plan.problems)
 
 
 def test_two_ajustes_rows_with_the_same_variety_name_block() -> None:
@@ -107,7 +107,7 @@ def test_two_ajustes_rows_with_the_same_variety_name_block() -> None:
     plan = build_plan(split, mapping(), checks)
 
     assert not plan.writable
-    assert any(p.kind == "import.duplicate_variety" for p in plan.problems)
+    assert any(p.kind == "import.duplicate_product" for p in plan.problems)
 
 
 def test_a_consistent_variety_list_has_no_variety_problem() -> None:
@@ -748,7 +748,7 @@ def test_a_ventas_row_naming_a_well_formed_but_unknown_variety_blocks() -> None:
     plan = build_plan(split, mapping(), checks)
 
     assert not plan.writable
-    assert any(p.kind == "import.unknown_variety" for p in plan.problems)
+    assert any(p.kind == "import.unknown_product" for p in plan.problems)
 
 
 # -- The $0 rule: no method and nothing owed once the checked total is $0 -------------

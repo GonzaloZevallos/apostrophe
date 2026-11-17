@@ -12,6 +12,8 @@ import {
   updatedEntries,
   type Modules,
 } from './baseline.ts'
+import { exceptedRows, exceptionProblems, EXCEPTION_ISSUES } from './baselineExceptions.ts'
+import { mappingProblems, type MappingFile } from './baselineKeys.ts'
 import { pluralProblems } from './plurals.ts'
 import * as sample from './__fixtures__/sample.ts'
 
@@ -314,5 +316,120 @@ describe('pluralProblems', () => {
   test('ignores digits: a count that only changes the number is not a plural', () => {
     const modules: Modules = { 'a.ts': { total: (n: number) => `Total ${n}`, BASELINE_ARGS: { total: [[3]] } } }
     expect(pluralProblems(modules)).toEqual([])
+  })
+})
+
+describe('exceptionProblems', () => {
+  const sales = (n: number): string => (n === 1 ? `${n} sale` : `${n} sales`)
+  const COUNTED: Modules = { 'a.ts': { sales, BASELINE_ARGS: { sales: counted((n) => [n]) } } }
+  const committed = collectEntries(COUNTED)
+  const files: MappingFile[] = [{ file: 'x.json', mappings: { 'a.ts:sales': { key: 'x:sales', params: ['count'] } } }]
+  /** English equal to the baseline on every row. */
+  const same = { x: { sales_one: '{{count}} sale', sales_other: '{{count}} sales' } }
+  /** English that differs only on the row n=2 (n=0 takes the zero form, n=1 the one form). */
+  const plural = { x: { sales_zero: '0 sales', sales_one: '{{count}} sale', sales_other: '{{count}} sales!' } }
+  const entry = { source: 'a.ts:sales', key: 'x:sales', issue: 350, reason: 'the plural reads differently' }
+  const check = (raw: unknown, modules: Modules = COUNTED, en: Record<string, unknown> = plural): string[] =>
+    exceptionProblems(raw, committed, files, modules, en)
+  const NOT_COUNTED = 'entry 0 (a.ts:sales): source is not wrapped in counted()'
+  const STALE = 'entry 0 (a.ts:sales): every row renders its baseline text, the entry is stale'
+  const NO_FORMS = 'entry 0 (a.ts:sales): key has no _one and _other forms in en'
+  const FIELDS = 'entry 0: fields are not exactly source, key, issue and reason'
+
+  test('the issues are 350 to 353', () => {
+    expect([...EXCEPTION_ISSUES]).toEqual([350, 351, 352, 353])
+  })
+
+  test('an empty list is valid', () => {
+    expect(check([])).toEqual([])
+  })
+
+  test('a reasoned entry on a counted source that renders another text is valid', () => {
+    expect(check([entry])).toEqual([])
+  })
+
+  test.each([
+    ['raw is not an array', { a: 1 }, 'the exceptions are not an array'],
+    ['an entry that is not an object', [3], 'entry 0: is not an object'],
+    ['an extra field', [{ ...entry, note: 'x' }], FIELDS],
+    ['a missing field', [{ source: entry.source, key: entry.key, issue: 350 }], FIELDS],
+    ['a source that is not a string', [{ ...entry, source: 4 }], 'entry 0: source is not a string'],
+    ['a key that is not a string', [{ ...entry, key: 4 }], 'entry 0: key is not a string'],
+    ['an issue that is not a number', [{ ...entry, issue: '350' }], 'entry 0: issue is not a number'],
+    ['a reason that is not a string', [{ ...entry, reason: 4 }], 'entry 0: reason is not a string'],
+    ['an empty reason', [{ ...entry, reason: '  ' }], 'entry 0: reason is empty'],
+    ['an issue outside the four', [{ ...entry, issue: 354 }], 'entry 0: issue is not one of 350, 351, 352, 353'],
+    ['a source the baseline does not hold', [{ ...entry, source: 'a.ts:nope' }], 'entry 0: source is not in the committed baseline'],
+    ['a key other than the one the source maps to', [{ ...entry, key: 'x:other' }], 'entry 0 (a.ts:sales): key is not the key its mapping gives'],
+  ])('%s', (_name, raw, message) => {
+    expect(check(raw)).toEqual([message])
+  })
+
+  test('two entries for one source: the second is named, a repeated key alone is fine', () => {
+    expect(check([entry, entry])).toEqual(['entry 1 (a.ts:sales): source repeats entry 0'])
+  })
+
+  test('a source that is in the baseline but not mapped', () => {
+    expect(exceptionProblems([entry], committed, [], COUNTED, plural)).toEqual(['entry 0 (a.ts:sales): source is not mapped'])
+  })
+
+  test('a key without both plural forms in en', () => {
+    expect(check([entry], COUNTED, { x: { sales_other: '{{count}} sales!' } })).toEqual([NO_FORMS])
+    expect(check([entry], COUNTED, { x: { sales_one: '{{count}} sale' } })).toEqual([NO_FORMS])
+  })
+
+  test('a stale entry: every row now renders its baseline text', () => {
+    expect(check([entry], COUNTED, same)).toEqual([STALE])
+  })
+
+  test('a row that throws does not count as different', () => {
+    const broken = { x: { sales_one: '{{count}} sale', sales_other: '{{count}} sales {{missing}}' } }
+    expect(check([entry], COUNTED, broken)).toEqual([STALE])
+  })
+
+  test('a source whose rows are plain is not counted, and the message holds no text', () => {
+    const plain: Modules = { 'a.ts': { sales, BASELINE_ARGS: { sales: [[0], [1], [2]] } } }
+    const problems = check([entry], plain)
+    expect(problems).toEqual([NOT_COUNTED])
+    expect(problems.join('\n')).not.toContain('sales!')
+  })
+
+  test('a module with no row for the source is not counted', () => {
+    expect(check([entry], { 'a.ts': { BASELINE_ARGS: {} } })).toEqual([NOT_COUNTED])
+    expect(check([entry], {})).toEqual([NOT_COUNTED])
+  })
+
+  test('an export moved to keys and wrapped in counted still passes the counted rule', () => {
+    const moved: Modules = { 'a.ts': { MOVED_TO_KEYS: ['sales'], sales, BASELINE_ARGS: { sales: counted((n) => [n]) } } }
+    expect(check([entry], moved)).toEqual([])
+  })
+
+  test('the same moved export with plain rows fails the counted rule', () => {
+    const moved: Modules = { 'a.ts': { MOVED_TO_KEYS: ['sales'], sales, BASELINE_ARGS: { sales: [[0], [1], [2]] } } }
+    expect(check([entry], moved)).toEqual([NOT_COUNTED])
+  })
+
+  test('messages are sorted', () => {
+    const problems = check([{ ...entry, reason: '' }, { ...entry, source: 'a.ts:nope', issue: 1 }])
+    expect(problems).toEqual([...problems].sort())
+    expect(problems).toHaveLength(3)
+  })
+
+  describe('with mappingProblems, each row judged by exactly one of the two', () => {
+    test('the row n=2 is excepted, rows n=0 and n=1 are compared and equal', () => {
+      const excepted = exceptedRows([entry], committed, files, COUNTED, plural)
+      expect([...excepted]).toEqual(['a.ts:sales\u00002'])
+      expect(mappingProblems(files, committed, plural, excepted)).toEqual([])
+      expect(mappingProblems(files, committed, plural)).toEqual(['a.ts:sales row 2: renders another text in en'])
+    })
+
+    test('an invalid entry excepts nothing', () => {
+      expect([...exceptedRows([{ ...entry, reason: '' }], committed, files, COUNTED, plural)]).toEqual([])
+      expect([...exceptedRows('nope', committed, files, COUNTED, plural)]).toEqual([])
+    })
+
+    test('a stale entry excepts nothing', () => {
+      expect([...exceptedRows([entry], committed, files, COUNTED, same)]).toEqual([])
+    })
   })
 })

@@ -4,11 +4,22 @@
  * negative Ganancia and Caja read "−$ X", and Hoy draws the headline with no figure group.
  */
 
-import { render, screen, within } from '@testing-library/react'
+import { render as renderBare, screen, within } from '@testing-library/react'
+import type { ReactElement, ReactNode } from 'react'
 import { expect, test } from 'vitest'
 import panelFixture from '../../api/fixtures/panel.json'
 import type { PanelAnswer, PanelPeriod } from '../../api/panel'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import PeriodPanel, { PeriodFigures } from './PeriodFigures'
+
+function Business({ children }: { children: ReactNode }) {
+  return <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>{children}</MoneyFormatProvider>
+}
+
+/** Every figure is drawn for a "$"/0-decimals business, the one the strings below were written for. */
+function render(ui: ReactElement) {
+  return renderBare(ui, { wrapper: Business })
+}
 
 const PANEL: PanelAnswer = panelFixture as PanelAnswer
 const WEEK: PanelPeriod = PANEL.periods.week

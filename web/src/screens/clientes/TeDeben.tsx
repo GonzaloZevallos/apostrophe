@@ -10,7 +10,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { debtorsQuery } from '../../api/payments'
 import { salesOwingCount } from '../../format/counts'
-import { formatMoney } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { OWED_PLACE } from '../../components/useReturnToPlace'
 import ClienteFila from './ClienteFila'
 import { useTranslation } from 'react-i18next'
@@ -18,6 +18,7 @@ import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import { COMMON_TEXT } from '../../copy/common'
 
 export default function TeDeben() {
+  const money = useMoney()
   const { t } = useTranslation()
   const { data } = useQuery(debtorsQuery)
 
@@ -40,7 +41,7 @@ export default function TeDeben() {
         </span>
       ) : (
         <div className="ventas__resumen">
-          <span className="cifra-xl monto-deuda">{formatMoney(data.total_owed)}</span>
+          <span className="cifra-xl monto-deuda">{money.money(data.total_owed)}</span>
         </div>
       )}
 

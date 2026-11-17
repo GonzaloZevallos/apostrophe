@@ -11,20 +11,30 @@ import {
   CUSTOMER_NEW,
   CUSTOMERS,
   EXPENSE_CATEGORIES,
+  EXPENSE_NEW,
   EXPENSES,
-  MORE,
   pathTo,
   SETTINGS_ACCOUNT,
+  SETTINGS_PAYMENT_METHODS,
+  SETTINGS_PAYMENT_METHODS_ARCHIVED,
+  SETTINGS_PAYMENTS,
+  SETTINGS_CURRENCY,
   SETTINGS_WITHDRAWAL_REASONS,
   SETTINGS_CUSTOMER_TYPES,
   STOCK,
   STOCK_ENTRY,
+  STOCK_ENTRY_NEW,
   VARIETIES,
   VARIETY,
+  WITHDRAWAL_EDIT,
+  WITHDRAWAL_NEW,
 } from '../routes.ts'
 import { AUTH_TEXT } from '../copy/auth.ts'
-import { common } from './copy.ts'
+import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
+import { REFUSAL_KEY } from '../i18n/refusalTable.ts'
+import { common, emptyState, refusal } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
+import { EXPENSES_TEXT } from '../copy/expenses.ts'
 import { SETTINGS_TEXT } from '../copy/settings.ts'
 import { STOCK_TEXT } from '../copy/stock.ts'
 import { VARIETIES_TEXT } from '../copy/varieties.ts'
@@ -48,6 +58,13 @@ const ENTRY_ROUTE = pathTo(STOCK_ENTRY, { id: 1 })
 /** The variety the sample app seeds below its stock threshold, by the registry's placeholder. */
 const LOW_VARIETY = VARIETY.replace(':id', '{low}')
 
+const PAYMENT_METHODS_BODY = [
+  { id: 1, name: 'Cash', icon: 'banknote', position: 1, in_use: true },
+  { id: 2, name: 'Transfer', icon: 'bank', position: 2, in_use: false },
+]
+
+const PAYMENT_METHODS_READ = { path: /^\/api\/payment-methods$/, status: 200, body: PAYMENT_METHODS_BODY }
+
 const SAMPLE_TYPES = [
   { id: 1, name: 'Friends', icon: 'heart', is_vip: false },
   { id: 2, name: 'Wholesale', icon: 'star', is_vip: true },
@@ -57,6 +74,7 @@ const SAMPLE_TYPED_CUSTOMER = {
   id: 1,
   name: 'Ana Pérez',
   phone: null,
+  phone_display: null,
   vip: true,
   customer_type_id: 2,
   balance: 0,
@@ -64,7 +82,117 @@ const SAMPLE_TYPED_CUSTOMER = {
   standing: 'settled',
 }
 
+/**
+ * Twelve listed Varieties, one with a 60-character name, so the Variety Selector's list shows
+ * its search and its longest row. Seeded for this state's reads only, never the pinned fixture.
+ */
+const TWELVE_VARIETIES = Array.from({ length: 12 }, (_unused, index) => ({
+  id: 100 + index,
+  name: index === 11 ? 'Una variedad con un nombre larguísimo de sesenta caracteres!!' : `Variedad ${index + 1}`,
+  archived: false,
+  current_price: null,
+}))
+
+const LONG_NAME = 'Una variedad con un nombre larguísimo de sesenta caracteres!!'
+
+/** Twelve Withdrawal reasons, one with a 60-character name, seeded for these states' reads only. */
+const TWELVE_REASONS = Array.from({ length: 12 }, (_unused, index) => ({
+  id: 200 + index,
+  name: index === 11 ? LONG_NAME : `Motivo ${index + 1}`,
+}))
+
+/** Twelve Customer types, one with a 60-character name, seeded for the type list's state only. */
+const TWELVE_TYPES = Array.from({ length: 12 }, (_unused, index) => ({
+  id: 300 + index,
+  name: index === 11 ? LONG_NAME : `Tipo ${index + 1}`,
+  icon: 'star',
+  is_vip: false,
+}))
+
+/** Entry 1 pointed at a Variety that is archived: no listed Variety has this id. */
+const ARCHIVED_ENTRY = {
+  id: 1,
+  date: '2026-09-20',
+  product_id: 9999,
+  origin: 'harvest',
+  quantity: 25,
+  total_cost: null,
+  cost_per_gram: null,
+  note: null,
+}
+const ARCHIVED_ENTRY_READ = { path: /^\/stock\/entries\/1$/, status: 200, body: ARCHIVED_ENTRY }
+const ARCHIVED_ONLY = /^\?archived=true$/
+
 export const RECORDS_STATES: readonly WalkState[] = [
+  {
+    // Twelve reasons, one of 60 characters: the phone list is open and its search shows.
+    screen: 'withdrawal/reason-selector-open',
+    route: WITHDRAWAL_NEW,
+    steps: [{ press: STOCK_TEXT.motivo }],
+    visible: 'Motivo 1',
+    reads: [{ path: /^\/api\/withdrawal-reasons$/, status: 200, body: TWELVE_REASONS }],
+  },
+  {
+    // The business has no Expense categories: the open Category list shows the empty-set line.
+    screen: 'expense/category-selector-empty',
+    route: EXPENSE_NEW,
+    steps: [{ press: `${common('common:category')} ${EXPENSES_TEXT.pickACategory}` }],
+    visible: emptyState('emptyStates:selectorNoCategories'),
+    reads: [{ path: /^\/expense-categories$/, status: 200, body: [] }],
+  },
+  {
+    // A stored line on a Variety archived since: its 60-character name shows with the mark.
+    screen: 'withdrawal/line-archived-variety',
+    route: pathTo(WITHDRAWAL_EDIT, { id: 1 }),
+    steps: [],
+    visible: common('common:noLongerAvailable'),
+    reads: [
+      {
+        path: /^\/stock\/withdrawals\/1$/,
+        status: 200,
+        body: {
+          id: 1,
+          reason_id: 200,
+          reason_name: 'Motivo 1',
+          date: '2026-10-02',
+          note: null,
+          total_quantity: 5.5,
+          lines: [{ product_id: 9999, product_name: LONG_NAME, quantity: 5.5 }],
+        },
+      },
+      { path: /^\/api\/withdrawal-reasons$/, status: 200, body: TWELVE_REASONS },
+      { path: /^\/api\/products$/, status: 200, body: TWELVE_VARIETIES },
+    ],
+  },
+  {
+    screen: 'stock-entry/edit-archived-variety',
+    route: ENTRY_ROUTE,
+    steps: [{ wait: STOCK_TEXT.editarEntrada }],
+    visible: 'Variedad antigua',
+    reads: [
+      ARCHIVED_ENTRY_READ,
+      {
+        path: /^\/api\/products$/,
+        query: ARCHIVED_ONLY,
+        status: 200,
+        body: [{ id: 9999, name: 'Variedad antigua', archived: true, current_price: null }],
+      },
+    ],
+  },
+  {
+    screen: 'stock-entry/edit-archived-variety-failed',
+    route: ENTRY_ROUTE,
+    steps: [{ wait: STOCK_TEXT.editarEntrada }],
+    visible: common('common:genericError'),
+    reads: [ARCHIVED_ENTRY_READ, { path: /^\/api\/products$/, query: ARCHIVED_ONLY, status: 500 }],
+  },
+  {
+    screen: 'stock-entry/variety-selector-open',
+    route: STOCK_ENTRY_NEW,
+    steps: [{ press: common('common:variety') }],
+    visible: 'Variedad 1',
+    reads: [{ path: /^\/api\/products$/, status: 200, body: TWELVE_VARIETIES }],
+  },
   {
     // The sample Business has no customer types, so the form's type field is the notice.
     screen: 'ClienteNuevoSinTipos',
@@ -80,6 +208,36 @@ export const RECORDS_STATES: readonly WalkState[] = [
     steps: [],
     visible: CUSTOMERS_TEXT.typeLabel,
     reads: [{ path: /^\/api\/customer-types$/, status: 200, body: SAMPLE_TYPES }],
+  },
+  {
+    // Twelve types, one of 60 characters: the phone list is open and its search shows.
+    screen: 'customer/type-selector-open',
+    route: CUSTOMER_NEW,
+    steps: [{ press: `${CUSTOMERS_TEXT.typeLabel} ${common('common:noType')}` }],
+    visible: 'Tipo 1',
+    reads: [{ path: /^\/api\/customer-types$/, status: 200, body: TWELVE_TYPES }],
+  },
+  {
+    // The Phone country list open in New customer: the eight served countries and Other, with search.
+    screen: 'customer/country-selector-open',
+    route: CUSTOMER_NEW,
+    steps: [{ press: DETECTED_COUNTRY_BUTTON }],
+    visible: CUSTOMERS_TEXT.phoneCountryOther,
+  },
+  {
+    // The Phone country Selector while GET /phone-countries is held: busy, with Save off (the walk's held pass).
+    screen: 'customer/country-selector-loading',
+    route: CUSTOMER_NEW,
+    steps: [],
+    visible: CUSTOMERS_TEXT.phoneCountryLabel,
+    holds: /\/phone-countries$/,
+  },
+  {
+    // A typed "+" locks the Selector on its country and shows the reason in words.
+    screen: 'customer/country-selector-locked',
+    route: CUSTOMER_NEW,
+    steps: [{ fill: { label: CUSTOMERS_TEXT.phone, value: '+598 99 123 456' } }],
+    visible: CUSTOMERS_TEXT.phoneCountryLockedReason,
   },
   {
     // A customer in a type, answered by a stub, so the detail page's type line is walked.
@@ -148,12 +306,6 @@ export const RECORDS_STATES: readonly WalkState[] = [
   },
 
   {
-    screen: 'GastoDesdeMas',
-    route: MORE,
-    steps: [{ click: common('common:addExpense') }],
-    visible: 'Save the expense',
-  },
-  {
     screen: 'GastoDesdeGastos',
     route: EXPENSES,
     steps: [{ activate: common('common:addExpense') }],
@@ -183,6 +335,20 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: EXPENSE_CATEGORIES,
     steps: [{ click: 'Delete' }],
     visible: 'Delete the category?',
+  },
+  {
+    screen: 'ConfiguracionMonedaSimboloInvalido',
+    route: SETTINGS_CURRENCY,
+    steps: [{ click: common('common:save') }],
+    visible: refusal({ key: REFUSAL_KEY['money_format.symbol_invalid'] }),
+    writes: [{ method: 'PUT', path: /^\/api\/money-format$/, status: 422, body: { code: 'money_format.symbol_invalid', field: 'symbol' } }],
+  },
+  {
+    screen: 'ConfiguracionMonedaNoBajar',
+    route: SETTINGS_CURRENCY,
+    steps: [{ click: common('common:save') }],
+    visible: refusal({ key: REFUSAL_KEY['money_format.decimals_below_recorded'] }),
+    writes: [{ method: 'PUT', path: /^\/api\/money-format$/, status: 409, body: { code: 'money_format.decimals_below_recorded' } }],
   },
   {
     screen: 'ConfiguracionMotivos',
@@ -235,6 +401,86 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: SETTINGS_CUSTOMER_TYPES,
     steps: [],
     visible: 'Customer types',
+  },
+  {
+    screen: 'ConfiguracionPagosGrupo',
+    route: SETTINGS_PAYMENTS,
+    steps: [],
+    visible: 'Payment methods',
+    reads: [PAYMENT_METHODS_READ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoLista',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [],
+    visible: 'Add method',
+    reads: [PAYMENT_METHODS_READ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoNuevo',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [{ click: 'Add method' }],
+    visible: 'New payment method',
+    reads: [PAYMENT_METHODS_READ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoEditar',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [{ press: 'Edit Cash' }],
+    visible: 'Past payments will show the new name.',
+    reads: [PAYMENT_METHODS_READ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoNombreRepetido',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [{ click: 'Add method' }, { fill: { label: 'Name', value: 'Cash' } }, { click: 'Save' }],
+    visible: 'You already have a method with that name.',
+    reads: [PAYMENT_METHODS_READ],
+    writes: [{ method: 'POST', path: /^\/api\/payment-methods$/, status: 409, body: { code: 'payment_method.name_taken' } }],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoConfirmarArchivar',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [{ press: 'Archive Cash' }],
+    visible: 'Keep it',
+    reads: [PAYMENT_METHODS_READ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoConfirmarBorrado',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [{ press: 'Delete Transfer' }],
+    visible: 'Keep it',
+    reads: [PAYMENT_METHODS_READ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoUltimo',
+    route: SETTINGS_PAYMENT_METHODS,
+    steps: [{ press: 'Archive Cash' }, { press: 'Archive' }],
+    visible: 'You need at least one payment method. Add another one first.',
+    reads: [{ path: /^\/api\/payment-methods$/, status: 200, body: [PAYMENT_METHODS_BODY[0]] }],
+    writes: [
+      { method: 'POST', path: /^\/api\/payment-methods\/\d+\/archive$/, status: 409, body: { code: 'payment_method.last_offered' } },
+    ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoArchivados',
+    route: SETTINGS_PAYMENT_METHODS_ARCHIVED,
+    steps: [],
+    visible: 'Restore Wallet app',
+    reads: [
+      {
+        path: /^\/api\/payment-methods\/archived$/,
+        status: 200,
+        body: [{ id: 3, name: 'Wallet app', icon: 'wallet', position: 3, in_use: true }],
+      },
+    ],
+  },
+  {
+    screen: 'ConfiguracionMediosPagoArchivadosVacio',
+    route: SETTINGS_PAYMENT_METHODS_ARCHIVED,
+    steps: [],
+    visible: 'No archived payment methods.',
+    reads: [{ path: /^\/api\/payment-methods\/archived$/, status: 200, body: [] }],
   },
   {
     screen: 'ConfiguracionContrasena',

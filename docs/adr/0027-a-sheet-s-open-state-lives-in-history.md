@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-06
+summary: "el estado abierto de una hoja vive en el historial"
 ---
 
 # A sheet's open state lives in history; back and Cerrar are one move

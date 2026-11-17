@@ -1,0 +1,3 @@
+// expect: t-outside-function@3
+import { t } from 'i18next'
+export const label = <p>{t('a')}</p>

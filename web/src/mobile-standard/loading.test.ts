@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest'
-import { judgeLoading, type LoadingFacts } from './loading.ts'
+import { judgeLoading, judgeWaiting, type LoadingFacts } from './loading.ts'
 
 const cell = { screen: 'Sales', size: '375x812', theme: 'claro' } as const
-const GOOD: LoadingFacts = { lang: 'en', blank: false, busy: true, texts: [], data: [] }
+const GOOD: LoadingFacts = { lang: 'en', blank: false, texts: [], data: [] }
 const raw = (label: string) => ({ testid: '', role: 'p', label, identity: '' })
 const shown = (text: string) => ({ text, raw: raw(text) })
 const FORBIDDEN = ['Nobody owes you', 'Nadie te debe.']
@@ -14,11 +14,9 @@ describe('judgeLoading', () => {
     expect(judgeLoading(GOOD, cell, FORBIDDEN, 'en')).toEqual({ language: null, violations: [] })
   })
 
-  test('a blank content area and a missing aria-busy are page rules', () => {
-    expect(violationsOf({ ...GOOD, blank: true, busy: false })).toEqual([
-      { ...cell, rule: 'blank-while-loading', target: '' },
-      { ...cell, rule: 'aria-busy', target: '' },
-    ])
+  test('a blank content area is a page rule, and the held verdict no longer judges aria-busy', () => {
+    expect(violationsOf({ ...GOOD, blank: true })).toEqual([{ ...cell, rule: 'blank-while-loading', target: '' }])
+    expect(violationsOf(GOOD)).toEqual([])
   })
 
   test('a false empty state and a figure while loading are named by their element', () => {
@@ -43,5 +41,22 @@ describe('judgeLoading', () => {
     expect(verdict.language).toBe('page lang en, run locale en-XA')
     expect(verdict.violations.filter((v) => v.rule === 'false-empty')).toEqual([])
     expect(judgeLoading({ ...GOOD, lang: 'en-XA' }, cell, FORBIDDEN, 'en-XA').language).toBeNull()
+  })
+})
+
+describe('judgeWaiting', () => {
+  const busyRule = [{ ...cell, rule: 'aria-busy', target: '' }]
+
+  test('an area that was waiting and says it is busy, or was not waiting and is not busy, is not reported', () => {
+    expect(judgeWaiting({ waiting: true, busy: true }, cell)).toEqual([])
+    expect(judgeWaiting({ waiting: false, busy: false }, cell)).toEqual([])
+  })
+
+  test('an area that was waiting and does not say it is busy is a page rule', () => {
+    expect(judgeWaiting({ waiting: true, busy: false }, cell)).toEqual(busyRule)
+  })
+
+  test('an area that was not waiting and says it is busy is a page rule', () => {
+    expect(judgeWaiting({ waiting: false, busy: true }, cell)).toEqual(busyRule)
   })
 })

@@ -8,7 +8,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { describe, expect, test } from 'vitest'
 import { driftProblems, parseBaseline, type Modules } from './baseline.ts'
-import { coverageProblems, loadMappingFiles, mappedRows, mappingProblems, MAPPINGS_DIR } from './baselineKeys.ts'
+import { exceptedRows, exceptionProblems } from './baselineExceptions.ts'
+import { coverageProblems,loadMappingFiles, mappedRows, mappingProblems, MAPPINGS_DIR } from './baselineKeys.ts'
 import { loadBundle } from './loadBundle.ts'
 import { pluralProblems } from './plurals.ts'
 
@@ -18,6 +19,7 @@ const found = import.meta.glob<Record<string, unknown>>(
 )
 const modules: Modules = Object.fromEntries(Object.entries(found).map(([path, mod]) => [basename(path), mod]))
 const committed = parseBaseline(readFileSync(join(import.meta.dirname, '../../src/copy/en.baseline.json'), 'utf8'))
+const exceptions: unknown = JSON.parse(readFileSync(join(import.meta.dirname, '../../src/copy/baseline_exceptions.json'), 'utf8'))
 
 describe('the real copy files', () => {
   test('every committed baseline entry whose export still exists renders its recorded text', () => {
@@ -51,7 +53,8 @@ describe('the real copy files', () => {
 
     expect(files).toHaveLength(listed.length)
     expect(mappedRows(files, committed).rows).toHaveLength(expectedRows)
-    expect(mappingProblems(files, committed, loadBundle('en'))).toEqual([])
+    const excepted = exceptedRows(exceptions, committed, files, modules, loadBundle('en'))
+    expect(mappingProblems(files, committed, loadBundle('en'), excepted)).toEqual([])
   })
 
   test('the functions wrapped in counted() are exactly the ones whose text depends on a count', () => {
@@ -59,7 +62,6 @@ describe('the real copy files', () => {
   })
 
   test('baseline_exceptions.json holds only reasoned entries', () => {
-    const raw: unknown = JSON.parse(readFileSync(join(import.meta.dirname, '../../src/copy/baseline_exceptions.json'), 'utf8'))
-    expect(raw).toEqual([])
+    expect(exceptionProblems(exceptions, committed, loadMappingFiles(), modules, loadBundle('en'))).toEqual([])
   })
 })

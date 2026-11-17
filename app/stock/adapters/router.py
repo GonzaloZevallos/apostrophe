@@ -1,14 +1,17 @@
+from collections.abc import Callable
 from datetime import date
-from typing import Annotated
+from typing import Annotated, cast
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import CurrentBusinessId
 from app.clock import Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
+from app.money_route import MoneyJsonRoute
 from app.products.application.errors import ProductArchived, ProductNotFound
+from app.shared.money import TooManyDecimals
 from app.shared.quantity import InvalidQuantity, Quantity
 from app.stock.adapters.schemas import (
     EntryIn,
@@ -35,6 +38,7 @@ from app.stock.application import read_stock as read_stock_uc
 from app.stock.application import set_threshold as set_threshold_uc
 from app.stock.application.errors import VarietyArchived as _ArchivedVariety
 from app.stock.application.errors import VarietyNotFound as _UnknownVariety
+from app.stock.application.ports import MoneyFormatReader
 from app.stock.domain.errors import (
     EntryCostInvalid,
     EntryCostOnNegativeAdjustment,
@@ -62,7 +66,7 @@ from app.stock.domain.errors import (
 from app.stock.domain.threshold import ThresholdInvalid
 
 router = APIRouter(prefix="/stock", tags=["stock"])
-entries_router = APIRouter(prefix="/entries")
+entries_router = APIRouter(prefix="/entries", route_class=MoneyJsonRoute)
 withdrawals_router = APIRouter(prefix="/withdrawals")
 products_router = APIRouter(prefix="/products")
 # Its own prefix, as products' is: the reasons are a list the business owns, not a stock
@@ -76,6 +80,17 @@ ClockDep = Annotated[Clock, Depends(get_clock)]
 
 def get_entries(session: SessionDep, business_id: CurrentBusinessId) -> SqlStockEntries:
     return SqlStockEntries(session, business_id)
+
+
+def get_money_format(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> MoneyFormatReader:
+    # Stock never imports `app.money_format` (docs/adr/0055): `app/main.py` hangs
+    # `SqlMoneyFormat` on `app.state.stock_money_format` as a factory.
+    factory = cast(
+        Callable[[Session, int], MoneyFormatReader], request.app.state.stock_money_format
+    )
+    return factory(session, business_id)
 
 
 def get_catalog(session: SessionDep, business_id: CurrentBusinessId) -> SqlVarietyCatalog:
@@ -104,6 +119,7 @@ DrawsDep = Annotated[SqlDraws, Depends(get_draws)]
 WithdrawalsDep = Annotated[SqlStockWithdrawals, Depends(get_withdrawals)]
 ThresholdsDep = Annotated[SqlThresholds, Depends(get_thresholds)]
 ReasonsDep = Annotated[SqlWithdrawalReasons, Depends(get_reasons)]
+MoneyFormatDep = Annotated[MoneyFormatReader, Depends(get_money_format)]
 
 as_http = TranslateErrors(
     [
@@ -129,6 +145,7 @@ as_http = TranslateErrors(
                 EntryCostRequired,
                 EntryCostInvalid,
                 EntryCostOnNegativeAdjustment,
+                TooManyDecimals,
                 EntryDateInFuture,
                 EntryNoteTooLong,
                 InvalidQuantity,
@@ -165,6 +182,7 @@ def record_entry(
     body: EntryIn,
     entries: EntriesDep,
     catalog: CatalogDep,
+    money_format: MoneyFormatDep,
     session: SessionDep,
     today: TodayDep,
     clock: ClockDep,
@@ -174,6 +192,7 @@ def record_entry(
             entry = manage_entries.record_entry(
                 entries,
                 catalog,
+                money_format,
                 session,
                 entry_date=body.date or today,
                 variety_id=body.product_id,
@@ -201,6 +220,7 @@ def edit_entry(
     body: EntryIn,
     entries: EntriesDep,
     catalog: CatalogDep,
+    money_format: MoneyFormatDep,
     session: SessionDep,
     today: TodayDep,
 ) -> EntryOut:
@@ -209,6 +229,7 @@ def edit_entry(
             entry = manage_entries.edit_entry(
                 entries,
                 catalog,
+                money_format,
                 session,
                 stock_entry_id,
                 entry_date=body.date or today,

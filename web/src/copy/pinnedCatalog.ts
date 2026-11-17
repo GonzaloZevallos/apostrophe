@@ -16,7 +16,7 @@ const PINNED_CATALOG_REASON_LABEL: Record<PinReason, string> = {
   bot_cannot_post: 'The bot cannot post in the channel',
   message_gone: 'The pinned message is gone: publish it again',
   missing_publish: 'It still has to be published with the new bot or channel',
-  too_long: 'It is too long for Telegram: shorten aromas or hide varieties.',
+  too_long: 'It is too long for Telegram: shorten aromas or hide products.',
 }
 
 export const LANGUAGE: 'es' | 'en' = 'en'

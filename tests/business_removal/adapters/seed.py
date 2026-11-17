@@ -61,7 +61,7 @@ def seeded_days(clock: MovableClock) -> SeededDays:
     )
 
 
-def build_app(db_path: Path, clock: MovableClock) -> tuple[FastAPI, Engine]:
+def build_app(db_path: Path, clock: MovableClock, money_scale: int = 0) -> tuple[FastAPI, Engine]:
     url = f"sqlite:///{db_path}"
     engine = make_engine(url)
     settings = Settings(secret_key="test-secret", database_url=url)
@@ -72,6 +72,7 @@ def build_app(db_path: Path, clock: MovableClock) -> tuple[FastAPI, Engine]:
         telegram=FakeTelegram(),
         clock=clock,
         upkeep_ticker=False,
+        opening_money_scale=money_scale,
     )
     return application, engine
 
@@ -89,7 +90,7 @@ def accept_invitation(
     return token
 
 
-def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
+def seed(db_path: Path, clock: MovableClock | None = None, money_scale: int = 0) -> tuple[str, str]:
     """Business B (staying) opened first, with a customer of its own; business A
     (leaving, the newest) opened second, with one of everything the export holds:
     a customer, a variety, a price entry, a stock entry, a withdrawal under a reason the
@@ -100,7 +101,7 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
     (a fresh one at `PINNED` when none is given). Returns both session tokens."""
     clock = clock if clock is not None else MovableClock(PINNED)
     days = seeded_days(clock)
-    application, engine = build_app(db_path, clock)
+    application, engine = build_app(db_path, clock, money_scale)
     with TestClient(application) as client:
         token_b = accept_invitation(client, engine, clock, "Otro Negocio", EMAIL_STAYING)
         client.headers["Authorization"] = f"Bearer {token_b}"
@@ -159,7 +160,7 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
                 "customer_id": customer_id,
                 "shipping_charged": SHIPPING_CHARGED,
                 "note": SALE_NOTE,
-                "payment": "owing",
+                "payment": {"kind": "owing"},
                 "lines": [{"product_id": variety_id, "quantity": 10, "special_price": 6000}],
             },
         )
@@ -167,7 +168,11 @@ def seed(db_path: Path, clock: MovableClock | None = None) -> tuple[str, str]:
 
         payment = client.post(
             f"/customers/{customer_id}/payments",
-            json={"paid_on": days.payment.isoformat(), "amount": PAYMENT_AMOUNT, "method": "cash"},
+            json={
+                "paid_on": days.payment.isoformat(),
+                "amount": PAYMENT_AMOUNT,
+                "payment_method_id": client.get("/api/payment-methods").json()[0]["id"],
+            },
         )
         assert payment.status_code == 201, payment.text
 

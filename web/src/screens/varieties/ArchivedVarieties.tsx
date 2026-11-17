@@ -30,6 +30,7 @@ import { useRestore } from './useRestore'
 import { NO_ARCHIVED_MESSAGE, VARIETIES_TEXT } from '../../copy/varieties'
 import { varietiesByName } from './varietiesByName'
 import { COMMON_TEXT } from '../../copy/common'
+import ContentArea from '../../components/ContentArea'
 
 
 /** Whether this entry was opened by a link of the app (`inAppState`), not typed or reloaded. */
@@ -52,7 +53,7 @@ export default function ArchivedVarieties() {
   }
 
   return (
-    <main className="pantalla variedades">
+    <ContentArea as="main" className="pantalla variedades">
       <div className="cuerpo">
         <h1 className="encabezado__titulo">{COMMON_TEXT.archived}</h1>
         {notice}
@@ -87,6 +88,6 @@ export default function ArchivedVarieties() {
           </div>
         )}
       </div>
-    </main>
+    </ContentArea>
   )
 }

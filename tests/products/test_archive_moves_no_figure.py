@@ -17,6 +17,7 @@ from fastapi.testclient import TestClient
 from app.pinned_catalog.domain.errors import TelegramUnreachable
 from tests.conftest import MovableClock
 from tests.fakes.telegram import FakeTelegram
+from tests.payment_body import payment_body
 
 TOKEN = "123456789:top-secret-bot-token"
 MONTHS = ("2026-09", "2026-10")
@@ -52,6 +53,8 @@ def _entry(client: TestClient, variety_id: int, quantity: str, on: str, **more: 
 
 def _sale(client: TestClient, on: str, lines: list[dict[str, Any]], **more: Any) -> int:
     body = {"date": on, "lines": lines, **more}
+    if "payment" in body:
+        body["payment"] = payment_body(body["payment"])
     return int(_ok(client.post("/sales", json=body), 201)["id"])
 
 
@@ -67,7 +70,12 @@ def _seed(client: TestClient, clock: MovableClock) -> Seed:
     clock.set(datetime(2026, 10, 15, 18, 0, tzinfo=UTC))
     a = _variety(client, "Criolla", 1_000)
     b = _variety(client, "Indica", 2_000)
-    customer = _ok(client.post("/customers", json={"name": "Juana", "phone": "11 2345-6789"}), 201)
+    customer = _ok(
+        client.post(
+            "/customers", json={"name": "Juana", "phone": "11 2345-6789", "phone_country": "AR"}
+        ),
+        201,
+    )
     _entry(client, a, "100", "2026-09-10", origin="purchase", total_cost=20_000)
     _entry(client, b, "50", "2026-09-10", origin="purchase", total_cost=10_000)
     sales = [
@@ -95,7 +103,7 @@ def _seed(client: TestClient, clock: MovableClock) -> Seed:
     _ok(
         client.post(
             f"/customers/{customer['id']}/payments",
-            json={"paid_on": "2026-10-01", "amount": 1_000, "method": "cash"},
+            json={"paid_on": "2026-10-01", "amount": 1_000, "payment_method_id": 1},
         ),
         201,
     )

@@ -67,3 +67,9 @@ msgstr "de: Marketing"
 
 msgid "stock.default_reason.own_use"
 msgstr "de: Own use"
+
+msgid "payment_methods.default_method.cash"
+msgstr "de: Cash"
+
+msgid "payment_methods.default_method.transfer"
+msgstr "de: Transfer"

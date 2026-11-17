@@ -17,6 +17,7 @@ import LeaveConfirm from '../../components/LeaveConfirm'
 import { useBackOr } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
 import { COMMON_TEXT } from '../../copy/common'
+import ContentArea from '../../components/ContentArea'
 
 export const SETTINGS_PATH = SETTINGS
 
@@ -46,7 +47,7 @@ export default function SettingsGroup({ title, dirty, leave, className, children
   const close = useBackOr(parentOf('settings-business', useViewport())?.path ?? SETTINGS_PATH)
 
   return (
-    <main className={className === undefined ? 'pantalla ajustes-grupo' : `pantalla ajustes-grupo ${className}`}>
+    <ContentArea as="main" className={className === undefined ? 'pantalla ajustes-grupo' : `pantalla ajustes-grupo ${className}`}>
       <div className="ajustes-grupo__tarjeta">
         <div className="ajustes-grupo__encabezado">
           <span className="ajustes-grupo__titulo">{title}</span>
@@ -57,6 +58,6 @@ export default function SettingsGroup({ title, dirty, leave, className, children
         </div>
       </div>
       {blocker.state === 'blocked' && leave !== undefined && <LeaveConfirm blocker={blocker} {...leave} />}
-    </main>
+    </ContentArea>
   )
 }

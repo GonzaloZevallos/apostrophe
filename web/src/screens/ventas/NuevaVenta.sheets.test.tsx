@@ -15,15 +15,19 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider, sheetDepth } from '../../components/useSheetStack'
 import { CUSTOMERS, pathTo, SALES, SALE_NEW } from '../../routes'
 import NuevaVenta from './NuevaVenta'
+import { withPaymentMethods } from '../../test-payment-methods'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 const ROSA = {
   id: 1,
   name: 'Rosa',
   current_price: { id: 9, effective_from: '2026-09-01', list_price: 1000, bulk_price: null, bulk_minimum: null },
 }
-const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', vip: false }
-const NUEVA = { id: 8, name: 'Luz', phone: null, vip: false }
+const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', phone_display: '+54 9 11 0000-0000', vip: false }
+const NUEVA = { id: 8, name: 'Luz', phone: null, phone_display: null, vip: false }
+
+import { PHONE_COUNTRIES } from '../stubFetchWithSettings'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -36,7 +40,7 @@ beforeEach(() => {
   releaseCreate = null
   vi.stubGlobal(
     'fetch',
-    vi.fn((path: string, init?: RequestInit) => {
+    vi.fn(withPaymentMethods((path: string, init?: RequestInit) => {
       const method = init?.method ?? 'GET'
       if (method === 'GET' && path === '/api/products?on=2026-10-02') {
         return Promise.resolve(jsonResponse(200, [ROSA]))
@@ -44,13 +48,16 @@ beforeEach(() => {
       if (method === 'GET' && path.startsWith(pathTo(CUSTOMERS))) {
         return Promise.resolve(jsonResponse(200, [ANA]))
       }
+      if (method === 'GET' && path === '/phone-countries') {
+        return Promise.resolve(jsonResponse(200, PHONE_COUNTRIES))
+      }
       if (method === 'POST' && path === '/customers') {
         return new Promise<Response>((resolve) => {
           releaseCreate = () => resolve(jsonResponse(201, NUEVA))
         })
       }
       return Promise.reject(new Error(`unexpected request: ${method} ${path}`))
-    }),
+    })),
   )
 })
 
@@ -63,7 +70,7 @@ function renderForm() {
   const router = createMemoryRouter(
     [
       { path: SALES, element: <h1>Lista de ventas</h1> },
-      { element: <Outlet context={ME} />, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] },
+      { element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] },
     ],
     { initialEntries: [SALES, SALE_NEW], initialIndex: 1 },
   )
@@ -169,7 +176,9 @@ test.each([
   await user.click(screen.getByRole('button', { name: 'Pick a customer' }))
   await user.click(await screen.findByRole('button', { name: 'New customer' }))
   await user.type(screen.getByLabelText('Name'), 'Luz')
-  await user.click(screen.getByRole('button', { name: 'Create customer' }))
+  const create = screen.getByRole('button', { name: 'Create customer' })
+  await waitFor(() => expect(create).toBeEnabled())
+  await user.click(create)
   await waitFor(() => expect(releaseCreate).not.toBeNull())
 
   await leave(router)

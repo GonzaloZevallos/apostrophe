@@ -1,0 +1,69 @@
+name: Screen images (PR)
+
+# The images this pull request would give the docs, as an artifact to look at (docs/product/screen-images.md,
+# ADR-0079). It writes nothing to the repository and is never a required check. There is no `container:`
+# on purpose: the script runs the pinned Playwright image through the host's Docker, which a job container
+# would not have.
+on:
+  pull_request:
+    paths-ignore:
+      - 'docs/assets/screens/**'
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - uses: astral-sh/setup-uv@v10.2.0
+        with:
+          version: "0.12.13"
+      - name: Tools the capture needs
+        run: |-
+          set -e
+          node --version
+          git --version
+          uv --version
+          docker version
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - run: uv venv --python 3.13
+      - run: uv sync --locked --extra dev
+      - run: npm --prefix web ci --no-fund --no-audit
+      # The comparison is against the base's images, whatever this branch holds in the folder.
+      - name: Restore the base images
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |-
+          git fetch --depth=1 origin "$BASE_SHA"
+          rm -rf docs/assets/screens
+          git checkout "$BASE_SHA" -- docs/assets/screens || echo "the base has no docs/assets/screens"
+      - name: Capture the screen images
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: scripts/design/screen-images.sh --out "$RUNNER_TEMP/screen-images" --mode pr --base-sha "$BASE_SHA"
+      - name: Summary
+        if: always()
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |-
+          out="$RUNNER_TEMP/screen-images"
+          if [ -f "$out/summary.md" ]; then cat "$out/summary.md" >> "$GITHUB_STEP_SUMMARY"; fi
+          if [ -n "$(git diff --name-only "$BASE_SHA" HEAD -- docs/assets/screens)" ]; then
+            echo "This pull request edits the images by hand. This comparison is against $BASE_SHA, and master's run will overwrite any image that differs from its capture." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screen-images
+          retention-days: 7
+          if-no-files-found: warn
+          path: |
+            ${{ runner.temp }}/screen-images/plan.json
+            ${{ runner.temp }}/screen-images/summary.md
+            ${{ runner.temp }}/screen-images/*.webp

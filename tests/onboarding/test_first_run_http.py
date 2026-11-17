@@ -388,7 +388,14 @@ def test_the_stamping_read_costs_exactly_one_insert_and_one_update_more_than_a_q
 
     assert [statement.split()[0] for statement in _dml(stamping)] == ["INSERT", "UPDATE"]
     assert _dml(quiet) == []
-    assert len(stamping) - len(quiet) == 2
+    # The INSERT and the UPDATE, and the commit-time guard's one re-read of the scale
+    # (app/db.py, docs/adr/0080): a quiet read commits nothing, so it has none.
+    assert len(stamping) - len(quiet) == 3
+    assert (
+        sum("money_format" in statement for statement, *_ in stamping)
+        - sum("money_format" in statement for statement, *_ in quiet)
+        == 1
+    )
 
 
 def test_a_dismissal_for_a_business_that_was_not_imported_writes_nothing(
@@ -509,7 +516,11 @@ def test_nothing_qualifies_agrees_with_the_catalog_text_over_every_reason_not_to
     _price(client, sold_out)
     _stock(client, sold_out, quantity="10")
     sold = client.post(
-        "/sales", json={"payment": "cash", "lines": [{"product_id": sold_out, "quantity": "10"}]}
+        "/sales",
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": sold_out, "quantity": "10"}],
+        },
     )
     assert sold.status_code == 201, sold.text
     assert client.get("/catalog").json()["text"] is None
@@ -547,7 +558,11 @@ def _build_sold_out(client: TestClient, engine: Engine) -> None:
     _price(client, variety_id)
     _stock(client, variety_id, quantity="10")
     sold = client.post(
-        "/sales", json={"payment": "cash", "lines": [{"product_id": variety_id, "quantity": "10"}]}
+        "/sales",
+        json={
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": variety_id, "quantity": "10"}],
+        },
     )
     assert sold.status_code == 201, sold.text
 

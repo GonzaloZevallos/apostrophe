@@ -14,6 +14,6 @@ export async function setPriceDate(page: Page, iso: string): Promise<void> {
   await expect(date).toHaveCount(0)
   await page.locator('.precio-chip').getByRole('button').click()
   await expect(date).toHaveCount(1)
-  await expect(page.getByLabel('Effective from')).toHaveCount(1)
+  await expect(page.getByLabel('Effective from', { exact: true })).toHaveCount(1)
   await date.fill(iso)
 }

@@ -93,7 +93,7 @@ def _priced(client: TestClient, customer_id: int, quantity: str) -> tuple[str, i
     created = client.post(
         "/sales",
         json={
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "customer_id": customer_id,
             "lines": [{"product_id": 1, "quantity": quantity}],
         },
@@ -106,8 +106,8 @@ def _priced(client: TestClient, customer_id: int, quantity: str) -> tuple[str, i
 def test_a_former_vip_customer_is_priced_after_the_upgrade_as_before(
     upgraded_client: TestClient,
 ) -> None:
-    assert _priced(upgraded_client, FORMER_VIP, "5") == ("vip", 700, 3_500)
-    assert _priced(upgraded_client, FORMER_VIP, "12") == ("vip", 700, 8_400)
+    assert _priced(upgraded_client, FORMER_VIP, "5") == ("type", 700, 3_500)
+    assert _priced(upgraded_client, FORMER_VIP, "12") == ("type", 700, 8_400)
 
 
 def test_a_customer_who_was_not_vip_is_priced_after_the_upgrade_as_before(

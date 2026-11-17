@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-07
+summary: "el archivo de muestra se genera desde la semilla en una fecha fija"
 ---
 
 # `muestra.md` is rendered from the seed at a pinned date, and the screens are checked against it

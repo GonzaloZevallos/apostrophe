@@ -1,8 +1,8 @@
 /**
- * The panel's body (`docs/product/results.md`, "What each tab shows"): the Hoy · Semana ·
+ * The panel's body (`docs/product/results.md`, "Qué muestra cada pestaña"): the Hoy · Semana ·
  * Mes switch and what each tab draws, each figure straight from `GET /panel`
  * (`PanelAnswer`). Nothing here computes, sorts or sign-tests an amount: ranges go through
- * `formatDateShort` only, Ganancia and Caja through `formatSignedMoney`.
+ * `formatDateShort` only, Ganancia and Caja through `money.signed`.
  *
  * Hoy is only what can be acted on, top to bottom: sold today, the Te deben block, Lo que
  * te queda. The result figures (Ganancia, Caja, Costo de lo vendido, Faltante de stock,
@@ -20,7 +20,9 @@ import { OWED_PLACE } from '../../components/useReturnToPlace'
 import InAppLink from '../../components/InAppLink'
 import BotonLink from '../../components/BotonLink'
 import MarcaEstado from '../../components/MarcaEstado'
+import { type FixedValue, HOME_PERIODS } from '../../components/fixedSets'
 import Pestanas from '../../components/Pestanas'
+import { assertType, type Equal } from '../../components/typeEquals'
 import type {
   PanelAnswer,
   PanelDebts,
@@ -30,7 +32,8 @@ import type {
 } from '../../api/panel'
 import { salesOwingCount } from '../../format/counts'
 import { formatDateShort } from '../../format/dates'
-import { formatGrams, formatMoney } from '../../format/money'
+import { formatGrams } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { detailFor, sideNoteFor } from '../../stock/detail'
 import { INICIO_TEXT } from '../../copy/inicio'
 import { useTranslation } from 'react-i18next'
@@ -38,11 +41,7 @@ import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import PeriodPanel from './PeriodFigures'
 import { COMMON_TEXT } from '../../copy/common'
 
-const TAB_LABEL: Record<PanelTab, string> = { today: COMMON_TEXT.today, week: COMMON_TEXT.week, month: COMMON_TEXT.month }
-const TAB_ITEMS = (['today', 'week', 'month'] as const).map((value) => ({
-  value,
-  label: TAB_LABEL[value],
-}))
+assertType<Equal<FixedValue<typeof HOME_PERIODS>, PanelTab>>()
 
 function rangeLabel(tab: PanelTab, period: PanelPeriod): string {
   if (tab === 'today') return COMMON_TEXT.todayWith(formatDateShort(period.start))
@@ -66,7 +65,7 @@ export default function InicioPanel({
   return (
     <>
       <div className="inicio__periodos">
-        <Pestanas items={TAB_ITEMS} value={tab} onChange={onTab} ariaLabel={COMMON_TEXT.period} />
+        <Pestanas items={HOME_PERIODS} value={tab} onChange={onTab} ariaLabel={COMMON_TEXT.period} />
         <span className="pie">{rangeLabel(tab, period)}</span>
       </div>
 
@@ -120,6 +119,7 @@ function StockRow({ variety, today }: { variety: PanelVarietyOut; today: string 
 }
 
 function TeDebenBlock({ debts }: { debts: PanelDebts }) {
+  const money = useMoney()
   const { t } = useTranslation()
   // `oldest` is a date-or-null, never an amount (review finding: deciding this from
   // `total_owed === 0` compared an API amount inside a screen, which the plan
@@ -138,7 +138,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
       <InAppLink to={CUSTOMERS} className="bloque-deben__titulo" data-place={OWED_PLACE}>
         {COMMON_TEXT.owedToYou}
       </InAppLink>
-      <span className="cifra-xl">{formatMoney(debts.total_owed)}</span>
+      <span className="cifra-xl">{money.money(debts.total_owed)}</span>
       <span className="pie bloque-deben__cuenta">{salesOwingCount(debts.sales_owing_count)}</span>
       <span className="pie bloque-deben__desde">{INICIO_TEXT.desde0(formatDateShort(debts.oldest))}</span>
       {debts.teaser.map((row) => (
@@ -146,7 +146,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
           <InAppLink to={pathTo(CUSTOMER, { id: row.customer_id })} className="bloque-deben__datos">
             <span className="bloque-deben__nombre">{row.name}</span>
             <span className="pie">
-              <span className="monto-deuda cifra-n">{formatMoney(row.balance)}</span>
+              <span className="monto-deuda cifra-n">{money.money(row.balance)}</span>
               {INICIO_TEXT.sinceDate(formatDateShort(row.owing_since))}
             </span>
           </InAppLink>

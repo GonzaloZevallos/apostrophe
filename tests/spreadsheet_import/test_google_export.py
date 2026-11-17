@@ -5,7 +5,7 @@ and at the CLI dry run / real run (full pipeline: columns found, rows read to th
 last one, fixed addresses, mismatches, owner refusals). The fixture is built by this
 module with openpyxl, then rewritten in place with
 `tests.spreadsheet_import.factories.as_google_export`; no real sheet enters the
-repository (CODING_STANDARDS.md section 5; import.md Constraints -> Test data).
+repository (CODING_STANDARDS.md section 5; import.md Restricciones -> Datos de prueba).
 """
 
 from __future__ import annotations
@@ -49,8 +49,8 @@ GASTOS_TITLES = ("Fecha", "Categoría", "Monto", "Detalle", "Revisar")
 
 # A numeric name, used for the variety in every sheet and for the customer, so the
 # "number in a text cell" rule is proven where it matters most: a name that still has
-# to match across sheets and against the mapping (import.md "Numbers where text is
-# expected").
+# to match across sheets and against the mapping (import.md "Números donde se espera
+# texto").
 VARIETY = "420"
 CUSTOMER = "420"
 PHONE = "1123456789"
@@ -134,7 +134,7 @@ def _clean_workbook() -> Workbook:
     entradas.cell(row=2, column=5, value=20_000.0)  # whole-float cost
     entradas.cell(row=2, column=6, value="")
     # Three more rows, read because `_last_row` keeps going past row 2, each proving
-    # one more number-as-text case (import.md "Numbers where text is expected").
+    # one more number-as-text case (import.md "Números donde se espera texto").
     for extra_row, note_value in ((3, 3.5), (4, 1e-05), (5, -2.5)):
         entradas.cell(row=extra_row, column=1, value=date(2026, 1, extra_row))
         entradas.cell(row=extra_row, column=2, value=VARIETY)

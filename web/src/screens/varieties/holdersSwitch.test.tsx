@@ -7,7 +7,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { render as renderBare, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
@@ -17,6 +17,17 @@ import { restoreEnglish, switchToMarkers } from '../../i18n/switchFixture'
 import { VARIETY_PRICES, VARIETY_PRICE_NEW, pathTo } from '../../routes'
 import VarietyStockSection from './VarietyStockSection'
 import { api, renderVarieties } from './renderVarieties'
+import type { ReactElement, ReactNode } from 'react'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+
+function Business({ children }: { children: ReactNode }) {
+  return <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>{children}</MoneyFormatProvider>
+}
+
+/** Rendered for a "$"/0-decimals business, the one the strings below were written for. */
+function render(ui: ReactElement) {
+  return renderBare(ui, { wrapper: Business })
+}
 
 afterEach(async () => {
   await restoreEnglish()

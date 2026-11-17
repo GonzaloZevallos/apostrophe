@@ -1,16 +1,17 @@
 /**
  * The "Negocio" group of Configuración (`ConfiguracionNegocio.dc.html`; `accounts.md`):
- * renaming the business.
+ * renaming the business, language and the links to currency and withdrawal reasons.
  *
  * The business comes only from the session: `GET`/`PATCH /business` never take an id
- * (CODING_STANDARDS §9). Renaming shows the fixed toast "Business renamed" (a constant,
+ * (CODING_STANDARDS §9). Saving shows the fixed toast "Saved" (a constant,
  * never built from the response). A rejected name (`account.business_name_invalid`) shows
  * inline and keeps what was typed, dispatched through `refusals.ts`. A dropped network shows
  * "Sin conexión", never the generic retry, which would wrongly blame the server.
  *
- * `dirty` is the typed name against `accepted`: the name the server last accepted, taken
- * once from the first answer and reset from the PATCH answer. It is never compared with the
- * query cache, which the save refetches and a partner's rename can move under the form.
+ * `dirty` is the typed name against `accepted`, taken once from the first answer and reset from
+ * the save's answer. It is never compared with the query cache, which the save refetches and a
+ * partner's change can move under the form. The Phone country is chosen per number in the
+ * customer form (docs/adr/20261111-phone-country-per-number), so there is no setting for it here.
  */
 
 import { type FormEvent, useState } from 'react'
@@ -23,8 +24,9 @@ import AvisoExito from '../../components/AvisoExito'
 import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
 import InAppLink from '../../components/InAppLink'
-import { SETTINGS_WITHDRAWAL_REASONS } from '../../routes'
+import { SETTINGS_CURRENCY, SETTINGS_WITHDRAWAL_REASONS } from '../../routes'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
+import { LANGUAGES } from '../../components/fixedSets'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import {
@@ -32,7 +34,6 @@ import {
   GENERIC_REFUSAL_MESSAGE,
   RENAME_SUCCESS,
   SETTINGS_TEXT,
-  languageName,
 } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
 import { COMMON_TEXT } from '../../copy/common'
@@ -81,13 +82,30 @@ export default function BusinessGroup() {
       </SettingsGroup>
     )
   }
-  return <BusinessForm initialName={data.name} language={data.language} selectable={data.selectable_languages} />
+  return (
+    <BusinessForm
+      initialName={data.name}
+      language={data.language}
+      selectable={data.selectable_languages}
+    />
+  )
 }
 
 interface BusinessFormProps {
   initialName: string
   language: StoredLanguage
   selectable: readonly LanguageTag[]
+}
+
+/** The message a failed save shows: the refusal's fixed words, the generic retry otherwise. */
+function failureMessage(caught: ApiError, overrides: Partial<Record<RefusalCode, string>>): string {
+  const message = resolveOverride(overrides, caught.code)
+  if (message !== undefined) {
+    return message
+  }
+  return caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal'
+    ? GENERIC_REFUSAL_MESSAGE
+    : ERROR_GENERICO_MENSAJE
 }
 
 function BusinessForm({ initialName, language, selectable }: BusinessFormProps) {
@@ -97,39 +115,38 @@ function BusinessForm({ initialName, language, selectable }: BusinessFormProps) 
   const [nameError, setNameError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
   const [saving, setSaving] = useState(false)
-  const [renamed, setRenamed] = useState(false)
+  const [saved, setSaved] = useState(false)
 
   function onNameChange(value: string): void {
     setName(value)
     setNameError(null)
     setOffline(false)
-    setRenamed(false)
+    setSaved(false)
   }
 
-  async function onRename(event: FormEvent<HTMLFormElement>): Promise<void> {
+  async function onSave(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setNameError(null)
     setOffline(false)
-    setRenamed(false)
+    setSaved(false)
     setSaving(true)
     try {
-      const updated = await patch<Business>('/business', { name })
-      invalidateResource(queryClient, 'business')
-      setAccepted(updated.name)
-      setName(updated.name)
-      setRenamed(true)
+      try {
+        const updated = await patch<Business>('/business', { name })
+        setAccepted(updated.name)
+        setName(updated.name)
+        invalidateResource(queryClient, 'business')
+      } catch (caught) {
+        if (caught instanceof ApiError) {
+          setNameError(failureMessage(caught, RENAME_OVERRIDES))
+          return
+        }
+        throw caught
+      }
+      setSaved(true)
     } catch (caught) {
       if (caught instanceof NetworkError) {
         setOffline(true)
-      } else if (caught instanceof ApiError) {
-        const message = resolveOverride(RENAME_OVERRIDES, caught.code)
-        if (message !== undefined) {
-          setNameError(message)
-        } else if (caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal') {
-          setNameError(GENERIC_REFUSAL_MESSAGE)
-        } else {
-          setNameError(ERROR_GENERICO_MENSAJE)
-        }
       } else {
         setNameError(ERROR_GENERICO_MENSAJE)
       }
@@ -139,13 +156,17 @@ function BusinessForm({ initialName, language, selectable }: BusinessFormProps) 
   }
 
   return (
-    <SettingsGroup title={COMMON_TEXT.business} dirty={name !== accepted} leave={LEAVE}>
-      {renamed && (
+    <SettingsGroup
+      title={COMMON_TEXT.business}
+      dirty={name !== accepted}
+      leave={LEAVE}
+    >
+      {saved && (
         <div className="aviso-flotante">
           <AvisoExito texto={RENAME_SUCCESS} />
         </div>
       )}
-      <form className="formulario" onSubmit={onRename}>
+      <form className="formulario" onSubmit={onSave}>
         <label className="campo">
           <span className="campo__rotulo">{COMMON_TEXT.businessName}</span>
           <input
@@ -163,12 +184,21 @@ function BusinessForm({ initialName, language, selectable }: BusinessFormProps) 
           )}
         </label>
         <Boton textOnly="submit" type="submit" disabled={saving}>
-          {COMMON_TEXT.saveTheName}
+          {COMMON_TEXT.save}
         </Boton>
         {offline && <SinConexion />}
       </form>
       {selectable.length > 1 && <LanguageControl language={language} selectable={selectable} />}
       <div className="ajustes__lista">
+        <InAppLink to={SETTINGS_CURRENCY} className="ajustes__item">
+          <span className="ajustes__item-icono">
+            <Icono nombre="precio" />
+          </span>
+          <span className="ajustes__item-rotulo">{COMMON_TEXT.currencyAndDecimals}</span>
+          <span className="ajustes__item-flecha">
+            <Icono nombre="chevron" />
+          </span>
+        </InAppLink>
         <InAppLink to={SETTINGS_WITHDRAWAL_REASONS} className="ajustes__item">
           <span className="ajustes__item-icono">
             <Icono nombre="salidaStock" />
@@ -196,8 +226,8 @@ function LanguageControl({ language, selectable }: { language: StoredLanguage; s
   const [message, setMessage] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
 
-  const offList = !selectable.some((tag) => sameLanguage(language, tag))
-  const segments: readonly LanguageTag[] = offList ? [language, ...selectable] : selectable
+  const known = LANGUAGES.some((option) => sameLanguage(language, option.value))
+  const selectableNow = selectable.includes(language)
 
   async function choose(tag: LanguageTag): Promise<void> {
     if (saving || sameLanguage(language, tag)) {
@@ -234,23 +264,25 @@ function LanguageControl({ language, selectable }: { language: StoredLanguage; s
   return (
     <div className="ajustes-idioma">
       <span className="rotulo ajustes-tema__rotulo">{SETTINGS_TEXT.language}</span>
+      {!known && <span className="campo__ayuda">{SETTINGS_TEXT.currentLanguage(language)}</span>}
       <div className="ajustes-tema" role="radiogroup" aria-label={SETTINGS_TEXT.languageGroupName}>
-        {segments.map((tag) => {
-          const checked = sameLanguage(language, tag)
-          const untappable = offList && checked
+        {LANGUAGES.filter(
+          (option) => selectable.includes(option.value) || (known && sameLanguage(language, option.value)),
+        ).map((option) => {
+          const checked = sameLanguage(language, option.value)
           return (
             <button
-              key={tag}
+              key={option.value}
               type="button"
               role="radio"
               aria-checked={checked}
-              disabled={saving || untappable}
+              disabled={saving || (checked && !selectableNow)}
               className={checked ? 'ajustes-tema__opcion ajustes-tema__opcion--activa' : 'ajustes-tema__opcion'}
               onClick={() => {
-                void choose(tag)
+                void choose(option.value)
               }}
             >
-              {languageName(tag)}
+              {option.label()}
             </button>
           )
         })}

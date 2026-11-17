@@ -25,7 +25,7 @@
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import type { Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
@@ -41,7 +41,7 @@ function shortDate(iso: string): string {
 /** The customer's card, never the list beside it on a computer (the list holds the search box):
  * its "Te debe" and "Credit" are what these specs read. */
 function cardOf(page: Page) {
-  return page.locator('main').filter({ hasNot: page.getByLabel('Search customer') })
+  return page.locator('main').filter({ hasNot: page.getByLabel('Search customer', { exact: true }) })
 }
 
 test('a seller records, settles, undoes and traces payments, from the front alone', async ({
@@ -59,9 +59,9 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   // One priced variety, $1.000/g — round figures for every assertion below.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await page.getByRole('link', { name: 'New product' }).click()
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   await page.getByLabel(/^List price/).fill('1000')
@@ -69,8 +69,8 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   // A customer, left owing on its first sale.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Phone').fill('+5491155550099')
-  await page.getByLabel('Name').fill('Carla Pérez')
+  await page.getByLabel('Phone', { exact: true }).fill('+5491155550099')
+  await page.getByLabel('Name', { exact: true }).fill('Carla Pérez')
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
@@ -78,7 +78,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // Sale 1: 5 g of Rosa, left owing — $5.000.
   await page.getByRole('link', { name: 'New sale to Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
-  const todayIso = await page.getByLabel('Date').inputValue()
+  const todayIso = await page.getByLabel('Date', { exact: true }).inputValue()
   const today = shortDate(todayIso)
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Owing' }).check()
@@ -96,7 +96,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // --- Registrar cobro: "All" fills and settles the whole balance. ---
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByRole('button', { name: 'All: $ 5.000' }).click()
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await choosePaymentMethod(page, 'Cash')
   await expect(page.getByText('Taken from the oldest debt')).toBeVisible()
   await expect(page.getByText(`$ 5.000 to the sale of ${today}`)).toBeVisible()
   await expect(page.getByText(/They still owe/)).toHaveCount(0) // nothing left.
@@ -126,8 +126,8 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // --- A partial payment, by transfer: the preview names what is left before
   // saving, and the toast after saving carries the same figure (PRD metric 2). ---
   await page.getByRole('link', { name: 'Record payment' }).click()
-  await page.getByLabel('Amount').fill('3000')
-  await page.getByRole('radio', { name: 'Transfer' }).check()
+  await page.getByLabel('Amount', { exact: true }).fill('3000')
+  await choosePaymentMethod(page, 'Transfer')
   await expect(page.getByText(`$ 3.000 to the sale of ${today}`)).toBeVisible()
   await expect(page.getByText('They still owe $ 5.000')).toBeVisible()
   await expectToast(page, 'Payment saved · still owing $ 5.000', () =>
@@ -195,7 +195,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByRole('button', { name: 'All: $ 5.000' }).click()
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await choosePaymentMethod(page, 'Cash')
   await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
 
   await page.goto(creditSaleUrl)
@@ -253,3 +253,4 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByRole('region', { name: 'Owed to you' }).locator('.cifra-xl')).toHaveText('$ 5.000')
   await expect(page.getByText('2 sales owing')).toBeVisible()
 })
+import { VARIETY_NAME_LABEL } from './helpers/labels.js'

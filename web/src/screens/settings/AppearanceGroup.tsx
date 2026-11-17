@@ -11,16 +11,21 @@
 
 import { useState } from 'react'
 import { chooseTheme, currentChoice, followSystem, type ThemeChoice } from '../../theme'
+import { type FixedValue, THEME_CHOICES } from '../../components/fixedSets'
 import Icono from '../../components/Icono'
+import { assertType, type Equal } from '../../components/typeEquals'
 import SettingsGroup from './SettingsGroup'
 import { SETTINGS_TEXT } from '../../copy/settings'
 import { COMMON_TEXT } from '../../copy/common'
 
-const CHOICES: readonly { value: ThemeChoice; label: string; apply: () => void }[] = [
-  { value: 'automatic', label: SETTINGS_TEXT.automatic, apply: followSystem },
-  { value: 'light', label: SETTINGS_TEXT.light, apply: () => { chooseTheme('claro') } },
-  { value: 'dark', label: SETTINGS_TEXT.dark, apply: () => { chooseTheme('oscuro') } },
-]
+assertType<Equal<FixedValue<typeof THEME_CHOICES>, ThemeChoice>>()
+
+/** What a tap on each choice does: the runtime state the fixed set itself does not hold. */
+const APPLY: Readonly<Record<ThemeChoice, () => void>> = {
+  automatic: followSystem,
+  light: () => { chooseTheme('claro') },
+  dark: () => { chooseTheme('oscuro') },
+}
 
 export default function AppearanceGroup() {
   const [choice, setChoice] = useState<ThemeChoice>(currentChoice)
@@ -31,7 +36,7 @@ export default function AppearanceGroup() {
         {SETTINGS_TEXT.theme}
       </span>
       <div className="ajustes-tema" role="radiogroup" aria-labelledby="ajustes-tema-rotulo">
-        {CHOICES.map((option) => {
+        {THEME_CHOICES.map((option) => {
           const checked = choice === option.value
           return (
             <button
@@ -41,12 +46,12 @@ export default function AppearanceGroup() {
               aria-checked={checked}
               className={checked ? 'ajustes-tema__opcion ajustes-tema__opcion--activa' : 'ajustes-tema__opcion'}
               onClick={() => {
-                option.apply()
+                APPLY[option.value]()
                 setChoice(option.value)
               }}
             >
               {checked && <Icono nombre="hecho" />}
-              {option.label}
+              {option.label()}
             </button>
           )
         })}

@@ -263,7 +263,7 @@ def sale_inputs(
 
         variety_result = variety_names.get(row.variety or "")
         if variety_result is None or isinstance(variety_result, Refusal):
-            results.append(CellProblem(row.ref, "Variedad", "import.unknown_variety"))
+            results.append(CellProblem(row.ref, "Variedad", "import.unknown_product"))
             continue
 
         kind = row.kind or ""
@@ -578,7 +578,7 @@ def _check_variety_mention(
     if result is None:
         return
     if result.key not in valid_keys:
-        problems.append(CellProblem(ref, column, "import.unknown_variety"))
+        problems.append(CellProblem(ref, column, "import.unknown_product"))
 
 
 def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPlan:
@@ -597,7 +597,7 @@ def build_plan(split: Split, mapping: ParsedMapping, checks: Checks) -> ImportPl
         if result is None:
             continue
         if result.key in seen_variety_keys:
-            problems.append(CellProblem(row.ref, "Variedad", "import.duplicate_variety"))
+            problems.append(CellProblem(row.ref, "Variedad", "import.duplicate_product"))
             continue
         seen_variety_keys.add(result.key)
         valid_variety_keys.add(result.key)

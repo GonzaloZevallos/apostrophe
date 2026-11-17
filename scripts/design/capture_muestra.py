@@ -45,7 +45,16 @@ _MONTHS = (
 _WEEKDAYS = {1: "Lun", 2: "Mar", 3: "Mié", 4: "Jue", 5: "Vie", 6: "Sáb", 7: "Dom"}
 _STATUS = {"ok": "ok", "low": "baja", "sold_out": "agotada", "no_entries": "sin entradas"}
 _STANDING = {"owes": "debe", "settled": "al día"}
-_HOW_PAID = {"cash": "Efectivo", "transfer": "Transferencia", "owing": "Debiendo"}
+_METHOD = {"Cash": "Efectivo", "Transfer": "Transferencia"}
+
+
+def how_paid(word: str, method: dict[str, Any] | None) -> str:
+    """The sheet's words for a sale's payment: `Debiendo`, or the method's name in Spanish."""
+    if word == "owing" or method is None:
+        return "Debiendo"
+    return _METHOD[method["name"]]
+
+
 _RULE = {
     "list": "Lista",
     "bulk": "Por mayor",
@@ -53,6 +62,16 @@ _RULE = {
     "gift": "Regalo",
     "special": "Especial",
 }
+
+
+def _rule_label(line: dict[str, Any]) -> str:
+    """What the Regla column shows: a line priced by a customer type shows the type's copied
+    name, as the line's badge does (docs/product/sales.md)."""
+    if line["pricing_rule"] == "type":
+        return str(line["customer_type_name"])
+    return _RULE[line["pricing_rule"]]
+
+
 _ENTRY_KIND = {"purchase": "Compra", "harvest": "Cosecha", "adjustment": "Ajuste"}
 _WITHDRAWAL_KIND = {"Marketing": "Promoción", "Own use": "Consumo propio"}
 _MINUS = "\N{MINUS SIGN}"
@@ -324,7 +343,7 @@ def _panel(api: _ClientApi) -> list[str]:
             amount = reason["amount"]
             add(reason["name"], "—" if amount is None else money(amount), reason["pending"])
         add("Gastos", money(p["expenses"]))
-        add("Compras de flores", money(p["purchases"]))
+        add("Compras", money(p["purchases"]))
         add("Ganancia", money(p["profit"]), p["profit_pending"])
         add("Caja", money(p["cash"]))
     header = ["Período", "Rango", "Etiqueta", "Valor", "Pendiente"]
@@ -345,7 +364,7 @@ def _sales(api: _ClientApi) -> list[str]:
                 money(sale["total"]),
                 money(sale["shipping_charged"]),
                 yes_no(sale["still_owing"]),
-                _HOW_PAID[sale["payment"]],
+                how_paid(sale["payment"], sale["payment_method"]),
             ]
         )
         lines.extend(
@@ -354,7 +373,7 @@ def _sales(api: _ClientApi) -> list[str]:
                 line["product_name"],
                 grams(line["quantity"]),
                 f"{money(line['price_per_gram'])} x g",
-                _RULE[line["pricing_rule"]],
+                _rule_label(line),
                 money(line["line_total"]),
             ]
             for line in sale["lines"]
@@ -378,12 +397,12 @@ def _accounts(api: _ClientApi) -> list[str]:
             if row["kind"] == "sale":
                 sale = row["sale"]
                 concept, amount = "Venta", money(sale["total"])
-                detail = _HOW_PAID[sale["how_paid"]]
+                detail = how_paid(sale["how_paid"], sale["payment_method"])
             else:
                 payment = row["payment"]
                 concept, amount = "Pago", money(payment["amount"])
                 applied = row["applied_to"]
-                method = _HOW_PAID[payment["method"]]
+                method = how_paid("paid", payment["payment_method"])
                 detail = f"{method}, a la venta del {day_month(applied['sale_date'])}"
             rows.append(
                 [
@@ -467,7 +486,7 @@ def _analysis(api: _ClientApi) -> list[str]:
     def expenses(title: str, breakdown: Json) -> list[str]:
         rows = [[c["name"], money(c["total"])] for c in breakdown["categories"]]
         rows.append(["Total gastos", money(breakdown["total"])])
-        rows.append(["Compras de flores", money(breakdown["purchases"])])
+        rows.append(["Compras", money(breakdown["purchases"])])
         return [f"### {title}", "", *table(["Categoría", "Total"], rows)]
 
     out += expenses("Análisis · gastos del mes", answer["month_expenses"])

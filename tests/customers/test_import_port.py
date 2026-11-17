@@ -41,7 +41,9 @@ def test_has_records_is_false_for_a_fresh_business(client: TestClient, engine: E
 def test_has_records_is_true_once_the_business_has_a_customer(
     client: TestClient, engine: Engine
 ) -> None:
-    client.post("/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789"})
+    client.post(
+        "/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789", "phone_country": "AR"}
+    )
     business_id = _business_id_of_email(engine, "uno@example.com")
     port = CustomersImport(Session(engine), business_id)
 

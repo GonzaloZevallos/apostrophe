@@ -1,6 +1,6 @@
 /**
  * Stock withdrawals' own end-to-end run (PRD metric "No curl"): a seller records a
- * withdrawal from Más and one from a variety's page, edits one and deletes one, and reads
+ * withdrawal from Products' "Take from stock" and one from a variety's page, edits one and deletes one, and reads
  * Marketing and Own use on Inicio (Semana and Mes, never Hoy) and on Análisis,
  * through the built front alone, against the real backend.
  *
@@ -8,11 +8,13 @@
  * times 400: the promotion ends at 4 g ($ 1.600) and the own use at 2 g ($ 800).
  */
 
+import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
-import { ANALYSIS, HOME, VARIETIES, WITHDRAWAL_NEW } from '../src/routes.js'
+import { pickStockVariety, pickWithdrawalReason, pickWithdrawalVariety } from './helpers/stockVariety.js'
+import { HOME, VARIETIES, WITHDRAWAL_NEW } from '../src/routes.js'
 import { watchConsole } from './console.js'
-import { openMas } from './helpers/openMas.js'
+import { openAnalysis, openTakeFromStock } from './helpers/openScreens.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { uniqueTag } from './helpers/unique.js'
 
@@ -28,45 +30,41 @@ test('a seller records, edits and deletes withdrawals and reads Marketing and Ow
 
   // A variety with one lot: 50 g for $ 20.000.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await page.getByRole('link', { name: 'New product' }).click()
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
-  await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
-  await page.getByLabel('Total cost').fill('20000')
+  await page.getByLabel('Grams', { exact: true }).fill('50')
+  await pickStockVariety(page, 'Rosa')
+  await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill('20000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
-  // From Más: a promotion of 5 g. The reason has no default, so saving waits for it.
-  await openMas(page)
-  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Take from stock/ }).click()
-  await expect(page).toHaveURL((url) => url.pathname === WITHDRAWAL_NEW)
-  await expect(page.getByRole('button', { name: 'Close' })).toBeVisible()
-  await page.getByLabel('Variety 1', { exact: true }).selectOption({ label: 'Rosa' })
+  // From Products' "Take from stock": a promotion of 5 g. The reason has no default, so saving waits for it.
+  await openTakeFromStock(page)
+  await pickWithdrawalVariety(page, 'Rosa')
   await page.getByLabel('Grams 1', { exact: true }).fill('5')
   await expect(page.getByRole('button', { name: 'Save the withdrawal' })).toBeDisabled()
-  await page.getByRole('button', { name: 'Marketing', exact: true }).click()
+  await pickWithdrawalReason(page, 'Marketing')
   await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
 
   // From the variety's page: an own use of 2 g, with the variety already chosen.
   await page.goto(VARIETIES)
   await page.getByRole('link', { name: /Rosa/ }).click()
   await expect(page.getByText('−5 g')).toBeVisible()
-  // The variety's own "Take from stock" (the list beside it carries one with no variety).
+  // The variety's own "Take from stock" (the list beside it carries one with no product).
   await page.locator(`a[href*="${WITHDRAWAL_NEW}?variety="]`, { hasText: 'Take from stock' }).click()
-  await expect(page.getByLabel('Variety 1', { exact: true })).toHaveValue(/\d+/)
-  await page.getByRole('button', { name: 'Own use', exact: true }).click()
+  await expect(page.getByRole('group', { name: 'Product', exact: true }).getByRole('button')).toContainText('Rosa')
+  await pickWithdrawalReason(page, 'Own use')
   await page.getByLabel('Grams 1', { exact: true }).fill('2')
   await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
   await expect(page.getByText('−2 g')).toBeVisible()
 
   // A third one, a promotion of 1 g, to delete.
-  await openMas(page)
-  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Take from stock/ }).click()
-  await page.getByLabel('Variety 1', { exact: true }).selectOption({ label: 'Rosa' })
+  await openTakeFromStock(page)
+  await pickWithdrawalVariety(page, 'Rosa')
   await page.getByLabel('Grams 1', { exact: true }).fill('1')
-  await page.getByRole('button', { name: 'Marketing', exact: true }).click()
+  await pickWithdrawalReason(page, 'Marketing')
   await expectToast(page, 'Withdrawal saved', () => page.getByRole('button', { name: 'Save the withdrawal' }).click())
 
   // Delete it from its detail, after "Before deleting".
@@ -110,11 +108,10 @@ test('a seller records, edits and deletes withdrawals and reads Marketing and Ow
   }
 
   // Análisis: the same two figures, apart from Stock shortfall.
-  await openMas(page)
-  await page.getByRole('navigation', { name: 'More' }).getByRole('link', { name: /^Analysis/ }).click()
-  await expect(page).toHaveURL((url) => url.pathname === ANALYSIS)
+  await openAnalysis(page)
   await expect(page.getByText('Marketing $ 1.600').first()).toBeVisible()
   await expect(page.getByText('Own use $ 800').first()).toBeVisible()
 
   expect(consoleMessages).toEqual([])
 })
+

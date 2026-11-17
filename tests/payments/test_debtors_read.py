@@ -28,7 +28,7 @@ def _owing_sale(client: TestClient, customer_id: int, variety_id: int, quantity:
         "/sales",
         json={
             "customer_id": customer_id,
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "date": SALE_DATE,
             "lines": [{"product_id": variety_id, "quantity": str(quantity)}],
         },
@@ -40,7 +40,12 @@ def _owing_sale(client: TestClient, customer_id: int, variety_id: int, quantity:
 
 def _customer(client: TestClient, index: int) -> int:
     customer = client.post(
-        "/customers", json={"name": f"Debtor {index:03d}", "phone": f"11 4{index:03d}-{index:04d}"}
+        "/customers",
+        json={
+            "name": f"Debtor {index:03d}",
+            "phone": f"11 4{index:03d}-{index:04d}",
+            "phone_country": "AR",
+        },
     )
     assert customer.status_code == 201, customer.text
     customer_id: int = customer.json()["id"]
@@ -95,7 +100,7 @@ def test_panel_and_debtors_agree_with_a_direct_computation_and_a_credit_customer
         json={
             "paid_on": "2026-10-01",
             "amount": _sale_total(client, kept) + _sale_total(client, removed),
-            "method": "cash",
+            "payment_method_id": 1,
         },
     )
     assert paid.status_code == 201, paid.text

@@ -10,19 +10,22 @@ import type { Analysis } from '../api/analysis'
 import Bar from './analisis/Bar'
 import NoBestWeekLine from './analisis/NoBestWeekLine'
 import { monthCard, varietyCard, weekCard } from './analisisCards'
+import { useMoney } from '../format/moneyContext'
 import AnalisisTarjeta from './AnalisisTarjeta'
 
 export function TarjetasVariedades({ products }: { products: Analysis['month']['products'] }) {
+  const money = useMoney()
   return (
     <div className="analisis__variedades">
       {products.map((variety) => (
-        <AnalisisTarjeta key={variety.product_id} card={varietyCard(variety)} />
+        <AnalisisTarjeta key={variety.product_id} card={varietyCard(variety, money)} />
       ))}
     </div>
   )
 }
 
 export function TarjetasSemanas({ weeks }: { weeks: Analysis['weeks'] }) {
+  const money = useMoney()
   const maxSales = Math.max(0, ...weeks.map((week) => week.sales))
   return (
     <>
@@ -30,7 +33,7 @@ export function TarjetasSemanas({ weeks }: { weeks: Analysis['weeks'] }) {
         {weeks.map((week, index) => (
           <AnalisisTarjeta
             key={week.first_day}
-            card={weekCard(week, index === weeks.length - 1)}
+            card={weekCard(week, index === weeks.length - 1, money)}
             bar={<Bar value={week.sales} max={maxSales} decorative />}
           />
         ))}
@@ -41,10 +44,11 @@ export function TarjetasSemanas({ weeks }: { weeks: Analysis['weeks'] }) {
 }
 
 export function TarjetasMeses({ months }: { months: Analysis['months'] }) {
+  const money = useMoney()
   return (
     <div className="analisis__meses">
       {months.map((row) => (
-        <AnalisisTarjeta key={row.month} card={monthCard(row)} />
+        <AnalisisTarjeta key={row.month} card={monthCard(row, money)} />
       ))}
     </div>
   )

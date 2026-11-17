@@ -24,6 +24,7 @@ def _register(
     body_in: dict[str, Any] = {"name": name, **rest}
     if phone is not None:
         body_in["phone"] = phone
+        body_in["phone_country"] = "AR"
     response = client.post("/customers", json=body_in)
     assert response.status_code == 201, response.text
     body: dict[str, Any] = response.json()
@@ -83,7 +84,7 @@ def test_a_customer_with_a_sale_left_owing_shows_the_balance_everywhere_they_are
         "/sales",
         json={
             "customer_id": customer["id"],
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety["id"], "quantity": "1"}],
         },
     )
@@ -115,14 +116,14 @@ def test_a_later_payment_lowers_the_balance_everywhere_it_is_read(client: TestCl
         "/sales",
         json={
             "customer_id": customer["id"],
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety["id"], "quantity": "1"}],
         },
     ).json()
 
     payment = client.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": TODAY.isoformat(), "amount": 4_000, "method": "cash"},
+        json={"paid_on": TODAY.isoformat(), "amount": 4_000, "payment_method_id": 1},
     )
     assert payment.status_code == 201, payment.text
 
@@ -136,7 +137,7 @@ def test_a_later_payment_lowers_the_balance_everywhere_it_is_read(client: TestCl
 
     full = client.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": TODAY.isoformat(), "amount": 6_000, "method": "cash"},
+        json={"paid_on": TODAY.isoformat(), "amount": 6_000, "payment_method_id": 1},
     )
     assert full.status_code == 201, full.text
 
@@ -163,7 +164,13 @@ def test_registering_with_a_channel_in_the_body_succeeds_and_stores_nothing(
     client: TestClient, sent: str | None
 ) -> None:
     created = client.post(
-        "/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789", "channel": sent}
+        "/customers",
+        json={
+            "name": "Fran Araujo",
+            "phone": "11 2345-6789",
+            "phone_country": "AR",
+            "channel": sent,
+        },
     )
 
     assert created.status_code == 201, created.text
@@ -195,7 +202,9 @@ def test_a_customer_that_does_not_exist_is_not_found(client: TestClient) -> None
 def test_two_customers_of_one_business_cannot_share_a_phone_number(client: TestClient) -> None:
     _register(client, "Fran Araujo", "11 2345-6789")
 
-    again = client.post("/customers", json={"name": "Another Fran", "phone": "5491123456789"})
+    again = client.post(
+        "/customers", json={"name": "Another Fran", "phone": "5491123456789", "phone_country": "AR"}
+    )
 
     assert again.status_code == 409
     assert "2345" not in again.text
@@ -210,14 +219,17 @@ def test_two_businesses_may_each_register_the_same_phone_number(
 
     assert (
         other_client.post(
-            "/customers", json={"name": "Fran Araujo", "phone": "11 2345-6789"}
+            "/customers",
+            json={"name": "Fran Araujo", "phone": "11 2345-6789", "phone_country": "AR"},
         ).status_code
         == 201
     )
 
 
 def test_an_invalid_phone_number_is_refused_without_repeating_it(client: TestClient) -> None:
-    response = client.post("/customers", json={"name": "Fran", "phone": "2345-6789"})
+    response = client.post(
+        "/customers", json={"name": "Fran", "phone": "2345-6789", "phone_country": "AR"}
+    )
 
     assert response.status_code == 422
     assert response.json()["detail"] == "that doesn't look like a phone number with its area code"
@@ -226,7 +238,9 @@ def test_an_invalid_phone_number_is_refused_without_repeating_it(client: TestCli
 
 
 def test_a_missing_name_is_refused(client: TestClient) -> None:
-    response = client.post("/customers", json={"name": "   ", "phone": "11 2345-6789"})
+    response = client.post(
+        "/customers", json={"name": "   ", "phone": "11 2345-6789", "phone_country": "AR"}
+    )
 
     assert response.status_code == 422
     assert response.json()["detail"] == "a customer needs a name"
@@ -330,13 +344,13 @@ def test_clearing_the_phone_keeps_the_customers_sales_payments_and_balance(
         "/sales",
         json={
             "customer_id": customer["id"],
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety["id"], "quantity": "1"}],
         },
     ).json()
     payment = client.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": TODAY.isoformat(), "amount": 4_000, "method": "cash"},
+        json={"paid_on": TODAY.isoformat(), "amount": 4_000, "payment_method_id": 1},
     ).json()
 
     cleared = client.patch(f"/customers/{customer['id']}", json={"phone": cleared_with})
@@ -372,7 +386,9 @@ def test_editing_a_customers_phone_to_one_already_taken_is_refused(client: TestC
     _register(client, "Fran Araujo", "11 2345-6789")
     other = _register(client, "Zoe", "11 1111-1111")
 
-    response = client.patch(f"/customers/{other['id']}", json={"phone": "11 2345-6789"})
+    response = client.patch(
+        f"/customers/{other['id']}", json={"phone": "11 2345-6789", "phone_country": "AR"}
+    )
 
     assert response.status_code == 409
     assert "2345" not in response.text
@@ -442,7 +458,9 @@ def test_a_malformed_phone_is_still_refused_when_most_customers_have_none(
 ) -> None:
     client.post("/customers", json={"name": "Sin Numero"})
 
-    response = client.post("/customers", json={"name": "Otro", "phone": "2345-6789"})
+    response = client.post(
+        "/customers", json={"name": "Otro", "phone": "2345-6789", "phone_country": "AR"}
+    )
 
     assert response.status_code == 422
     assert response.json()["code"] == "customer.phone_invalid"
@@ -478,7 +496,7 @@ def test_a_no_phone_customer_can_be_chosen_for_a_sale_left_owing_and_paid(
         "/sales",
         json={
             "customer_id": customer["id"],
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety["id"], "quantity": "1"}],
         },
     )
@@ -489,7 +507,7 @@ def test_a_no_phone_customer_can_be_chosen_for_a_sale_left_owing_and_paid(
 
     payment = client.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": TODAY.isoformat(), "amount": 10_000, "method": "cash"},
+        json={"paid_on": TODAY.isoformat(), "amount": 10_000, "payment_method_id": 1},
     )
     assert payment.status_code == 201, payment.text
 

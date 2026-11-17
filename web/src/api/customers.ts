@@ -16,6 +16,8 @@ export interface Customer {
   id: number
   name: string
   phone: string | null
+  /** The number grouped for reading, worked out by the API; `null` when there is no number. */
+  phone_display: string | null
   vip: boolean
   customer_type_id: number | null
   balance: number
@@ -28,6 +30,8 @@ export interface CustomerIn {
   phone: string | null
   /** Sent only while Customer types is on; `null` clears the type. */
   customer_type_id?: number | null
+  /** The ISO code of the country that reads a number typed without "+"; `null` is Other. Sent with the phone. */
+  phone_country?: string | null
 }
 
 export type CustomerPatchIn = Partial<CustomerIn>

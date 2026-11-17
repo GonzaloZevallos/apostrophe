@@ -16,12 +16,13 @@ import Boton from '../components/Boton'
 import { SheetRouterProvider } from '../components/useSheetStack'
 import WITHDRAWAL from '../api/fixtures/withdrawal.json'
 import { router } from '../router'
-import { SALE as SALE_PATH, SCREENS, pathTo, type ScreenId } from '../routes'
+import { SALE as SALE_PATH, SCREENS, kindOf, pathTo, type ScreenId } from '../routes'
 import { HISTORY, SETTINGS_ON, VARIETY_ROW, jsonResponse } from '../screens/varieties/renderVarieties'
 import Shell from '../shell/Shell'
 import { CARDS_EXEMPT } from './backExempt'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -33,7 +34,7 @@ const SALE = {
   customer: null,
   shipping_charged: 0,
   note: null,
-  payment: 'cash',
+  payment: 'paid',
   total: 11000,
   still_owing: false,
   total_quantity: 1,
@@ -55,6 +56,7 @@ const CUSTOMER = {
   id: 1,
   name: 'Ana Pérez',
   phone: null,
+  phone_display: null,
   vip: false,
   balance: 0,
   owing_since: null,
@@ -69,6 +71,7 @@ const LOADED: Partial<Record<ScreenId, string>> = {
   sale: 'Lines',
   customer: 'Ana Pérez',
   settings: 'Settings',
+  expenses: 'Add expense',
   variety: '24K Gold',
   'variety-prices': 'Prices',
   'variety-entries': 'Entries',
@@ -76,6 +79,7 @@ const LOADED: Partial<Record<ScreenId, string>> = {
   catalog: 'Sir Jack',
   'varieties-archived': 'Archived',
   withdrawal: 'Zkittlez',
+  'settings-payment-methods': 'Add method',
 }
 
 const CATALOG = {
@@ -93,7 +97,7 @@ const STOCK = {
 
 const ARCHIVED = { ...VARIETY_ROW, id: 2, name: 'Sir Jack', archived: true }
 
-/** The API faked at `fetch`: the session, a sale, a customer and variety 1 with its prices;
+/** The API faked at `fetch`: the session, a sale, a customer and product 1 with its prices;
  * anything else is not found. */
 function fakeApi(): void {
   vi.stubGlobal(
@@ -116,13 +120,14 @@ function fakeApi(): void {
         'GET /api/products?archived=true': [ARCHIVED],
         'GET /catalog': CATALOG,
         'GET /catalog/archived': [],
+        'GET /api/payment-methods': [{ id: 1, name: 'Cash', icon: 'banknote', position: 1, in_use: false }],
       }
       return Promise.resolve(key in answers ? jsonResponse(200, answers[key]) : jsonResponse(404, { detail: 'No existe' }))
     }),
   )
 }
 
-const cards = SCREENS.filter((entry) => entry.kind === 'card')
+const cards = SCREENS.filter((entry) => kindOf(entry, 'phone') === 'card')
 const exempt = new Set<string>(CARDS_EXEMPT.map((entry) => entry.id))
 
 function backs(): HTMLElement[] {
@@ -167,7 +172,7 @@ test('the count catches a card that draws its own back next to the shell\'s', as
   const memory = createMemoryRouter(
     [
       {
-        element: <Outlet context={ME} />,
+        element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>,
         children: [
           {
             element: <Shell />,

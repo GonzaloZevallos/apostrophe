@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-28
+summary: "la instantánea de promociones aplicadas son filas tipadas, nunca recalculadas"
 ---
 
 # The applied-promotion snapshot is typed sale promotion rows, recorded as the sale stood when saved and never recomputed

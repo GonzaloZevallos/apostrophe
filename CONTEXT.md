@@ -1,13 +1,13 @@
 # Apostrophe
 
-El back office de los negocios chicos que venden flor por gramo: qué vende cada uno y a qué precio, qué entra y qué sale del Stock, quién debe qué, en qué gasta y si gana plata. Una instalación guarda varios Businesses, y nunca se mezclan. Reemplaza la planilla `Control_de_ventas_y_gastos`.
+El back office de los negocios chicos que venden productos, por unidad, por peso, por volumen o de otras formas: qué vende cada uno y a qué precio, qué entra y qué sale del Stock, quién debe qué, en qué gasta y si gana plata. Una instalación guarda varios Businesses, y nunca se mezclan. Reemplaza la planilla `Control_de_ventas_y_gastos`.
 
 Cada término lleva `_In the app_`: la palabra en inglés que una persona ve en pantalla (la app está en inglés, `docs/product/product-language.md`); donde el término del glosario se leería como código, la palabra de pantalla es una más simple en inglés. El código, los tests y los docs usan el término del glosario. Las definiciones están escritas en español; los términos, `_In the app_` y `_Avoid_` siguen en inglés.
 
 ## Businesses y Users
 
 **Business**:
-La operación de un vendedor y todo lo que se registra para ella: Varieties, precios, Customers, Sales, Stock, Expenses y Catalog. Nada de lo registrado para un Business se ve nunca desde otro.
+La operación de un vendedor y todo lo que se registra para ella: Products, precios, Customers, Sales, Stock, Expenses y Catalog. Nada de lo registrado para un Business se ve nunca desde otro.
 _In the app_: Business
 _Avoid_: tenant, account, store, shop, organization
 
@@ -23,27 +23,23 @@ _Avoid_: signup link, referral, code
 
 ## Catalog y precios
 
-**Variety**:
-Una cepa que un Business vende por gramo, identificada por su nombre dentro de ese Business. Su Stock, sus Stock entries, sus precios, su aviso de Stock bajo y sus Catalog attributes están todos en su propia página, en la pestaña Varieties. Una Variety sin historial se puede eliminar; una con historial se puede archivar y restaurar. _In the app_: Variety; la pestaña es Varieties.
-_Avoid_: product, strain, item, SKU
-_In the app_: Variety
-
 **Product**:
-El nombre de lo que vende un Business, en el código y en la API (`/api/products`, `product_id`), cualquiera sea la palabra que el Business use en pantalla. Variety sigue siendo la palabra de pantalla de los Businesses existentes, y los paths del front `/varieties/*` no cambian. Las columnas que referencian a la Variety siguen siendo `variety_id` hasta #75. El dominio y los puertos de los hexágonos que no son el de Products conservan nombres con variety hasta sus propias partes (ADR-0061). Decidido en docs/adr/0061-columns-keep-variety-id-until-75-while-code-and-the-api-say-product.md. Ver Variety.
-_Avoid_: item, SKU, article
+Lo que vende un Business, identificado por su nombre dentro de ese Business; es la única palabra para eso en el código, en la API (`/api/products`, `product_id`) y en pantalla, "Product" / "Products" para todo Business, sin ninguna configuración para otra palabra. Su Stock, sus Stock entries, sus precios, su aviso de Stock bajo y sus Catalog attributes están en su propia página, en la pestaña Products; sin Product history se puede eliminar, y con historial se archiva y restaura. Las columnas siguen siendo `variety_id` hasta que se renombre la tabla `variety` y los paths del front `/varieties/*` no cambian (ADR-0061).
+_Avoid_: variety, varieties, strain, item, SKU, article, product word
+_In the app_: Product; la pestaña es Products.
 
 **Price entry**:
-El List price de una Variety, y opcionalmente un Bulk price con su Bulk minimum, y opcionalmente un VIP price, que rige desde una fecha en adelante. Nunca se edita una vez que se registra: una Price entry posterior la reemplaza desde su propia fecha. Una Price entry equivocada se elimina, nunca se reescribe; una Sale no se ve afectada porque cada Sale line registra el precio al que se vendió. Una regla desactivada al momento de registrar no guarda nada para esa regla. Planned in GH-318 (not yet in the code): lo que cambia junto a esta Price entry se cuenta en el bloque de cierre de abajo. _In the app_: Price (price history).
+El List price de un Product, y opcionalmente un Bulk price con su Bulk minimum, y opcionalmente un VIP price, que rige desde una fecha en adelante. Nunca se edita una vez que se registra: una Price entry posterior la reemplaza desde su propia fecha. Una Price entry equivocada se elimina, nunca se reescribe; una Sale no se ve afectada porque cada Sale line registra el precio al que se vendió. Una regla desactivada al momento de registrar no guarda nada para esa regla. Planned in GH-318 (not yet in the code): lo que cambia junto a esta Price entry se cuenta en el bloque de cierre de abajo. _In the app_: Price (price history).
 _Avoid_: price change, price update, tariff
 _In the app_: Price (price history)
 
 **Current price**:
-Para una Variety en una fecha dada, la Price entry con la fecha de vigencia más reciente en esa fecha o antes. Una Variety sin una Price entry así no tiene precio ese día.
+Para un Product en una fecha dada, la Price entry con la fecha de vigencia más reciente en esa fecha o antes. Un Product sin una Price entry así no tiene precio ese día.
 _In the app_: Current price
 _Avoid_: today's price, active price
 
 **List price**:
-El precio por gramo de una Variety cuando no se aplica ninguna otra regla.
+El precio por gramo de un Product cuando no se aplica ninguna otra regla.
 _In the app_: Price per gram
 _Avoid_: base price, regular price
 
@@ -65,24 +61,24 @@ _Avoid_: client, buyer, contact, user
 _In the app_: Customer
 
 **Phone number**:
-Dato de contacto opcional de un Customer, en formato internacional: un número argentino siempre como celular (+54 9 y 10 dígitos con código de área), uno extranjero como + y su código de país y dígitos. Un valor en blanco significa que no hay ninguno. Dos Customers de un Business nunca comparten uno cuando ambos tienen uno; cualquier cantidad de Customers puede no tener ninguno.
+Dato de contacto opcional de un Customer, guardado en una sola forma internacional: uno tipeado con + sigue la regla del país de su código (o se guarda como + y 8 a 15 dígitos si el código no está en la lista), y uno sin + se lee con la regla del Phone country que muestra el formulario, o se rechaza con Other. Un valor en blanco significa que no hay ninguno, dos Customers de un Business nunca comparten uno, y un número mandado sin tocar al editar se conserva sin leer ningún país. Se muestra agrupado según el país de su propio código (p. ej. +598 99 123 456), y tal como está guardado cuando su código no está en la lista o su largo no tiene plantilla; agrupar solo agrega espacios y guiones. En la app: Phone.
 _Avoid_: contact, handle, username, identifier
 _In the app_: Phone
 
 **VIP customer**:
-Un Customer del VIP type, que paga el VIP price de una Variety cuando lo tiene y es menor que lo que da cualquier otra regla. Solo en un Business con el interruptor Customer types activado; mientras está desactivado, la pertenencia sigue guardada pero ni se muestra ni se aplica. La marca VIP de antes queda congelada, no se lee ni se escribe. _In the app_: VIP customer (la marca VIP).
+Un Customer del VIP type, que paga el VIP price de un Product cuando lo tiene y es menor que lo que da cualquier otra regla. Solo en un Business con el interruptor Customer types activado; mientras está desactivado, la pertenencia sigue guardada pero ni se muestra ni se aplica. La marca VIP de antes queda congelada, no se lee ni se escribe. _In the app_: VIP customer (la marca VIP).
 _Avoid_: friend, Amigo, preferred customer
 _In the app_: VIP customer
 
 **Customer type**:
-Un grupo de Customers que define el vendedor, con un nombre único en el Business (sin importar mayúsculas ni espacios, hasta 40 caracteres) y un ícono neutro; un Customer está en uno como máximo, o en ninguno. Un Business nuevo arranca sin ninguno, y uno con Customers no se puede eliminar. En esta parte un tipo no tiene precio propio, salvo que la pertenencia al VIP type da el VIP price. _In the app_: Customer type.
+Un grupo de Customers que define el vendedor, con un nombre único en el Business (sin importar mayúsculas ni espacios, hasta 40 caracteres) y un ícono neutro; un Customer está en uno como máximo, o en ninguno. Un Business nuevo arranca sin ninguno, y uno con Customers no se puede eliminar; eliminarlo se lleva sus Customer-type prices. Cada tipo puede tener Customer-type prices, aunque en esta parte solo el VIP type los recibe. _In the app_: Customer type.
 _Avoid_: tier, segment, group, VIP mark
 _In the app_: Customer type
 
 **Sale**:
 Todo lo que un Customer se lleva de una vez: una fecha, como máximo un Customer, el Shipping charged, una Note opcional y una o más Sale lines. Una Sale cuenta en su propia fecha, esté paga o no. Su Customer puede omitirse solo cuando no queda nada adeudado.
+_Avoid_: order, transaction, purchase (that is stock coming in)
 _In the app_: Sale
-_Avoid_: order, transaction, purchase (that is flower coming in)
 
 **Sale without a customer**:
 Una Sale pagada por completo en el acto a alguien que no está registrado como Customer, muchas veces una persona que quizá nunca vuelva a comprar. Cuenta en todos los totales y en el historial de ningún Customer. Se le puede asignar un Customer más adelante, una sola vez; nunca pasa de un Customer a otro.
@@ -90,7 +86,7 @@ _In the app_: No customer
 _Avoid_: anonymous sale, walk-in, guest, consumidor final
 
 **Sale line**:
-Una Variety y sus gramos dentro de una Sale, con el precio por gramo al que se vendió. El Bulk minimum se mide por Sale line, nunca en el conjunto de la Sale.
+Un Product y sus gramos dentro de una Sale, con el precio por gramo al que se vendió. El Bulk minimum se mide por Sale line, nunca en el conjunto de la Sale.
 _In the app_: Line
 _Avoid_: item, row, product
 
@@ -100,12 +96,12 @@ _Avoid_: sample, freebie
 _In the app_: Gift
 
 **Special price**:
-Un total en pesos enteros mayor que $0, tipeado a mano para una Sale line, que reemplaza al calculado. Una Sale line gratis es un Gift, nunca un Special price de $0.
-_In the app_: Special price
+Un total mayor que 0, con hasta los decimales del Money format del Business, tipeado a mano para una Sale line, que reemplaza al calculado. Una Sale line gratis es un Gift, nunca un Special price de $0. _In the app_: Special price.
 _Avoid_: override, custom price, discount
+_In the app_: Special price
 
 **Pricing rule**:
-Qué regla fijó el precio de una Sale line: list, bulk, VIP, gift o Special price. Exactamente una por Sale line, guardada con su precio cuando se registra la Sale y nunca se vuelve a calcular. VIP significa que se cobró el VIP price, incluso cuando era igual al Bulk price. _In the app_: list, bulk, VIP, gift, special.
+Qué regla fijó el precio de una Sale line: list, bulk, Customer type, gift o Special price, y VIP solo en las líneas guardadas antes de los Customer-type prices. Exactamente una por Sale line, guardada con su precio cuando se registra la Sale y nunca se vuelve a calcular; la de Customer type guarda el tipo y una copia de su nombre, que nunca sigue un renombre ni un borrado, y gana un empate con el Bulk price. _In the app_: list, bulk, el nombre del tipo, VIP, gift, special.
 _Avoid_: type, price type, Amigo
 _In the app_: list, bulk, VIP, gift, special
 
@@ -120,9 +116,13 @@ _In the app_: Note
 _Avoid_: comment, description, memo
 
 **Payment**:
-El dinero que un Customer entrega en una fecha, en efectivo o por transferencia, sin Note. Puede ser un On-the-spot payment registrado con su Sale, o un Payment posterior registrado mediante Record payment, que se abre con "Collect" en una fila de deudor de Customers o Home o desde la ficha del Customer. Su fecha, monto y método nunca cambian; se elimina y se vuelve a registrar, nunca se edita. _In the app_: Payment.
+El dinero que un Customer entrega en una fecha, con uno de los Payment methods de su Business, sin Note. Puede ser un On-the-spot payment registrado con su Sale, o un Payment posterior registrado mediante Record payment, que se abre con "Collect" en una fila de deudor de Customers o Home o desde la ficha del Customer. Su fecha, monto y medio nunca cambian; se elimina y se vuelve a registrar, nunca se edita. _In the app_: Payment.
 _Avoid_: collection, settlement, receipt, abono
 _In the app_: Payment
+
+**Payment method**:
+Una forma en que le pagan a un Business, de su lista propia: un nombre único en el Business (sin importar mayúsculas ni espacios, archivados incluidos, hasta 60 caracteres), un ícono de un conjunto fijo y neutro y una posición. Todo Business arranca con "Cash" y "Transfer", medios comunes que se renombran, reordenan, archivan o eliminan como cualquiera; uno con Payments solo se archiva, y el último ofrecido no se puede sacar. Un Payment apunta a su medio por id, así que muestra su nombre actual (ADR-20261111-payment-methods-by-id). _In the app_: Payment method.
+_Avoid_: payment type, channel, Owing, paid later
 
 **Balance**:
 Lo que debe un Customer: lo que compró y no pagó, menos sus Payments; se calcula en el momento. Un Payment posterior siempre salda primero la deuda más antigua. Menor que cero es un Credit. _In the app_: Owes you.
@@ -137,7 +137,7 @@ _Avoid_: overdue date, due date
 ## Stock
 
 **Stock entry**:
-Gramos de una Variety que entran en una fecha, con un único origen: Purchase, Harvest, Opening stock o Adjustment. Una Purchase lleva su costo total; un Adjustment puede ser negativo. A diferencia de una Price entry, cualquier Stock entry se puede editar o eliminar en cualquier momento, sin importar lo que ya haya alimentado: su fecha, gramos, costo u origen (ADR-0009).
+Gramos de un Product que entran en una fecha, con un único origen: Purchase, Harvest, Opening stock o Adjustment. Una Purchase lleva su costo total; un Adjustment puede ser negativo. A diferencia de una Price entry, cualquier Stock entry se puede editar o eliminar en cualquier momento, sin importar lo que ya haya alimentado: su fecha, gramos, costo u origen (ADR-0009).
 _In the app_: Entry
 _Avoid_: restock, delivery, intake
 
@@ -147,32 +147,32 @@ _In the app_: Purchase
 _Avoid_: order, buy
 
 **Lot**:
-Los gramos de una Stock entry junto con su costo por gramo. Los gramos vendidos, regalados o retirados salen primero del Lot más antiguo de su Variety, el más antiguo por fecha; una Stock entry o un Stock withdrawal registrados tarde o corregidos ocupan su lugar por fecha, y los Lots posteriores se vuelven a calcular (ADR-0009). _In the app_: Lot.
+Los gramos de una Stock entry junto con su costo por gramo. Los gramos vendidos, regalados o retirados salen primero del Lot más antiguo de su Product, el más antiguo por fecha; una Stock entry o un Stock withdrawal registrados tarde o corregidos ocupan su lugar por fecha, y los Lots posteriores se vuelven a calcular (ADR-0009). _In the app_: Lot.
 _Avoid_: batch
 _In the app_: Lot
 
 **Stock**:
-Los gramos en existencia de una Variety: todo lo que entró menos todo lo que se vendió, regaló o retiró. Puede quedar negativo, y la cifra igual se muestra, nunca se oculta. _In the app_: Stock, que se muestra en Varieties y en la página de una Variety.
+Los gramos en existencia de un Product: todo lo que entró menos todo lo que se vendió, regaló o retiró. Puede quedar negativo, y la cifra igual se muestra, nunca se oculta. _In the app_: Stock, que se muestra en Products y en la página de un Product.
 _Avoid_: inventory, balance
 _In the app_: Stock
 
 **Pending cost**:
-Lo que cuestan los gramos vendidos, regalados o retirados más allá de todo lo registrado como ingresado: todavía no se conoce, y nunca se muestra como $0. Una Stock entry posterior de esa Variety, caiga donde caiga su fecha en el Lot order, lo salda (ADR-0009). _In the app_: Pending cost.
+Lo que cuestan los gramos vendidos, regalados o retirados más allá de todo lo registrado como ingresado: todavía no se conoce, y nunca se muestra como $0. Una Stock entry posterior de ese Product, caiga donde caiga su fecha en el Lot order, lo salda (ADR-0009). _In the app_: Pending cost.
 _Avoid_: unknown cost, zero cost
 _In the app_: Pending cost
 
 **Draw**:
-Gramos que salen de una Variety, tomándolos de sus Lots primero el más antiguo: una Sale line (los Gifts incluidos), un Adjustment negativo o una línea de un Stock withdrawal. Tiene una parte con costo y, más allá de todo Lot, gramos pendientes. En la app no tiene palabra propia.
+Gramos que salen de un Product, tomándolos de sus Lots primero el más antiguo: una Sale line (los Gifts incluidos), un Adjustment negativo o una línea de un Stock withdrawal. Tiene una parte con costo y, más allá de todo Lot, gramos pendientes. En la app no tiene palabra propia.
 _Avoid_: outflow, consumption, movement, out
 _In the app_: no word of its own; on screen it is the line's "Cost of goods sold".
 
 **Lot order**:
-El orden único en que se toman los Lots y los Draws de una Variety: por fecha, y después por orden de registro.
+El orden único en que se toman los Lots y los Draws de un Product: por fecha, y después por orden de registro.
 _In the app_: no word of its own.
 _Avoid_: chain, chain position, FIFO order
 
 **Low-stock threshold**:
-Gramos opcionales por debajo de los cuales el Stock de una Variety cuenta como bajo.
+Gramos opcionales por debajo de los cuales el Stock de un Product cuenta como bajo.
 _In the app_: Warn below
 _Avoid_: reorder point, alert level
 
@@ -184,9 +184,9 @@ _In the app_: Cost of goods sold
 _Avoid_: COGS, average cost, cost per gram
 
 **Expense**:
-Dinero que sale por algo que no es flor, archivado bajo una Expense category. La flor que se compra es una Purchase, nunca una Expense.
-_In the app_: Expense
+Dinero que sale por algo que no es una Purchase, archivado bajo una Expense category. Lo que se compra para el Stock es una Purchase, nunca una Expense.
 _Avoid_: cost, outflow, bill
+_In the app_: Expense
 
 **Expense category**:
 El rubro propio de un Business para sus Expenses, con un nombre único dentro de ese Business sin importar mayúsculas, minúsculas ni espacios. Un Business nuevo arranca con cuatro valores por defecto en su Stored language al abrirse (en inglés "Growing supplies", "Packaging", "Shipping and transport" y "Other"), que un cambio de idioma nunca renombra; los Businesses anteriores conservan los valores que recibieron, los de español incluidos. Una Expense category no se puede eliminar mientras tenga Expenses.
@@ -206,7 +206,7 @@ _Avoid_: cash flow, balance, profit
 ## Telegram
 
 **Catalog**:
-El texto que ofrece cada Variety sin archivar y visible, con Stock mayor que cero y un Current price hoy: su emoji, nombre, Indica share, Aroma y precios, entre las dos partes del Catalog header and footer del Business. Conserva sus marcadores **bold** y su propio formato de dinero ($11.000). _In the app_: Catalog.
+El texto que ofrece cada Product sin archivar y visible, con Stock mayor que cero y un Current price hoy: su emoji, nombre, Indica share, Aroma y precios, entre las dos partes del Catalog header and footer del Business. Conserva sus marcadores **bold** y su propio estilo de dinero (el símbolo pegado a la cifra, punto para los miles: $11.000), con el símbolo y los decimales del Money format del Business. _In the app_: Catalog.
 _Avoid_: menu, price list, flyer
 _In the app_: Catalog
 
@@ -233,15 +233,15 @@ _In the app_: no word of its own
 ## Lenguaje
 
 **Stock status**:
-Cómo está una Variety en cuanto a Stock, el primero que corresponda: sin movimientos (no se movió nada: ninguna Stock entry, ninguna Sale ni Gift, ningún Stock withdrawal), agotado (Stock en cero o menos), bajo (mayor que cero y por debajo de su Low-stock threshold), ok. Se distingue por forma y palabra, nunca solo por color. _In the app_: no entries, sold out, low, ok.
+Cómo está un Product en cuanto a Stock, el primero que corresponda: sin movimientos (no se movió nada: ninguna Stock entry, ninguna Sale ni Gift, ningún Stock withdrawal), agotado (Stock en cero o menos), bajo (mayor que cero y por debajo de su Low-stock threshold), ok. Se distingue por forma y palabra, nunca solo por color. _In the app_: no entries, sold out, low, ok.
 _Avoid_: stock level, alert, availability
 
 **Days left**:
-El Stock de una Variety dividido por el promedio diario de gramos vendidos, regalados o retirados en los últimos 30 días, redondeado hacia abajo a días enteros. No se muestra cuando el Stock está en cero o menos o cuando no salió nada en esos 30 días. _In the app_: At the pace of the last 30 days.
+El Stock de un Product dividido por el promedio diario de gramos vendidos, regalados o retirados en los últimos 30 días, redondeado hacia abajo a días enteros. No se muestra cuando el Stock está en cero o menos o cuando no salió nada en esos 30 días. _In the app_: At the pace of the last 30 days.
 _Avoid_: runway, coverage, forecast
 
 **Opening stock**:
-Una Stock entry que registra los gramos que ya había cuando un Business empieza a llevar Stock. Es un origen común, sin límite por Variety, y su Lot cuesta $0 salvo que se registre un costo. _In the app_: Initial stock.
+Una Stock entry que registra los gramos que ya había cuando un Business empieza a llevar Stock. Es un origen común, sin límite por Product, y su Lot cuesta $0 salvo que se registre un costo. _In the app_: Initial stock.
 _Avoid_: initial balance, baseline, starting inventory
 
 **Harvest**:
@@ -253,19 +253,15 @@ Una Stock entry que registra la diferencia entre un conteo físico y el Stock qu
 _Avoid_: correction, recount, shrinkage, write-off
 
 **Catalog attributes**:
-Lo que una Variety muestra en el Catalog: si se muestra, su emoji, su Indica share y su Aroma. Nunca afectan los precios, el Stock ni las Sales, y se editan solo en la página propia de la Variety. _In the app_: In the catalog.
+Lo que un Product muestra en el Catalog: si se muestra, su emoji, su Indica share y su Aroma. Nunca afectan los precios, el Stock ni las Sales, y se editan solo en la página propia del Product. _In the app_: In the catalog.
 _Avoid_: catalog settings, metadata, tags
 
-**Hidden variety**:
-Una Variety que el vendedor eligió dejar fuera del Catalog, sin importar su precio o su Stock. Oculta significa solo eso: una Hidden variety sigue figurando en Varieties y en todos los selectores. Una Variety que queda afuera por falta de precio o de Stock no está oculta, y una Archived variety es otra cosa que conserva su marca de Hidden variety. _In the app_: Hidden.
-_Avoid_: inactive, disabled, archived (that is an archived variety)
-
 **Indica share**:
-El porcentaje de indica de una Variety, un número entero de 0 a 100; el resto es sativa. Opcional; si no se conoce, el Catalog deja afuera su línea. _In the app_: % indica.
+El porcentaje de indica de un Product, un número entero de 0 a 100; el resto es sativa. Opcional; si no se conoce, el Catalog deja afuera su línea. _In the app_: % indica.
 _Avoid_: genetics, ratio, type
 
 **Aroma**:
-Una línea de texto libre que describe el aroma y el sabor de una Variety para el Catalog, de hasta 200 caracteres. _In the app_: Aroma/flavor.
+Una línea de texto libre que describe el aroma y el sabor de un Product para el Catalog, de hasta 200 caracteres. _In the app_: Aroma/flavor.
 _Avoid_: description, notes, flavor profile
 
 **Catalog header and footer**:
@@ -273,7 +269,7 @@ El texto propio de un Business que abre y cierra el Catalog, de varias líneas y
 _Avoid_: title, signature, intro, outro
 
 **On-the-spot payment**:
-El Payment registrado junto con una Sale pagada por completo en efectivo o por transferencia. Salda solo esa Sale, nunca una deuda más antigua, y se elimina solo junto con su Sale. _In the app_: Paid in cash / Paid by transfer.
+El Payment registrado junto con una Sale pagada por completo con uno de los Payment methods del Business. Salda solo esa Sale, nunca una deuda más antigua, y se elimina solo junto con su Sale. _In the app_: Paid · <método>.
 _Avoid_: cash sale, immediate payment
 
 **Settlement**:
@@ -293,15 +289,15 @@ La suma del Balance de cada Customer mayor que $0 en un Business; los Credits nu
 _Avoid_: receivables, outstanding
 
 **Margin**:
-Las Sales de gramos con costo de una Variety en un período menos lo que costaron esos gramos, en pesos; los Gifts suman su costo y $0 de Sales, así que puede ser negativo. Las Sales de gramos con costo son, por línea, el total de la línea × gramos con costo ÷ gramos de la línea, redondeando la mitad hacia arriba; los gramos pendientes se dejan afuera y se marcan con "and N g without cost". _In the app_: Margin.
+Las Sales de gramos con costo de un Product en un período menos lo que costaron esos gramos, en pesos; los Gifts suman su costo y $0 de Sales, así que puede ser negativo. Las Sales de gramos con costo son, por línea, el total de la línea × gramos con costo ÷ gramos de la línea, redondeando la mitad hacia arriba; los gramos pendientes se dejan afuera y se marcan con "and N g without cost". _In the app_: Margin.
 _Avoid_: profit, earnings, markup, ganancia
 
 **Margin percentage**:
-El Margin de una Variety sobre sus Sales de gramos con costo en el período. No hay ninguno cuando esas Sales son $0, como en una Variety solo regalada o con todos los gramos pendientes. _In the app_: Margin %.
+El Margin de un Product sobre sus Sales de gramos con costo en el período. No hay ninguno cuando esas Sales son $0, como en un Product solo regalado o con todos los gramos pendientes. _In the app_: Margin %.
 _Avoid_: markup, rentabilidad, return
 
 **Average margin**:
-El Margin total de un mes en todas sus Varieties sobre las Sales de gramos con costo del mes, marcado cuando alguna Variety tiene gramos pendientes. _In the app_: Average margin.
+El Margin total de un mes en todos sus Products sobre las Sales de gramos con costo del mes, marcado cuando algún Product tiene gramos pendientes. _In the app_: Average margin.
 _Avoid_: average profit, mean margin
 
 **First record**:
@@ -321,7 +317,7 @@ Lo que costaron los gramos sacados por Adjustments negativos en un período, en 
 _Avoid_: shrinkage, write-off, loss, merma
 
 **Stock withdrawal**:
-Un registro con fecha de gramos de una o más Varieties sacados del Stock por un solo Withdrawal reason de la lista propia del Business, con una nota opcional. No se mueve dinero y el Cash no se toca; sus gramos se costean en su fecha a partir de los Lots, primero el más antiguo, y una parte más allá de todo Lot es Pending cost, nunca $0. El costo se muestra en una línea propia por Withdrawal reason y baja el Profit, nunca entra en el Margin de una Variety ni en el Cost of goods sold, y el retiro se puede editar o eliminar en cualquier momento. _In the app_: Withdrawal, registrado con la acción "Take from stock".
+Un registro con fecha de gramos de uno o más Products sacados del Stock por un solo Withdrawal reason de la lista propia del Business, con una nota opcional. No se mueve dinero y el Cash no se toca; sus gramos se costean en su fecha a partir de los Lots, primero el más antiguo, y una parte más allá de todo Lot es Pending cost, nunca $0. El costo se muestra en una línea propia por Withdrawal reason y baja el Profit, nunca entra en el Margin de un Product ni en el Cost of goods sold, y el retiro se puede editar o eliminar en cualquier momento. _In the app_: Withdrawal, registrado con la acción "Take from stock".
 _Avoid_: gift (a gift is a sale line at $0 price), shrinkage, write-off
 
 **Publish**:
@@ -337,7 +333,7 @@ El estado del Pinned catalog cuando los Customers no están viendo el Catalog de
 _Avoid_: stale, pending, out of sync, error
 
 **Panel**:
-La vista de una sola pantalla de Home sobre un Business, en hora de Argentina. Today muestra lo que se vendió hoy, lo que se debe y el Stock por Variety; Week y Month suman Cost of goods sold, Stock shortfall, el costo de cada Withdrawal reason (en el orden de su lista), Expenses, gramos regalados, Purchases, Profit y Cash. Es de solo lectura y cada cifra viene del servidor. _In the app_: Home (pestañas Today · Week · Month).
+La vista de una sola pantalla de Home sobre un Business, en hora de Argentina. Today muestra lo que se vendió hoy, lo que se debe y el Stock por Product; Week y Month suman Cost of goods sold, Stock shortfall, el costo de cada Withdrawal reason (en el orden de su lista), Expenses, gramos regalados, Purchases, Profit y Cash. Es de solo lectura y cada cifra viene del servidor. _In the app_: Home (pestañas Today · Week · Month).
 _Avoid_: dashboard, overview, home, summary, Analysis
 
 **Average sale**:
@@ -349,7 +345,7 @@ La persona que maneja la instalación desde afuera de la app. Ejecuta scripts/in
 _Avoid_: admin, administrator, superuser, owner, PM
 
 **Business export**:
-Un archivo JSON con cada dato registrado de un Business tal como está guardado, cada registro con el nombre de aquello a lo que se refiere, sin ninguna cifra calculada, hash de contraseña, secreto ni Invitation. Se escribe solo como primer paso de la Business removal.
+Un archivo JSON con cada dato registrado de un Business tal como está guardado, cada registro con el nombre de aquello a lo que se refiere, sin ninguna cifra calculada, hash de contraseña, secreto ni Invitation. Sus montos van a la Money scale del Business, con `money {scale, decimals}` al lado para leerlos. Se escribe solo como primer paso de la Business removal.
 _Avoid_: backup, dump, archive
 
 **Business removal**:
@@ -387,24 +383,20 @@ Un link que el Operator imprime con scripts/reset-password.sh y que permite a un
 _Avoid_: recovery code, reset token, magic link, forgot-password email
 
 **Navigation**:
-La estructura fija de la app para un Business: las pestañas, More, Settings, y la única regla que le da a cada pantalla su marco y su camino de vuelta. Decide desde dónde se llega a cada capacidad, nunca qué hace. En la app: no tiene palabra propia.
-_Avoid_: menu, sitemap, routing, shell
+La estructura fija de la app para un Business: las pestañas del celular, la barra lateral de la computadora, el avatar "Settings" del encabezado del celular, Settings, y la única regla que le da a cada pantalla su marco y su camino de vuelta. Decide desde dónde se llega a cada capacidad, nunca qué hace; desde GH-651 no hay pantalla More, y cada uno de sus destinos tiene su propia entrada. En la app: no tiene palabra propia.
+_Avoid_: menu, sitemap, routing, shell, More
 
 **Tab root**:
-Una pantalla a la que se llega directo desde la barra o la barra lateral (Home, Sales, Customers, Varieties, Expenses, Analysis, More); muestra la barra y "+ New sale". Cualquier otra pantalla es una tarjeta o un detalle (con una flecha de regreso a su pantalla madre) o un formulario o una Sheet (con "Close").
-_Avoid_: home, main screen, section
+Una pantalla que muestra la barra (o la barra lateral) y "+ New sale": Home, Sales, Customers, Products y Analysis, y en una computadora también Expenses, que se abre desde la barra lateral. En el celular, a Analysis se llega con el segmento Home | Analysis de Home, cuyas opciones reemplazan la entrada del historial, y Analysis marca Home como activa; Expenses es un detalle con "‹ Analysis". Cualquier otra pantalla es una tarjeta o un detalle (con una flecha de regreso a su pantalla madre) o un formulario o una Sheet (con "Close").
+_Avoid_: home, main screen, section, More
 
 **Settings**:
-El único lugar que reúne cada configuración de todo el Business, en grupos: Business (con sus Withdrawal reasons), Users, Prices, Integrations, Catalog message, Expense categories, Appearance y Your account. La configuración de una sola Variety vive en la Variety, nunca acá, y nada del Operator está acá. _In the app_: Settings.
+El único lugar que reúne cada configuración de todo el Business, en grupos: Business (con sus Withdrawal reasons y su Currency and decimals), Users, Prices, Payments and expenses (con sus Payment methods), Integrations, Catalog message, Expense categories, Appearance y Your account. La configuración de un solo Product vive en el Product, nunca acá, y nada del Operator está acá. _In the app_: Settings.
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
 
-**First-run checklist**:
-Cuatro pasos en Home para un Business que existía antes de que saliera el Onboarding y todavía no hizo las dos cosas: ponerle precio a una Variety para hoy y registrar una Stock entry. Esos dos pasos, más publicar el Pinned catalog y sumar un segundo User, que son opcionales. Cada paso se calcula a partir de los datos del Business y dice "Done" cuando se cumple; la First-run checklist desaparece para siempre la primera vez que se cumplen los dos pasos obligatorios y nunca vuelve. Un Business recién creado recibe el Onboarding en su lugar.
-_Avoid_: tour, wizard, setup guide, welcome, Onboarding (that is a brand-new business's first run)
-
 **Onboarding**:
-La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo, en lugar de la First-run checklist. Tiene dos pasos obligatorios (una Variety con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories), y cada uno guarda lo que guardan Settings o la página de la Variety. Retoma donde quedó, termina para siempre una vez que se llega a su pantalla de cierre "Done" o un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.
-_Avoid_: tour, wizard, welcome screen, setup guide
+La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo. Tiene dos pasos obligatorios (un Product con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories); nunca pregunta cómo se llama lo que vende el Business ni pide una Unit, y no pone ningún aviso en Home. Retoma donde quedó solo cuando se vuelve por su propia entrada (el aterrizaje tras la Invitation o la dirección `/onboarding`), termina para siempre al llegar a su pantalla "Done" o cuando un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.
+_Avoid_: tour, wizard, welcome screen, setup guide, setup notice
 
 **Theme choice**:
 La elección de Automatic, Light o Dark de un dispositivo. Se hace solo en Settings → Appearance, se aplica de inmediato y se conserva solo en ese dispositivo. No está atada a un User ni a un Business, sobrevive al cierre de sesión y no guarda nada más. Sin ninguna guardada, la app sigue al teléfono en vivo; una elección guardada es solo de ese dispositivo y gana sobre el teléfono. _In the app_: Theme (Automatic · Light · Dark).
@@ -415,20 +407,20 @@ Buscar el número del chat propio del vendedor entre los chats privados que le e
 _Avoid_: auto-detect, discovery, getUpdates, chat search, sync
 
 **VIP price**:
-Un precio por gramo opcional en una Price entry, para los VIP customers: un peso entero mayor que $0 y menor que el List price de esa Price entry, independiente del Bulk price. Nunca se muestra en el Catalog. Planned in GH-318 (not yet in the code): lo que cambia junto a esta Price entry se cuenta en el bloque de cierre de abajo. _In the app_: VIP price.
+El precio por gramo opcional que se tipea en una Price entry para el VIP type: un monto mayor que 0, con hasta los decimales del Money format del Business, y menor que el List price de esa Price entry, independiente del Bulk price. Se guarda como el Customer-type price del VIP type, atado a esa Price entry; la columna `price_entry.vip_price` queda congelada y nunca se vuelve a leer ni escribir. Nunca se muestra en el Catalog. _In the app_: VIP price.
 _Avoid_: friend price, discount, Amigo price
 
 **Pricing settings**:
 Cuáles de Bulk price y Customer types usa un Business: dos interruptores independientes. Customer types es el que antes se leía "VIP customers" y gobierna los Customer types y el VIP price. Una regla desactivada queda oculta y deja de aplicarse a las Sales nuevas, mientras que todo lo guardado para ella se conserva. _In the app_: Prices, en Settings.
 _Avoid_: price config, pricing mode, plan, tariff settings
 
-**Archived variety**:
-Una Variety que el vendedor sacó de toda lista y selector (Varieties, What you have left, New sale, los formularios de Stock entry y de Price entry, el Catalog y el Pinned catalog), mientras que todo registro pasado conserva su nombre y sus cifras tal cual. Archive es la acción que se ofrece para una Variety con historial, pero una Archived variety puede no tener ninguno. Conserva reservado su nombre y su marca de Hidden variety, se ve y se restaura solo desde Archived, tiene una página de solo lectura y al restaurarla vuelve exactamente como estaba. En la app: Archived.
-_Avoid_: deleted, hidden, inactive, disabled
+**Money format**:
+El símbolo de la moneda (de 1 a 4 code points de caracteres visibles, sin dos asteriscos seguidos, siempre antes del monto) y los decimales (de 0 a 2) con que un Business muestra y acepta su dinero, "$" y 0 por defecto. Cualquier User cambia el símbolo en Settings → Business → Currency and decimals; subir los decimales por encima de 0 llama al rescale cuando la escala todavía es 0, bajarlos se rechaza mientras algún monto registrado tenga más, y un cambio nunca cambia el valor de un monto. Se guarda en una fila de money_format por Business, junto con la Money scale (ADR-0058).
+_Avoid_: currency settings, locale, number format
 
-**Variety history**:
-Cualquier Sale line de una Variety (los Gifts y los Special prices incluidos) o cualquier Stock entry de ella (de cualquier origen, un Adjustment de cualquiera de los dos signos incluido), o cualquier línea de Stock withdrawal de ella; se calcula en el momento y nunca se guarda. Una Variety con historial solo se puede archivar. Una Variety sin historial se puede eliminar para siempre, y sus Price entries, su Low-stock threshold y sus Catalog attributes se van con ella.
-_Avoid_: usage, activity, movements, references
+**Money scale**:
+Si un Business guarda su dinero en unidades enteras de moneda (0) o en centésimos (2): los Businesses que ya existían quedan en 0 y los nuevos empiezan en 2. Es un dato de guardado, no de pantalla, que se aplica solo dentro del SQL del adaptador mediante el único helper de dinero; ningún caso de uso la lee y ningún pedido la lleva. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md.
+_Avoid_: precision, cents mode, decimals
 
 **Promotion**:
 Una Stock withdrawal para dar a conocer el Business, p. ej. gramos compartidos en una fiesta para que los prueben varias personas. Su costo es lo que costaron los gramos sacados de sus Lots tal como están hoy, y se muestra como una línea propia que baja el Profit. _In the app_: Promotion.
@@ -459,12 +451,16 @@ La corrida manual de `ci.yml` en un sha, que usa el workflow y los scripts de ma
 _Avoid_: re-run, manual run, workflow run
 
 **Tappable notice**:
-Un aviso que el vendedor toca para abrir aquello a lo que apunta, como el "Go on to the setup" de Home. Su oración lleva el significado y es su nombre accesible. Su regla completa vive en `docs/product/icon-and-text-rule.md`.
+Un aviso que el vendedor toca para abrir aquello a lo que apunta. Su oración lleva el significado y es su nombre accesible. Su regla completa vive en `docs/product/icon-and-text-rule.md`.
 _Avoid_: banner, card button, row, callout, alert
 
 **Design capture**:
-La captura lado a lado del archivo de diseño de una pantalla y la app construida, adjunta a un PR como evidencia de revisión y juzgada a ojo contra el Drawing as guide. Nunca es un paso del Gate. Su regla completa vive en `docs/product/design-capture.md`.
+La captura lado a lado del archivo de diseño de una pantalla y la app construida, adjunta a un PR como evidencia de revisión y juzgada a ojo contra el Drawing as guide. Nunca es un paso del Gate. En el teléfono la captura se toma en el viewport real del teléfono, sin agrandarlo nunca (scroll y unión); una pantalla que la herramienta no puede capturar queda not-captured y se informa como "not compared", nunca como AE 0 ni como un pase, y nunca bloquea. Su regla completa vive en `docs/product/design-capture.md`.
 _Avoid_: screenshot test, visual regression test, snapshot, gate step
+
+**Screen image**:
+La imagen de una pantalla del teléfono, tomada de la app construida sobre el negocio de muestra el 16/09/2026, que acompaña a la definición escrita en `docs/product/`. Su nombre es el de su fila en el registro de pantallas. Es la misma en cada corrida. Ayuda a leer y nunca es una especificación, un paso del Gate ni evidencia de revisión; si el texto y la imagen difieren, gana el texto. Su regla completa vive en `docs/product/screen-images.md`. En la app: no tiene palabra propia.
+_Avoid_: screenshot test, snapshot, mockup, Design capture
 
 **Product language**:
 El idioma en que el producto escribe lo que una persona lee. El inglés es el texto fuente y, hasta que salga un segundo idioma (#317), el único Selectable language. Abarca pantallas, nombres accesibles, mensajes de la API, la salida de los scripts del Operator y las líneas fijas del Catalog, nunca los datos propios del vendedor. El `detail` de un rechazo de la API es un diagnóstico en inglés, nunca se muestra. Los formatos numéricos y de fecha siguen siendo argentinos.
@@ -523,7 +519,7 @@ El cuarto criterio del dueño: la app nunca fija en el código la forma de traba
 _Avoid_: business-neutral, white label, vertical, preset, template, multi-tenant
 
 **Sale bill**:
-Los datos de una Sale registrada que un vendedor puede compartir con el Customer de esa Sale: nombre del Business, fecha, líneas, Shipping charged, total, estado de Payment y el Balance actual del Customer. Se calculan en el momento a partir del Settlement cuando se lee el detalle de la Sale y nunca se guardan, y el Balance es la cuenta completa del Customer en el momento de compartir. En pantalla se comparte como texto plano con Share o Copy en el detalle de la Sale; En la app: Sale bill (el nombre accesible de su bloque seleccionable), la acción dice Share / Copy.
+Los datos de una Sale registrada que un vendedor puede compartir con el Customer de esa Sale: nombre del Business, Sale number, fecha, líneas, Shipping charged, total, estado de Payment y el Balance actual del Customer. Se calculan en el momento a partir del Settlement cuando se lee el detalle de la Sale y nunca se guardan; el Balance es la cuenta completa del Customer en el momento de compartir. Se comparte como texto plano con Share o Copy en el detalle de la Sale; _In the app_: Sale bill (el nombre accesible de su bloque seleccionable), y la acción dice Share / Copy.
 _Avoid_: invoice, receipt, statement, ticket
 
 **Documentation language**:
@@ -546,48 +542,68 @@ _Avoid_: amount, grams
 La zona que decide cuándo empieza y termina el día de un Business; a todo Business existente se le da la de Argentina. Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; a cargo de la parte time-zone.
 _Avoid_: locale, region
 
-**Money scale**:
-Si un Business guarda su dinero en unidades enteras de moneda (0) o en centésimos (2); los Businesses existentes quedan en 0 y los nuevos empiezan en 2. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; a cargo de la parte money.
-_Avoid_: precision, cents mode
-
-**Money format**:
-El símbolo de la moneda y los decimales con que un Business muestra su dinero. Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; a cargo de la parte money.
-_Avoid_: currency settings
-
 **Customer-type price**:
-El precio que paga un Customer type por un Product, una fila que rige desde una fecha. Reemplaza al VIP price en las escrituras nuevas; la Price entry conserva su VIP price tal como está, y los VIP prices guardados y las marcas VIP se quedan en su lugar, congelados con los valores que tienen. Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-vip-mark-and-vip-price-columns-stay-frozen-in-place.md; a cargo de la parte customer-type prices.
-_Avoid_: tier price, discount
-
-**Payment method**:
-Una forma de pagar de un Customer, definida por el vendedor. Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; a cargo de la parte payment methods.
-_Avoid_: payment type, channel
+El precio por gramo que paga un Customer type por un Product, guardado como una fila con fecha de vigencia que nunca se edita, opcionalmente atada a la Price entry con la que se guardó. Rige la fila más reciente en esa fecha o antes, y una atada a una Price entry rige solo mientras esa Price entry es el Current price. Es un entero mayor que $0 y menor que el List price de su fecha; en esta parte solo se fija el del VIP type, con el campo "VIP price" de una Price entry. _In the app_: VIP price (para el VIP type); en una línea, el nombre del tipo.
+_Avoid_: tier price, group price, discount, VIP price column
 
 **Applied promotion**:
 Una Promotion tal como estaba una Sale cuando se guardó, registrada como filas tipadas que nunca se vuelven a calcular. Decidido en docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; a cargo de la parte promotions-at-sale-time, que también define en qué se diferencia de una Promotion.
 _Avoid_: discount line, coupon
 
-**Product word**:
-Cómo llama un Business a sus Products en pantalla. Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md; a cargo de la parte product word.
-_Avoid_: label, noun setting
-
 ## Language
 
 **Yerba mark**:
-La marca del producto Apostrophe: un cuadrado redondeado #1E6B47 con el apóstrofo en blanco, igual en claro y oscuro, cuya única fuente es `web/public/icons/mark.svg`. De ella derivan el ícono de la app, el favicon y la marca del encabezado del teléfono. Es del producto, nunca de un Business, y nunca aparece en el Catalog, el Sale bill ni en Telegram. En la app: no tiene palabra propia; su nombre accesible es "apostrophe".
+La marca del producto Apostrophe: un cuadrado redondeado #1E6B47 con el apóstrofo en blanco, igual en claro y oscuro, cuya única fuente es `web/public/icons/mark.svg`; de ella derivan el ícono de la app, el favicon y el lockup con el Wordmark, y desde GH-723 ningún encabezado del teléfono la muestra. Es del producto, nunca de un Business, y nunca aparece en el Catalog, el Sale bill ni en Telegram. En la app: no tiene palabra propia; su nombre accesible es "apostrophe".
 _Avoid_: logo, icon, badge, Business logo
 
 **Wordmark**:
-El nombre "apostrophe" en minúscula, en Geist 600, con el ’ en `--acento`. Acompaña a la Yerba mark en Sign in, en la aceptación de Invitation, en el primer paso del Onboarding y arriba de la barra lateral de la computadora. Es fijo para toda la instalación: ninguna configuración, Product word ni idioma lo renombra. En la app: apostrophe.
+El nombre "apostrophe" en minúscula, en Geist 600, con el ’ en `--acento`. Acompaña a la Yerba mark en Sign in, en la aceptación de Invitation, en el primer paso del Onboarding y arriba de la barra lateral de la computadora. Es fijo para toda la instalación: ninguna configuración ni idioma lo renombra. En la app: apostrophe.
 _Avoid_: logo, title, brand name, Business name
 
 **Tabular figures**:
 Cifras de ancho fijo que se alinean dígito por dígito, aplicadas a dinero, cantidades, porcentajes mostrados como cifra y Days left mediante las clases de cifra y la del componente de dinero. Nunca se aplican a fechas, horas, Phone numbers, conteos dentro de una oración ni texto libre. Un número va en Tabular figures si el ojo lo recorre en una columna, una fila de cifras o un total. En la app: no tiene palabra propia.
 _Avoid_: monospace, number font, alignment
 
+**Product history**:
+Cualquier Sale line de un Product (los Gifts y los Special prices incluidos), cualquier Stock entry de él (de cualquier origen, un Adjustment de cualquiera de los dos signos incluido) o cualquier línea de Stock withdrawal de él; se calcula en el momento y nunca se guarda. Un Product con historial solo se puede archivar; uno sin historial se puede eliminar para siempre, y sus Price entries, su Low-stock threshold y sus Catalog attributes se van con él.
+_Avoid_: variety history, usage, activity, movements, references
+
+**Archived product**:
+Un Product que quien vende sacó de toda lista y selector (Products, What you have left, New sale, los formularios de Stock entry y de Price entry, el Catalog y el Pinned catalog), mientras que todo registro pasado conserva su nombre y sus cifras tal cual. Conserva reservado su nombre y su marca de Hidden product, se ve y se restaura solo desde Archived, tiene una página de solo lectura y al restaurarlo vuelve exactamente como estaba. En la app: Archived.
+_Avoid_: archived variety, deleted, hidden, inactive, disabled
+
+**Hidden product**:
+Un Product que quien vende eligió dejar fuera del Catalog, sin importar su precio o su Stock; sigue figurando en Products y en todos los selectores. Un Product que queda afuera por falta de precio o de Stock no está oculto, y un Archived product es otra cosa que conserva su marca de Hidden product. En la app: Hidden.
+_Avoid_: hidden variety, inactive, disabled, archived
+
 **Withdrawal reason**:
-Uno de los motivos de la lista propia de un Business bajo el que se registra cada Stock withdrawal, con un nombre único en el Business (sin importar mayúsculas, minúsculas ni espacios, de hasta 60 caracteres) y una posición. Un Business nuevo arranca con "Marketing" y "Own use" en su Stored language, que un cambio de idioma nunca renombra. La lista se edita solo en Settings → Business → Withdrawal reasons, nunca queda vacía, y un motivo con retiros no se puede eliminar; nunca registra flor perdida, que es un Adjustment negativo. _In the app_: Withdrawal reasons (la lista), Reason (en el formulario), y cada motivo por su nombre.
+Uno de los motivos de la lista propia de un Business bajo el que se registra cada Stock withdrawal, con un nombre único en el Business (sin importar mayúsculas, minúsculas ni espacios, de hasta 60 caracteres) y una posición. Un Business nuevo arranca con "Marketing" y "Own use" en su Stored language, que un cambio de idioma nunca renombra. La lista se edita solo en Settings → Business → Withdrawal reasons, nunca queda vacía, y un motivo con retiros no se puede eliminar; nunca registra Stock perdido, que es un Adjustment negativo. _In the app_: Withdrawal reasons (la lista), Reason (en el formulario), y cada motivo por su nombre.
 _Avoid_: category, type, tag, cause, Promotion (old name of one default reason)
 
 **VIP type**:
 El Customer type "VIP" que la actualización creó en cada Business existente, con los Customers que tenían la marca VIP. Hasta la parte customer-type prices es el único tipo cuya pertenencia da el VIP price; lo identifica la actualización, nunca su nombre, así que renombrarlo no cambia nada y un tipo del vendedor llamado "VIP" no da ningún precio. En la app: no tiene palabra propia; se ve como un tipo más.
 _Avoid_: VIP mark, VIP flag, default type
+
+**Phone country**:
+El país con el que se lee un Phone number tipeado sin + ni código de país, elegido por número en el formulario del Customer entre una lista fija (Argentina, Uruguay, Chile, Paraguay, Brazil, Mexico, Spain, United States) o Other. No se guarda, porque la forma internacional del número lo lleva; cuando el número empieza con +, lo decide su código y el campo queda bloqueado. Ya no es una configuración del Business ni está en Settings (ADR-20261111-phone-country-per-number, que reemplaza a ADR-0082). En la app: Phone country.
+_Avoid_: default country, business country, locale, region, country setting
+
+**Sale number**:
+El número correlativo de una Sale dentro de su Business, que se asigna una sola vez al guardarla, en orden de guardado, empezando en 1. Nunca cambia ni se reutiliza, aunque se borre la Sale que lo tenía, y no revela nada de ningún otro Business. Las Sales que ya existían se numeraron una sola vez por fecha y después por orden de registro. _In the app_: Sale #N.
+_Avoid_: order number, invoice number, id, ticket, receipt number
+
+**Selector**:
+El único control para elegir una opción de un Growable set: un campo con etiqueta que en el teléfono abre su lista en una Sheet, como su propia entrada del historial, y en la computadora abre un desplegable con teclado. Tiene búsqueda con más de 8 opciones, nunca reordena las opciones, muestra con la marca "no longer available" una elección que ya no se ofrece, y nunca parece vacío mientras carga. Puede estar bloqueado, con su valor a la vista y un motivo visible en palabras, cuando otra cosa del formulario decide el valor (como el + de un Phone number); bloqueado, su lista nunca se abre. _In the app_: no tiene palabra propia; se ve como la etiqueta de su campo.
+_Avoid_: dropdown, picker, select, chooser, combobox, chips
+
+**Growable set**:
+Un conjunto que puede tener una opción con la que la app no vino, hoy o por una decisión ya tomada, como los Products, las Expense categories, los Withdrawal reasons, los Customer types y los Payment methods. Siempre se elige con el Selector, nunca con chips. En la app: no tiene palabra propia.
+_Avoid_: dynamic list, open set, custom list, user list
+
+**Fixed set**:
+Un conjunto de opciones con el que la app viene y que ninguna decisión tomada deja crecer, como Today · Week · Month. Se declara en `web/src/components/fixedSets.ts` con un motivo no vacío, y es lo único de donde chips, pills, Pestanas y controles de radio toman sus opciones. Ningún conjunto leído de los datos o la configuración de un Business es nunca un Fixed set (docs/adr/0074-fixed-chip-sets-are-a-branded-type-declared-in-one-registry-the-native-select-is-banned-and-the-selector-is-the-only-control-for-a-growable-set.md). En la app: no tiene palabra propia.
+_Avoid_: enum, static list, constant set, hard-coded options
+
+**Detected country**:
+El Phone country que el formulario de un Customer propone por defecto, calculado solo en el dispositivo: la primera región de idioma del teléfono que está en la lista; si no hay, el país de su zona horaria, cuando está en la lista; si no, Other. Nunca se guarda ni se envía como tal, no hace ninguna llamada de red, y el formulario nunca recuerda una elección. En la app: no tiene palabra propia; se ve como el valor del campo Phone country.
+_Avoid_: guessed country, auto-detect, geolocation, locale, default country

@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-03
+summary: "qué recibe Telegram: texto plano con entidades de negrita y una tabla fija"
 ---
 
 # What Telegram receives: plain text plus UTF-16 bold entities, and a fixed table that keeps no description

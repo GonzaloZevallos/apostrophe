@@ -33,7 +33,7 @@ msgid "operator.import.counts_heading"
 msgstr "⟦Çöûňťš:·~·⟧"
 
 msgid "operator.import.count_varieties"
-msgstr "⟦  Ṽåřìèťìèš: {count}·~·~·⟧"
+msgstr "⟦  Ṗřöđûçťš: {count}·~·~·⟧"
 
 msgid "operator.import.count_price_entries"
 msgstr "⟦  Ṗřìçè èňťřìèš: {count}·~·~·~⟧"
@@ -223,3 +223,9 @@ msgstr "⟦Ṁåřķèťìňĝ·~·~⟧"
 
 msgid "stock.default_reason.own_use"
 msgstr "⟦Öŵň ûšè·~·⟧"
+
+msgid "payment_methods.default_method.cash"
+msgstr "⟦Çåšĥ·~⟧"
+
+msgid "payment_methods.default_method.transfer"
+msgstr "⟦Ťřåňšḟèř·~·⟧"

@@ -5,7 +5,7 @@
 
 import { baselineArgs, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './expenses.ts'
-import type { LimitedCopy } from './limits'
+import type { LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
@@ -47,8 +47,7 @@ export const EXPENSES_TEXT = {
   saveTheExpense: 'Save the expense',
   deleteExpense: 'Delete expense',
   discardTheExpense: 'Discard the expense?',
-  moreScreen: 'More screen',
-  addExpenseFromMore: 'Add expense from More',
+  saleStaysAsItIs: 'Your sale in progress stays as it is.',
   deleteTheExpenseOf: (amount: string | number, categoryName: string | number, date: string | number) => `Delete the expense of ${amount} in ${categoryName} on ${date}?`,
   oneCategory: '1 category',
   categoriesCount: (categories: string | number) => `${categories} categories`,

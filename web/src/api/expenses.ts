@@ -5,7 +5,7 @@
  * Every call goes through `api/client.ts`; no screen calls `fetch` itself.
  */
 
-import { del, get, patch, post, put } from './client'
+import { del, get, patch, post, put } from './client.ts'
 
 export interface ExpenseCategory {
   id: number

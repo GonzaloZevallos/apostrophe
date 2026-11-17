@@ -37,7 +37,7 @@ def test_has_records_is_false_for_a_business_with_no_payment(
     client: TestClient, engine: Engine
 ) -> None:
     customer = client.post(
-        "/customers", json={"name": "No Payment", "phone": "11 2222-3333"}
+        "/customers", json={"name": "No Payment", "phone": "11 2222-3333", "phone_country": "AR"}
     ).json()
     business_id = _business_id_of_customer(engine, customer["id"])
 
@@ -48,7 +48,7 @@ def test_has_records_is_false_for_a_business_with_no_payment(
 def test_has_records_is_true_for_an_on_the_spot_payment(client: TestClient, engine: Engine) -> None:
     variety_id = _variety(client)
     customer = client.post(
-        "/customers", json={"name": "Cash Customer", "phone": "11 2222-4444"}
+        "/customers", json={"name": "Cash Customer", "phone": "11 2222-4444", "phone_country": "AR"}
     ).json()
     business_id = _business_id_of_customer(engine, customer["id"])
 
@@ -56,7 +56,7 @@ def test_has_records_is_true_for_an_on_the_spot_payment(client: TestClient, engi
         "/sales",
         json={
             "customer_id": customer["id"],
-            "payment": "cash",
+            "payment": {"kind": "paid", "payment_method_id": 1},
             "lines": [{"product_id": variety_id, "quantity": "2"}],
         },
     )
@@ -69,7 +69,8 @@ def test_has_records_is_true_for_an_on_the_spot_payment(client: TestClient, engi
 def test_has_records_is_true_for_a_later_payment(client: TestClient, engine: Engine) -> None:
     variety_id = _variety(client)
     customer = client.post(
-        "/customers", json={"name": "Later Customer", "phone": "11 2222-5555"}
+        "/customers",
+        json={"name": "Later Customer", "phone": "11 2222-5555", "phone_country": "AR"},
     ).json()
     business_id = _business_id_of_customer(engine, customer["id"])
 
@@ -77,7 +78,7 @@ def test_has_records_is_true_for_a_later_payment(client: TestClient, engine: Eng
         "/sales",
         json={
             "customer_id": customer["id"],
-            "payment": "owing",
+            "payment": {"kind": "owing"},
             "lines": [{"product_id": variety_id, "quantity": "2"}],
         },
     )
@@ -85,7 +86,7 @@ def test_has_records_is_true_for_a_later_payment(client: TestClient, engine: Eng
 
     paid = client.post(
         f"/customers/{customer['id']}/payments",
-        json={"paid_on": "2026-09-20", "amount": 1, "method": "cash"},
+        json={"paid_on": "2026-09-20", "amount": 1, "payment_method_id": 1},
     )
     assert paid.status_code == 201, paid.text
 

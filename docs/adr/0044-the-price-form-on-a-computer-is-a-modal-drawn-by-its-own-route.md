@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-15
+summary: "el formulario de precio en computadora es un modal con su propia ruta"
 ---
 
 # The price form on a computer is a modal drawn by its own route

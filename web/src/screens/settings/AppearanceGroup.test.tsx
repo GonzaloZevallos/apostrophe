@@ -14,6 +14,7 @@ import { createMemoryRouter, Link, RouterProvider } from 'react-router'
 import { beforeEach, expect, test } from 'vitest'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import AppearanceGroup from './AppearanceGroup'
+import ContentArea from '../../components/ContentArea'
 
 const html = document.documentElement
 
@@ -28,12 +29,12 @@ function renderGroup() {
       {
         path: SETTINGS,
         element: (
-          <main>
+          <ContentArea as="main">
             <h1>Lista</h1>
             <Link to={SETTINGS_APPEARANCE} state={inAppState({ pathname: SETTINGS })}>
               Abrir
             </Link>
-          </main>
+          </ContentArea>
         ),
       },
       { path: SETTINGS_APPEARANCE, element: <AppearanceGroup /> },

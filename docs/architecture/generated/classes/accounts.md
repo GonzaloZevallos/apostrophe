@@ -126,6 +126,7 @@ classDiagram
     id : int #124; None
     language : BusinessLanguage
     name
+    phone_country : PhoneCountry #124; None
   }
   class BusinessName {
     value : str
@@ -195,6 +196,8 @@ classDiagram
   }
   class StoredLanguageCorrupt {
   }
+  class StoredPhoneCountryCorrupt {
+  }
   class User {
     business_id : int
     email
@@ -241,6 +244,9 @@ classDiagram
     user(user_id: int) User #124; None
     user_by_email(email: Email) User #124; None
     users_of_business(business_id: int) list~User~
+  }
+  class AccountsMoneyFormat {
+    current() MoneyFormat
   }
   class BusinessOpening {
     opened(business_id: int, language: BusinessLanguage) None
@@ -306,8 +312,10 @@ classDiagram
     name : str
   }
   class BusinessRow {
+    default_phone_country : Mapped~str #124; None~
     id : Mapped~int~
     language : Mapped~str~
+    last_sale_number : Mapped~int~
     name : Mapped~str~
   }
   class ChangePasswordIn {
@@ -337,13 +345,15 @@ classDiagram
   class LoginAddressGuardRow {
     address_digest : Mapped~str~
     failures : Mapped~int~
-    locked_until : Mapped~datetime #124; None~
-    window_start : Mapped~datetime~
+    id : Mapped~int~
+    unlocks_at : Mapped~datetime #124; None~
+    window_started_at : Mapped~datetime~
   }
   class LoginGuardRow {
     email : Mapped~str~
     failures : Mapped~int~
-    locked_until : Mapped~datetime #124; None~
+    id : Mapped~int~
+    unlocks_at : Mapped~datetime #124; None~
   }
   class LoginIn {
     email : str
@@ -352,15 +362,20 @@ classDiagram
   class MeOut {
     business_name : str
     email : str
+    money
     shown_language : str
     today : date
   }
+  class MoneyFormatOut {
+    decimals : int
+    symbol : str
+  }
   class ResetLinkRow {
+    app_user_id : Mapped~int~
     business_id : Mapped~int~
     created_at : Mapped~datetime~
     id : Mapped~int~
     token_digest : Mapped~str~
-    user_id : Mapped~int~
   }
   class ResetSubmitIn {
     new_password : str
@@ -413,4 +428,5 @@ classDiagram
     samesite : Literal~'lax'~
     secure : bool
   }
+  MeOut --> MoneyFormatOut : money
 ```

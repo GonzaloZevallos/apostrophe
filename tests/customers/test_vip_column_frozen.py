@@ -1,4 +1,4 @@
-"""`customer.vip` is frozen: no path writes it any more (docs/adr/0070). A recorder on
+"""`customer.is_vip` is frozen: no path writes it any more (docs/adr/0070). A recorder on
 the engine's `before_cursor_execute` event sees every statement of the flows that touch
 customers, and none of them is an INSERT or UPDATE that names the column. Seam: the
 statement recorder over SQLAlchemy engine events, driven through the HTTP API, the
@@ -15,9 +15,10 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import event
+from sqlalchemy import event, inspect
 from sqlalchemy.engine import Engine
 
+from app.migrations.runner import upgrade_to_head
 from app.shared.copy import OperatorText
 from app.spreadsheet_import.adapters.cli import run
 from tests.conftest import MovableClock
@@ -35,16 +36,16 @@ _UPDATE = re.compile(
     r"^\s*UPDATE\s+\"?customer\"?\s+SET\s+(?P<rest>.*)$", re.IGNORECASE | re.DOTALL
 )
 _NESTED = re.compile(r"\([^()]*\)")
-_ASSIGNS_VIP = re.compile(r"(?:^|,)\s*\"?vip\"?\s*=", re.IGNORECASE)
+_ASSIGNS_VIP = re.compile(r"(?:^|,)\s*\"?is_vip\"?\s*=", re.IGNORECASE)
 
 
-def writes_the_vip_column(statement: str) -> bool:
-    """Whether the statement is an INSERT into `customer` whose column list names `vip`,
-    or an UPDATE of `customer` whose SET clause assigns it. A `vip` in a WHERE or a
-    RETURNING clause is a read, not a write."""
+def writes_the_is_vip_column(statement: str) -> bool:
+    """Whether the statement is an INSERT into `customer` whose column list names `is_vip`,
+    or an UPDATE of `customer` whose SET clause assigns it. An `is_vip` in a WHERE or a
+    RETURNING clause is a read, not a write, and `customer_type.is_vip` is another column."""
     inserted = _INSERT.match(statement)
     if inserted is not None:
-        return any(c.strip().strip('"').lower() == "vip" for c in inserted["columns"].split(","))
+        return any(c.strip().strip('"').lower() == "is_vip" for c in inserted["columns"].split(","))
     updated = _UPDATE.match(statement)
     if updated is None:
         return False
@@ -69,19 +70,34 @@ def statements(engine: Engine) -> Iterator[list[str]]:
 
 
 def test_the_recorder_flags_a_statement_that_writes_the_column() -> None:
-    assert writes_the_vip_column("INSERT INTO customer (business_id, name, vip) VALUES (?, ?, ?)")
-    assert writes_the_vip_column("UPDATE customer SET vip=? WHERE customer.id = ?")
-    assert not writes_the_vip_column("INSERT INTO customer (business_id, name) VALUES (?, ?)")
-    assert not writes_the_vip_column("UPDATE customer SET name=? WHERE customer.id = ?")
-    assert not writes_the_vip_column("SELECT customer.vip FROM customer")
-    # A `vip` that is only read: the migration's WHERE and an INSERT's RETURNING.
-    assert not writes_the_vip_column(
+    assert writes_the_is_vip_column(
+        "INSERT INTO customer (business_id, name, is_vip) VALUES (?, ?, ?)"
+    )
+    assert writes_the_is_vip_column("UPDATE customer SET is_vip=? WHERE customer.id = ?")
+    assert not writes_the_is_vip_column("INSERT INTO customer (business_id, name) VALUES (?, ?)")
+    assert not writes_the_is_vip_column("UPDATE customer SET name=? WHERE customer.id = ?")
+    assert not writes_the_is_vip_column("SELECT customer.is_vip FROM customer")
+    # The VIP type's own column is another column, matched by whole identifier.
+    assert not writes_the_is_vip_column("UPDATE customer_type SET is_vip=? WHERE id = ?")
+    assert not writes_the_is_vip_column(
+        "INSERT INTO customer_type (business_id, name, icon, is_vip) VALUES (?, ?, ?, ?)"
+    )
+    # An `is_vip` that is only read: a WHERE and an INSERT's RETURNING.
+    assert not writes_the_is_vip_column(
         "UPDATE customer SET customer_type_id = (SELECT id FROM customer_type WHERE x = 1)"
-        " WHERE vip = 1"
+        " WHERE is_vip = 1"
     )
-    assert not writes_the_vip_column(
-        "INSERT INTO customer (business_id, name) VALUES (?, ?) RETURNING id, vip"
+    assert not writes_the_is_vip_column(
+        "INSERT INTO customer (business_id, name) VALUES (?, ?) RETURNING id, is_vip"
     )
+
+
+def test_the_frozen_column_is_is_vip_by_reflection(engine: Engine) -> None:
+    upgrade_to_head(engine)
+    columns = {column["name"] for column in inspect(engine).get_columns("customer")}
+
+    assert "is_vip" in columns
+    assert "vip" not in columns
 
 
 @pytest.mark.parametrize("switch_on", [True, False])
@@ -103,7 +119,7 @@ def test_creating_and_editing_a_customer_never_writes_the_column(
 
     assert (created.status_code, edited.status_code) == (201, 200)
     assert statements, "the recorder saw nothing"
-    assert [s for s in statements if writes_the_vip_column(s)] == []
+    assert [s for s in statements if writes_the_is_vip_column(s)] == []
 
 
 def test_the_spreadsheet_import_never_writes_the_column(
@@ -131,7 +147,7 @@ def test_the_spreadsheet_import_never_writes_the_column(
 
     assert code == 0, err.getvalue()
     assert any(s.lstrip().upper().startswith("INSERT INTO CUSTOMER ") for s in statements)
-    assert [s for s in statements if writes_the_vip_column(s)] == []
+    assert [s for s in statements if writes_the_is_vip_column(s)] == []
 
 
 def test_opening_a_business_never_writes_the_column(
@@ -139,4 +155,4 @@ def test_opening_a_business_never_writes_the_column(
 ) -> None:
     # `client` opens a business; the recorder was listening before it did.
     assert any("business" in s.lower() for s in statements)
-    assert [s for s in statements if writes_the_vip_column(s)] == []
+    assert [s for s in statements if writes_the_is_vip_column(s)] == []

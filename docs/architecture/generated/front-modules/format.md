@@ -8,12 +8,17 @@ Only edges between files inside `format/` are drawn; edges between folders are i
 flowchart LR
 subgraph src["src"]
   subgraph src_format["format"]
+    src_format_MoneyFormatProvider_tsx["MoneyFormatProvider.tsx"]
     src_format_counts_ts["counts.ts"]
     src_format_dates_ts["dates.ts"]
     src_format_initials_ts["initials.ts"]
+    src_format_moneyContext_ts["moneyContext.ts"]
     src_format_money_ts["money.ts"]
     src_format_parse_ts["parse.ts"]
-    src_format_phone_ts["phone.ts"]
   end
 end
+src_format_MoneyFormatProvider_tsx-->src_format_moneyContext_ts
+src_format_MoneyFormatProvider_tsx-->src_format_money_ts
+src_format_moneyContext_ts-->src_format_money_ts
+src_format_parse_ts-->src_format_money_ts
 ```

@@ -1,1 +1,65 @@
-[]
+[
+  {
+    "screen": "ConfiguracionMediosPagoUltimo",
+    "rule": "h-scroll",
+    "target": "",
+    "issue": 60,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "h-scroll",
+    "target": "",
+    "issue": 60,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "h-scroll",
+    "target": "",
+    "issue": 60,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "h-scroll",
+    "target": "",
+    "issue": 60,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "h-scroll",
+    "target": "",
+    "issue": 60,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "h-scroll",
+    "target": "",
+    "issue": 60,
+    "sizes": [
+      "246x437"
+    ]
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "h-scroll",
+    "target": "",
+    "issue": 60,
+    "sizes": [
+      "246x437"
+    ]
+  }
+]

@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-25
+summary: "en el teléfono un formulario lo dibuja una sola hoja"
 ---
 
 # On the phone a form is drawn by one Sheet

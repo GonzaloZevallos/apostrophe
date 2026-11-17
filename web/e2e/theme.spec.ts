@@ -221,8 +221,8 @@ test('choosing Dark in Apariencia applies it, survives a reload and a logout, Li
   await expectOnlyTheThemeStored(page)
 
   // Signed in again, Light wins over a dark phone, and survives a reload.
-  await page.getByLabel('Email address').fill(email)
-  await page.getByLabel('Password').fill(PASSWORD)
+  await page.getByLabel('Email address', { exact: true }).fill(email)
+  await page.getByLabel('Password', { exact: true }).fill(PASSWORD)
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page.locator('.encabezado__negocio')).toBeVisible()
   expect(await themeAttribute(page)).toBe('oscuro')
@@ -267,16 +267,16 @@ test('with Oscuro stored, Entrar, the invitation screen and the reset screen are
   await logOut(page)
 
   await page.goto(LOGIN)
-  await expect(page.getByLabel('Email address')).toBeVisible()
+  await expect(page.getByLabel('Email address', { exact: true })).toBeVisible()
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
 
   await page.goto(newBusinessInvitationUrl())
-  await expect(page.getByLabel('Business name')).toBeVisible()
+  await expect(page.getByLabel('Business name', { exact: true })).toBeVisible()
   expect(await themeAttribute(page)).toBe('oscuro')
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
 
   await page.goto(resetLink(email))
-  await expect(page.getByLabel('New password')).toBeVisible()
+  await expect(page.getByLabel('New password', { exact: true })).toBeVisible()
   expect(await themeAttribute(page)).toBe('oscuro')
   expect(await htmlBackground(page)).toBe(PAPEL_OSCURO)
 

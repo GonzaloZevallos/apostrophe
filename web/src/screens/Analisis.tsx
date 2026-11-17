@@ -28,8 +28,10 @@ import {
 import { keys } from '../api/keys'
 import type { Me } from '../api/me'
 import { formatMonthLong } from '../format/dates'
-import { formatGrams, formatMoney } from '../format/money'
+import { formatGrams } from '../format/money'
+import { useMoney } from '../format/moneyContext'
 import Loading from '../components/Loading'
+import ExpensesCard from './analisis/ExpensesCard'
 import ErrorGenerico from '../components/ErrorGenerico'
 import SinConexion from '../components/SinConexion'
 import { amountParts } from './analisisCost'
@@ -53,6 +55,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../copy/emptyStates'
 import { COMMON_TEXT } from '../copy/common'
+import ContentArea from '../components/ContentArea'
 
 export {
   COST_OF_GOODS_LABEL,
@@ -118,13 +121,14 @@ function ExpenseBreakdownView({
   title: string
   breakdown: ExpenseBreakdownT
 }) {
+  const money = useMoney()
   return (
     <div className="analisis__gastos">
       <span className="pie">{title}</span>
       {breakdown.categories.map((category) => (
         <div key={category.category_id} className="gastos__categoria-cabecera">
           <span className="gastos__categoria-nombre">{category.name}</span>
-          <span className="gastos__categoria-subtotal cifra-s">{formatMoney(category.total)}</span>
+          <span className="gastos__categoria-subtotal cifra-s">{money.money(category.total)}</span>
         </div>
       ))}
       <div className="gastos__categoria-cabecera">
@@ -132,7 +136,7 @@ function ExpenseBreakdownView({
           {COMMON_TEXT.flowerPurchases}
           <span className="pie"> {PURCHASES_NOTE}</span>
         </span>
-        <span className="gastos__categoria-subtotal cifra-s">{formatMoney(breakdown.purchases)}</span>
+        <span className="gastos__categoria-subtotal cifra-s">{money.money(breakdown.purchases)}</span>
       </div>
     </div>
   )
@@ -145,6 +149,7 @@ function AnalisisContenido({
   data: Analysis
   onMonth: (next: string) => void
 }) {
+  const money = useMoney()
   const { t } = useTranslation()
   const m = data.month
   const phone = useViewport() === 'phone'
@@ -162,7 +167,7 @@ function AnalisisContenido({
           <span id={heroId} className="rotulo">
             {ANALYSIS_TEXT.vendisteEnElMes}
           </span>
-          <span className="cifra-xl analisis__monto-cifra">{formatMoney(m.sales)}</span>
+          <span className="cifra-xl analisis__monto-cifra">{money.money(m.sales)}</span>
         </div>
         <span className="pie">
           <span className="analisis__monto-cifra cifra-n">{formatGrams(m.quantity_sold)}</span>
@@ -232,7 +237,7 @@ function AnalisisContenido({
               <div key={day.weekday} className="analisis__dia">
                 <span>{WEEKDAY_LABEL[day.weekday]}</span>
                 <Bar value={day.sales} max={maxWeekdaySales} />
-                <span className="analisis__dia-cifra cifra-n">{formatMoney(day.sales)}</span>
+                <span className="analisis__dia-cifra cifra-n">{money.money(day.sales)}</span>
                 <span>{day.count}{ANALYSIS_TEXT.ventas}</span>
                 {day.best && <span className="analisis__marca-mejor">{BEST_WEEKDAY_MARK}</span>}
               </div>
@@ -247,12 +252,12 @@ function AnalisisContenido({
               <AmountRow
                 variant="row"
                 label={COMMON_TEXT.sales}
-                value={amountParts(data.since_first_record.sales, 0)}
+                value={amountParts(data.since_first_record.sales, 0, money)}
               />
               <AmountRow
                 variant="row"
                 label={COMMON_TEXT.expenses}
-                value={amountParts(data.since_first_record.expenses, 0)}
+                value={amountParts(data.since_first_record.expenses, 0, money)}
               />
               <AmountRow
                 variant="row"
@@ -260,12 +265,13 @@ function AnalisisContenido({
                 value={amountParts(
                   data.since_first_record.profit.amount,
                   data.since_first_record.profit.pending_quantity,
+                  money,
                 )}
               />
               <AmountRow
                 variant="row"
                 label={COMMON_TEXT.cash}
-                value={amountParts(data.since_first_record.cash, 0)}
+                value={amountParts(data.since_first_record.cash, 0, money)}
               />
               <WithdrawalLines
                 variant="row"
@@ -301,11 +307,9 @@ export default function Analisis() {
   })
 
   return (
-    <main className="pantalla analisis">
-      <div className="cuerpo">
-        <div className="encabezado__fila">
-          <span className="encabezado__titulo">{COMMON_TEXT.analysis}</span>
-        </div>
+    <ContentArea as="main" className="pantalla analisis">
+      <div className="cuerpo cuerpo--bajo-cabecera">
+        <ExpensesCard />
 
         {query.isPending && <Loading />}
 
@@ -320,6 +324,6 @@ export default function Analisis() {
           <AnalisisContenido data={query.data} onMonth={setMonth} />
         )}
       </div>
-    </main>
+    </ContentArea>
   )
 }

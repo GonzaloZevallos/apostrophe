@@ -16,7 +16,7 @@ test.use({ viewport: { width: 390, height: 844 } })
 async function makeCustomer(page: Page): Promise<string> {
   await signUpNewBusiness(page)
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Name').fill('Carla Cobrar')
+  await page.getByLabel('Name', { exact: true }).fill('Carla Cobrar')
   await page.getByRole('button', { name: 'Save and use' }).click()
   await expectPath(page, CUSTOMER)
   const id = /\/customers\/(\d+)/.exec(page.url())?.[1]

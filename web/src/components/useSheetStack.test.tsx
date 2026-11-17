@@ -1,12 +1,23 @@
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render as renderBare, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useEffect, useState } from 'react'
+import { type ReactElement, type ReactNode, useEffect, useState } from 'react'
 import { createMemoryRouter, MemoryRouter, RouterProvider } from 'react-router'
 import { expect, test, vi } from 'vitest'
 import { HOME } from '../routes'
 import LeaveConfirm from './LeaveConfirm'
 import { useLeaveGuard } from './useLeaveGuard'
 import { SheetRouterProvider, SheetStackProvider, useSheet } from './useSheetStack'
+import ContentArea from './ContentArea'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
+
+function Business({ children }: { children: ReactNode }) {
+  return <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>{children}</MoneyFormatProvider>
+}
+
+/** Rendered for a "$"/0-decimals business, the one the strings below were written for. */
+function render(ui: ReactElement) {
+  return renderBare(ui, { wrapper: Business })
+}
 
 let latest: { closeAll: () => void } | null = null
 
@@ -20,7 +31,7 @@ function Screen({ startDirty }: { startDirty: boolean }) {
     latest = { closeAll }
   }, [closeAll])
   return (
-    <main>
+    <ContentArea as="main">
       <h1>Formulario</h1>
       <button type="button" onClick={() => setDirty(true)}>
         Escribir
@@ -54,7 +65,7 @@ function Screen({ startDirty }: { startDirty: boolean }) {
           discardLabel="Yes, discard it"
         />
       )}
-    </main>
+    </ContentArea>
   )
 }
 

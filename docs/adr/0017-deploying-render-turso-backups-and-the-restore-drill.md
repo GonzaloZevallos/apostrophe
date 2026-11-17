@@ -2,6 +2,7 @@
 status: accepted
 date: 2026-10-04
 amended: 2026-10-04
+summary: "el despliegue en Render y Turso, la copia diaria cifrada y el simulacro de restauración"
 ---
 
 # Deploying: Render, Turso, the daily encrypted backup and the restore drill

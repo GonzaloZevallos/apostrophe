@@ -9,7 +9,8 @@ the suites are skipped only by their `changes` flag, and the `e2e` aggregator (t
 the always-on ones that carries `always()`) is pinned apart: it needs `changes` and `e2e-shard`,
 reads only `needs.e2e-shard.result` and runs no checkout, no `uv` and no check;
 every job `ci-ok` needs has a judge in `scripts/ci_verdict.py` (except `changes`);
-`ci_covers.web-e2e` names the aggregator, and its `failed` regex is read from `stack.yaml`;
+end-to-end is judged by GitHub CI only (owner's rule, GH-699): `npm --prefix web run e2e` is
+`CI_ONLY`, no local check runs Playwright, `stack.yaml` has no `ci_covers`, and `ci-ok` needs `e2e`;
 the workflow's permissions, concurrency, fetch depth, fork guard, hidden-file uploads and output
 names are pinned.
 When `stack.yaml` has `docs:`, `docs.generate` is a known step that exactly one gated job runs
@@ -32,6 +33,8 @@ import yaml
 from scripts.ci_changes import render, select
 from scripts.ci_coverage import MARKER
 from scripts.ci_verdict import ALWAYS_JOBS, CHANGES, SUITES, WARN_JOBS
+from scripts.docs.owned_paths import owned_paths
+from scripts.docs.regen_pack import PATHS_FILE, TAR_FILE
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
@@ -70,8 +73,21 @@ GROUP = (
 SHA_REF = "${{ inputs.sha }}"
 HEAD_ROOT_EXPRESSION = "${{ github.workspace }}/head"
 DISPATCH_ONLY = "github.event_name == 'workflow_dispatch'"
-# The two checkouts of master's own code: no `ref`, so they run master's scripts over the head.
-MASTER_CHECKOUTS = (("changes", 0), ("ci-ok", 0))
+# The checkouts of master's own code: no `ref`, so they run master's scripts over the head. The last
+# one is the ungated job that commits master's docs after a merge.
+MASTER_CHECKOUTS = (("changes", 0), ("ci-ok", 0), ("regen", 0))
+MASTER_PUSH = "github.event_name == 'push' && github.ref == 'refs/heads/master'"
+PACK_RUN = 'uv run --no-project python -m scripts.docs.regen_pack --out "$RUNNER_TEMP/regen"'
+FAILED_DOCS_RUN = (
+    """echo "master's owned docs are not regenerated: this run's docs job failed" """
+    """>> "$GITHUB_STEP_SUMMARY\""""
+)
+PUBLISH_RUN = (
+    'bash scripts/docs/regen-publish.sh --sha "$SHA" '
+    f'--tar "$RUNNER_TEMP/regen/{TAR_FILE}" --owned "$RUNNER_TEMP/regen/{PATHS_FILE}" '
+    '--summary "$GITHUB_STEP_SUMMARY"'
+)
+OWNED_DOCS_ARTIFACT = "owned-docs"
 VITEST_LIST_RUN = (
     'if [ -n "$BASE_REF" ]; then npx --prefix web vitest list --root web --changed="$BASE_REF" '
     '--filesOnly > "$RUNNER_TEMP/vitest-listed.txt"; '
@@ -132,13 +148,11 @@ CI_ONLY: dict[str, str] = {
         "&& exit 1"
     ): "the coverage job's own failure reason; a warning in ci-ok",
     VERDICT_RUN: "the merge condition: one verdict over every job's result and the `changes` flags",
-    E2E_GATE_RUN: (
-        "the `e2e` aggregator: green only when every `e2e-shard` is; `ci_covers` names it"
-    ),
-    (
-        'git diff --exit-code -- docs/architecture/generated docs/api && test -z "$(git status '
-        '--porcelain --untracked-files=all -- docs/architecture/generated docs/api)"'
-    ): "the CI form of the reserved `docs` check",
+    E2E_GATE_RUN: "the `e2e` aggregator: green only when every `e2e-shard` is",
+    E2E_RUN: "end-to-end is judged by GitHub CI only (owner's rule, GH-699)",
+    "uv run --no-project python -m scripts.docs.owned_guard": "needs the merge-base with master",
+    PACK_RUN: "packs master's regenerated owned docs for the `regen` job; only a master push does",
+    FAILED_DOCS_RUN: "the summary line that says a red `docs` job left master's docs unregenerated",
     "bash scripts/docs/install-ci-tools.sh": "binaries on no package manager the repo uses",
     "bash scripts/docs/ci-mermaid-render.sh": "needs Chromium",
     "lychee --offline --no-progress docs/architecture docs/api/README.md": (
@@ -164,6 +178,20 @@ CI_ONLY: dict[str, str] = {
     ),
 }
 
+# Jobs outside `ci-ok`'s needs closure, each with the reason it gates nothing (ADR-0066, amended).
+UNGATED_JOBS: dict[str, str] = {
+    "regen": (
+        "commits master's owned docs as the Actions bot after a merge; it gates no merge, so "
+        "`ci-ok` must not need it, and it holds the only `contents: write` of the workflow"
+    ),
+}
+
+# The commands the ungated jobs run, each with its reason. They never join the commands a gated
+# job may run.
+UNGATED_RUNS: dict[str, str] = {
+    PUBLISH_RUN: "commits the packed docs and hands the push to scripts/ci/bot-push.sh",
+}
+
 # Checks CI runs in another form (shards, coverage, selected specs): check -> the exact `run:`
 # line of a gated job. A check here is proven when every shard the `changes` job selected either
 # succeeded or was skipped on a "false" flag (ADR-0054, amended).
@@ -171,7 +199,6 @@ CI_FORMS: dict[str, str] = {
     "tests": PYTEST_RUN,
     "tests-fast": PYTEST_RUN,
     "web-tests": VITEST_RUN,
-    "web-e2e": E2E_RUN,
 }
 
 # Jobs that always run: no `if:` other than `always()`.
@@ -270,7 +297,10 @@ def _output_references(workflow: Data) -> set[str]:
 
 
 def _structure_problems(
-    workflow: Data, ci_names: list[str], workflow_checks: dict[str, str]
+    workflow: Data,
+    ci_names: list[str],
+    workflow_checks: dict[str, str],
+    ungated_jobs: dict[str, str],
 ) -> list[str]:
     """Permissions, concurrency, `if:` rules, fetch depth, the fork guard and the uploads."""
     problems: list[str] = []
@@ -289,7 +319,7 @@ def _structure_problems(
 
     for name in ci_names:
         if name in jobs:
-            others = sorted(job for job in jobs if job != name)
+            others = sorted(job for job in jobs if job != name and job not in ungated_jobs)
             if sorted(_needs(jobs[name])) != others:
                 problems.append(f"{name!r} needs {sorted(_needs(jobs[name]))}, not every other job")
             if jobs[name].get("if") != "always()":
@@ -613,8 +643,57 @@ def _generate_problems(
     return problems
 
 
+def _ungated_problems(
+    workflow: Data,
+    gated: set[str],
+    setup: dict[str, str],
+    ungated_jobs: dict[str, str],
+    ungated_runs: dict[str, str],
+) -> list[str]:
+    """The jobs outside `ci-ok`'s closure: declared with a reason, needed by nobody, running only
+    declared commands, and the only holders of `contents: write`."""
+    problems: list[str] = []
+    jobs: Data = workflow["jobs"]
+    runs = _runs(workflow)
+    for job_id, reason in ungated_jobs.items():
+        if job_id not in jobs:
+            problems.append(f"UNGATED_JOBS names {job_id!r}, which is not a job of ci.yml")
+            continue
+        if not reason.strip():
+            problems.append(f"UNGATED_JOBS gives {job_id!r} an empty reason")
+        if job_id in gated:
+            problems.append(f"ungated job {job_id!r} is in the needs closure of ci:")
+        problems.extend(
+            f"job {other!r} needs the ungated job {job_id!r}"
+            for other, job in jobs.items()
+            if job_id in _needs(job)
+        )
+        problems.extend(
+            f"ungated job {job_id!r} runs a command outside UNGATED_RUNS and setup: {command}"
+            for command in runs[job_id]
+            if command not in ungated_runs and command not in setup.values()
+        )
+    problems.extend(
+        f"UNGATED_RUNS command ({command}) is run by no ungated job"
+        for command in ungated_runs
+        if not any(command in runs.get(job_id, []) for job_id in ungated_jobs)
+    )
+    problems.extend(
+        f"job {job_id!r} holds contents: write and is not in UNGATED_JOBS"
+        for job_id, job in jobs.items()
+        if cast("Data", job.get("permissions", {})).get("contents") == "write"
+        and job_id not in ungated_jobs
+    )
+    return problems
+
+
 def stack_ci_problems(
-    stack: Data, workflow: Data, ci_only: dict[str, str], ci_forms: dict[str, str]
+    stack: Data,
+    workflow: Data,
+    ci_only: dict[str, str],
+    ci_forms: dict[str, str],
+    ungated_jobs: dict[str, str],
+    ungated_runs: dict[str, str],
 ) -> list[str]:
     """What keeps `stack` and `workflow` from being one list of checks."""
     problems: list[str] = []
@@ -660,16 +739,19 @@ def stack_ci_problems(
         known.add(generate)
         problems.extend(_generate_problems(generate, runs, gated, checks, ci_only, ci_forms))
     for job, commands in runs.items():
+        if job in ungated_jobs:
+            continue
         problems.extend(
             f"job {job!r} runs an unknown step: {command}"
             for command in commands
             if command not in known
         )
     for job_id in workflow["jobs"]:
-        if job_id not in gated:
+        if job_id not in gated and job_id not in ungated_jobs:
             problems.append(f"job {job_id!r} is not in the needs closure of ci:")
+    problems.extend(_ungated_problems(workflow, gated, setup, ungated_jobs, ungated_runs))
 
-    problems.extend(_structure_problems(workflow, ci_names, checks))
+    problems.extend(_structure_problems(workflow, ci_names, checks, ungated_jobs))
     problems.extend(
         f"output {name!r} is read but no producer emits it"
         for name in sorted(_output_references(workflow) - OUTPUT_NAMES)
@@ -690,7 +772,14 @@ def _forms_for(stack: Data) -> dict[str, str]:
 def _problems(
     workflow: Data, stack: Data = STACK, forms: dict[str, str] | None = None
 ) -> list[str]:
-    return stack_ci_problems(stack, workflow, CI_ONLY, CI_FORMS if forms is None else forms)
+    return stack_ci_problems(
+        stack,
+        workflow,
+        CI_ONLY,
+        CI_FORMS if forms is None else forms,
+        UNGATED_JOBS,
+        UNGATED_RUNS,
+    )
 
 
 def _mutated() -> Data:
@@ -704,12 +793,13 @@ def test_ci_yml_and_stack_yaml_are_one_list() -> None:
 
 def test_the_gated_jobs_are_the_needs_closure_of_ci_ok() -> None:
     assert STACK["ci"] == ["ci-ok"]
-    assert _closure(WORKFLOW, STACK["ci"]) == set(WORKFLOW["jobs"])
+    assert _closure(WORKFLOW, STACK["ci"]) == set(WORKFLOW["jobs"]) - set(UNGATED_JOBS)
 
 
 def test_ci_ok_needs_every_other_job_and_runs_always() -> None:
     ci_ok = WORKFLOW["jobs"]["ci-ok"]
-    assert sorted(_needs(ci_ok)) == sorted(job for job in WORKFLOW["jobs"] if job != "ci-ok")
+    expected = sorted(job for job in WORKFLOW["jobs"] if job != "ci-ok" and job not in UNGATED_JOBS)
+    assert sorted(_needs(ci_ok)) == expected
     assert ci_ok["if"] == "always()"
 
 
@@ -843,7 +933,7 @@ def test_the_real_workflow_triggers_on_master_agentic_ci_and_pull_requests() -> 
 
 # --- the cancellation rule, evaluated from the workflow's own expression --------------------------
 
-_TOKENS = re.compile(r"\s*(?:(\|\||&&|==|\(|\)|,)|'([^']*)'|([A-Za-z_][\w.]*))")
+_TOKENS = re.compile(r"\s*(?:(\|\||&&|==|!=|\(|\)|,)|'([^']*)'|([A-Za-z_][\w.]*))")
 
 
 def _tokenize(text: str) -> list[tuple[str, str]]:
@@ -866,10 +956,12 @@ def _tokenize(text: str) -> list[tuple[str, str]]:
 
 
 class _Expression:
-    """`||`, `&&`, `==`, parentheses, `startsWith(a, b)`, `format('{0}…', …)`, single-quoted strings
-    and the contexts given; the grammar is one level per operator, loosest first."""
+    """`||`, `&&`, `==`, `!=`, parentheses, `startsWith(a, b)`, `format('{0}…', …)`, `always()`,
+    `success()`, `failure()`, single-quoted strings and the contexts given; the grammar is one level
+    per operator, loosest first. A `None` context is parse mode: the same grammar, where a dotted
+    name is `""`, a call to a documented function is `False` and anything else raises."""
 
-    def __init__(self, text: str, context: dict[str, str]) -> None:
+    def __init__(self, text: str, context: dict[str, str] | None) -> None:
         self.tokens = _tokenize(text)
         self.context = context
         self.position = 0
@@ -909,9 +1001,13 @@ class _Expression:
 
     def _equal(self) -> bool | str:
         value = self._primary()
-        while self._take("=="):
-            value = value == self._primary()
-        return value
+        while True:
+            if self._take("=="):
+                value = value == self._primary()
+            elif self._take("!="):
+                value = value != self._primary()
+            else:
+                return value
 
     def _primary(self) -> bool | str:
         token = self._peek()
@@ -925,36 +1021,57 @@ class _Expression:
             return value
         if kind == "str":
             return text
-        if kind == "name" and text == "startsWith":
-            self._expect("(")
-            subject = self._or()
-            self._expect(",")
-            prefix = self._or()
-            self._expect(")")
-            return (
-                isinstance(subject, str) and isinstance(prefix, str) and subject.startswith(prefix)
-            )
-        if kind == "name" and text == "format":
-            self._expect("(")
-            template = self._or()
-            values: list[bool | str] = []
-            while self._take(","):
-                values.append(self._or())
-            self._expect(")")
-            if not isinstance(template, str):
-                raise ValueError("format() takes a string template")
-            return template.format(*values)
-        if kind == "name" and text in self.context:
+        if kind == "name" and self._peek() == ("op", "("):
+            return self._call(text)
+        if kind == "name" and self.context is None:
+            return ""
+        if kind == "name" and self.context is not None and text in self.context:
             return self.context[text]
         raise ValueError(f"unsupported token {token}")
 
+    def _arguments(self) -> list[bool | str]:
+        self._expect("(")
+        values: list[bool | str] = []
+        if not self._take(")"):
+            values.append(self._or())
+            while self._take(","):
+                values.append(self._or())
+            self._expect(")")
+        return values
 
-def _context(event: str, ref: str, sha: str = "") -> dict[str, str]:
+    def _call(self, name: str) -> bool | str:
+        values = self._arguments()
+        context = self.context
+        if context is None:
+            if name not in EXPRESSION_FUNCTIONS:
+                raise ValueError(f"unsupported function {name}()")
+            return False
+        if name == "startsWith" and len(values) == 2:
+            subject, prefix = values
+            return (
+                isinstance(subject, str) and isinstance(prefix, str) and subject.startswith(prefix)
+            )
+        if name == "format" and values:
+            template, *rest = values
+            if not isinstance(template, str):
+                raise ValueError("format() takes a string template")
+            return template.format(*rest)
+        if name == "always" and not values:
+            return True
+        if name == "success" and not values:
+            return context["job.status"] == "success"
+        if name == "failure" and not values:
+            return context["job.status"] == "failure"
+        raise ValueError(f"unsupported call {name}() with {len(values)} arguments")
+
+
+def _context(event: str, ref: str, sha: str = "", status: str = "success") -> dict[str, str]:
     return {
         "github.event_name": event,
         "github.ref": ref,
         "github.workflow": "CI",
         "inputs.sha": sha,
+        "job.status": status,
     }
 
 
@@ -992,7 +1109,7 @@ def test_a_newer_run_cancels_only_for_a_pull_request_or_an_agentic_ci_push(
 
 
 def test_the_evaluator_refuses_an_expression_outside_its_subset() -> None:
-    for text in ("github.actor == 'x'", "contains(github.ref, 'x')", "github.ref != 'x'", "1 == 1"):
+    for text in ("github.actor == 'x'", "contains(github.ref, 'x')", "!github.ref", "1 == 1"):
         with pytest.raises(ValueError):
             _Expression(text, {"github.event_name": "push", "github.ref": "r"}).evaluate()
 
@@ -1100,10 +1217,10 @@ def test_every_output_the_workflow_reads_is_one_a_producer_emits() -> None:
 
 
 def test_an_untied_ci_form_is_refused() -> None:
-    forms = {**CI_FORMS, "web-e2e": "npm --prefix web run e2e -- --shard=1/1"}
+    forms = {**CI_FORMS, "web-tests": "npm --prefix web test -- --shard=1/1"}
     problems = _problems(WORKFLOW, forms=forms)
     assert (
-        "check 'web-e2e': CI_FORMS command (npm --prefix web run e2e -- --shard=1/1) "
+        "check 'web-tests': CI_FORMS command (npm --prefix web test -- --shard=1/1) "
         "is run by no gated job" in problems
     )
 
@@ -1156,7 +1273,7 @@ def test_a_check_in_a_job_outside_the_closure_is_refused() -> None:
 
 def test_a_ci_only_entry_no_job_runs_is_refused() -> None:
     ci_only = {**CI_ONLY, "npm --prefix web run storybook": "a step nobody runs"}
-    problems = stack_ci_problems(STACK, WORKFLOW, ci_only, CI_FORMS)
+    problems = stack_ci_problems(STACK, WORKFLOW, ci_only, CI_FORMS, UNGATED_JOBS, UNGATED_RUNS)
     assert problems == [
         "CI_ONLY command (npm --prefix web run storybook) is run by no job of ci.yml"
     ]
@@ -1168,8 +1285,73 @@ def test_an_unknown_step_is_refused() -> None:
     assert _problems(workflow) == ["job 'checks' runs an unknown step: make everything-green"]
 
 
+INSTALLER = "bash scripts/docs/install-ci-tools.sh"
+CACHE_PATH = "${{ runner.temp }}/downloads"
+CACHE_KEY_FILE = "hashFiles('scripts/docs/install-ci-tools.sh')"
+
+
+def _is_cache(step: Data) -> bool:
+    return str(step.get("uses", "")).startswith("actions/cache@")
+
+
+def _docs_cache_problems(workflow: Data) -> list[str]:
+    """What keeps the `docs` job from restoring the installer's downloads before it runs."""
+    steps = _steps(cast("Data", workflow["jobs"]["docs"]))
+    installer = [i for i, step in enumerate(steps) if str(step.get("run", "")).strip() == INSTALLER]
+    if len(installer) != 1:
+        return [f"the docs job has {len(installer)} installer steps, not 1"]
+    caches = [step for step in steps[: installer[0]] if _is_cache(step)]
+    if len(caches) != 1:
+        return [f"the docs job has {len(caches)} actions/cache steps before the installer, not 1"]
+    options = cast("Data", caches[0].get("with", {}))
+    problems: list[str] = []
+    if options.get("path") != CACHE_PATH:
+        problems.append(f"the docs cache path is {options.get('path')!r}, not {CACHE_PATH!r}")
+    if CACHE_KEY_FILE not in str(options.get("key", "")):
+        problems.append(f"the docs cache key does not contain {CACHE_KEY_FILE}")
+    if "restore-keys" in options:
+        problems.append("the docs cache has restore-keys, which could restore stale archives")
+    return problems
+
+
+def test_the_docs_job_caches_the_installer_downloads_before_the_installer() -> None:
+    assert _docs_cache_problems(WORKFLOW) == []
+
+
+def test_a_docs_job_without_the_cache_step_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    steps[:] = [step for step in steps if not _is_cache(step)]
+    assert _docs_cache_problems(workflow) == [
+        "the docs job has 0 actions/cache steps before the installer, not 1"
+    ]
+
+
+def test_a_docs_cache_step_after_the_installer_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    cache = next(step for step in steps if _is_cache(step))
+    steps.remove(cache)
+    steps.insert(next(i for i, step in enumerate(steps) if step.get("run") == INSTALLER) + 1, cache)
+    assert _docs_cache_problems(workflow) == [
+        "the docs job has 0 actions/cache steps before the installer, not 1"
+    ]
+
+
+def test_a_docs_cache_with_another_path_or_key_or_restore_keys_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    cache = next(step for step in steps if _is_cache(step))
+    cache["with"] = {"path": "downloads", "key": "docs-ci-tools", "restore-keys": "docs-"}
+    assert _docs_cache_problems(workflow) == [
+        f"the docs cache path is 'downloads', not {CACHE_PATH!r}",
+        f"the docs cache key does not contain {CACHE_KEY_FILE}",
+        "the docs cache has restore-keys, which could restore stale archives",
+    ]
+
+
 GENERATE = "uv run --no-project python -m scripts.docs.generate"
-DOCS_OWNED = ("docs/architecture/generated", "docs/api")
+DOCS_OWNED = tuple(path.removesuffix("/**") for path in owned_paths(REPO_ROOT))
 
 
 def _without_generate_step(workflow: Data) -> Data:
@@ -1210,7 +1392,7 @@ def test_a_docs_generate_in_a_job_outside_the_closure_is_refused() -> None:
 
 def test_a_docs_generate_still_listed_in_ci_only_is_refused() -> None:
     ci_only = {**CI_ONLY, GENERATE: "the docs generator"}
-    assert stack_ci_problems(STACK, WORKFLOW, ci_only, CI_FORMS) == [
+    assert stack_ci_problems(STACK, WORKFLOW, ci_only, CI_FORMS, UNGATED_JOBS, UNGATED_RUNS) == [
         f"docs.generate ({GENERATE}) is also in CI_ONLY"
     ]
 
@@ -1290,7 +1472,7 @@ def test_every_ci_only_entry_has_a_reason(command: str) -> None:
     assert CI_ONLY[command].strip()
 
 
-# --- the e2e aggregator, the judges and ci_covers -------------------------------------------------
+# --- the e2e aggregator, the judges and the CI-only e2e rule (GH-699) ---------------------------
 
 
 def _gate_messages(problems: list[str]) -> list[str]:
@@ -1364,111 +1546,43 @@ def test_a_ci_ok_need_with_no_judge_is_refused() -> None:
     assert "ci-ok needs 'deploy-preview', which scripts/ci_verdict.py does not judge" in problems
 
 
-def ci_covers_problems(stack: Data, workflow: Data) -> list[str]:
-    """What keeps `ci_covers.web-e2e` from naming a job that covers it."""
-    entry = cast("Data", stack.get("ci_covers", {})).get("web-e2e")
-    if entry is None:
-        return ["ci_covers has no web-e2e entry"]
+PLAYWRIGHT_MARKERS = ("playwright", "run e2e", "affected.py e2e")
+
+
+def playwright_problems(stack: Data) -> list[str]:
+    """Every local check or affected form whose command runs Playwright (GH-699)."""
     problems: list[str] = []
-    if "web-e2e" not in stack["checks"]:
-        problems.append("ci_covers.web-e2e is not in checks")
-    if entry.get("job") != E2E_GATE:
-        problems.append(f"ci_covers.web-e2e.job is {entry.get('job')!r}, not {E2E_GATE!r}")
-    if E2E_GATE not in _needs(workflow["jobs"]["ci-ok"]):
-        problems.append(f"{E2E_GATE!r} is not in ci-ok.needs")
-    problems.extend(_failed_regex_problems(str(entry.get("failed", ""))))
+    for section in ("checks", "affected_checks"):
+        for name, command in cast("Data", stack.get(section, {})).items():
+            if any(marker in str(command) for marker in PLAYWRIGHT_MARKERS):
+                problems.append(f"{section}.{name} runs Playwright: {command}")
     return problems
 
 
-SHOULD_MATCH = ("  \u2718  12 [mobile] \u203a sales.spec.ts:40:5 \u203a x", "  3 failed")
-SHOULD_NOT_MATCH = (
-    "  \u2713  217 [mobile] \u203a x (1.2s)",
-    "  217 passed (25.3m)",
-    "  1 flaky",
-)
+def test_no_local_check_runs_playwright() -> None:
+    assert playwright_problems(STACK) == []
+    assert "web-e2e" not in STACK["checks"]
+    assert "web-e2e" not in STACK["affected_checks"]
 
 
-# A group with an unbounded repeat inside it that is itself repeated: GH-453's refused shape.
-NESTED_REPEAT = re.compile(r"\([^()]*[+*][^()]*\)[+*{]")
-
-
-def _failed_regex_problems(pattern: str) -> list[str]:
-    if len(pattern) > 200:
-        return [f"ci_covers.web-e2e.failed is {len(pattern)} characters, over 200"]
-    if NESTED_REPEAT.search(pattern):
-        return ["ci_covers.web-e2e.failed has a nested unbounded repetition"]
-    try:
-        compiled = re.compile(pattern)
-    except re.error as error:
-        return [f"ci_covers.web-e2e.failed does not compile: {error}"]
-    problems = [
-        f"ci_covers.web-e2e.failed does not match {line!r}"
-        for line in SHOULD_MATCH
-        if compiled.search(line) is None
-    ]
-    problems.extend(
-        f"ci_covers.web-e2e.failed matches {line!r}"
-        for line in SHOULD_NOT_MATCH
-        if compiled.search(line) is not None
-    )
-    return problems
-
-
-def test_ci_covers_names_the_aggregator_and_its_regex_separates_failures() -> None:
-    assert ci_covers_problems(STACK, WORKFLOW) == []
-
-
-def test_ci_covers_is_the_last_key_of_stack_yaml() -> None:
-    assert list(STACK)[-1] == "ci_covers"
-    assert STACK["ci_covers"]["web-e2e"]["job"] == E2E_GATE
-
-
-def test_a_ci_covers_job_that_is_the_matrix_is_refused() -> None:
+def test_a_local_check_that_runs_playwright_is_refused() -> None:
     stack = copy.deepcopy(STACK)
-    stack["ci_covers"]["web-e2e"]["job"] = E2E_SHARD
-    assert ci_covers_problems(stack, WORKFLOW) == [
-        "ci_covers.web-e2e.job is 'e2e-shard', not 'e2e'"
+    stack["checks"]["web-e2e"] = "npm --prefix web run e2e"
+    affected = "uv run --no-project python scripts/affected.py e2e {base}"
+    stack["affected_checks"]["web-e2e"] = affected
+    stack["checks"]["browser"] = "npx playwright test"
+    assert playwright_problems(stack) == [
+        "checks.web-e2e runs Playwright: npm --prefix web run e2e",
+        "checks.browser runs Playwright: npx playwright test",
+        f"affected_checks.web-e2e runs Playwright: {affected}",
     ]
 
 
-def test_a_ci_covers_for_a_check_that_is_not_declared_is_refused() -> None:
-    stack = copy.deepcopy(STACK)
-    del stack["checks"]["web-e2e"]
-    assert "ci_covers.web-e2e is not in checks" in ci_covers_problems(stack, WORKFLOW)
-
-
-def test_a_ci_covers_job_outside_ci_ok_needs_is_refused() -> None:
-    workflow = _mutated()
-    workflow["jobs"]["ci-ok"]["needs"].remove(E2E_GATE)
-    assert "'e2e' is not in ci-ok.needs" in ci_covers_problems(STACK, workflow)
-
-
-def test_a_missing_ci_covers_is_refused() -> None:
-    stack = {key: value for key, value in copy.deepcopy(STACK).items() if key != "ci_covers"}
-    assert ci_covers_problems(stack, WORKFLOW) == ["ci_covers has no web-e2e entry"]
-
-
-def test_a_failed_regex_over_200_characters_or_not_compiling_is_refused() -> None:
-    assert _failed_regex_problems("x" * 201) == [
-        "ci_covers.web-e2e.failed is 201 characters, over 200"
-    ]
-    [problem] = _failed_regex_problems("(unclosed")
-    assert problem.startswith("ci_covers.web-e2e.failed does not compile: ")
-
-
-def test_a_failed_regex_that_misses_a_failure_or_matches_a_pass_is_refused() -> None:
-    assert "ci_covers.web-e2e.failed does not match '  3 failed'" in _failed_regex_problems(
-        "\u2718"
-    )
-    assert "ci_covers.web-e2e.failed matches '  1 flaky'" in _failed_regex_problems(
-        "\u2718|failed|flaky"
-    )
-
-
-def test_a_failed_regex_with_a_nested_unbounded_repetition_is_refused() -> None:
-    expected = ["ci_covers.web-e2e.failed has a nested unbounded repetition"]
-    assert _failed_regex_problems("(a+)+") == expected
-    assert _failed_regex_problems("(x*y)*b") == expected
+def test_e2e_has_no_local_cover_and_gates_through_ci_ok() -> None:
+    assert "ci_covers" not in STACK
+    assert E2E_GATE in _needs(WORKFLOW["jobs"]["ci-ok"])
+    assert E2E_RUN in CI_ONLY
+    assert E2E_RUN not in CI_FORMS.values()
 
 
 # --- the dispatch of master's workflow at a head's sha (GH-562) -----------------------------------
@@ -1628,38 +1742,33 @@ def test_a_root_checkout_before_the_guards_is_refused() -> None:
 
 
 def _dispatch_key_problems(stack: Data, workflow: Data) -> list[str]:
-    """`ci_dispatch` is the literal key of agentic-system (commit 0ca8e14c), before `ci_covers`,
-    and names a workflow file and a `workflow_dispatch` input that exist."""
+    """`ci_dispatch` is the literal key of agentic-system (commit 0ca8e14c), after `ci`, and
+    names a workflow file and a `workflow_dispatch` input that exist."""
     problems: list[str] = []
     if stack.get("ci_dispatch") != {"workflow": "ci.yml", "sha_input": "sha"}:
         problems.append("`ci_dispatch` is not workflow: ci.yml, sha_input: sha")
     keys = list(stack)
-    if "ci_dispatch" in keys and not keys.index("ci") < keys.index("ci_dispatch") < keys.index(
-        "ci_covers"
-    ):
-        problems.append("`ci_dispatch` is not between `ci` and `ci_covers`")
+    if "ci_dispatch" in keys and not keys.index("ci") < keys.index("ci_dispatch"):
+        problems.append("`ci_dispatch` is not after `ci`")
     inputs = cast("Data", _triggers(workflow).get("workflow_dispatch") or {}).get("inputs", {})
     if cast("Data", stack.get("ci_dispatch", {})).get("sha_input") not in inputs:
         problems.append("`ci_dispatch.sha_input` is not an input of `workflow_dispatch`")
     return problems
 
 
-def test_the_real_dispatch_key_is_the_literal_one_before_ci_covers() -> None:
+def test_the_real_dispatch_key_is_the_literal_one_after_ci() -> None:
     assert _dispatch_key_problems(STACK, WORKFLOW) == []
     assert (REPO_ROOT / ".github" / "workflows" / STACK["ci_dispatch"]["workflow"]).is_file()
 
 
-def test_a_dispatch_key_that_differs_or_sits_after_ci_covers_is_refused() -> None:
+def test_a_dispatch_key_that_differs_or_sits_before_ci_is_refused() -> None:
     stack = copy.deepcopy(STACK)
     stack["ci_dispatch"]["workflow"] = "other.yml"
     assert "`ci_dispatch` is not workflow: ci.yml, sha_input: sha" in _dispatch_key_problems(
         stack, WORKFLOW
     )
-    stack = {key: value for key, value in STACK.items() if key != "ci_dispatch"}
-    stack["ci_dispatch"] = STACK["ci_dispatch"]
-    assert "`ci_dispatch` is not between `ci` and `ci_covers`" in _dispatch_key_problems(
-        stack, WORKFLOW
-    )
+    stack = {"ci_dispatch": STACK["ci_dispatch"], **STACK}
+    assert "`ci_dispatch` is not after `ci`" in _dispatch_key_problems(stack, WORKFLOW)
     stack = copy.deepcopy(STACK)
     stack["ci_dispatch"]["sha_input"] = "commit"
     assert "`ci_dispatch.sha_input` is not an input of `workflow_dispatch`" in (
@@ -1743,10 +1852,9 @@ def test_a_stack_check_or_addopts_with_reruns_is_refused() -> None:
 
 NO_TESTS_GUARDS = {
     "pytest": "exit 5",
-    "playwright": "--pass-with-no-tests",
     "vitest": "--passWithNoTests",
 }
-RERUN_RUNNERS = {"web-e2e": "playwright", "web-tests": "vitest"}
+RERUN_RUNNERS = {"web-tests": "vitest"}
 FORBIDDEN_RERUN_FLAGS = (
     "--lf",
     "--last-failed",
@@ -1803,14 +1911,14 @@ def test_a_rerun_form_with_a_cache_or_a_retry_flag_or_no_guard_is_refused() -> N
     stack = copy.deepcopy(STACK)
     stack["rerun_checks"] = {
         "tests": {"command": "uv run pytest --lf --reruns 1", "test_id": "(x)"},
-        "web-e2e": {"command": "npx playwright test --last-failed", "test_id": "(x)"},
+        "web-tests": {"command": "npm --prefix web test -- --sw", "test_id": "(x)"},
     }
     assert _rerun_form_problems(stack) == [
         "rerun_checks 'tests' uses --lf; no runner cache and no retry flag",
         "rerun_checks 'tests' uses --reruns; no runner cache and no retry flag",
         "rerun_checks 'tests' has no no-tests guard (exit 5)",
-        "rerun_checks 'web-e2e' uses --last-failed; no runner cache and no retry flag",
-        "rerun_checks 'web-e2e' has no no-tests guard (--pass-with-no-tests)",
+        "rerun_checks 'web-tests' uses --sw; no runner cache and no retry flag",
+        "rerun_checks 'web-tests' has no no-tests guard (--passWithNoTests)",
     ]
 
 
@@ -1834,3 +1942,592 @@ def test_a_rerun_form_with_another_pytest_cache_selector_is_refused() -> None:
         "rerun_checks 'tests' uses --ff; no runner cache and no retry flag",
         "rerun_checks 'tests' uses --stepwise; no runner cache and no retry flag",
     ]
+
+
+API_BREAKS = "uv run --no-project python -m scripts.docs.api_breaks"
+
+
+def _generate_before_api_breaks_problems(workflow: Data) -> list[str]:
+    """What keeps `api_breaks` from judging a workspace spec that `generate` has not written."""
+    runs = [str(step.get("run", "")).strip() for step in _steps(workflow["jobs"]["docs"])]
+    generate = [i for i, run in enumerate(runs) if run == GENERATE]
+    breaks = [i for i, run in enumerate(runs) if run == API_BREAKS]
+    if len(generate) != 1 or len(breaks) != 1:
+        return [f"the docs job has {len(generate)} generate and {len(breaks)} api_breaks steps"]
+    if generate[0] > breaks[0]:
+        return ["the docs job runs api_breaks before generate"]
+    return []
+
+
+def test_the_docs_job_generates_the_head_spec_before_api_breaks_reads_it() -> None:
+    assert _generate_before_api_breaks_problems(WORKFLOW) == []
+
+
+def test_a_docs_job_running_api_breaks_before_generate_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    breaks = next(step for step in steps if step.get("run") == API_BREAKS)
+    steps.remove(breaks)
+    steps.insert(next(i for i, step in enumerate(steps) if step.get("run") == GENERATE), breaks)
+    assert _generate_before_api_breaks_problems(workflow) == [
+        "the docs job runs api_breaks before generate"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("'a' == 'a'", True),
+        ("'a' == 'b'", False),
+        ("'a' != 'b'", True),
+        ("'a' != 'a'", False),
+        ("github.ref != 'r' || github.ref == 'r'", True),
+        ("github.event_name != 'push' && github.ref == 'r'", False),
+    ],
+)
+def test_the_evaluator_compares_with_equal_and_not_equal(text: str, expected: bool) -> None:
+    assert _Expression(text, _context("push", "r")).evaluate() is expected
+
+
+@pytest.mark.parametrize(
+    ("status", "always", "success", "failure"),
+    [("success", True, True, False), ("failure", True, False, True)],
+)
+def test_the_evaluator_reads_the_job_status_for_always_success_and_failure(
+    status: str, always: bool, success: bool, failure: bool
+) -> None:
+    context = _context("push", "r", status=status)
+    assert _Expression("always()", context).evaluate() is always
+    assert _Expression("success()", context).evaluate() is success
+    assert _Expression("failure()", context).evaluate() is failure
+
+
+@pytest.mark.parametrize("status", ["success", "failure"])
+@pytest.mark.parametrize("event", ["push", "pull_request"])
+def test_a_call_may_lead_or_trail_a_conjunction(status: str, event: str) -> None:
+    context = _context(event, "r", status=status)
+    expected = status == "failure" and event == "push"
+    leading = "failure() && github.event_name == 'push'"
+    trailing = "github.event_name == 'push' && failure()"
+    assert _Expression(leading, context).evaluate() is expected
+    assert _Expression(trailing, context).evaluate() is expected
+
+
+def test_the_evaluator_refuses_a_call_with_the_wrong_arguments() -> None:
+    context = _context("push", "r")
+    for text in ("always(github.ref)", "startsWith(github.ref)", "format()", "length(github.ref)"):
+        with pytest.raises(ValueError):
+            _Expression(text, context).evaluate()
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "needs.changes.outputs.pytest == 'true'",
+        "steps.combine.outcome != 'success'",
+        "always()",
+        "github.event.pull_request.head.repo.full_name == github.repository",
+        "startsWith(github.ref, 'refs/heads/')",
+        "failure() && github.event_name == 'push'",
+    ],
+)
+def test_parse_mode_accepts_what_the_workflow_may_say(text: str) -> None:
+    _Expression(text, None).evaluate()
+
+
+def test_parse_mode_resolves_names_to_empty_and_calls_to_false() -> None:
+    assert _Expression("github.ref", None).evaluate() == ""
+    assert _Expression("always()", None).evaluate() is False
+    assert _Expression("contains(github.ref, 'x')", None).evaluate() is False
+
+
+@pytest.mark.parametrize("text", ["length(x)", "!x", "a == 'b'!", "(a == 'b'", "a == 'b')", "a b"])
+def test_parse_mode_refuses_what_github_would_reject(text: str) -> None:
+    with pytest.raises(ValueError):
+        _Expression(text, None).evaluate()
+
+
+# --- the ungated jobs: the registry's rules, one mutation each (GH-697) --------------------------
+
+UNGATED_ID = next(iter(UNGATED_JOBS))
+UNGATED_RUN = next(iter(UNGATED_RUNS))
+
+
+def _ungated_problems_of(
+    workflow: Data,
+    ungated_jobs: dict[str, str] | None = None,
+    ungated_runs: dict[str, str] | None = None,
+) -> list[str]:
+    return stack_ci_problems(
+        STACK,
+        workflow,
+        CI_ONLY,
+        CI_FORMS,
+        UNGATED_JOBS if ungated_jobs is None else ungated_jobs,
+        UNGATED_RUNS if ungated_runs is None else ungated_runs,
+    )
+
+
+def test_the_registries_hold_the_ungated_job_and_the_one_command_it_runs() -> None:
+    assert UNGATED_RUNS.keys() <= set(_runs(WORKFLOW)[UNGATED_ID])
+    assert all(reason.strip() for reason in UNGATED_JOBS.values())
+    assert UNGATED_RUNS.keys().isdisjoint(CI_ONLY)
+    assert UNGATED_ID not in _closure(WORKFLOW, STACK["ci"])
+
+
+def test_an_ungated_id_that_is_not_a_job_is_refused() -> None:
+    problems = _ungated_problems_of(WORKFLOW, {**UNGATED_JOBS, "ghost": "no such job"})
+    assert problems == ["UNGATED_JOBS names 'ghost', which is not a job of ci.yml"]
+
+
+def test_an_ungated_job_without_a_reason_is_refused() -> None:
+    problems = _ungated_problems_of(WORKFLOW, {UNGATED_ID: "  "})
+    assert problems == [f"UNGATED_JOBS gives {UNGATED_ID!r} an empty reason"]
+
+
+def test_an_ungated_job_inside_the_closure_of_ci_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["ci-ok"]["needs"].append(UNGATED_ID)
+    problems = _ungated_problems_of(workflow)
+    assert f"ungated job {UNGATED_ID!r} is in the needs closure of ci:" in problems
+
+
+def test_a_job_that_needs_an_ungated_job_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["ci-ok"]["needs"].append(UNGATED_ID)
+    assert f"job 'ci-ok' needs the ungated job {UNGATED_ID!r}" in _ungated_problems_of(workflow)
+
+
+def test_a_command_in_an_ungated_job_outside_the_registry_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"][UNGATED_ID]["steps"].append({"run": "make everything-green"})
+    assert _ungated_problems_of(workflow) == [
+        f"ungated job {UNGATED_ID!r} runs a command outside UNGATED_RUNS and setup: "
+        "make everything-green"
+    ]
+
+
+def test_a_setup_command_in_an_ungated_job_is_accepted() -> None:
+    workflow = _mutated()
+    workflow["jobs"][UNGATED_ID]["steps"].append({"run": next(iter(STACK["setup"].values()))})
+    assert _ungated_problems_of(workflow) == []
+
+
+def test_an_ungated_run_that_no_ungated_job_runs_is_refused() -> None:
+    problems = _ungated_problems_of(WORKFLOW, ungated_runs={**UNGATED_RUNS, "bash nobody.sh": "x"})
+    assert problems == ["UNGATED_RUNS command (bash nobody.sh) is run by no ungated job"]
+
+
+def test_an_ungated_run_never_joins_the_commands_a_gated_job_may_run() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["checks"]["steps"].append({"run": UNGATED_RUN})
+    assert _ungated_problems_of(workflow) == [f"job 'checks' runs an unknown step: {UNGATED_RUN}"]
+
+
+def test_a_job_with_contents_write_outside_the_registry_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["docs"]["permissions"] = {"contents": "write"}
+    assert _ungated_problems_of(workflow) == [
+        "job 'docs' holds contents: write and is not in UNGATED_JOBS"
+    ]
+
+
+def test_an_ungated_job_dropped_from_the_registry_is_refused() -> None:
+    problems = _ungated_problems_of(WORKFLOW, {}, {})
+    assert f"job {UNGATED_ID!r} is not in the needs closure of ci:" in problems
+    assert f"job {UNGATED_ID!r} holds contents: write and is not in UNGATED_JOBS" in problems
+
+
+# --- what a master push, an agentic-ci push, a pull request and a dispatch each run -----------
+
+MASTER_CASE = "a master push"
+CASES = {
+    MASTER_CASE: ("push", "refs/heads/master", ""),
+    "an agentic-ci push": ("push", "refs/heads/agentic-ci/x", ""),
+    "a pull request": ("pull_request", "refs/pull/1/merge", ""),
+    "a dispatch on master": ("workflow_dispatch", "refs/heads/master", DISPATCH_SHA),
+}
+
+
+def _holds(condition: object, case: str, status: str = "success") -> bool:
+    """Whether a step or job with this `if:` (none means always) runs in `case`."""
+    event, ref, sha = CASES[case]
+    if condition is None:
+        return True
+    return _Expression(str(condition), _context(event, ref, sha, status)).evaluate() is True
+
+
+def _docs_steps(workflow: Data, run: str) -> list[Data]:
+    return [
+        step for step in _steps(workflow["jobs"]["docs"]) if str(step.get("run", "")).strip() == run
+    ]
+
+
+def _upload_steps(workflow: Data) -> list[Data]:
+    return [
+        step
+        for step in _steps(workflow["jobs"]["docs"])
+        if str(step.get("uses", "")).startswith("actions/upload-artifact@")
+        and cast("Data", step.get("with", {})).get("name") == OWNED_DOCS_ARTIFACT
+    ]
+
+
+def _verb(runs: bool) -> str:
+    return "must run" if runs else "must be skipped"
+
+
+def _master_push_problems(workflow: Data, ungated_jobs: dict[str, str] = UNGATED_JOBS) -> list[str]:
+    """Which events run the docs steps that pack, upload and skip, and the ungated jobs."""
+    problems: list[str] = []
+    jobs: Data = workflow["jobs"]
+    docs = _steps(jobs["docs"])
+    found = {
+        "pack": _docs_steps(workflow, PACK_RUN),
+        "upload": _upload_steps(workflow),
+        "failure": _docs_steps(workflow, FAILED_DOCS_RUN),
+        "generate": _docs_steps(workflow, GENERATE),
+    }
+    problems.extend(
+        f"docs has {len(steps)} {label} steps, not 1"
+        for label, steps in found.items()
+        if len(steps) != 1
+    )
+    if problems:
+        return problems
+    pack, upload, failed, generate = (steps[0] for steps in found.values())
+
+    for label, step, only_master in (
+        ("pack", pack, True),
+        ("upload", upload, True),
+    ):
+        for case in CASES:
+            runs = (case == MASTER_CASE) is only_master
+            if _holds(step.get("if"), case) is not runs:
+                problems.append(f"the docs {label} step {_verb(runs)} for {case}")
+    for case in CASES:
+        for status in ("success", "failure"):
+            runs = case == MASTER_CASE and status == "failure"
+            if _holds(failed.get("if"), case, status) is not runs:
+                problems.append(
+                    f"the docs failure step {_verb(runs)} for {case} when the job is {status}"
+                )
+    if not docs.index(generate) < docs.index(pack) < docs.index(upload):
+        problems.append("the docs steps are not generate, then pack, then upload")
+    options = cast("Data", upload.get("with", {}))
+    if options.get("if-no-files-found") != "error":
+        problems.append("the upload does not set if-no-files-found: error")
+    if options.get("retention-days") != 1:
+        problems.append("the upload does not set retention-days: 1")
+
+    for job_id in ungated_jobs:
+        job = cast("Data | None", jobs.get(job_id))
+        if job is None:
+            continue
+        problems.extend(
+            f"the ungated job {job_id!r} {_verb(case == MASTER_CASE)} for {case}"
+            for case in CASES
+            if _holds(job.get("if"), case) is not (case == MASTER_CASE)
+        )
+        if _needs(job) != ["docs"]:
+            problems.append(f"the ungated job {job_id!r} needs {_needs(job)}, not ['docs']")
+        if job_id in _needs(jobs["ci-ok"]):
+            problems.append(f"ci-ok needs the ungated job {job_id!r}")
+        problems.extend(
+            f"a checkout of the ungated job {job_id!r} does not set fetch-depth: 0"
+            for checkout in _checkouts(job)
+            if cast("Data", checkout.get("with", {})).get("fetch-depth") != 0
+        )
+    return problems
+
+
+def test_the_real_workflow_runs_the_docs_steps_and_the_ungated_job_as_the_task_wrote() -> None:
+    assert _master_push_problems(WORKFLOW) == []
+    assert _docs_steps(WORKFLOW, PACK_RUN)[0]["if"] == MASTER_PUSH
+    assert _upload_steps(WORKFLOW)[0]["if"] == MASTER_PUSH
+    assert _docs_steps(WORKFLOW, FAILED_DOCS_RUN)[0]["if"] == f"failure() && {MASTER_PUSH}"
+    assert WORKFLOW["jobs"][UNGATED_ID]["if"] == MASTER_PUSH
+
+
+def test_the_pack_and_upload_steps_and_the_ungated_job_run_only_for_a_master_push() -> None:
+    conditions = [
+        _docs_steps(WORKFLOW, PACK_RUN)[0]["if"],
+        _upload_steps(WORKFLOW)[0]["if"],
+        WORKFLOW["jobs"][UNGATED_ID]["if"],
+    ]
+    for condition in conditions:
+        assert [case for case in CASES if _holds(condition, case)] == [MASTER_CASE]
+
+
+def test_the_failure_step_runs_only_when_a_master_push_failed() -> None:
+    condition = _docs_steps(WORKFLOW, FAILED_DOCS_RUN)[0]["if"]
+    assert [
+        (case, status)
+        for case in CASES
+        for status in ("success", "failure")
+        if _holds(condition, case, status)
+    ] == [(MASTER_CASE, "failure")]
+
+
+def test_a_failure_step_that_does_not_read_failure_is_refused() -> None:
+    workflow = _mutated()
+    _docs_steps(workflow, FAILED_DOCS_RUN)[0]["if"] = MASTER_PUSH
+    assert _master_push_problems(workflow) == [
+        f"the docs failure step must be skipped for {MASTER_CASE} when the job is success"
+    ]
+
+
+def test_a_failure_step_without_the_master_conjunct_is_refused() -> None:
+    workflow = _mutated()
+    _docs_steps(workflow, FAILED_DOCS_RUN)[0]["if"] = "failure()"
+    assert _master_push_problems(workflow) == [
+        f"the docs failure step must be skipped for {case} when the job is failure"
+        for case in CASES
+        if case != MASTER_CASE
+    ]
+
+
+def test_a_pack_or_upload_step_that_runs_on_every_event_is_refused() -> None:
+    workflow = _mutated()
+    del _docs_steps(workflow, PACK_RUN)[0]["if"]
+    del _upload_steps(workflow)[0]["if"]
+    problems = _master_push_problems(workflow)
+    assert [p for p in problems if "pack" in p] == [
+        f"the docs pack step must be skipped for {case}" for case in CASES if case != MASTER_CASE
+    ]
+    assert [p for p in problems if "upload" in p] == [
+        f"the docs upload step must be skipped for {case}" for case in CASES if case != MASTER_CASE
+    ]
+
+
+def test_an_upload_that_only_warns_when_files_are_missing_is_refused() -> None:
+    workflow = _mutated()
+    _upload_steps(workflow)[0]["with"]["if-no-files-found"] = "warn"
+    assert _master_push_problems(workflow) == ["the upload does not set if-no-files-found: error"]
+
+
+def test_an_upload_that_keeps_the_artifact_longer_is_refused() -> None:
+    workflow = _mutated()
+    _upload_steps(workflow)[0]["with"]["retention-days"] = 14
+    assert _master_push_problems(workflow) == ["the upload does not set retention-days: 1"]
+
+
+def test_a_pack_before_generate_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    pack = _docs_steps(workflow, PACK_RUN)[0]
+    steps.remove(pack)
+    steps.insert(0, pack)
+    assert _master_push_problems(workflow) == [
+        "the docs steps are not generate, then pack, then upload"
+    ]
+
+
+def test_a_missing_docs_step_is_reported_by_name() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["docs"]["steps"].remove(_upload_steps(workflow)[0])
+    assert _master_push_problems(workflow) == ["docs has 0 upload steps, not 1"]
+
+
+def test_an_ungated_job_that_runs_on_another_event_is_refused() -> None:
+    workflow = _mutated()
+    del workflow["jobs"][UNGATED_ID]["if"]
+    assert _master_push_problems(workflow) == [
+        f"the ungated job {UNGATED_ID!r} must be skipped for {case}"
+        for case in CASES
+        if case != MASTER_CASE
+    ]
+
+
+def test_an_ungated_job_that_needs_more_than_docs_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"][UNGATED_ID]["needs"] = ["docs", "changes"]
+    assert _master_push_problems(workflow) == [
+        f"the ungated job {UNGATED_ID!r} needs ['docs', 'changes'], not ['docs']"
+    ]
+
+
+def test_an_ungated_job_ci_ok_needs_is_refused_by_the_master_push_pins() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["ci-ok"]["needs"].append(UNGATED_ID)
+    assert f"ci-ok needs the ungated job {UNGATED_ID!r}" in _master_push_problems(workflow)
+
+
+def test_an_ungated_checkout_without_full_depth_is_refused() -> None:
+    workflow = _mutated()
+    del _checkouts(workflow["jobs"][UNGATED_ID])[0]["with"]["fetch-depth"]
+    assert _master_push_problems(workflow) == [
+        f"a checkout of the ungated job {UNGATED_ID!r} does not set fetch-depth: 0"
+    ]
+
+
+def test_an_ungated_checkout_with_a_ref_is_refused() -> None:
+    workflow = _mutated()
+    _checkouts(workflow["jobs"][UNGATED_ID])[0]["with"]["ref"] = SHA_REF
+    assert f"the master checkout of {UNGATED_ID!r} carries a ref ({SHA_REF})" in _problems(workflow)
+
+
+# --- the `if:` rules and the well-formedness of the whole file --------------------------------
+
+
+def _conditions(workflow: Data) -> list[tuple[str, str]]:
+    """Every job-level and step-level `if:`, with where it is."""
+    found: list[tuple[str, str]] = []
+    for job_id, job in cast("Data", workflow["jobs"]).items():
+        if "if" in job:
+            found.append((f"job {job_id!r}", str(job["if"])))
+        found.extend(
+            (f"step {index} of {job_id!r}", str(step["if"]))
+            for index, step in enumerate(_steps(job))
+            if "if" in step
+        )
+    return found
+
+
+def _if_prefix_problems(workflow: Data) -> list[str]:
+    return [
+        f"{where} `if:` starts with {prefix!r}: {text}"
+        for where, text in _conditions(workflow)
+        for prefix in ("!", "${{")
+        if text.strip().startswith(prefix)
+    ]
+
+
+USES = re.compile(r"\w[\w.-]*/\w[\w.-]*@[\w./-]+")
+
+
+def _wellformed_problems(workflow: Data) -> list[str]:
+    """What GitHub would reject, or never run, in a file the Dispatch cannot run before merge."""
+    problems: list[str] = []
+    jobs: Data = workflow["jobs"]
+    for job_id, job in jobs.items():
+        problems.extend(
+            f"job {job_id!r} needs {need!r}, which is not a job"
+            for need in _needs(job)
+            if need not in jobs
+        )
+        problems.extend(
+            f"job {job_id!r} uses {step['uses']!r}, which is not owner/name@ref"
+            for step in _steps(job)
+            if "uses" in step and not USES.fullmatch(str(step["uses"]))
+        )
+    for where, text in _conditions(workflow):
+        try:
+            _Expression(text, None).evaluate()
+        except ValueError as error:
+            problems.append(f"{where} `if:` does not parse: {error}")
+    return problems
+
+
+def test_no_if_starts_with_a_negation_or_an_expression_wrapper() -> None:
+    assert _conditions(WORKFLOW)
+    assert _if_prefix_problems(WORKFLOW) == []
+
+
+@pytest.mark.parametrize("prefix", ["!", "${{ "])
+def test_an_if_starting_with_a_negation_or_an_expression_wrapper_is_refused(prefix: str) -> None:
+    workflow = _mutated()
+    workflow["jobs"]["docs"]["steps"][-1]["if"] = f"{prefix}failure()"
+    assert _if_prefix_problems(workflow) == [
+        f"step {len(workflow['jobs']['docs']['steps']) - 1} of 'docs' `if:` starts with "
+        f"{prefix.strip()!r}: {prefix}failure()"
+    ]
+
+
+def test_the_workflow_is_well_formed() -> None:
+    assert _wellformed_problems(WORKFLOW) == []
+
+
+def test_a_need_that_is_not_a_job_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["ci-ok"]["needs"].append("ghost")
+    assert _wellformed_problems(workflow) == ["job 'ci-ok' needs 'ghost', which is not a job"]
+
+
+def test_an_if_the_evaluator_cannot_parse_is_refused() -> None:
+    workflow = _mutated()
+    workflow["jobs"]["docs"]["steps"][-1]["if"] = "length(github.ref) > 1"
+    problems = _wellformed_problems(workflow)
+    assert len(problems) == 1
+    assert problems[0].startswith(
+        f"step {len(workflow['jobs']['docs']['steps']) - 1} of 'docs' `if:` does not parse"
+    )
+
+
+@pytest.mark.parametrize("uses", ["actions/checkout", "checkout@v7", "./local@v1", "a/b@"])
+def test_a_uses_that_is_not_owner_name_at_ref_is_refused(uses: str) -> None:
+    workflow = _mutated()
+    workflow["jobs"]["ci-ok"]["steps"][0]["uses"] = uses
+    assert _wellformed_problems(workflow) == [
+        f"job 'ci-ok' uses {uses!r}, which is not owner/name@ref"
+    ]
+
+
+OWNED_GUARD = "uv run --no-project python -m scripts.docs.owned_guard"
+
+
+def _docs_guard_problems(workflow: Data) -> list[str]:
+    """What keeps the `docs` job from warning about generated output a branch committed (GH-708)."""
+    job = cast("Data", workflow["jobs"]["docs"])
+    steps = _steps(job)
+    guard = [i for i, step in enumerate(steps) if str(step.get("run", "")).strip() == OWNED_GUARD]
+    generate = [i for i, step in enumerate(steps) if str(step.get("run", "")).strip() == GENERATE]
+    if len(guard) != 1:
+        return [f"the docs job has {len(guard)} owned-path guard steps, not 1"]
+    problems: list[str] = []
+    if len(generate) != 1 or guard[0] < generate[0]:
+        problems.append("the docs job does not run the owned-path guard after generate")
+    if "continue-on-error" in steps[guard[0]] or "continue-on-error" in job:
+        problems.append("the owned-path guard or the docs job has continue-on-error")
+    if "if" in steps[guard[0]]:
+        problems.append("the owned-path guard step has an if:")
+    checkout = [step for step in steps if str(step.get("uses", "")).startswith("actions/checkout@")]
+    depth = cast("Data", checkout[0].get("with", {})).get("fetch-depth") if checkout else None
+    if depth != 0:
+        problems.append(f"the docs checkout has fetch-depth {depth!r}, not 0")
+    return problems
+
+
+def test_the_docs_job_runs_the_owned_path_guard_after_generate() -> None:
+    assert _docs_guard_problems(WORKFLOW) == []
+
+
+def test_a_docs_job_without_the_owned_path_guard_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    steps[:] = [step for step in steps if step.get("run") != OWNED_GUARD]
+    assert _docs_guard_problems(workflow) == ["the docs job has 0 owned-path guard steps, not 1"]
+
+
+def test_an_owned_path_guard_before_generate_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    guard = next(step for step in steps if step.get("run") == OWNED_GUARD)
+    steps.remove(guard)
+    steps.insert(next(i for i, step in enumerate(steps) if step.get("run") == GENERATE), guard)
+    assert _docs_guard_problems(workflow) == [
+        "the docs job does not run the owned-path guard after generate"
+    ]
+
+
+def test_an_owned_path_guard_that_may_fail_or_skip_is_refused() -> None:
+    workflow = _mutated()
+    steps = workflow["jobs"]["docs"]["steps"]
+    guard = next(step for step in steps if step.get("run") == OWNED_GUARD)
+    guard["continue-on-error"] = True
+    guard["if"] = "github.event_name == 'pull_request'"
+    workflow["jobs"]["docs"]["continue-on-error"] = True
+    assert _docs_guard_problems(workflow) == [
+        "the owned-path guard or the docs job has continue-on-error",
+        "the owned-path guard step has an if:",
+    ]
+
+
+def test_a_shallow_docs_checkout_is_refused() -> None:
+    workflow = _mutated()
+    checkout = workflow["jobs"]["docs"]["steps"][0]
+    del checkout["with"]["fetch-depth"]
+    assert _docs_guard_problems(workflow) == ["the docs checkout has fetch-depth None, not 0"]
+
+
+def test_the_docs_check_runs_in_validate_mode() -> None:
+    assert STACK["docs"]["mode"] == "validate"

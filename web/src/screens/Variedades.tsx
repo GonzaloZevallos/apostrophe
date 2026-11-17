@@ -12,7 +12,7 @@
  * only by `summaryLine`. A row links to a variety's page by its id alone, never a business id.
  *
  * "Mandar catálogo" is disabled, with its reason in words, only while `GET /first-run` says the
- * checklist shows and nothing qualifies (`navigation.md`, "First-run checklist"); the server
+ * checklist shows and nothing qualifies (`navigation.md`); the server
  * decides, the front never counts what the catalog could send. While that read is pending or
  * has failed it is enabled, like in every other state.
  */
@@ -35,9 +35,11 @@ import Loading from '../components/Loading'
 import MarcaEstado from '../components/MarcaEstado'
 import Notice from '../components/Notice'
 import PaneRowLink from '../components/PaneRowLink'
+import SettingsAvatar from '../components/SettingsAvatar'
 import SinConexion from '../components/SinConexion'
 import { readFeedback } from '../components/feedback'
-import { formatGrams, formatMoney } from '../format/money'
+import { formatGrams } from '../format/money'
+import { useMoney } from '../format/moneyContext'
 import {
   ARCHIVED_VARIETIES,
   CATALOG,
@@ -56,6 +58,7 @@ import { varietiesByName } from './varieties/varietiesByName'
 import { CATALOG_DISABLED_REASON, EMPTY_DETAIL, EMPTY_TITLE, VARIETIES_TEXT } from '../copy/varieties'
 import { COMMON_TEXT } from '../copy/common'
 import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
+import ContentArea from '../components/ContentArea'
 
 const CATALOG_REASON_ID = 'mandar-catalogo-motivo'
 
@@ -72,6 +75,13 @@ interface PriceEntry {
   bulk_price: number | null
   bulk_minimum: number | null
   vip_price: number | null
+  /** The price each customer type has in this entry; only on the product's current price. */
+  type_prices?: TypePrice[]
+}
+
+export interface TypePrice {
+  customer_type_id: number
+  price: number
 }
 
 export interface Variety {
@@ -116,9 +126,12 @@ export default function Variedades() {
   const summary = ready ? summaryLine(rows.map(({ row }) => row.status)) : null
 
   return (
-    <main className="pantalla variedades">
+    <ContentArea as="main" className="pantalla variedades">
       <div className="cuerpo">
-        <h1 className="encabezado__titulo">{COMMON_TEXT.varieties}</h1>
+        <div className="cabecera-fila cabecera-fila--envoltura">
+          <h1 className="encabezado__titulo">{COMMON_TEXT.varieties}</h1>
+          <SettingsAvatar />
+        </div>
         {summary !== null && <p className="pie variedades__resumen">{summary}</p>}
         <div className="variedades__acciones">
           {catalogDisabled ? (
@@ -175,7 +188,7 @@ export default function Variedades() {
           </InAppLink>
         )}
       </div>
-    </main>
+    </ContentArea>
   )
 }
 
@@ -191,6 +204,7 @@ export function VarietyRows({
   today: string
   computer: boolean
 }) {
+  const money = useMoney()
   return (
     <div className="lista-variedades">
       {rows.map(({ variety, row }) => (
@@ -211,7 +225,7 @@ export function VarietyRows({
             <span className={variety.current_price === null ? 'variedad-fila__precio' : 'variedad-fila__precio cifra-s'}>
               {variety.current_price === null
                 ? NO_PRICE_TODAY
-                : COMMON_TEXT.pricePerGram(formatMoney(variety.current_price.list_price))}
+                : COMMON_TEXT.pricePerGram(money.money(variety.current_price.list_price))}
             </span>
           </span>
         </PaneRowLink>

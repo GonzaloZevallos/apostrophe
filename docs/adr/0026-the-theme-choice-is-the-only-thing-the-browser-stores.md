@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-05
+summary: "la elección de tema es lo único que guarda el navegador"
 ---
 
 # The theme choice is the only thing the browser stores

@@ -32,12 +32,15 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
+import { tooManyDecimalsMessage } from '../../api/amountRefusal'
 import { ApiError, NetworkError, UNKNOWN_CODE, get, post } from '../../api/client'
 import type { Customer } from '../../api/customers'
+import { customerTypesQueryOptions } from '../../api/customerTypes'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
 import type { PricingSettings as ApiPricingSettings } from '../../api/pricingSettings'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
+import type { PaymentMethod } from '../../api/payments'
 import Boton from '../../components/Boton'
 import { SALE, SALES, pathTo } from '../../routes'
 import { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
@@ -53,11 +56,15 @@ import { useViewport } from '../../shell/useViewport'
 import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { useVisualViewport } from '../../components/useVisualViewport'
 import { formatDateLong, formatDateShort, maxSaleDate } from '../../format/dates'
-import { formatGrams, formatMoney } from '../../format/money'
-import { parseGrams, parseMoney } from '../../format/parse'
+import { formatGrams, type MoneyFormat } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
+import MoneyInput from '../../components/MoneyInput'
+import { parseGrams, parseMoneyInput } from '../../format/parse'
 import {
   type LineValidation,
+  type PayState,
   type PaymentChoice,
+  paymentChoiceOf,
   type PriceQuote,
   type PricingSettings,
   fromHundredths,
@@ -67,18 +74,22 @@ import {
   toHundredths,
   validateSale,
 } from '../../sales/pricing'
+import { paymentMethodName } from '../../sales/paymentMethods'
 import { OWING_HINT, SALES_TEXT } from '../../copy/sales'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
 import NuevaVentaLinea, { type LinePreview, type LineState } from './NuevaVentaLinea'
+import SaleExpenseSheet, { ExpenseRow } from './SaleExpenseSheet'
+import { productCount } from './saleLineCount'
+import { useLeaveQuestion } from './leaveQuestion'
 import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
+import ContentArea from '../../components/ContentArea'
 
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 export const NO_LINES_MESSAGE = SALES_TEXT.addAtLeastOne
 export { OWING_HINT }
 export const PAYMENT_REQUIRED_MESSAGE = SALES_TEXT.pickHowPaid
-export const SPECIAL_PRICE_INVALID_MESSAGE = SALES_TEXT.specialPriceAboveZero
 export const LINE_GRAMS_INVALID = SALES_TEXT.enterGrams
 export const LINE_VARIETY_MISSING = COMMON_TEXT.pickAVariety
 
@@ -86,6 +97,7 @@ function emptyLine(): LineState {
   return {
     key: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
     varietyId: '',
+    varietyName: '',
     grams: '',
     gift: false,
     specialPrice: '',
@@ -96,27 +108,34 @@ function isBlank(line: LineState): boolean {
   return line.varietyId === '' && line.grams.trim() === '' && !line.gift && line.specialPrice.trim() === ''
 }
 
-function quoteOf(variety: Variety): PriceQuote | null {
+/** The price the Customer's type has in the entry, from the current price's `type_prices`; `null`
+ * for a Customer with no type or a type with no price in it. */
+function typePriceOf(variety: Variety, typeId: number | null): number | null {
+  if (typeId === null) return null
+  const found = variety.current_price?.type_prices?.find((price) => price.customer_type_id === typeId)
+  return found === undefined ? null : found.price
+}
+
+function quoteOf(variety: Variety, typeId: number | null): PriceQuote | null {
   const price = variety.current_price
   if (price === null) return null
   const bulk =
     price.bulk_price !== null && price.bulk_minimum !== null
       ? { price: price.bulk_price, minimumHundredths: hundredthsOfApiGrams(price.bulk_minimum) }
       : null
-  return { listPrice: price.list_price, bulk, vipPrice: price.vip_price }
+  return { listPrice: price.list_price, bulk, vipPrice: typePriceOf(variety, typeId) }
 }
 
 /** Both rules off: what prices a line while the switches have not come, or could not be read.
  * A rule that is off never shows, so the safe side is no rule (`pricing-settings.md`). */
 const NO_RULES: PricingSettings = { bulk: false, vip: false }
 
-/** Whole pesos, zero or more — unlike `parseMoney` (money.ts), which rejects zero:
- * shipping charged is `$0` by default and that is a valid value to save with. */
-function parseShipping(input: string): number | null {
-  const trimmed = input.trim()
-  if (!/^\d{1,3}(\.\d{3})+$|^\d+$/.test(trimmed)) return null
-  const value = Number(trimmed.replace(/\./g, ''))
-  return Number.isSafeInteger(value) && value >= 0 ? value : null
+/** Shipping charged: zero or more, unlike `parseMoneyInput`, which rejects zero — `0` is its default
+ * and a valid value to save with. Anything else goes through `parseMoneyInput`. */
+function parseShipping(input: string, format: MoneyFormat): number | null {
+  if ((format.decimals === 0 ? /^0+$/ : /^0+([,.]0*)?$/).test(input.trim())) return 0
+  const parsed = parseMoneyInput(input, format)
+  return parsed.ok ? parsed.value : null
 }
 
 interface SavedSale {
@@ -135,29 +154,35 @@ interface SaleBody {
   customer_id: number | null
   shipping_charged: number
   note: string | null
-  payment: 'cash' | 'transfer' | 'owing' | null
+  payment: PaymentChoice | null
   lines: LineBody[]
 }
 
-const SUBMIT_OVERRIDES: Partial<
+type SubmitOverrides = Partial<
   Record<
     RefusalCode,
-    { field: 'customer' | 'shipping' | 'note' | 'date' | 'payment' | 'form'; message: string }
+    { field: 'customer' | 'shipping' | 'note' | 'date' | 'payment' | 'method' | 'form'; message: string }
   >
-> = {
-  'sale.owing_without_customer': { field: 'customer', message: OWING_HINT },
-  'sale.shipping_negative': { field: 'shipping', message: SALES_TEXT.shippingNotNegative },
-  'sale.note_too_long': { field: 'note', message: SALES_TEXT.noteTooLong },
-  'sale.date_in_future': { field: 'date', message: COMMON_TEXT.dateCannotBeFuture },
-  'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
-  'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.variety_not_found': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.lines_missing': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.gift_with_special_price': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.special_price_invalid': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.grams_invalid': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.rule_broken': { field: 'form', message: GENERIC_REFUSAL },
-  'sale.price_quote_invalid': { field: 'form', message: GENERIC_REFUSAL },
+>
+
+function submitOverrides(format: MoneyFormat): SubmitOverrides {
+  return {
+    'sale.owing_without_customer': { field: 'customer', message: OWING_HINT },
+    'sale.shipping_negative': { field: 'shipping', message: SALES_TEXT.shippingNotNegative },
+    'sale.note_too_long': { field: 'note', message: SALES_TEXT.noteTooLong },
+    'sale.date_in_future': { field: 'date', message: COMMON_TEXT.dateCannotBeFuture },
+    'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
+    'payment_method.unavailable': { field: 'method', message: GENERIC_REFUSAL },
+    'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.variety_not_found': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.lines_missing': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.gift_with_special_price': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.special_price_invalid': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.grams_invalid': { field: 'form', message: GENERIC_REFUSAL },
+    'sale.rule_broken': { field: 'form', message: GENERIC_REFUSAL },
+    'money.too_many_decimals': { field: 'form', message: tooManyDecimalsMessage(format) },
+    'sale.price_quote_invalid': { field: 'form', message: GENERIC_REFUSAL },
+  }
 }
 
 /** One sheet stack per screen (ADR-0027): Elegir cliente is level 1, Nuevo cliente level 2. */
@@ -171,11 +196,24 @@ export default function NuevaVenta() {
 
 function NuevaVentaForm() {
   const me = useOutletContext<Me>()
+  const money = useMoney()
   const navigate = useNavigate()
   const location = useLocation()
   const queryClient = useQueryClient()
   // Save looks unready before the choice on the phone only; the computer draws it as it always did.
   const onPhone = useViewport() === 'phone'
+  // The expense Sheet over the sale (phone only): what the host mirrors of its own history entry.
+  const [expenseOpen, setExpenseOpen] = useState(false)
+  const expenseActive = expenseOpen && onPhone
+  // What the Expense reports, and a latch for a save: the form keeps reporting a changed field
+  // after it saved, which must not count as a change that a leave would lose.
+  const [expenseDirty, setExpenseDirty] = useState(false)
+  const [expenseSaved, setExpenseSaved] = useState(false)
+  const expenseLive = expenseActive && expenseDirty && !expenseSaved
+  const [closeNonce, setCloseNonce] = useState(0)
+  const appliedCloseRef = useRef(0)
+  const rowRef = useRef<HTMLElement | null>(null)
+  const wasExpenseActiveRef = useRef(false)
 
   const initialCustomerId = readNewSaleState(location.state)
 
@@ -185,8 +223,36 @@ function NuevaVentaForm() {
   const [openKey, setOpenKey] = useState<string>(() => lines[0]?.key ?? '')
   const [shipping, setShipping] = useState('0')
   const [note, setNote] = useState('')
-  const [method, setMethod] = useState<PaymentChoice | null>(null)
+  const [payState, setPayState] = useState<PayState | null>(null)
+  // Held only while the state is Paid: leaving Paid empties it, so Paid → Owing → Paid starts empty.
+  const [method, setMethod] = useState<PaymentMethod | null>(null)
+  const [methodRefused, setMethodRefused] = useState(false)
+  const [methodGone, setMethodGone] = useState<string | null>(null)
+  const methodFieldRef = useRef<HTMLButtonElement | null>(null)
   const customerSheet = useSheet(1)
+  // The expense Sheet's own handle: a save closes it through this one, not the customer sheet's.
+  const expenseSheet = useSheet(1)
+  // `useSheet(1).isOpen` is true for any sheet at level 1, a line's Product list included:
+  // the customer Sheet mounts only when the seller opened it.
+  const [customerAsked, setCustomerAsked] = useState(false)
+  const [customerWasOpen, setCustomerWasOpen] = useState(customerSheet.isOpen)
+  if (customerWasOpen !== customerSheet.isOpen) {
+    setCustomerWasOpen(customerSheet.isOpen)
+    if (customerWasOpen) setCustomerAsked(false)
+  }
+  const customerShown = customerAsked && customerSheet.isOpen
+  // A level-1 Selector list (a line's Product list, the Payment method list) is open on a sheet: it
+  // is drawn in `listHost`, outside the form, and the form beneath is `inert`, so what is covered is
+  // reported as covered (mobile check) and unreachable. Every Selector in the form shares `listHost`.
+  const [listHost, setListHost] = useState<HTMLElement | null>(null)
+  const pickerListOpen = useViewport() !== 'computer' && customerSheet.isOpen && !customerAsked && !expenseActive
+  // The Phone country list of "Pick a customer"'s new customer is a third sheet, over the sale.
+  const countryListSheet = useSheet(3)
+  const countryListOpen = useViewport() !== 'computer' && countryListSheet.isOpen
+  function askCustomer(): void {
+    setCustomerAsked(true)
+    customerSheet.open()
+  }
   const [formError, setFormError] = useState<string | null>(null)
   const [shippingError, setShippingError] = useState<string | null>(null)
   const [noteError, setNoteError] = useState<string | null>(null)
@@ -199,10 +265,11 @@ function NuevaVentaForm() {
     nonce: number
   } | null>(null)
   const focusNonceRef = useRef(0)
+  const appliedNonceRef = useRef(0)
   const formRef = useRef<HTMLFormElement | null>(null)
   useVisualViewport(formRef)
 
-  const varietyFieldRef = useRef<HTMLSelectElement | null>(null)
+  const varietyFieldRef = useRef<HTMLButtonElement | null>(null)
   const gramsFieldRef = useRef<HTMLInputElement | null>(null)
   const specialPriceFieldRef = useRef<HTMLInputElement | null>(null)
 
@@ -251,9 +318,24 @@ function NuevaVentaForm() {
       ? NO_RULES
       : { bulk: settingsQuery.data.is_bulk_pricing, vip: settingsQuery.data.is_vip_customers }
 
+  const customerTypeId = customer?.customer_type_id ?? null
+  // The name for the badge: the list of types is asked only while it can matter.
+  const customerTypesQuery = useQuery({
+    ...customerTypesQueryOptions(),
+    enabled: settings.vip && customerTypeId !== null,
+  })
+  const customerTypeName = customerTypesQuery.data?.find((type) => type.id === customerTypeId)?.name ?? null
+
   function chooseCustomer(chosen: Customer | null): void {
     setCustomerOverride(chosen)
-    if (chosen === null && method === 'owing') setMethod(null)
+    if (chosen === null && payState === 'owing') setPayState(null)
+  }
+
+  function choosePayState(next: PayState): void {
+    setPayState(next)
+    setMethod(null)
+    setMethodRefused(false)
+    setMethodGone(null)
   }
 
   function updateLine(key: string, patch: Partial<LineState>): void {
@@ -284,6 +366,9 @@ function NuevaVentaForm() {
       return [...withoutBlankOpen, created]
     })
     setOpenKey(created.key)
+    // The new line's Product field takes focus once it is on the page; its list stays closed.
+    focusNonceRef.current += 1
+    setFocusRequest({ lineKey: created.key, field: 'variety', nonce: focusNonceRef.current })
   }
 
   /** "Quitar", only offered on the open line when the sale has more than one —
@@ -304,11 +389,11 @@ function NuevaVentaForm() {
 
   function specialPriceOf(line: LineState): number | null {
     if (line.specialPrice.trim() === '') return null
-    const parsed = parseMoney(line.specialPrice)
+    const parsed = parseMoneyInput(line.specialPrice, money.format)
     return parsed.ok ? parsed.value : null
   }
 
-  /** `parseMoney` (money.ts) already rejects `$0`, a decimal or a negative amount —
+  /** `parseMoneyInput` already rejects `$0`, a decimal or a negative amount —
    * but today's code must still never fall silently back to list/bulk pricing for
    * such a line (sales.md: "Precio especial doesn't accept $0"). A line with
    * something typed in `specialPrice` that doesn't parse is its own error, distinct
@@ -316,7 +401,11 @@ function NuevaVentaForm() {
    * `validateSale`'s own errors do. */
   function specialPriceErrorFor(line: LineState): string | null {
     if (line.specialPrice.trim() === '') return null
-    return parseMoney(line.specialPrice).ok ? null : SPECIAL_PRICE_INVALID_MESSAGE
+    const parsed = parseMoneyInput(line.specialPrice, money.format)
+    if (parsed.ok) return null
+    return parsed.tooManyDecimals
+      ? tooManyDecimalsMessage(money.format)
+      : SALES_TEXT.specialPriceAboveZero(money.attached(0))
   }
 
   const lineValidations: LineValidation[] = lines
@@ -325,21 +414,18 @@ function NuevaVentaForm() {
       const variety = varietyOf(line.varietyId)
       return {
         id: line.key,
-        varietyName: variety?.name ?? '',
+        varietyName: variety?.name ?? line.varietyName,
         gift: line.gift,
         specialPrice: specialPriceOf(line),
-        quote: variety !== undefined ? quoteOf(variety) : null,
+        quote: variety !== undefined ? quoteOf(variety, null) : null,
       }
     })
 
-  const errors = validateSale({
-    method,
-    hasCustomer: customer !== null,
-    lines: lineValidations,
-  })
-
   function noPriceErrorFor(key: string): string | null {
-    return errors.find((error) => error.field === `line:${key}`)?.message ?? null
+    for (const error of errors) {
+      if (error.field === `line:${key}` && 'message' in error) return error.message
+    }
+    return null
   }
 
   /** The one message a line shows, in the plan's priority order: an invalid typed
@@ -366,19 +452,23 @@ function NuevaVentaForm() {
     if (specialPriceErrorFor(line) !== null) return null
     const grams = parseGrams(line.grams)
     if (!grams.ok) return null
-    const quote = quoteOf(variety)
+    const quote = quoteOf(variety, customerTypeId)
     const specialPrice = specialPriceOf(line)
     if (!line.gift && specialPrice === null && quote === null) return null
     try {
       const priced = priceLine({
         gift: line.gift,
         specialPrice,
-        customerIsVip: customer?.vip ?? false,
+        customerIsVip: customerTypeId !== null,
         settings,
         quote,
         gramsHundredths: toHundredths(grams.value),
       })
-      return { ...priced, gramsHundredths: toHundredths(grams.value) }
+      return {
+        ...priced,
+        gramsHundredths: toHundredths(grams.value),
+        typeName: priced.rule === 'type' ? customerTypeName : null,
+      }
     } catch {
       return null
     }
@@ -394,33 +484,81 @@ function NuevaVentaForm() {
         lineTotal: preview?.lineTotal ?? 0,
       }
     }),
-    parseShipping(shipping) ?? 0,
+    parseShipping(shipping, money.format) ?? 0,
   )
+
+  const errors = validateSale({
+    payState,
+    method,
+    total: totals.total,
+    hasCustomer: customer !== null,
+    lines: lineValidations,
+  })
 
   const touched =
     customer !== null ||
     note.trim() !== '' ||
     shipping !== '0' ||
     lines.some((line) => !isBlank(line))
-  const { blocker, disarm } = useLeaveGuard(touched)
+  const { blocker, disarm } = useLeaveGuard(touched || expenseLive, {
+    sheetFloor: expenseActive ? 1 : undefined,
+    sheetDirty: expenseLive,
+  })
+  // Lines with a Product chosen: the strip's N and the toast wording read this one count.
+  const n = productCount(lines)
+  const leaveWords = useLeaveQuestion(blocker, { touched, strip: n > 0 })
+  const leaveConfirm = leaveWords !== null && (
+    <LeaveConfirm
+      blocker={blocker}
+      question={leaveWords.question}
+      detail={leaveWords.detail}
+      keepLabel={COMMON_TEXT.noKeepEntering}
+      discardLabel={COMMON_TEXT.yesDiscard}
+    />
+  )
+
+  // A saved expense asks for the Sheet to close: a nonce compared with a ref, never a state
+  // cleared by an effect. The close is `sheet.close()`; the host's mirror clears `expenseOpen`.
+  useEffect(() => {
+    if (closeNonce === appliedCloseRef.current) return
+    appliedCloseRef.current = closeNonce
+    expenseSheet.close()
+  }, [closeNonce, expenseSheet])
+
+  // Focus returns to the Expense tile once the Sheet has closed, however it closed.
+  useEffect(() => {
+    if (wasExpenseActiveRef.current && !expenseActive) rowRef.current?.querySelector('button')?.focus()
+    wasExpenseActiveRef.current = expenseActive
+  }, [expenseActive])
 
   const save = useMutation({
     mutationFn: (body: SaleBody) => post<SavedSale>('/sales', body),
   })
 
+  // The lines are unreachable while a save is in flight (`locked`, the `inert` on the
+  // lines' container below): a save's answer runs `openLine` or navigates, and would
+  // otherwise swap or unmount a line whose Product list is open — a history entry the
+  // Selector does not pop on unmount.
+  const locked = save.isPending
+
   // Saving with a line in error opens and focuses that field (plan, "Saving"):
   // `openLine` may or may not change `openKey` (the line could already be open),
   // so the actual `.focus()` call waits for this effect, which re-runs once a
   // fresh `focusRequest` lands, after the line's own fields are on the page. The
-  // request's own `nonce` (never reset) is what re-triggers the effect on a
-  // second save with the same field at fault — a plain `setState` inside the
-  // effect would only start another, unnecessary render (oxlint's own
-  // `set-state-in-effect`). Guarded on `openKey === focusRequest.lineKey`, so a
-  // stale request from an earlier save never steals focus back from a line the
-  // seller opened by hand afterwards — only the field this same request named,
+  // request's own `nonce` (never reset) is what makes a second request with the same
+  // field at fault count as a new one — a plain `setState` inside the effect would
+  // only start another, unnecessary render (oxlint's own `set-state-in-effect`).
+  // While `locked` the effect does nothing, and a request is applied once, after
+  // that lock lifts: `appliedNonceRef` remembers it, so the lock lifting again on a
+  // later save never takes focus back for a request already served. Guarded on
+  // `openKey === focusRequest.lineKey`, so a request never steals focus from a line
+  // the seller opened by hand afterwards — only the field this same request named,
   // on the line it named, is ever focused.
   useEffect(() => {
-    if (focusRequest === null || focusRequest.lineKey !== openKey) return
+    if (locked || focusRequest === null) return
+    if (focusRequest.nonce === appliedNonceRef.current) return
+    if (focusRequest.lineKey !== openKey) return
+    appliedNonceRef.current = focusRequest.nonce
     const ref =
       focusRequest.field === 'grams'
         ? gramsFieldRef
@@ -428,7 +566,7 @@ function NuevaVentaForm() {
           ? specialPriceFieldRef
           : varietyFieldRef
     ref.current?.focus()
-  }, [focusRequest, openKey])
+  }, [focusRequest, openKey, locked])
 
   function fieldForError(line: LineState): 'variety' | 'grams' | 'specialPrice' {
     if (specialPriceErrorFor(line) !== null) return 'specialPrice'
@@ -446,6 +584,7 @@ function NuevaVentaForm() {
     setNoteError(null)
     setDateError(null)
     setPaymentError(null)
+    setMethodRefused(false)
     setOffline(false)
 
     const firstInError = lines.find((line) => combinedLineError(line) !== null)
@@ -465,9 +604,19 @@ function NuevaVentaForm() {
       setFormError(NO_LINES_MESSAGE)
       return
     }
-    const shippingCharged = parseShipping(shipping)
+    const shippingCharged = parseShipping(shipping, money.format)
     if (shippingCharged === null) {
-      setShippingError(SALES_TEXT.shippingNotNegative)
+      const refused = parseMoneyInput(shipping, money.format)
+      setShippingError(
+        !refused.ok && refused.tooManyDecimals ? tooManyDecimalsMessage(money.format) : SALES_TEXT.shippingNotNegative,
+      )
+      return
+    }
+    // Paid above $0 with no method: the refusal draws at the field and nothing is sent, so the
+    // save never enters its pending state.
+    if (errors.some((error) => error.field === 'method')) {
+      setMethodRefused(true)
+      methodFieldRef.current?.focus()
       return
     }
 
@@ -476,7 +625,7 @@ function NuevaVentaForm() {
       customer_id: customer?.id ?? null,
       shipping_charged: shippingCharged,
       note: note.trim() === '' ? null : note,
-      payment: method,
+      payment: paymentChoiceOf(payState, method, totals.total),
       lines: filled.map((line) => {
         const grams = parseGrams(line.grams)
         return {
@@ -511,7 +660,7 @@ function NuevaVentaForm() {
         const flagged = lines.find((line) => {
           if (line.varietyId === '' || line.gift || specialPriceOf(line) !== null) return false
           const variety = freshVarieties.find((item) => String(item.id) === line.varietyId)
-          return variety === undefined || quoteOf(variety) === null
+          return variety === undefined || quoteOf(variety, null) === null
         })
         if (flagged !== undefined) {
           openLine(flagged.key)
@@ -521,12 +670,18 @@ function NuevaVentaForm() {
         return
       }
       if (caught instanceof ApiError) {
-        const override = resolveOverride(SUBMIT_OVERRIDES, caught.code)
+        const override = resolveOverride(submitOverrides(money.format), caught.code)
         if (override !== undefined) {
           if (override.field === 'shipping') setShippingError(override.message)
           else if (override.field === 'note') setNoteError(override.message)
           else if (override.field === 'date') setDateError(override.message)
           else if (override.field === 'payment') setPaymentError(override.message)
+          else if (override.field === 'method') {
+            // The method was archived or deleted meanwhile: the form stays and the field keeps the
+            // chosen method with the "no longer available" mark until the person picks another.
+            if (method !== null) setMethodGone(paymentMethodName(queryClient, method) ?? '')
+            void queryClient.invalidateQueries({ queryKey: keys.paymentMethods() })
+          }
           else setFormError(override.message)
         } else if (caught.code !== UNKNOWN_CODE) {
           setFormError(GENERIC_REFUSAL)
@@ -542,8 +697,8 @@ function NuevaVentaForm() {
   }
 
   return (
-    <main className="pantalla">
-      <form ref={formRef} className="nueva-venta" onSubmit={onSubmit}>
+    <ContentArea as="main" className="pantalla">
+      <form ref={formRef} className="nueva-venta" inert={pickerListOpen || countryListOpen || expenseActive} onSubmit={onSubmit}>
         <div className="nueva-venta__disposicion">
         <div className="nueva-venta__cuerpo" aria-busy={repricing || opening || undefined}>
           <div className="encabezado-fila nueva-venta__cabecera">
@@ -577,21 +732,21 @@ function NuevaVentaForm() {
             <Loading />
           ) : (
             <>
-              {repricing && !customerSheet.isOpen && <LoadingAnuncio />}
+              {repricing && !customerShown && <LoadingAnuncio refresco />}
               {customer === null ? (
-                <Boton variant="secondary" icon="clientes" onClick={customerSheet.open}>
+                <Boton variant="secondary" icon="clientes" onClick={askCustomer}>
                   {SALES_TEXT.pickCustomer}
                 </Boton>
               ) : (
-                <Boton variant="row" onClick={customerSheet.open}>
+                <Boton variant="row" onClick={askCustomer}>
                   <div className="nueva-venta__cliente">
                     <div className="nueva-venta__cliente-texto">
                       <span className="lista-clientes__nombre">
                         <span className="lista-clientes__nombre-texto">{customer.name}</span>
                         {settings.vip && customer.vip && <span className="vip-insignia">{COMMON_TEXT.vip}</span>}
                       </span>
-                      {customer.phone !== null && (
-                        <span className="nueva-venta__cliente-telefono">{customer.phone}</span>
+                      {customer.phone_display !== null && (
+                        <span className="nueva-venta__cliente-telefono">{customer.phone_display}</span>
                       )}
                     </div>
                     <span className="nueva-venta__cliente-cambiar">{COMMON_TEXT.change}</span>
@@ -599,7 +754,7 @@ function NuevaVentaForm() {
                 </Boton>
               )}
 
-              <div className="nueva-venta__lineas">
+              <div className="nueva-venta__lineas" inert={locked}>
                 {lines.map((line, index) => (
                   <NuevaVentaLinea
                     key={line.key}
@@ -611,8 +766,10 @@ function NuevaVentaForm() {
                     figuresLoading={repricing && line.varietyId !== '' && parseGrams(line.grams).ok}
                     variety={varietyOf(line.varietyId)}
                     varieties={varieties}
+                    varietiesLoading={!varietiesQuery.isSuccess}
                     canRemove={lines.length > 1}
                     varietyRef={varietyFieldRef}
+                    listHost={listHost}
                     gramsRef={gramsFieldRef}
                     specialPriceRef={specialPriceFieldRef}
                     onOpen={() => openLine(line.key)}
@@ -621,19 +778,20 @@ function NuevaVentaForm() {
                   />
                 ))}
               </div>
-              <Boton variant="secondary" icon="agregar" onClick={addLine}>
-                {COMMON_TEXT.addAnotherVariety}
-              </Boton>
+              <div className="nueva-venta__agregar" inert={locked}>
+                <Boton variant="secondary" icon="agregar" onClick={addLine}>
+                  {COMMON_TEXT.addAnotherVariety}
+                </Boton>
+              </div>
 
               <div className="nueva-venta__fila-dato">
                 <span>{SALES_TEXT.shippingCharged}</span>
-                <input
+                <MoneyInput
                   className="campo__input"
                   aria-label={SALES_TEXT.shipping}
                   type="text"
-                  inputMode="numeric"
                   value={shipping}
-                  onChange={(event) => setShipping(event.target.value)}
+                  onChange={setShipping}
                 />
               </div>
               {shippingError !== null && (
@@ -671,10 +829,20 @@ function NuevaVentaForm() {
           <div className="nueva-venta__resumen">
             <div className="nueva-venta__pago">
               <SelectorPago
-                value={method}
-                onChange={setMethod}
+                payState={payState}
+                onPayState={choosePayState}
+                method={method}
+                onMethod={(next) => {
+                  setMethod(next)
+                  setMethodRefused(false)
+                  setMethodGone(null)
+                }}
                 owingDisabled={customer === null}
                 owingDescription={OWING_HINT}
+                listHost={listHost}
+                methodRefused={methodRefused}
+                methodGone={methodGone}
+                methodRef={methodFieldRef}
               />
               {paymentError !== null && (
                 <span className="campo__error" role="alert">
@@ -686,7 +854,7 @@ function NuevaVentaForm() {
             <div className="nueva-venta__pie">
               <span className="rotulo">{SALES_TEXT.total}</span>
               <span className="cifra-xl">
-                {repricing ? <Loading compacto /> : formatMoney(totals.total)}
+                {repricing ? <Loading compacto /> : money.money(totals.total)}
               </span>
               <span className="rotulo nueva-venta__gramos">
                 {formatGrams(fromHundredths(totals.gramsSoldHundredths))}{COMMON_TEXT.soldSuffix}
@@ -696,29 +864,55 @@ function NuevaVentaForm() {
               <Boton
                 textOnly="submit"
                 type="submit"
-                variant={onPhone && method === null ? 'secondary' : 'primary'}
+                variant={onPhone && payState === null ? 'secondary' : 'primary'}
                 disabled={save.isPending || varietiesQuery.isFetching || settingsQuery.isFetching}>
                 {SALES_TEXT.saveSale}
               </Boton>
             </div>
           </div>
         )}
+        {onPhone && (
+          <ExpenseRow words={SALES_TEXT} rowRef={rowRef} locked={locked} onOpen={() => {
+              setExpenseDirty(false)
+              setExpenseSaved(false)
+              setExpenseOpen(true)
+            }} />
+        )}
         </div>
       </form>
+      <div className="nueva-venta__lista" ref={setListHost} />
 
-      {customerSheet.isOpen && <NuevaVentaCliente allowNone onChosen={chooseCustomer} />}
-
-      {blocker.state === 'blocked' && (
-        <div className="nueva-venta__aviso">
-          <LeaveConfirm
-            blocker={blocker}
-            question={SALES_TEXT.discardSale}
-            detail={SALES_TEXT.cannotRecover}
-            keepLabel={COMMON_TEXT.noKeepEntering}
-            discardLabel={COMMON_TEXT.yesDiscard}
-          />
-        </div>
+      {expenseOpen && (
+        <SaleExpenseSheet
+          words={{
+            expenseRecorded: SALES_TEXT.expenseRecorded,
+            strip: {
+              saleInProgress: SALES_TEXT.saleInProgress,
+              back: SALES_TEXT.back,
+              name: (amount) => SALES_TEXT.saleInProgressName(SALES_TEXT.products(n), amount),
+            },
+            products: SALES_TEXT.products,
+          }}
+          n={n}
+          total={totals.total}
+          repricing={repricing}
+          onClosed={() => {
+            setExpenseOpen(false)
+            setExpenseDirty(false)
+            setExpenseSaved(false)
+          }}
+          onSaved={() => {
+            setExpenseSaved(true)
+            setCloseNonce((k) => k + 1)
+          }}
+          onDirtyChange={setExpenseDirty}
+          leaveConfirm={leaveConfirm}
+        />
       )}
-    </main>
+
+      {customerShown && <NuevaVentaCliente allowNone onChosen={chooseCustomer} />}
+
+      {!expenseActive && leaveConfirm && <div className="nueva-venta__aviso">{leaveConfirm}</div>}
+    </ContentArea>
   )
 }

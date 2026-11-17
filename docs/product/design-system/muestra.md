@@ -73,7 +73,7 @@ Total: $ 32.000
 | Semana | 05/10 – 11/10 | Marketing | $ 35.000 | no |
 | Semana | 05/10 – 11/10 | Own use | $ 14.000 | sí |
 | Semana | 05/10 – 11/10 | Gastos | $ 12.500 | no |
-| Semana | 05/10 – 11/10 | Compras de flores | $ 150.000 | no |
+| Semana | 05/10 – 11/10 | Compras | $ 150.000 | no |
 | Semana | 05/10 – 11/10 | Ganancia | $ 41.500 | sí |
 | Semana | 05/10 – 11/10 | Caja | $ 36.500 | no |
 | Mes | 01/10 – 31/10 | Vendiste | $ 369.000 | no |
@@ -86,7 +86,7 @@ Total: $ 32.000
 | Mes | 01/10 – 31/10 | Marketing | $ 35.000 | no |
 | Mes | 01/10 – 31/10 | Own use | $ 14.000 | sí |
 | Mes | 01/10 – 31/10 | Gastos | $ 12.500 | no |
-| Mes | 01/10 – 31/10 | Compras de flores | $ 150.000 | no |
+| Mes | 01/10 – 31/10 | Compras | $ 150.000 | no |
 | Mes | 01/10 – 31/10 | Ganancia | $ 141.500 | sí |
 | Mes | 01/10 – 31/10 | Caja | $ 199.500 | no |
 
@@ -162,7 +162,7 @@ Total: $ 32.000
 | Envíos | $ 4.500 |
 | Packaging | $ 8.000 |
 | Total gastos | $ 12.500 |
-| Compras de flores | $ 150.000 |
+| Compras | $ 150.000 |
 
 ### Análisis · gastos desde el primer registro
 
@@ -171,7 +171,7 @@ Total: $ 32.000
 | Envíos | $ 4.500 |
 | Packaging | $ 8.000 |
 | Total gastos | $ 12.500 |
-| Compras de flores | $ 1.030.000 |
+| Compras | $ 1.030.000 |
 
 ### Análisis · semanas
 

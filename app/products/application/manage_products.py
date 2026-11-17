@@ -8,7 +8,7 @@ from app.products.application.errors import (
     ProductHasHistory,
     ProductNotFound,
 )
-from app.products.application.ports import ProductLeaving, Products
+from app.products.application.ports import ProductLeaving, Products, VipTypePrices
 from app.products.domain.product import NameHolder, Product, ProductName
 from app.shared.transaction import Transaction
 
@@ -74,17 +74,20 @@ def list_products(products: Products, *, archived: bool = False) -> list[Product
 def delete_product(
     products: Products,
     leaving: ProductLeaving,
+    vip_prices: VipTypePrices,
     transaction: Transaction,
     product_id: int,
 ) -> None:
     """Only a variety with no history is deleted: the common refusal writes nothing, and
-    the last word is one guarded delete after the dependents, in one transaction."""
+    the last word is one guarded delete after the dependents, in one transaction. The
+    product's type-price rows go before its price entries, which they reference."""
     product = get_product(products, product_id)
     if product.is_archived:
         raise ProductArchived(product_id)
     if products.has_history(product_id):
         raise ProductHasHistory
     leaving.leaving(product_id)
+    vip_prices.remove_for_product(product_id)
     products.remove_price_entries(product_id)
     if not products.remove_unused(product_id):
         transaction.rollback()

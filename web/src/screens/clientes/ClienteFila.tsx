@@ -16,8 +16,7 @@ import Icono from '../../components/Icono'
 import PaneRowLink from '../../components/PaneRowLink'
 import type { Standing } from '../../api/payments'
 import { formatDateShort } from '../../format/dates'
-import { formatPhone } from '../../format/phone'
-import { formatMoney, formatMoneyMagnitude } from '../../format/money'
+import { useMoney } from '../../format/moneyContext'
 import { useViewport } from '../../shell/useViewport'
 import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
@@ -25,8 +24,8 @@ import { CUSTOMERS_TEXT } from '../../copy/customers'
 interface Props {
   id: number
   name: string
-  /** `GET /payments/debtors` carries no number or VIP mark, so a Te deben row has neither. */
-  phone?: string | null
+  /** The number as the API grouped it (`phone_display`). `GET /payments/debtors` carries no number or VIP mark, so a Te deben row has neither. */
+  phoneDisplay?: string | null
   /** Whether to show the VIP mark: the customer is VIP and Clientes VIP is on. */
   vip?: boolean
   balance: number
@@ -35,7 +34,8 @@ interface Props {
 }
 
 /** The avatar, the name over the number, and the money the row says (nothing for a settled customer). */
-function FilaContenido({ name, phone, vip, balance, owingSince, standing }: Required<Omit<Props, 'id'>>) {
+function FilaContenido({ name, phoneDisplay, vip, balance, owingSince, standing }: Required<Omit<Props, 'id'>>) {
+  const money = useMoney()
   return (
     <>
       <Avatar name={name} />
@@ -44,22 +44,22 @@ function FilaContenido({ name, phone, vip, balance, owingSince, standing }: Requ
           <span className="lista-clientes__nombre-texto">{name}</span>
           {vip && <span className="vip-insignia">{COMMON_TEXT.vip}</span>}
         </span>
-        {phone !== null && <span className="lista-clientes__telefono">{formatPhone(phone)}</span>}
+        {phoneDisplay !== null && <span className="lista-clientes__telefono">{phoneDisplay}</span>}
       </span>
       {standing === 'owes' && owingSince !== null && (
         <span className="lista-clientes__balance">
-          <span className="monto-deuda cifra-n">{formatMoney(balance)}</span>
+          <span className="monto-deuda cifra-n">{money.money(balance)}</span>
           <span className="monto-deuda">{CUSTOMERS_TEXT.owesYouSince}{formatDateShort(owingSince)}</span>
         </span>
       )}
-      {standing === 'credit' && <span className="monto-credito cifra-n">{CUSTOMERS_TEXT.credit}{formatMoneyMagnitude(balance)}</span>}
+      {standing === 'credit' && <span className="monto-credito cifra-n">{CUSTOMERS_TEXT.credit}{money.magnitude(balance)}</span>}
     </>
   )
 }
 
-export default function ClienteFila({ id, name, phone = null, vip = false, balance, owingSince, standing }: Props) {
+export default function ClienteFila({ id, name, phoneDisplay = null, vip = false, balance, owingSince, standing }: Props) {
   const computer = useViewport() === 'computer'
-  const contenido = { name, phone, vip, balance, owingSince, standing }
+  const contenido = { name, phoneDisplay, vip, balance, owingSince, standing }
 
   if (standing === 'owes') {
     return (

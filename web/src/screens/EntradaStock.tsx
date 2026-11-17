@@ -28,12 +28,14 @@ import Loading from '../components/Loading'
 import { useBackOr } from '../components/useBackOr'
 import { useGoneExit } from '../components/useGoneExit'
 import { useLeaveGuard } from '../components/useLeaveGuard'
+import { SheetStackProvider } from '../components/useSheetStack'
 import { useFlash } from '../flash/useFlash'
 import { STOCK, VARIETIES } from '../routes'
 import Boton from '../components/Boton'
 import StockEntryForm from './StockEntryForm'
 import { COMMON_TEXT } from '../copy/common'
 import { STOCK_TEXT } from '../copy/stock'
+import ContentArea from '../components/ContentArea'
 
 interface Props {
   mode: 'nuevo' | 'editar'
@@ -41,13 +43,21 @@ interface Props {
 
 function Frame({ children }: { children: React.ReactNode }) {
   return (
-    <main className="pantalla">
+    <ContentArea as="main" className="pantalla">
       <div className="cuerpo">{children}</div>
-    </main>
+    </ContentArea>
   )
 }
 
 export default function EntradaStock({ mode }: Props) {
+  return (
+    <SheetStackProvider>
+      <EntradaStockScreen mode={mode} />
+    </SheetStackProvider>
+  )
+}
+
+function EntradaStockScreen({ mode }: Props) {
   const me = useOutletContext<Me>()
   const { id } = useParams<{ id: string }>()
   const [searchParams] = useSearchParams()

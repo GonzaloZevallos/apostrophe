@@ -12,7 +12,6 @@ import {
   CUSTOMERS,
   EXPENSES,
   HOME,
-  MORE,
   SALE_NEW,
   SALES,
   VARIETIES,
@@ -93,7 +92,6 @@ test("the bar and the button stay in view on every root, with the last row above
       VARIETIES,
       EXPENSES,
       ANALYSIS,
-      MORE,
     ]) {
       await page.goto(root);
       await expect(page.locator(".bar-inferior")).toBeVisible();

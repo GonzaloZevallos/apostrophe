@@ -16,7 +16,7 @@ module or into `domain/`.
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Collection, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Protocol
@@ -278,6 +278,11 @@ class SalesImport(Protocol):
 
     def has_records(self) -> bool:
         """Whether this business already has a sale."""
+        ...
+
+    def archived_method_words(self, words: Collection[str]) -> Collection[str]:
+        """The sheet's payment words (`cash`, `transfer`) whose default name an archived
+        method of this business holds: the sale could not be paid with it."""
         ...
 
     def check_sales(

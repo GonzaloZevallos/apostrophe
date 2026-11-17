@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-07
+summary: "las rutas del front son plantillas de id y las filas heredadas viven una sola vez en la app"
 ---
 
 # Front paths are `{id}` templates, the legacy rows live once in `app/`, and `screens.json` is cross-checked with no exemption

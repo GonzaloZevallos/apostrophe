@@ -20,7 +20,6 @@ classDiagram
   }
   sale --> pricing
   sale_bill --> pricing
-  sale_bill --> sale
 ```
 
 #### application
@@ -106,8 +105,12 @@ classDiagram
     code : ClassVar~str~
   }
   class CustomerFact {
+    customer_type : CustomerTypeFact #124; None
     id : int
-    vip : bool
+  }
+  class CustomerTypeFact {
+    id : int
+    name : str
   }
   class GiftWithSpecialPrice {
     code : ClassVar~str~
@@ -119,6 +122,7 @@ classDiagram
     code : ClassVar~str~
   }
   class LinePricing {
+    customer_type : CustomerTypeFact #124; None
     line_total : int
     price_per_gram : int
     rule
@@ -149,14 +153,12 @@ classDiagram
     amount : int
     customer_id : int #124; None
     id : int #124; None
-    method
+    label : PaymentMethodLabel #124; None
+    method : PaymentMethodId
     paid_on : date
   }
   class OwingWithoutCustomer {
     code : ClassVar~str~
-  }
-  class PaymentMethod {
-    name
   }
   class PaymentRequired {
     code : ClassVar~str~
@@ -164,7 +166,7 @@ classDiagram
   class PriceQuote {
     bulk : BulkQuote #124; None
     list_price : int
-    vip_price : int #124; None
+    type_price : int #124; None
   }
   class PricingRule {
     name
@@ -175,6 +177,7 @@ classDiagram
     id : int #124; None
     lines : tuple~SaleLine, ...~
     note : str #124; None
+    number : int #124; None
     payment : OnTheSpotPayment #124; None
     recorded_at : datetime
     shipping_charged : int
@@ -188,6 +191,7 @@ classDiagram
     business_name : str
     date : date
     lines : tuple~SaleBillLine, ...~
+    number : int
     payment
     shipping_charged : int
     total : int
@@ -205,6 +209,8 @@ classDiagram
     code : ClassVar~str~
   }
   class SaleLine {
+    customer_type_id : int #124; None
+    customer_type_name : str #124; None
     id : int #124; None
     line_total : int
     price_per_gram : int
@@ -235,7 +241,6 @@ classDiagram
   NoPriceThatDay --|> SaleRuleBroken
   NonPositiveQuantity --|> SaleRuleBroken
   NoteTooLong --|> SaleRuleBroken
-  OnTheSpotPayment --> PaymentMethod : method
   OwingWithoutCustomer --|> SaleRuleBroken
   PaymentRequired --|> SaleRuleBroken
   SaleBill --> BillPayment : payment
@@ -267,15 +272,18 @@ classDiagram
   class LineInput {
     gift : bool
     quantity : Quantity
-    special_price : int #124; None
+    special_price : Decimal #124; None
     variety_id : int
+  }
+  class MoneyFormatReader {
+    current() MoneyFormat
   }
   class OwingSales {
     settlement_of(customer_id: int) CustomerSettlement
     still_owing(customer_ids: Collection~int~) frozenset~int~
   }
   class PriceBook {
-    for_variety(variety_id: int, day: date) VarietyPricing #124; None
+    for_variety(variety_id: int, day: date, customer_type_id: int #124; None) VarietyPricing #124; None
   }
   class PricingSettingsReader {
     current() PricingSettings
@@ -296,6 +304,7 @@ classDiagram
   class SaleView {
     customer : SaleViewCustomer #124; None
     lines : tuple~SaleViewLine, ...~
+    number : int
     sale : Sale
   }
   class SaleViewCustomer {
@@ -331,14 +340,14 @@ classDiagram
   class BillPaymentOut {
     model_config : ConfigDict
     state : Literal
-    still_owed : int #124; None
+    still_owed : MoneyOut #124; None
     of(payment: BillPayment) 'BillPaymentOut'
   }
   class DeleteSaleOut {
     returned : list~ReturnedQuantityOut~
   }
   class LineCostOut {
-    costed : int #124; None
+    costed : MoneyOut #124; None
     pending_quantity
     of(cost: LineCost) 'LineCostOut'
   }
@@ -346,33 +355,41 @@ classDiagram
     gift : bool
     product_id : int
     quantity
-    special_price : int #124; None
+    special_price : MoneyAmount #124; None
+  }
+  class OwingIn {
+    kind : Literal~'owing'~
+  }
+  class PaidIn {
+    kind : Literal~'paid'~
+    payment_method_id : int
   }
   class PlannedPriceBook {
-    for_variety(variety_id: int, day: date) VarietyPricing #124; None
+    for_variety(variety_id: int, day: date, customer_type_id: int #124; None) VarietyPricing #124; None
   }
   class ReturnedQuantityOut {
     product_id : int
     quantity
   }
   class SaleBillLineOut {
-    amount : int
+    amount
     model_config : ConfigDict
     product : str
     quantity
     rule : BillRule #124; None
-    unit_price : int #124; None
+    unit_price : MoneyOut #124; None
     of(line: SaleBillLine) 'SaleBillLineOut'
   }
   class SaleBillOut {
-    balance : int #124; None
+    balance : MoneyOut #124; None
     business_name : str
     date : date
     lines : list~SaleBillLineOut~
     model_config : ConfigDict
+    number : int
     payment
-    shipping_charged : int
-    total : int
+    shipping_charged
+    total
     of(bill: SaleBill) 'SaleBillOut'
   }
   class SaleCustomerOut {
@@ -388,10 +405,12 @@ classDiagram
     id : int
     lines : list~SaleLineDetailOut~
     note : str #124; None
-    payment
-    shipping_charged : int
+    number : int
+    payment : Literal
+    payment_method : PaymentMethodLabelOut #124; None
+    shipping_charged
     still_owing : bool
-    total : int
+    total
     total_quantity
     of(detail: SaleDetail) 'SaleDetailOut'
   }
@@ -401,12 +420,13 @@ classDiagram
     lines : list~LineIn~
     note : str #124; None
     payment : PaymentIn #124; None
-    shipping_charged : int
+    shipping_charged
   }
   class SaleLineDetailOut {
     cost
-    line_total : int
-    price_per_gram : int
+    customer_type_name : str #124; None
+    line_total
+    price_per_gram
     pricing_rule : PricingRule
     product_id : int
     product_name : str
@@ -414,8 +434,9 @@ classDiagram
     of(view_line: SaleViewLine, cost: LineCost) 'SaleLineDetailOut'
   }
   class SaleLineOut {
-    line_total : int
-    price_per_gram : int
+    customer_type_name : str #124; None
+    line_total
+    price_per_gram
     pricing_rule : PricingRule
     product_id : int
     product_name : str
@@ -424,6 +445,8 @@ classDiagram
   }
   class SaleLineRow {
     business_id : Mapped~int~
+    customer_type_id : Mapped~int #124; None~
+    customer_type_name : Mapped~str #124; None~
     grams_hundredths : Mapped~int~
     id : Mapped~int~
     line_total : Mapped~int~
@@ -439,10 +462,12 @@ classDiagram
     id : int
     lines : list~SaleLineOut~
     note : str #124; None
-    payment
-    shipping_charged : int
+    number : int
+    payment : Literal
+    payment_method : PaymentMethodLabelOut #124; None
+    shipping_charged
     still_owing : bool
-    total : int
+    total
     of(view: SaleView, still_owing: bool) 'SaleOut'
   }
   class SaleRow {
@@ -450,11 +475,13 @@ classDiagram
     customer_id : Mapped~int #124; None~
     id : Mapped~int~
     note : Mapped~str #124; None~
+    number : Mapped~int~
     recorded_at : Mapped~datetime~
-    sale_date : Mapped~date~
     shipping_charged : Mapped~int~
+    sold_on : Mapped~date~
   }
   class SalesImport {
+    archived_method_words(words: Collection~str~) Collection~str~
     check_sales(price_history: Sequence~PriceHistoryRow~, variety_keys: Mapping~str, str~, sales: Sequence~SaleCheckInput~, today: date, settings: PricingSettings) Sequence~SaleCheck~
     has_records() bool
     write_sale(variety_id: int, customer_id: int #124; None, sale: SaleCheckInput, recorded_at: datetime, today: date, transaction: Transaction, settings: PricingSettings) int
@@ -466,7 +493,7 @@ classDiagram
     get(customer_id: int) CustomerFact #124; None
   }
   class SqlPriceBook {
-    for_variety(variety_id: int, day: date) VarietyPricing #124; None
+    for_variety(variety_id: int, day: date, customer_type_id: int #124; None) VarietyPricing #124; None
   }
   class SqlSales {
     add(sale: Sale) Sale
@@ -483,8 +510,11 @@ classDiagram
   class _FixedSettings {
     current() PricingSettings
   }
-  class _FixedVip {
+  class _FixedType {
     get(customer_id: int) CustomerFact #124; None
+  }
+  class _SheetAmounts {
+    current() MoneyFormat
   }
   SaleBillOut --> BillPaymentOut : payment
   SaleLineDetailOut --> LineCostOut : cost

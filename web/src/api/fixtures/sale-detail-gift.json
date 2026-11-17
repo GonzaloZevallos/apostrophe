@@ -1,10 +1,12 @@
 {
   "id": 11,
+  "number": 3,
   "date": "2026-09-20",
   "customer": null,
   "shipping_charged": 0,
   "note": null,
-  "payment": "cash",
+  "payment": "paid",
+  "payment_method": { "id": 1, "name": "Cash", "icon": "banknote" },
   "total": 3500,
   "lines": [
     {
@@ -12,6 +14,7 @@
       "product_name": "Blue Dream",
       "quantity": 2.0,
       "pricing_rule": "list",
+      "customer_type_name": null,
       "price_per_gram": 1000,
       "line_total": 2000,
       "cost": { "costed": 500, "pending_quantity": 0.0 }
@@ -21,6 +24,7 @@
       "product_name": "Blue Dream",
       "quantity": 1.5,
       "pricing_rule": "list",
+      "customer_type_name": null,
       "price_per_gram": 1000,
       "line_total": 1500,
       "cost": { "costed": 375, "pending_quantity": 0.0 }
@@ -30,6 +34,7 @@
       "product_name": "OG Kush",
       "quantity": 1.0,
       "pricing_rule": "gift",
+      "customer_type_name": null,
       "price_per_gram": 0,
       "line_total": 0,
       "cost": { "costed": null, "pending_quantity": 1.0 }

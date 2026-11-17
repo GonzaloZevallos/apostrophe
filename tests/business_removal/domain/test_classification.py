@@ -147,10 +147,12 @@ def test_delete_order_treats_a_composite_foreign_key_as_one_edge() -> None:
     )
     expense = Table(
         "expense",
-        (_pk(), _col("business_id"), _col("category_id")),
+        (_pk(), _col("business_id"), _col("expense_category_id")),
         (
             ForeignKey(("business_id",), "business", ("id",)),
-            ForeignKey(("business_id", "category_id"), "expense_category", ("business_id", "id")),
+            ForeignKey(
+                ("business_id", "expense_category_id"), "expense_category", ("business_id", "id")
+            ),
         ),
     )
     schema = Schema((business, category, expense))

@@ -10,6 +10,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
+from app.money_schema import MoneyAmount, MoneyOut
 from app.products.adapters.schemas import QuantityOut
 from app.stock.application.manage_withdrawals import Movement, WithdrawalView
 from app.stock.application.ports import WithdrawalMovement
@@ -32,7 +33,7 @@ class EntryIn(BaseModel):
     product_id: int
     origin: Origin
     quantity: Decimal
-    total_cost: int | None = None
+    total_cost: MoneyAmount | None = None
     note: str | None = None
 
 
@@ -42,8 +43,8 @@ class EntryOut(BaseModel):
     product_id: int
     origin: Origin
     quantity: QuantityOut
-    total_cost: int | None
-    cost_per_gram: int | None
+    total_cost: MoneyOut | None
+    cost_per_gram: MoneyOut | None
     note: str | None
 
     @classmethod
@@ -61,8 +62,8 @@ class EntryOut(BaseModel):
             product_id=entry.variety_id,
             origin=entry.origin,
             quantity=entry.quantity.as_decimal(),
-            total_cost=entry.total_cost,
-            cost_per_gram=per_gram,
+            total_cost=None if entry.total_cost is None else Decimal(entry.total_cost),
+            cost_per_gram=None if per_gram is None else Decimal(per_gram),
             note=entry.note,
         )
 

@@ -27,32 +27,37 @@ import { useFlash } from '../../flash/useFlash'
 import { useBackOr } from '../../components/useBackOr'
 import { useGoneExit } from '../../components/useGoneExit'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
+import { SheetStackProvider } from '../../components/useSheetStack'
 import { useViewport } from '../../shell/useViewport'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../../api/client'
 import {
   type Customer,
   type CustomerIn,
+  type CustomerPatchIn,
   editCustomer,
   getCustomer,
   registerCustomer,
 } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
-import { useIsVipCustomers } from '../../api/pricingSettings'
+import { useIsVipCustomers, usePricingSettingsPending } from '../../api/pricingSettings'
 import { isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { toast } from '../../components/feedback'
 import GoneScreen from '../../components/GoneScreen'
 import SinConexion from '../../components/SinConexion'
-import Loading from '../../components/Loading'
+import Loading, { LoadingWhile } from '../../components/Loading'
 import CustomerFields from './CustomerFields'
 import CustomerTypeField from './CustomerTypeField'
+import { usePhoneCountryField } from './usePhoneCountryField'
 import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
+import ContentArea from '../../components/ContentArea'
 
 export const SAVED_TOAST = 'common:customerSaved'
 export const NAME_REQUIRED = CUSTOMERS_TEXT.giveItAName
 export const PHONE_INVALID = CUSTOMERS_TEXT.notAPhone
+export const PHONE_NEEDS_COUNTRY_CODE = CUSTOMERS_TEXT.needsCountryCode
 export const PHONE_TAKEN = CUSTOMERS_TEXT.phoneTaken
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
@@ -60,10 +65,14 @@ const TYPE_NOT_FOUND = 'customer_type.not_found'
 
 type Field = 'name' | 'phone' | 'form'
 
+/** What one save sends: a new customer always carries its phone and country; an edit carries them only when the phone changed. */
+type SaveBody = { kind: 'new'; body: CustomerIn } | { kind: 'edit'; body: CustomerPatchIn }
+
 const FIELD_OVERRIDES: Partial<Record<RefusalCode, { field: Field; message: string }>> = {
   'customer.name_missing': { field: 'name', message: NAME_REQUIRED },
   'customer.name_too_long': { field: 'name', message: COMMON_TEXT.nameTooLong },
   'customer.phone_invalid': { field: 'phone', message: PHONE_INVALID },
+  'customer.phone_needs_country_code': { field: 'phone', message: PHONE_NEEDS_COUNTRY_CODE },
   'customer.phone_taken': { field: 'phone', message: PHONE_TAKEN },
 }
 
@@ -71,7 +80,16 @@ interface Props {
   mode: 'nuevo' | 'editar'
 }
 
+/** One sheet stack per screen (ADR-0027): the type list is level 1, above the form (new and edit). */
 export default function ClienteForm({ mode }: Props) {
+  return (
+    <SheetStackProvider>
+      <ClienteFormGate mode={mode} />
+    </SheetStackProvider>
+  )
+}
+
+function ClienteFormGate({ mode }: Props) {
   const { id } = useParams<{ id: string }>()
   const customerId = id ?? ''
 
@@ -89,29 +107,29 @@ export default function ClienteForm({ mode }: Props) {
     }
     if (existing.error instanceof NetworkError) {
       return (
-        <main className="pantalla">
+        <ContentArea as="main" className="pantalla">
           <div className="cuerpo">
             <SinConexion />
           </div>
-        </main>
+        </ContentArea>
       )
     }
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <ErrorGenerico />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
   if (existing.data === undefined) {
     return (
-      <main className="pantalla">
+      <ContentArea as="main" className="pantalla">
         <div className="cuerpo">
           <Loading />
         </div>
-      </main>
+      </ContentArea>
     )
   }
 
@@ -130,13 +148,16 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
   const viewport = useViewport()
   const flash = useFlash()
   const vipCustomers = useIsVipCustomers()
+  const pricingPending = usePricingSettingsPending()
 
   const initialTypeId = initial?.customer_type_id == null ? '' : String(initial.customer_type_id)
   const [name, setName] = useState(initial?.name ?? '')
   const [phone, setPhone] = useState(initial?.phone ?? '')
+  const country = usePhoneCountryField(initial?.phone ?? null)
   const [typeId, setTypeId] = useState(initialTypeId)
   const [nameError, setNameError] = useState<string | null>(null)
   const [phoneError, setPhoneError] = useState<string | null>(null)
+  const [phoneInvalid, setPhoneInvalid] = useState(false)
   const [typeError, setTypeError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
   const [offline, setOffline] = useState(false)
@@ -158,23 +179,27 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
   // ever sees it. Saving directly with `await registerCustomer(...)` would
   // bypass that cache entirely (open review finding).
   const save = useMutation({
-    mutationFn: (body: CustomerIn) =>
-      mode === 'nuevo' ? registerCustomer(body) : editCustomer(customerId, body),
+    mutationFn: (save: SaveBody) =>
+      save.kind === 'new' ? registerCustomer(save.body) : editCustomer(customerId, save.body),
   })
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
     setNameError(null)
     setPhoneError(null)
+    setPhoneInvalid(false)
     setTypeError(null)
     setFormError(null)
     setOffline(false)
     try {
       // The type travels only while Customer types is on: with it off the server ignores it.
-      const body: CustomerIn = vipCustomers
-        ? { name, phone, customer_type_id: typeId === '' ? null : Number(typeId) }
-        : { name, phone }
-      const saved = await save.mutateAsync(body)
+      const typeFields = vipCustomers ? { customer_type_id: typeId === '' ? null : Number(typeId) } : {}
+      const phoneFields = { phone, phone_country: country.requestCountry }
+      const saved = await save.mutateAsync(
+        mode === 'nuevo'
+          ? { kind: 'new', body: { name, ...phoneFields, ...typeFields } }
+          : { kind: 'edit', body: { name, ...(phone === (initial?.phone ?? '') ? {} : phoneFields), ...typeFields } },
+      )
       invalidateResource(queryClient, 'customers')
       disarm()
       if (mode === 'nuevo') {
@@ -207,8 +232,10 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
         const override = resolveOverride(FIELD_OVERRIDES, caught.code)
         if (override !== undefined) {
           if (override.field === 'name') setNameError(override.message)
-          else if (override.field === 'phone') setPhoneError(override.message)
-          else setFormError(override.message)
+          else if (override.field === 'phone') {
+            if (caught.code === 'customer.phone_invalid') setPhoneInvalid(true)
+            else setPhoneError(override.message)
+          } else setFormError(override.message)
         } else if (caught.code !== UNKNOWN_CODE) {
           setFormError(GENERIC_REFUSAL)
         } else {
@@ -244,6 +271,8 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
         )
       }
     >
+      {/* The customer type field is drawn only once the pricing settings say Clientes VIP is on. */}
+      <LoadingWhile active={pricingPending} />
       <div className="encabezado-fila">
         <span className="encabezado__titulo">{title}</span>
         <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={close} />
@@ -257,6 +286,8 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
           }}
           nameError={nameError}
           phoneError={phoneError}
+          phoneInvalid={phoneInvalid}
+          country={country}
         />
         {vipCustomers && <CustomerTypeField value={typeId} onChange={setTypeId} error={typeError} />}
         <SheetActions>
@@ -266,7 +297,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
             </span>
           )}
           {offline && <SinConexion />}
-          <Boton textOnly="submit" type="submit" disabled={save.isPending}>
+          <Boton textOnly="submit" type="submit" disabled={save.isPending || !country.ready}>
             {CUSTOMERS_TEXT.saveAndUse}
           </Boton>
         </SheetActions>

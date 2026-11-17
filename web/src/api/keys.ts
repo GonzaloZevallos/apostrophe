@@ -9,6 +9,7 @@ import type { QueryClient } from '@tanstack/react-query'
 export type Resource =
   | 'me'
   | 'business'
+  | 'phoneCountries'
   | 'varieties'
   | 'customers'
   | 'customerTypes'
@@ -21,10 +22,12 @@ export type Resource =
   | 'payments'
   | 'pinnedCatalog'
   | 'pricingSettings'
+  | 'paymentMethods'
 
 const PREFIX: Record<Resource, string> = {
   me: 'me',
   business: 'business',
+  phoneCountries: 'phone-countries',
   varieties: 'varieties',
   customers: 'customers',
   customerTypes: 'customer-types',
@@ -37,11 +40,14 @@ const PREFIX: Record<Resource, string> = {
   payments: 'payments',
   pinnedCatalog: 'pinned-catalog',
   pricingSettings: 'pricing-settings',
+  paymentMethods: 'payment-methods',
 }
 
 export const keys = {
   me: () => [PREFIX.me] as const,
   business: () => [PREFIX.business] as const,
+  // `GET /phone-countries`: the same constant for every business, so nothing invalidates it.
+  phoneCountries: () => [PREFIX.phoneCountries] as const,
   varieties: () => [PREFIX.varieties] as const,
   archivedVarieties: () => [PREFIX.varieties, 'archived'] as const,
   variety: (id: string) => [PREFIX.varieties, id] as const,
@@ -49,6 +55,11 @@ export const keys = {
   customers: (q: string) => [PREFIX.customers, { q }] as const,
   customer: (id: string) => [PREFIX.customers, id] as const,
   customerTypes: () => [PREFIX.customerTypes] as const,
+  // The business's offered payment methods and its archived ones (Settings → Payments and
+  // expenses → Payment methods; the Selectors of New sale and Record payment read the first).
+  // One prefix, so `invalidateResource(queryClient, 'paymentMethods')` refreshes both.
+  paymentMethods: () => [PREFIX.paymentMethods] as const,
+  archivedPaymentMethods: () => [PREFIX.paymentMethods, 'archived'] as const,
   expenses: (month: string) => [PREFIX.expenses, month] as const,
   expenseCategories: () => [PREFIX.expenseCategories] as const,
   // `Nueva venta`'s own prices and customer-by-id fetches (plan, invariants:
@@ -117,7 +128,7 @@ export const keys = {
   // The Onboarding's one read (`api/onboarding.ts`), frozen the same way and for the same
   // reason: outside the `Resource`/`PREFIX` system, set by its own writes.
   onboardingProgress: () => ['onboarding-progress'] as const,
-  // The first-run element's one read (`api/firstRun.ts`, ADR-0046): outside the
+  // The first-run element's one read (`api/firstRun.ts`, ADR-0046; the Shell and Variedades): outside the
   // `Resource`/`PREFIX` system, and never frozen, since a write on another screen can
   // change it (`staleTime: 0`, refetched on mount and on focus).
   firstRun: () => ['first-run'] as const,

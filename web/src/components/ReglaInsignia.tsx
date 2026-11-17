@@ -19,12 +19,28 @@ const RULE_BADGE: Record<PricingRule, { word: string | { common: 'common:vip' };
   list: { word: SALES_TEXT.ruleList, tone: 'neutro' },
   bulk: { word: SALES_TEXT.ruleBulk, tone: 'acento' },
   vip: { word: { common: 'common:vip' }, tone: 'acento' },
+  // The word of a type line is the line's own copy of the type's name, not copy of ours.
+  type: { word: '', tone: 'acento' },
   gift: { word: SALES_TEXT.ruleGift, tone: 'acento' },
   special: { word: SALES_TEXT.ruleSpecial, tone: 'acento' },
 }
 
-export default function ReglaInsignia({ rule }: { rule: PricingRule }) {
+interface ReglaInsigniaProps {
+  rule: PricingRule
+  /** The type's name as it was when the line was priced; the word of a `'type'` line. */
+  typeName?: string | null
+}
+
+export default function ReglaInsignia({ rule, typeName = null }: ReglaInsigniaProps) {
   const { t } = useTranslation()
   const badge = RULE_BADGE[rule]
+  if (rule === 'type') {
+    // The full name is the DOM text, so it is also the accessible name; CSS ends it in an ellipsis.
+    return typeName === null ? null : (
+      <Insignia tono={badge.tone} truncable>
+        {typeName}
+      </Insignia>
+    )
+  }
   return <Insignia tono={badge.tone}>{typeof badge.word === 'string' ? badge.word : t(badge.word.common)}</Insignia>
 }

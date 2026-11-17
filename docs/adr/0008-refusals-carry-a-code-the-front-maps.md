@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-02
+summary: "cada rechazo lleva un código y un tipo; el front mapea códigos, nunca el detalle"
 ---
 
 # Refusals carry an explicit code and a kind; the front maps codes, never `detail`

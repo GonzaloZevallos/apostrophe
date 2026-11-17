@@ -13,10 +13,11 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.sql_accounts import SqlAccounts
-from app.accounts.adapters.tables import LoginGuardRow, ResetLinkRow
+from app.accounts.adapters.tables import ResetLinkRow
 from app.accounts.application.reset_password import issue_reset_link
 from app.accounts.domain.account import Email
 from app.accounts.domain.password import PasswordHasher
+from tests.accounts.guard_rows import find_guard_row
 from tests.conftest import NOW, PASSWORD, MovableClock
 
 NEW_PASSWORD = "a brand new password"
@@ -183,15 +184,15 @@ def test_success_lifts_an_active_email_lock_and_leaves_the_address_alone(
     for _ in range(5):
         anonymous_client.post("/auth/login", json={"email": "uno@example.com", "password": "wrong"})
     with Session(engine) as session:
-        locked = session.get(LoginGuardRow, "uno@example.com")
-        assert locked is not None and locked.locked_until is not None
+        locked = find_guard_row(session, "uno@example.com")
+        assert locked is not None and locked.unlocks_at is not None
 
     token = issue(engine, clock())
     anonymous_client.post(f"/reset-links/{token}", json={"new_password": NEW_PASSWORD})
 
     with Session(engine) as session:
-        row = session.get(LoginGuardRow, "uno@example.com")
-        assert row is not None and row.locked_until is None and row.failures == 0
+        row = find_guard_row(session, "uno@example.com")
+        assert row is not None and row.unlocks_at is None and row.failures == 0
 
     # The reset itself still works even though the email was locked -- reset routes
     # are never braked.

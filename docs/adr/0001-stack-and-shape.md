@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-02
+summary: "FastAPI sobre SQLite, un hexágono por capacidad, dinero y gramos como enteros"
 ---
 
 # FastAPI over SQLite, one hexagon per capability, money and grams as whole numbers

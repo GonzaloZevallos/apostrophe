@@ -4,34 +4,34 @@ import { expect, test } from 'vitest'
 import MasInfo from './MasInfo'
 
 const LINE = 'Tu chat propio recibe las pruebas.'
-const MORE = 'El bot escribe a tu chat para avisarte que anda.'
+const DETAIL = 'El bot escribe a tu chat para avisarte que anda.'
 
 test('it mounts closed, opens on a tap and collapses on a second', async () => {
   const user = userEvent.setup()
-  render(<MasInfo line={LINE} more={MORE} />)
+  render(<MasInfo line={LINE} more={DETAIL} />)
 
   const button = screen.getByRole('button', { name: 'More info' })
   expect(button).toHaveAttribute('aria-expanded', 'false')
   expect(screen.getByText(LINE)).toBeVisible()
-  expect(screen.getByText(MORE)).not.toBeVisible()
+  expect(screen.getByText(DETAIL)).not.toBeVisible()
 
   await user.click(button)
   expect(button).toHaveAttribute('aria-expanded', 'true')
-  expect(screen.getByText(MORE)).toBeVisible()
+  expect(screen.getByText(DETAIL)).toBeVisible()
 
   await user.click(button)
   expect(button).toHaveAttribute('aria-expanded', 'false')
-  expect(screen.getByText(MORE)).not.toBeVisible()
+  expect(screen.getByText(DETAIL)).not.toBeVisible()
 })
 
 test('the open state is local: a remount is closed and nothing is stored or pushed', async () => {
   const user = userEvent.setup()
   const before = window.history.length
-  const { unmount } = render(<MasInfo line={LINE} more={MORE} />)
+  const { unmount } = render(<MasInfo line={LINE} more={DETAIL} />)
   await user.click(screen.getByRole('button', { name: 'More info' }))
   unmount()
 
-  render(<MasInfo line={LINE} more={MORE} />)
+  render(<MasInfo line={LINE} more={DETAIL} />)
   expect(screen.getByRole('button', { name: 'More info' })).toHaveAttribute('aria-expanded', 'false')
   expect(window.localStorage.length).toBe(0)
   expect(window.sessionStorage.length).toBe(0)
@@ -39,7 +39,7 @@ test('the open state is local: a remount is closed and nothing is stored or push
 })
 
 test('the "i" icon is hidden from assistive technology and the name stays "More info"', () => {
-  const { container } = render(<MasInfo line={LINE} more={MORE} />)
+  const { container } = render(<MasInfo line={LINE} more={DETAIL} />)
   expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
   expect(screen.getByRole('button')).toHaveAccessibleName('More info')
 })

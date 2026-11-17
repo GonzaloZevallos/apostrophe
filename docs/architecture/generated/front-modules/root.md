@@ -10,6 +10,7 @@ subgraph src["src"]
   src_App_tsx["App.tsx"]
   src_Root_tsx["Root.tsx"]
   src_clipboard_ts["clipboard.ts"]
+  src_fontsReady_ts["fontsReady.ts"]
   src_main_tsx["main.tsx"]
   src_paymentReturn_ts["paymentReturn.ts"]
   src_queryClient_ts["queryClient.ts"]
@@ -25,6 +26,7 @@ src_App_tsx-->src_router_tsx
 src_Root_tsx-->src_queryClient_ts
 src_Root_tsx-->src_useOnline_ts
 src_main_tsx-->src_App_tsx
+src_main_tsx-->src_fontsReady_ts
 src_main_tsx-->src_theme_ts
 src_queryClient_ts-->src_routes_ts
 src_queryClient_ts-->src_session_ts

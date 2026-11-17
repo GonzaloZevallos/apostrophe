@@ -11,10 +11,16 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass, replace
 from datetime import date, datetime
-from enum import StrEnum
 from typing import ClassVar
 
-from app.sales.domain.pricing import PriceQuote, PricingRule, SaleRuleBroken, price_line
+from app.sales.domain.pricing import (
+    CustomerTypeFact,
+    PriceQuote,
+    PricingRule,
+    SaleRuleBroken,
+    price_line,
+)
+from app.shared.payment_method import PaymentMethodId, PaymentMethodLabel
 from app.shared.pricing_settings import PricingSettings
 from app.shared.quantity import Quantity
 
@@ -95,17 +101,12 @@ class CustomerAlreadyAssigned(SaleRuleBroken):
         super().__init__("the sale already has a customer")
 
 
-class PaymentMethod(StrEnum):
-    CASH = "cash"
-    TRANSFER = "transfer"
-
-
 @dataclass(frozen=True)
 class CustomerFact:
     """What `CustomerFacts.get` answers for a customer who exists in the business."""
 
     id: int
-    vip: bool
+    customer_type: CustomerTypeFact | None
 
 
 @dataclass(frozen=True)
@@ -119,6 +120,10 @@ class SaleLine:
     price_per_gram: int
     line_total: int
     id: int | None = None
+    # The customer type that priced the line and a copy of its name, written once when the
+    # line is created and set exactly when the rule is `"type"` (docs/adr/0059).
+    customer_type_id: int | None = None
+    customer_type_name: str | None = None
 
     def __post_init__(self) -> None:
         # These never fail from `Sale.record` (`price_line` already enforces them);
@@ -127,6 +132,9 @@ class SaleLine:
         assert self.quantity.is_positive, "a sale line always has grams above zero"
         assert self.price_per_gram >= 0, "a sale line's price per gram is never negative"
         assert self.line_total >= 0, "a sale line's total is never negative"
+        if self.pricing_rule is PricingRule.CUSTOMER_TYPE:
+            assert self.customer_type_id is not None, "a type line records its type"
+            assert self.customer_type_name is not None, "a type line copies its type's name"
 
 
 @dataclass(frozen=True)
@@ -136,9 +144,11 @@ class OnTheSpotPayment:
 
     paid_on: date
     amount: int
-    method: PaymentMethod
+    method: PaymentMethodId
     customer_id: int | None
     id: int | None = None
+    # Set only by the views (the method's current name and icon); a write never carries it.
+    label: PaymentMethodLabel | None = None
 
     def __post_init__(self) -> None:
         assert self.amount > 0, "an on-the-spot payment is always for a positive amount"
@@ -176,6 +186,8 @@ class Sale:
     payment: OnTheSpotPayment | None
     recorded_at: datetime
     id: int | None = None
+    # The Sale number (CONTEXT.md): `None` before saving, like `id`; given by the store.
+    number: int | None = None
 
     @property
     def total(self) -> int:
@@ -211,7 +223,7 @@ class Sale:
         shipping_charged: int,
         note: str | None,
         lines: Sequence[LineRequest],
-        method: PaymentMethod | None,
+        method: PaymentMethodId | None,
         left_owing: bool,
         recorded_at: datetime,
     ) -> Sale:
@@ -232,8 +244,10 @@ class Sale:
         if trimmed_note is not None and len(trimmed_note) > NOTE_MAX_LENGTH:
             raise NoteTooLong()
 
-        vip = customer.vip if customer is not None else False
-        priced_lines = tuple(cls._price(request, vip=vip, settings=settings) for request in lines)
+        customer_type = customer.customer_type if customer is not None else None
+        priced_lines = tuple(
+            cls._price(request, customer_type=customer_type, settings=settings) for request in lines
+        )
         total = sum((line.line_total for line in priced_lines), 0) + shipping_charged
 
         payment = cls._payment(
@@ -255,11 +269,13 @@ class Sale:
         )
 
     @staticmethod
-    def _price(request: LineRequest, *, vip: bool, settings: PricingSettings) -> SaleLine:
+    def _price(
+        request: LineRequest, *, customer_type: CustomerTypeFact | None, settings: PricingSettings
+    ) -> SaleLine:
         priced = price_line(
             gift=request.gift,
             special_price=request.special_price,
-            customer_is_vip=vip,
+            customer_type=customer_type,
             settings=settings,
             quote=request.quote,
             quantity=request.quantity,
@@ -270,6 +286,10 @@ class Sale:
             pricing_rule=priced.rule,
             price_per_gram=priced.price_per_gram,
             line_total=priced.line_total,
+            customer_type_id=None if priced.customer_type is None else priced.customer_type.id,
+            customer_type_name=(
+                None if priced.customer_type is None else priced.customer_type.name
+            ),
         )
 
     @staticmethod
@@ -278,7 +298,7 @@ class Sale:
         total: int,
         sale_date: SaleDate,
         customer_id: int | None,
-        method: PaymentMethod | None,
+        method: PaymentMethodId | None,
         left_owing: bool,
     ) -> OnTheSpotPayment | None:
         if total <= 0:

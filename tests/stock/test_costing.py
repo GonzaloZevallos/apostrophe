@@ -19,3 +19,10 @@ def test_cost_per_gram_rounds_half_up() -> None:
 def test_cost_per_gram_rounds_a_half_up_not_to_even() -> None:
     # 5 / 2 = 2.5 exactly: half up takes it to 3, never to the nearest even number.
     assert cost_per_gram(5, Quantity.of("2")) == 3
+
+
+def test_cost_per_gram_on_a_tie_goes_up_and_just_below_it_stays_down() -> None:
+    # 25 / 10 = 2.5 exactly: up to 3.
+    assert cost_per_gram(25, Quantity.of("10")) == 3
+    # 499 / 200 = 2.495: just below the tie, down to 2.
+    assert cost_per_gram(499, Quantity.of("200")) == 2

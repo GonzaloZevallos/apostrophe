@@ -8,15 +8,13 @@
 import type { CopyKind } from './limits.ts'
 
 /**
- * The twelve wordings as keys of the `emptyStates` namespace (`locales/<tag>/emptyStates.json`).
+ * The eleven wordings as keys of the `emptyStates` namespace (`locales/<tag>/emptyStates.json`).
  * Customers and Home share `nobodyOwes`. No words here: a screen resolves the key at render.
  */
 export const EMPTY_STATE_KEYS = {
   salesList: 'emptyStates:salesList',
   customersList: 'emptyStates:customersList',
   nobodyOwes: 'emptyStates:nobodyOwes',
-  homeVarietiesTitle: 'emptyStates:homeVarietiesTitle',
-  homeVarietiesDetail: 'emptyStates:homeVarietiesDetail',
   stockTitle: 'emptyStates:stockTitle',
   stockDetail: 'emptyStates:stockDetail',
   catalogTitle: 'emptyStates:catalogTitle',
@@ -24,6 +22,7 @@ export const EMPTY_STATE_KEYS = {
   analysisNoHistory: 'emptyStates:analysisNoHistory',
   analysisEmptyMonth: 'emptyStates:analysisEmptyMonth',
   customerTypesList: 'emptyStates:customerTypesList',
+  paymentMethodsArchived: 'emptyStates:paymentMethodsArchived',
 } as const
 
 /** The limit kind of each empty state, measured in `en` by `copyLimits.real.test.ts`. */
@@ -31,8 +30,6 @@ export const EMPTY_STATE_LIMITS = {
   salesList: 'emptyLine',
   customersList: 'emptyTitle',
   nobodyOwes: 'emptyTitle',
-  homeVarietiesTitle: 'emptyTitle',
-  homeVarietiesDetail: 'emptyLine',
   stockTitle: 'emptyTitle',
   stockDetail: 'emptyLine',
   catalogTitle: 'emptyTitle',
@@ -40,4 +37,5 @@ export const EMPTY_STATE_LIMITS = {
   analysisNoHistory: 'emptyLine',
   analysisEmptyMonth: 'emptyLine',
   customerTypesList: 'emptyTitle',
+  paymentMethodsArchived: 'emptyTitle',
 } as const satisfies Record<keyof typeof EMPTY_STATE_KEYS, CopyKind>

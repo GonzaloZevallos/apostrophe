@@ -5,15 +5,17 @@
  * carry the `enterkeyhint` that moves the keyboard through them.
  */
 
-import { act, render, screen } from '@testing-library/react'
+import { pickProduct, productField } from './lineProduct'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import App from '../../App'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
 import { HOME, pathTo, SALES, SALE_NEW } from '../../routes'
+import { withPaymentMethods } from '../../test-payment-methods'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 const ROSA = {
   id: 1,
   name: 'Rosa',
@@ -30,12 +32,12 @@ async function openForm(): Promise<ReturnType<typeof vi.fn>> {
     if (path === '/api/products?on=2026-10-02') return Promise.resolve(jsonResponse(200, [ROSA]))
     return Promise.reject(new Error(`unexpected request: ${path}`))
   })
-  vi.stubGlobal('fetch', fetchMock)
+  vi.stubGlobal('fetch', withPaymentMethods(fetchMock))
   await act(() => router.navigate(SALES))
   await act(() => router.navigate(SALE_NEW))
   render(<App />)
   await screen.findByText('New sale')
-  await screen.findByRole('option', { name: 'Rosa' })
+  await waitFor(() => expect(productField(1)).toBeEnabled())
   return fetchMock
 }
 
@@ -77,7 +79,7 @@ test('the keyboard key moves from grams to Precio especial, then closes the keyb
   const user = userEvent.setup()
   const fetchMock = await openForm()
 
-  await user.selectOptions(screen.getByLabelText('Line 1 variety'), '1')
+  await pickProduct(user, 1, 'Rosa')
   await user.type(screen.getByLabelText('Line 1 grams'), '2{Enter}')
   expect(screen.getByLabelText('Line 1 special price')).toBe(document.activeElement)
 

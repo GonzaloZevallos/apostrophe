@@ -9,23 +9,26 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { choosePaid, choosePaymentMethod } from '../../components/selectorTestKit'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { SALE_NEW } from '../../routes'
 import { stubViewport } from '../../test-viewport'
 import NuevaVenta from './NuevaVenta'
+import { withPaymentMethods } from '../../test-payment-methods'
+import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
-const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02' }
+const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
 
 beforeEach(() => {
   vi.stubGlobal(
     'fetch',
-    vi.fn(() =>
+    vi.fn(withPaymentMethods(() =>
       Promise.resolve(
         new Response('[]', { status: 200, headers: { 'Content-Type': 'application/json' } }),
       ),
-    ),
+    )),
   )
 })
 
@@ -38,7 +41,7 @@ function renderForm(viewport: 'phone' | 'computer' = 'phone') {
   stubViewport(viewport)
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const router = createMemoryRouter(
-    [{ element: <Outlet context={ME} />, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
+    [{ element: <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>, children: [{ path: SALE_NEW, element: <NuevaVenta /> }] }],
     { initialEntries: [SALE_NEW] },
   )
   render(
@@ -59,7 +62,8 @@ test('Save is the secondary button until a payment is chosen, then the primary o
   expect(save).toHaveAttribute('type', 'submit')
   expect(save).toHaveClass('boton--suave')
 
-  await userEvent.click(screen.getByRole('radio', { name: 'Cash' }))
+  await choosePaid(userEvent)
+  await choosePaymentMethod(userEvent, 'Cash')
 
   const after = screen.getByRole('button', { name: 'Save sale' })
   expect(after).toBe(save)

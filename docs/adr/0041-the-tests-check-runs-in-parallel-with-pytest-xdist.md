@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-08
+summary: "el chequeo de pruebas corre en paralelo con pytest-xdist"
 ---
 
 # The tests check runs in parallel with pytest-xdist, `uv run --no-project pytest -n auto`

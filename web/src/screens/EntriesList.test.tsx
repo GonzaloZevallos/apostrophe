@@ -29,11 +29,12 @@ import { LIMITS } from '../copy/limits'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import Shell from '../shell/Shell'
 import { baselineText } from '../i18n/testing'
+import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
 const STOCK_EMPTY_TITLE = baselineText('stock.ts:EMPTY_STATE_TITLE')
 const STOCK_EMPTY_DETAIL = baselineText('stock.ts:EMPTY_STATE_DETAIL')
 
-const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06', shown_language: SHOWN_EN }
+const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-06', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -71,7 +72,7 @@ const STOCK = {
 }
 
 function Provide() {
-  return <Outlet context={ME} />
+  return <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
 }
 
 function Where({ opens }: { opens?: string }) {
@@ -273,7 +274,7 @@ test('Editar links to the entry form', async () => {
   expect(await screen.findByTestId('where')).toHaveTextContent(pathTo(STOCK_ENTRY, { id: 11 }))
 })
 
-test('Delete asks "Before deleting" naming date, variety and grams, then deletes and says so', async () => {
+test('Delete asks "Before deleting" naming date, product and grams, then deletes and says so', async () => {
   fakeApi({ 'DELETE /stock/entries/12': () => new Response(null, { status: 204 }) })
   renderAt(STOCK_PATH)
 
@@ -332,7 +333,7 @@ test('a variety that is gone, or an id that is not a number, shows "That is gone
   fakeApi()
   renderAt(pathTo(VARIETY_ENTRIES, { id: 99 }))
   expect(await screen.findByText('That is gone.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Back to Varieties' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Back to Products' })).toBeInTheDocument()
 })
 
 test('a delete marks the catalog stale and the stock list refetches', async () => {

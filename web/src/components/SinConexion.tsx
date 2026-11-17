@@ -1,5 +1,5 @@
 /**
- * The "Sin conexión" state of `Estados` (`accounts.md`, "No network"): fixed copy,
+ * The "Sin conexión" state of `Estados` (`accounts.md`, "Sin red"): fixed copy,
  * no data of its own. Shown wherever a request fails because the network dropped, or
  * the browser's own `online`/`offline` signal says so (`useOnline`) — never a success
  * toast, never the generic server-error retry.

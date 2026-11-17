@@ -16,7 +16,7 @@ import type { PricingRule } from '../sales/pricing'
  * "Vuelven N g al stock" (sales.md), never summed here from the lines. */
 export type QuantityOut = number
 
-export type Payment = 'cash' | 'transfer' | 'owing' | 'none'
+export type Payment = 'paid' | 'owing' | 'none'
 
 export interface SaleCustomer {
   id: number
@@ -29,12 +29,16 @@ export interface SaleLine {
   product_name: string
   quantity: number
   pricing_rule: PricingRule
+  /** The type's name as it was when the line was saved; `null` unless the rule is `'type'`. */
+  customer_type_name: string | null
   price_per_gram: number
   line_total: number
 }
 
 export interface Sale {
   id: number
+  /** The Sale number: the seller's own count in this business, never the id. */
+  number: number
   date: string
   customer: SaleCustomer | null
   shipping_charged: number
@@ -64,7 +68,7 @@ export interface SaleDetailLine extends SaleLine {
 /** Where the server's one settlement pass leaves the sale (`BillState`, ADR-0053):
  * a different fact from `Sale['payment']`, which is how the sale was paid, so
  * the two vocabularies stay apart on purpose. */
-export type BillState = 'cash' | 'transfer' | 'paid' | 'owed' | 'none'
+export type BillState = 'paid' | 'owed' | 'none'
 
 /** The pricing rules a bill line can show; a VIP or special line reads like a list
  * line, so it has none (`rule: null`). */
@@ -87,6 +91,8 @@ export interface SaleBillLine {
  * the customer, read from the last `GET /sales/{id}` and never recomputed here. */
 export interface SaleBill {
   business_name: string
+  /** The Sale number: the seller's own count in this business, not an id. */
+  number: number
   date: SaleDetail['date']
   shipping_charged: number
   total: number
@@ -99,6 +105,7 @@ export interface SaleBill {
  * OpenAPI snapshot; `satisfies` ties each to its type so a renamed field fails `tsc`. */
 export const SALE_BILL_KEYS = [
   'business_name',
+  'number',
   'date',
   'shipping_charged',
   'total',
@@ -118,8 +125,6 @@ export const SALE_BILL_PAYMENT_KEYS = [
   'still_owed',
 ] as const satisfies readonly (keyof SaleBillPayment)[]
 export const BILL_STATES = [
-  'cash',
-  'transfer',
   'paid',
   'owed',
   'none',

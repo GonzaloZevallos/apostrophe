@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-03
+summary: "el texto del catálogo tiene un solo autor y las marcas del vendedor pasan tal cual"
 ---
 
 # The catalog text has one author; a seller's `**` markers pass through, paired left to right

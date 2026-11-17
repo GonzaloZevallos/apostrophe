@@ -27,11 +27,11 @@
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, HOME, SALES, SALE_NEW, STOCK_ENTRY_NEW, VARIETIES, pathTo } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expectToast } from './helpers/toast.js'
-import { expect, test } from './fixtures.js'
+import { choosePaymentMethod, expect, paidInCash, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { setPriceDate } from './helpers/priceDate.js'
 import { watchConsole } from './console.js'
-import { openGastos } from './helpers/openMas.js'
+import { openGastos } from './helpers/openScreens.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { uniqueTag } from './helpers/unique.js'
@@ -181,9 +181,9 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // A priced variety.
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: 'New variety' }).click()
-  await page.getByLabel('Name').fill('Rosa')
-  await expectToast(page, 'Variety saved', () => page.getByRole('button', { name: 'Add the variety' }).click())
+  await page.getByRole('link', { name: 'New product' }).click()
+  await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
+  await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.getByRole('link', { name: /Rosa/ }).click()
   await page.getByRole('link', { name: 'New price' }).click()
   // Backdated well before this run's own month (sales.spec.ts does the same for
@@ -195,16 +195,16 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
 
   // A purchase: the "Origen" pill defaults to "Purchase" (`EntradaStock.tsx`).
   await page.goto(STOCK_ENTRY_NEW)
-  await page.getByLabel('Grams').fill('50')
-  await page.getByLabel('Variety').selectOption({ label: 'Rosa' })
+  await page.getByLabel('Grams', { exact: true }).fill('50')
+  await pickStockVariety(page, 'Rosa')
   await expect(page.getByRole('button', { name: 'Purchase' })).toHaveAttribute('aria-pressed', 'true')
-  await page.getByLabel('Total cost').fill('45000')
+  await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill('45000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
   // A customer, for the sale left owing.
   await page.goto(CUSTOMER_NEW)
-  await page.getByLabel('Phone').fill('+5491155550077')
-  await page.getByLabel('Name').fill('Carla Pérez')
+  await page.getByLabel('Phone', { exact: true }).fill('+5491155550077')
+  await page.getByLabel('Name', { exact: true }).fill('Carla Pérez')
   await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
@@ -212,7 +212,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // A sale left owing, to Carla.
   await page.getByRole('link', { name: 'New sale to Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
-  const todayIso = await page.getByLabel('Date').inputValue()
+  const todayIso = await page.getByLabel('Date', { exact: true }).inputValue()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })
   await page.getByRole('radio', { name: 'Owing' }).check()
   await page.getByRole('button', { name: 'Save sale' }).click()
@@ -222,7 +222,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.goto(SALES)
   await page.getByRole('link', { name: 'New sale' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '3' })
-  await page.getByRole('radio', { name: 'Cash' }).check()
+  await page.getByRole('radio', { name: 'Paid' }).check(); await choosePaymentMethod(page, 'Cash')
   await page.getByRole('button', { name: 'Save sale' }).click()
   await expect(page.getByText('Sale saved')).toBeVisible()
 
@@ -258,7 +258,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
           customer_id: null,
           shipping_charged: 0,
           note: null,
-          payment: 'cash',
+          payment: await paidInCash(page),
           lines: [{ product_id: rosaId, quantity: '1', gift: false, special_price: null }],
         },
       })
@@ -269,9 +269,10 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // An expense, in the business's own default "Other" category.
   await openGastos(page)
   await page.getByRole('link', { name: 'Add expense' }).click()
-  await page.getByLabel('Category').selectOption({ label: 'Other' })
-  await page.getByLabel('Amount').fill('1500')
-  await page.getByLabel('Details').fill('Bolsas de regalo')
+  await page.getByRole('button', { name: /^Category/ }).click()
+  await page.getByRole('option', { name: 'Other' }).or(page.getByRole('button', { name: 'Other', exact: true })).click()
+  await page.getByLabel('Amount', { exact: true }).fill('1500')
+  await page.getByLabel('Details', { exact: true }).fill('Bolsas de regalo')
   await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
 
   // `GET /panel`, read in this same run: the one answer Inicio must agree with,
@@ -389,7 +390,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // On a computer the list sits beside the card and has its own title: read the card's (the pane
   // without the search box).
   await expect(
-    page.locator('main').filter({ hasNot: page.getByLabel('Search customer') }).locator('.encabezado__titulo'),
+    page.locator('main').filter({ hasNot: page.getByLabel('Search customer', { exact: true }) }).locator('.encabezado__titulo'),
   ).toHaveText(teaserRow.name)
   await expect(page.locator('.ficha-deuda', { hasText: new RegExp(`Owes you\\s*${pesos(teaserRow.balance).replace(/[$.]/g, '\\$&')}`) })).toBeVisible()
 
@@ -399,3 +400,6 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await expectOnlyTheThemeStored(page)
   expect(consoleMessages).toEqual([])
 })
+
+import { pickStockVariety } from './helpers/stockVariety.js'
+import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'

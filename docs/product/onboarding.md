@@ -1,278 +1,286 @@
-# Onboarding
-
-The step-by-step setup a brand-new business is walked through after its new-business invitation is accepted. It takes the first-run checklist's place for that business. It asks for what a first sale needs (a variety priced today and its opening stock) and offers the business-wide settings a new seller would otherwise hunt for (catalog header and footer, the Telegram bot, a partner, expense categories). Each step saves exactly what its owner saves: varieties.md, stock.md, catalog.md, pinned-catalog.md, accounts.md and expenses.md. The Onboarding holds no setting of its own; it only remembers which optional steps were passed. Seen only by its business (ADR-0004). Where it sits is navigation.md; its Home notice sits in results.md's order.
-
 ## Jobs
 
-**When** I have just opened my business and it is still empty, **I want** to be walked through what it needs, one short step at a time, with defaults already filled in, **so I can** record my first sale the same day without hunting through Settings, Varieties and the catalog screen.
+**Cuando** acabo de abrir mi negocio y todavía está vacío, **quiero** que me guíen por lo que necesita, un paso corto por vez, con los valores por defecto ya completos, **para** registrar mi primera venta el mismo día sin buscar entre Settings, Products y la pantalla del Catalog.
 
-Before it, the seller landed on an empty Home and opened Varieties, the catalog screen and Settings one by one. Before the app, they did all of it in the spreadsheet's Ajustes sheet.
+Antes, quien vendía caía en un Home vacío y abría Products, la pantalla del Catalog y Settings una por una. Antes de la app, hacía todo eso en la pestaña Ajustes de la planilla.
 
-**When** I run my business from my phone between orders or mid-chat with a customer, several times a day, **I want** the app laid out around what I actually do and how often, **so I can** get back to the customer instead of hunting through menus. (The navigation job, navigation.md: served here by the Onboarding as the one first-run element of a new business.)
+**Cuando** manejo mi negocio desde el celular entre pedidos o en medio de un chat con un cliente, varias veces al día, **quiero** la app organizada según lo que de verdad hago y cada cuánto, **para** volver con el cliente en vez de buscar entre menús. (El job de navegación, navigation.md: lo sirve acá el Onboarding como el único camino guiado de un Business nuevo, abierto al aceptar su Invitation; Home no muestra ningún aviso de primer uso.)
 
-**When** a price changes mid-day and I'm on my phone between orders or mid-chat with a customer, **I want** to record the new price and the day it applies from in a short form that reads as pesos and starts on today, without leaving the variety I was looking at, **so I can** get back to the customer sure the right price is in force, without second-guessing the amount or the date. (Defined in varieties.md; served here as its secondary situation: step 1 shares the price fields, so its amounts read as pesos with "$". Step 1 always saves a price effective today and shows no date.)
+**Cuando** abro Home en el celular para ver cómo viene el día, **quiero** ver solo lo que vendí, lo que me deben y mi Stock por Product, **para** llevar el negocio de un vistazo sin avisos de configuración en el medio. (Se define en results.md; lo sirve acá que el Onboarding no ponga ningún aviso en Home: se entra solo al aceptar la Invitation o abriendo `/onboarding`.)
 
-**When** I review an Onboarding change against its design before approving it, **I want** every difference between the built steps (opening stock's "Initial stock" chip included) and the drawing to be either fixed or recorded as a decision in this doc, and the before and after captures to cover every screen the change touches, **so I can** approve from the PR's evidence alone, without hand-checking screens or carrying an open finding into the next task.
+**Cuando** un precio cambia en mitad del día y estoy con el celular entre pedidos o en medio de un chat con un cliente, **quiero** registrar el precio nuevo y el día desde el que rige en un formulario corto que se lea en pesos y arranque en hoy, sin salir del producto que estaba mirando, **para** volver con el cliente seguro de que rige el precio correcto, sin dudar del monto ni de la fecha. (Se define en varieties.md; lo sirve acá su situación secundaria: el paso 1 comparte los campos de precio, así que sus montos se leen en pesos con "$". El paso 1 siempre guarda un precio que rige desde hoy y no muestra fecha.)
 
-This refines criterion 5 and its design metric; it is not a new product job. Its protagonist is the reviewer acting for the maintainer, and in the end Zeta, as in design-capture.md and pinned-catalog.md criterion 11. The seller is affected only indirectly. It came from GH-144's follow-up, where the "Origin" label on step 2's chip was undecided and the comparison evidence had no before-run, no dark steps and no Home notice.
+**Cuando** reviso un cambio del Onboarding contra su diseño antes de aprobarlo, **quiero** que cada diferencia entre los pasos construidos (incluido el chip "Initial stock" del Opening stock) y el dibujo esté o bien corregida o bien registrada como decisión en este doc, y que las capturas de antes y después cubran cada pantalla que el cambio toca, **para** aprobar solo a partir de la evidencia del PR, sin revisar pantallas a mano ni arrastrar un hallazgo abierto a la próxima tarea.
 
-Success criteria:
+Este afina el criterio 5 y su métrica de diseño; no es un job de producto nuevo. Su protagonista es quien revisa en nombre del mantenedor y, al final, Zeta, como en design-capture.md y en el criterio 11 de pinned-catalog.md. Quien vende se ve afectado solo de forma indirecta. Salió del seguimiento de GH-144, donde la etiqueta "Origin" sobre el chip del paso 2 estaba sin decidir y la evidencia de comparación no tenía corrida de antes, ni pasos oscuros, ni el aviso de Home de entonces.
 
-1. **Fast, from the phone**: from accepting the invitation to a business ready for its first sale (a variety priced today, with opening stock) in under 5 minutes, from the phone alone.
-2. **Only the sale is required**: nothing is mandatory beyond a priced variety and its opening stock. Every other step can be skipped in one tap and says where it can be done later.
-3. **Nothing lost**: leaving halfway loses nothing already saved. Resuming picks up at the first step that is neither done nor passed.
-4. **One fact, one place**: every step saves the same setting, under the same rules and refusals, that Settings or the variety's page saves. A value set in a step is the value seen afterwards in its usual place, and the reverse.
-5. **Simple and attractive, inventing nothing**: built from design-system elements and judged by eye on phone and computer. No placeholder data, no fake figures, and no step for a setting that does not exist yet.
-6. **A change is approved from its evidence alone**:
-   - every difference between a built step and its drawing is either fixed or decided here, and the built screen, its tests and this doc agree;
-   - the before (task base) and after (head) captures cover every screen the change touches, with no cell missing;
-   - every difference the captures show is listed in the PR;
-   - the comparison is never a gate step (ADR-0042, gate.md).
+**Cuando** trabajo en la app desde el celular, venda lo que venda, **quiero** que llame "products" a lo que vendo, **para** que la app se ajuste a mi negocio sin que yo traduzca sus palabras ni le elija una. (Se define en varieties.md; lo sirve acá su segunda situación, el primer uso: el Onboarding dice "Product" en sus pasos y nunca pregunta "What you sell".)
 
-## Behaviour
+# Onboarding
 
-### Who gets it, and when
+La configuración paso a paso por la que se guía a un **Business** recién creado una vez que se acepta su **Invitation** de Business nuevo. Pide lo que necesita una primera **Sale** (un **Product** con precio para hoy y su **Opening stock**) y ofrece las configuraciones de todo el Business que quien vende recién empieza tendría que salir a buscar (**Catalog header and footer**, el bot de Telegram, un socio, **Expense category**s). Cada paso guarda exactamente lo que guarda su dueño: varieties.md, stock.md, catalog.md, pinned-catalog.md, accounts.md y expenses.md. El Onboarding no tiene ninguna configuración propia; solo recuerda qué pasos opcionales se pasaron. Lo ve solo su Business (ADR-0004). Dónde se ubica está en navigation.md. No pone ningún aviso en Home (results.md): el dueño sacó los avisos de primer uso (`docs/design/redesign/registro-unificado.md`).
 
-- Only a business just opened by a new-business invitation, from the moment the invitation is accepted.
-- **Never offered to**:
-  - an imported business. Once the spreadsheet import loads a business, the Onboarding is over for it: its notice never shows and "Done" is never shown. Its remembered passes are not records for the import's eligibility check (import.md);
-  - a business a user joined by a join invitation;
-  - a business that existed before the Onboarding shipped.
-- **No "run it again"**: once it is over, nothing in the app points back to it.
-- **One state per business**: a partner who joins midway sees the same notice and can carry on. No roles.
+El Onboarding nunca pregunta cómo se llama lo que vende el Business: en pantalla es siempre "Product" / "Products" para todo Business (varieties.md, docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md), y no existe ningún paso "What you sell".
 
-### Relation to the first-run checklist and the after-import notice
+Criterios de éxito:
 
-- For a brand-new business the Onboarding fully replaces the checklist; the two never both apply.
-- While it is not over, neither the checklist nor "Start with your varieties" shows. "Start with your varieties" takes over once it is over.
-- **No side rules of its own**: "+ New sale" and "Send catalog" behave while the Onboarding runs as they do for any business. What is missing is told by the Home notice ("Missing: …"), by New sale's own "<variety> has no price for that date" before saving, and by the catalog screen's own empty state. The checklist's side rules (navigation.md) belong to the checklist.
-- **The Onboarding itself builds neither the checklist nor the after-import notice**: Home's "To get started" checklist and the "Connect the bot…" notice are built by the first-run capability (navigation.md, results.md), which reads `/first-run`. A business that existed before the Onboarding and an imported business see the element that capability decides, not an Onboarding notice.
+1. **Rápido, desde el celular**: desde aceptar la Invitation hasta un Business listo para su primera Sale (un Product con precio para hoy, con Opening stock) en menos de 5 minutos, solo desde el celular.
+2. **Solo la venta es obligatoria**: nada es obligatorio más allá de un Product con precio y su Opening stock. Cualquier otro paso se puede saltear con un toque y dice dónde se puede hacer más adelante.
+3. **Nada perdido**: salir a mitad de camino no pierde nada de lo ya guardado. Retomar (al volver por su propia entrada) arranca en el primer paso que no está ni hecho ni pasado. Quien no vuelve termina la configuración desde Settings y la página del Product, que guardan lo mismo.
+4. **Un dato, un lugar**: cada paso guarda la misma configuración, bajo las mismas reglas y rechazos, que guardan Settings o la página del Product. Un valor fijado en un paso es el valor que se ve después en su lugar de siempre, y al revés.
+5. **Simple y atractivo, sin inventar nada**: armado con elementos del design system y juzgado a ojo en celular y computadora. Sin datos de relleno, sin cifras falsas y sin ningún paso para una configuración que todavía no existe.
+6. **Un cambio se aprueba solo con su evidencia**:
+   - cada diferencia entre un paso construido y su dibujo está o bien corregida o bien decidida acá, y la pantalla construida, sus tests y este doc coinciden;
+   - las capturas de antes (base de la tarea) y después (head) cubren cada pantalla que el cambio toca, sin ninguna celda faltante;
+   - cada diferencia que muestran las capturas se lista en el PR;
+   - la comparación nunca es un paso del **Gate** (ADR-0042, gate.md).
+7. **Ninguna palabra que elegir**: el Onboarding nunca muestra "What you sell" ni pide una Unit, y cada texto suyo dice "Product" / "Products", nunca "variety".
+8. **Home queda limpio**: ningún estado del Onboarding (sin empezar, a mitad de camino, con todo hecho o pasado sin "Done", terminado) pone un aviso, insignia ni recordatorio en Home ni en ningún otro lado.
 
-### Entry and the Home notice
+## Comportamiento
 
-- **Entry**: accepting a new-business invitation lands in the Onboarding, not on an empty Home. A join invitation still lands on Home. This is the only time the Onboarding opens by itself.
-- **The notice**: while the Onboarding is not over, Home shows "Go on to the setup" at the top, in position 1 of results.md's order, on the phone and on `InicioCompu`.
-  - It shows progress in words ("2 of 6 steps"), counting steps done or passed, and the resume step by its short name (e.g. "Missing: initial stock").
-  - When every step is done or passed but "Done" has not been reached yet (say, the only price was deleted while the optional steps were passed, and later added again from the variety's page), it reads "6 of 6 steps" with no "Missing" line, and opens "Done".
-  - Adding more varieties never moves the count past steps 1–2.
-  - Otherwise it opens the Onboarding at the resume step.
-  - It cannot be dismissed. It goes for good when the Onboarding is over.
-  - Partners see it too.
-- A seller who wants it gone sooner finishes the two required steps and taps "Skip the rest".
+### A quién le toca, y cuándo
 
-### The screens
+- Solo a un Business recién abierto con una Invitation de Business nuevo, desde el momento en que se acepta la Invitation.
+- **Nunca se ofrece a**:
+  - un Business importado. Una vez que la **Spreadsheet import** carga un Business, el Onboarding terminó para él: `/onboarding` lleva a Home y "Done" nunca se muestra. Sus pasos recordados como pasados no son registros para el control de elegibilidad de la Spreadsheet import (import.md);
+  - un Business al que un **User** se sumó con una Invitation para sumarse;
+  - un Business que existía antes de que saliera el Onboarding.
+- **Sin "hacerlo de nuevo"**: una vez que terminó, nada en la app vuelve a apuntar a él.
+- **Un estado por Business**: un socio que se suma a mitad de camino comparte el mismo estado y puede seguir abriendo `/onboarding`. Sin roles.
 
-- **Kind**: a full screen of the form-or-sheet kind (navigation.md): no bar or sidebar, no "+ New sale". One centred, phone-width column on every viewport, with no computer layout of its own.
-- **Every step shows**:
-  - one short title and one sentence on why it matters;
-  - its fields and one primary action;
-  - progress in words as well as shape ("Step 2 of 6"), never by colour alone;
-  - "Back", to the step before, on every step but step 1. Step 1 has no step before it: it shows no "Back", and "Close" is its way out;
-  - "Skip", on optional steps only;
-  - "Skip the rest", on optional steps only, only once both required steps are done, and never on the last step (step 6), where it would pass nothing "Skip" does not;
-  - "Close", which lands on Home and keeps everything saved and the resume point.
-- **The skip controls**: "Skip" and, when it shows, "Skip the rest" sit together on one line as text links, as the design draws them; neither is a button.
-- **The step frame follows the drawn design** (`docs/product/design-system/pantallas/Onboarding*.dc.html`); a difference between this file and the drawing on what a step shows is a defect in the design.
-- **Unsaved changes**: leaving a step with something typed and not saved, by "Close", "Back" or "Skip", asks before discarding. An untouched step leaves at once.
-- **Inside the steps**, the owners' own behaviour applies unchanged: field rules, refusals inline keeping what was typed, toasts, Test it's and Find my chat's reasons, "No connection", the generic retry and "That is gone.".
+### Home y las demás pantallas mientras no terminó
 
-### The six steps, in order
+- **Home no muestra nada del Onboarding**: ni avance, ni paso que falta, ni "Start with your products". Un Business a mitad de camino ve el Panel normal con sus estados vacíos de siempre, sin texto de configuración (results.md).
+- **Sin reglas laterales propias**: "+ New sale" y "Send catalog" se comportan mientras corre el Onboarding como para cualquier Business. Lo que falta lo dicen el propio "<product> has no price for that date" de New sale antes de guardar y el estado vacío propio de la pantalla del Catalog. Las reglas laterales de "+ New sale" y "Send catalog" para un Business que existía antes del Onboarding (navigation.md) no son del Onboarding.
+- **El Onboarding no arma nada en Home** y no lee ni escribe el estado de primer uso de `/first-run` más allá de su propio fin.
 
-| # | Step | Required | Saves |
+### Entrada y cómo se vuelve
+
+- **Entrada**: aceptar una Invitation de Business nuevo lleva al Onboarding, no a un Home vacío. Una Invitation para sumarse sigue llevando a Home. Es la única vez que el Onboarding se abre solo.
+- **Volver**: mientras no terminó, abrir la dirección `/onboarding` lleva al paso donde se retoma, o a "Done" cuando cada paso está hecho o pasado. Ninguna pantalla enlaza a él: ni Home, ni Settings, ni More. Su propia entrada es eso: el aterrizaje tras la Invitation y su dirección.
+- **Quien sale antes de "Done"** y no vuelve termina la configuración desde Settings (Integrations, Users, Catalog message, Expense categories) y la página del Product, que guardan exactamente lo mismo que cada paso.
+- Quien vende que lo quiera terminado antes termina los dos pasos obligatorios y toca "Skip the rest".
+
+### Las pantallas
+
+- **Tipo**: una pantalla completa del tipo formulario o Sheet (navigation.md): sin barra ni barra lateral, sin "+ New sale". Una sola columna centrada, del ancho de un celular, en todo viewport, sin disposición propia para la computadora.
+- **Cada paso muestra**:
+  - un título corto y una oración sobre por qué importa;
+  - sus campos y una acción principal;
+  - el avance en palabras además de forma ("Step 2 of 6"), nunca solo por color;
+  - "Back", al paso anterior, en cada paso salvo el paso 1. El paso 1 no tiene paso anterior: no muestra "Back", y "Close" es su salida;
+  - "Skip", solo en los pasos opcionales;
+  - "Skip the rest", solo en los pasos opcionales, solo una vez que los dos pasos obligatorios están hechos, y nunca en el último paso (paso 6), donde no pasaría nada que "Skip" no pase;
+  - "Close", que lleva a Home y conserva todo lo guardado y el punto donde se retoma.
+- **Los controles para saltear**: "Skip" y, cuando se muestra, "Skip the rest" van juntos en una línea como links de texto, como los dibuja el diseño; ninguno es un botón.
+- **El marco del paso sigue el diseño dibujado** (`docs/product/design-system/pantallas/Onboarding*.dc.html`); una diferencia entre este archivo y el dibujo sobre lo que muestra un paso es un defecto del diseño. Un dibujo que todavía diga "variety" es un defecto conocido del dibujo, que diseño corrige en su propio trabajo.
+- **Cambios sin guardar**: salir de un paso con algo tipeado y sin guardar, por "Close", "Back" o "Skip", pregunta antes de descartar. Un paso sin tocar se sale de inmediato.
+- **Dentro de los pasos**, rige sin cambios el comportamiento propio de los dueños: reglas de campos, rechazos en línea que conservan lo tipeado, toasts, los motivos de Test it y de Find my chat, "No connection", el reintento genérico y "That is gone.".
+
+### Los seis pasos, en orden
+
+| # | Paso | Obligatorio | Guarda |
 |---|---|---|---|
-| 1 | A variety with today's price | Yes | A variety and a price entry effective today (list price, optionally a bulk price and its minimum), under Varieties' rules and refusals (varieties.md) |
-| 2 | Its opening stock | Yes | A stock entry with origin Initial stock, grams, today's date and an optional total cost (stock.md) |
-| 3 | Catalog header and footer | No | The business's header and footer, shown with their defaults (catalog.md) |
-| 4 | Telegram bot | No | Token, channel chat, own chat (with Find my chat) and Test it, exactly as Integrations (pinned-catalog.md) |
-| 5 | A partner | No | One join link per tap, to copy or share (accounts.md) |
-| 6 | Expense categories | No | Add, rename and remove, as Expense categories (expenses.md) |
+| 1 | A product with today's price | Sí | Un Product y una **Price entry** que rige desde hoy (**List price**, opcionalmente un **Bulk price** y su mínimo), bajo las reglas y los rechazos de Products (varieties.md) |
+| 2 | Its opening stock | Sí | Una **Stock entry** con origen Initial stock, gramos, la fecha de hoy y un costo total opcional (stock.md) |
+| 3 | Catalog header and footer | No | El Catalog header and footer del Business, mostrados con sus valores por defecto (catalog.md) |
+| 4 | Telegram bot | No | Token, chat del canal, chat propio (con Find my chat) y Test it, exactamente como Integrations (pinned-catalog.md) |
+| 5 | A partner | No | Un link para sumarse por toque, para copiar o compartir (accounts.md) |
+| 6 | Expense categories | No | Agregar, renombrar y quitar, como en Expense categories (expenses.md) |
 
-- **Step 2** says plainly that with no cost the lot costs $0.
-- **Step 2's origin** shows as the fixed text-only chip "Initial stock", with no "Origin" label above it: the step's title already says it is the opening stock, and the origin cannot change there. The "Origin" label in `Onboarding*.dc.html` is a known defect of the drawing, corrected by design in its own work. This applies only where the origin is the fixed chip: the full stock entry form keeps its origin choice, and whatever label it draws over it, as stock.md defines it.
-- **More varieties**: after a variety and its opening stock, the seller sees "Add another variety" (another name, price and opening stock) or "Continue".
-  - There is no cap, and each variety is saved the moment its step is saved.
-  - One variety is enough to continue.
-  - Progress stays on steps 1–2 while varieties are being added.
-  - "Add another variety" is the only way the Onboarding adds a further variety.
-- **Step 4** ends at the saved bot and says: "Whenever you like, publish it from Varieties → Send catalog". Publish and the pin's status stay on the catalog screen.
-- **Step 5** reads "Send the link to your partner" and never waits for the partner to join.
-- **A skipped step** says where it can be done later: Settings → Integrations, Users, Catalog message or Expense categories. Skipping step 3 or 6 keeps the defaults.
+- **El paso 2** dice con claridad que sin costo el **Lot** cuesta $0.
+- **El origen del paso 2** se muestra como el chip fijo, solo de texto, "Initial stock", sin una etiqueta "Origin" arriba: el título del paso ya dice que es el Opening stock, y el origen no se puede cambiar ahí. La etiqueta "Origin" de `Onboarding*.dc.html` es un defecto conocido del dibujo, que diseño corrige en su propio trabajo. Esto rige solo donde el origen es el chip fijo: el formulario completo de Stock entry conserva su elección de origen, y la etiqueta que dibuje sobre ella, como lo define stock.md.
+- **Más Products**: después de un Product y su Opening stock, quien vende ve "Add another product" (otro nombre, precio y Opening stock) o "Continue".
+  - No hay tope, y cada Product se guarda en el momento en que se guarda su paso.
+  - Con un Product alcanza para seguir.
+  - El avance se queda en los pasos 1–2 mientras se agregan Products.
+  - "Add another product" es la única forma en que el Onboarding agrega otro Product.
+- **El paso 4** termina en el bot guardado y dice: "Whenever you like, publish it from Products → Send catalog". **Publish** y el estado del fijado quedan en la pantalla del Catalog.
+- **El paso 5** dice "Send the link to your partner" y nunca espera a que el socio se sume.
+- **Un paso salteado** dice dónde se puede hacer más adelante: Settings → Integrations, Users, Catalog message o Expense categories. Saltear el paso 3 o el 6 conserva los valores por defecto.
 
-### Step 1
+### Paso 1
 
-- **One form, one primary action**: the variety's name, its list price and the price form's optional fields as Varieties shows them under the pricing switches (pricing-settings.md), saved by one primary action. There is no separate save for the name and for the price.
-- **Amounts in pesos**: the price fields are the ones the price entry form shares (varieties.md), so the list price, the bulk price and the VIP price each show "$" before the amount, and the bulk minimum, in grams, never does.
-- **No date**: step 1 always saves a price effective today. It shows no date field and no date chip; the price form's "Effective from" chip (varieties.md) is not part of it.
-- **Two writes through the owners**: that one action may save the variety and then its price entry effective today, each through its owner's route and refusals (varieties.md). Nothing is restated here.
-  - A refused name saves nothing and keeps everything typed.
-  - A refused price leaves the variety saved, keeps everything typed and shows the refusal on its field. The retry sends only the price and never adds a second variety.
-- **What step 1 shows on a return**, the first that fits:
-  1. **A variety saved with no price entry** (a refused price, then left; on the first variety or on one added through "Add another variety"): step 1 shows that variety's name kept and only the price to fill in, whether or not another variety already has a price today. With several, it shows the first by name, and each saved price moves on to the next. Saving the price carries on exactly as any save of step 1 does, and sends only the price.
-  2. **Otherwise, a done step 1** (a variety has a price today): the step shows the saved variety, its name and today's list price, marked "Done", never an empty form. With several, it shows the first by name that has a price today. Its primary action moves on to step 2 and saves nothing.
-  3. **Otherwise** (no variety yet): the empty form.
-- In every case step 1 counts as done from the data alone (a variety with a price today): showing an unpriced variety's price form never moves the progress count or the resume point, and "Close" leaves at once with everything kept.
-- A further variety is added only through "Add another variety".
+- **Un formulario, una acción principal**: el nombre del Product, su List price y los campos opcionales del formulario de precio tal como los muestra Products bajo los interruptores de precio (pricing-settings.md), guardados con una sola acción principal. No hay un guardado aparte para el nombre y para el precio.
+- **Montos en pesos**: los campos de precio son los que comparte el formulario de Price entry (varieties.md), así que el List price, el Bulk price y el **VIP price** muestran cada uno "$" antes del monto, y el **Bulk minimum**, en gramos, nunca.
+- **Sin fecha**: el paso 1 siempre guarda un precio que rige desde hoy. No muestra ningún campo de fecha ni chip de fecha; el chip "Effective from" del formulario de precio (varieties.md) no es parte de él.
+- **Sin Unit**: el paso 1 no pide ninguna Unit; cuando exista, la Unit se elige al crear el Product, fuera del Onboarding (#390).
+- **Dos escrituras a través de los dueños**: esa única acción puede guardar el Product y después su Price entry que rige desde hoy, cada uno por la ruta y los rechazos de su dueño (varieties.md). Acá no se repite nada.
+  - Un nombre rechazado no guarda nada y conserva todo lo tipeado.
+  - Un precio rechazado deja guardado el Product, conserva todo lo tipeado y muestra el rechazo en su campo. El reintento manda solo el precio y nunca agrega un segundo Product.
+- **Qué muestra el paso 1 al volver**, el primero que corresponda:
+  1. **Un Product guardado sin Price entry** (un precio rechazado y después abandonado; en el primer Product o en uno agregado con "Add another product"): el paso 1 muestra el nombre de ese Product conservado y solo el precio por completar, tenga o no otro Product un precio para hoy. Con varios, muestra el primero por nombre, y cada precio guardado pasa al siguiente. Guardar el precio sigue exactamente como cualquier guardado del paso 1, y manda solo el precio.
+  2. **Si no, un paso 1 hecho** (un Product tiene precio para hoy): el paso muestra el Product guardado, su nombre y el List price de hoy, marcado "Done", nunca un formulario vacío. Con varios, muestra el primero por nombre que tiene precio para hoy. Su acción principal pasa al paso 2 y no guarda nada.
+  3. **Si no** (todavía no hay ningún Product): el formulario vacío.
+- En todos los casos el paso 1 cuenta como hecho solo a partir de los datos (un Product con precio para hoy): mostrar el formulario de precio de un Product sin precio nunca mueve el conteo de avance ni el punto donde se retoma, y "Close" sale de inmediato conservando todo.
+- Otro Product se agrega solo con "Add another product".
 
-### Done and passed
+### Hecho y pasado
 
-- **Required steps are worked out from the data**: step 1 is done when a variety has a price today, step 2 when a stock entry exists.
-- **Optional steps are passed by one explicit tap**, and the pass is remembered for the business. This stored state belongs to the Onboarding alone; the checklist's derive-only rule is unchanged.
+- **Los pasos obligatorios se calculan a partir de los datos**: el paso 1 está hecho cuando un Product tiene precio para hoy, y el paso 2 cuando existe una Stock entry.
+- **Los pasos opcionales se pasan con un toque explícito**, y el paso pasado se recuerda para el Business. Este estado guardado es solo del Onboarding.
 
-| Step | Passed by |
+| Paso | Se pasa con |
 |---|---|
-| 3. Header and footer | "Save" (edited) or "Leave as is" (defaults kept) |
-| 4. Bot | A successful Test it (the only way it is saved) shows "Done". "Skip" passes the step without a bot. A failed Test it shows its reason and saves nothing |
-| 5. Partner | "Continue" once a link has been created, or "Skip" |
-| 6. Categories | "Continue" only. Adding, renaming or removing a category saves at once but never passes the step |
+| 3. Catalog header and footer | "Save" (editado) o "Leave as is" (valores por defecto conservados) |
+| 4. Bot | Un Test it exitoso (la única forma de guardarlo) muestra "Done". "Skip" pasa el paso sin bot. Un Test it fallido muestra su motivo y no guarda nada |
+| 5. Socio | "Continue" una vez creado un link, o "Skip" |
+| 6. Categorías | Solo "Continue". Agregar, renombrar o quitar una categoría guarda de inmediato pero nunca pasa el paso |
 
-- **Data that already exists** shows "Done" and counts as passed: a bot saved earlier, a second user already in the business. A done required step shows "Done" the same way (step 1 as above).
-- **Resume** lands on the first step that is neither done nor passed, or on "Done" when there is none.
-- **Leaving** ("Close", closing the app, a dropped connection) keeps everything saved and the resume point.
-- **"Skip the rest"** passes every remaining optional step at once.
-- **No early end**: the Onboarding never ends before both required steps are met, and nothing outside it (a price added on the variety's page, say) ends it.
+- **Los datos que ya existen** muestran "Done" y cuentan como pasados: un bot guardado antes, un segundo User que ya está en el Business. Un paso obligatorio hecho muestra "Done" de la misma manera (el paso 1 como arriba).
+- **Retomar** lleva al primer paso que no está ni hecho ni pasado, o a "Done" cuando no hay ninguno.
+- **Salir** ("Close", cerrar la app, una conexión caída) conserva todo lo guardado y el punto donde se retoma.
+- **"Skip the rest"** pasa de una vez cada paso opcional que queda.
+- **Sin final anticipado**: el Onboarding nunca termina antes de que se cumplan los dos pasos obligatorios, y nada fuera de él (un precio agregado en la página del Product, por ejemplo) lo termina.
 
 ### "Done"
 
-- Once both required steps are done and every optional step is passed, the next screen the Onboarding shows is "Done", and **reaching "Done" ends the Onboarding**. Usually that is on the tap that passes the last optional step (its own action, or "Skip the rest"); when every step became done or passed outside it, it is on tapping the Home notice.
-- From then on it is over for good: leaving "Done" by any means, or closing the app on it, never brings the Onboarding back, and the Home notice goes. No tap on "Done" itself is needed.
-- **One line per step**:
-  - "Done" for a step whose data exists or that was saved;
-  - "For later — in Settings → <group>" or "in Varieties" for a skipped step;
-  - the required steps' lines count the records made, e.g. "Done · 2 varieties": a count, never a figure or an amount.
-- **Actions**: the primary "Add my first sale", which opens New sale, and the secondary "Go to Home". No celebration and no extra content.
-- **New sale opened from "Done"** goes back to Home, whether closed with "Close" or saved. It never goes back to "Done" or the Onboarding.
+!["Done" del Onboarding en el teléfono](../assets/screens/OnboardingListo.webp)
 
-### Empty states and errors
+- Una vez que los dos pasos obligatorios están hechos y cada paso opcional está pasado, la siguiente pantalla que muestra el Onboarding es "Done", y **llegar a "Done" termina el Onboarding**. Por lo general eso pasa con el toque que pasa el último paso opcional (su propia acción, o "Skip the rest"); cuando cada paso quedó hecho o pasado fuera de él, pasa al abrir `/onboarding`. Si nunca se vuelve a abrir, el Onboarding queda sin terminar sin que nada lo muestre.
+- Desde ahí terminó para siempre: salir de "Done" por cualquier medio, o cerrar la app en esa pantalla, nunca trae de vuelta el Onboarding. No hace falta tocar nada en "Done".
+- **Una línea por paso**:
+  - "Done" para un paso cuyos datos existen o que se guardó;
+  - "For later — in Settings → <group>" o "in Products" para un paso salteado;
+  - las líneas de los pasos obligatorios cuentan los registros hechos, p. ej. "Done · 2 products": un conteo, nunca una cifra ni un monto.
+- **Acciones**: la principal "Add my first sale", que abre New sale, y la secundaria "Go to Home". Sin festejo y sin contenido extra.
+- **New sale abierta desde "Done"** vuelve a Home, se cierre con "Close" o se guarde. Nunca vuelve a "Done" ni al Onboarding.
 
-- Step 1 starts with empty fields while the business has no variety. No step shows a figure, a placeholder or sample data.
-- Refusals and failures belong to each setting's owner: inline, keeping what was typed, carrying no data. No network shows "No connection", a server error the generic retry.
-- A record that is gone follows accounts.md's "That is gone." rule.
-- Data a partner created shows "Done" on the next open. No live updates.
+### Estados vacíos y errores
 
-### Design
+- El paso 1 arranca con los campos vacíos mientras el Business no tiene ningún Product. Ningún paso muestra una cifra, un dato de relleno ni datos de ejemplo.
+- Los rechazos y las fallas son del dueño de cada configuración: en línea, conservando lo tipeado, sin llevar datos. Sin red se muestra "No connection", y un error del servidor, el reintento genérico.
+- Un registro que ya no existe sigue la regla "That is gone." de accounts.md.
+- Los datos que creó un socio muestran "Done" la próxima vez que se abre. Sin actualizaciones en vivo.
 
-- Design-system elements only: tokens, components and both themes. No illustrations, animation, marketing copy, new colours or new components.
-- If nothing existing fits the progress indicator or the step layout, design draws it from tokens only, inside the design system, before it is built; it is never invented in code.
-- Rioplatense Spanish with vos. Nothing clipped at 320–430 px or at 130 % text; controls at least 44 px tall and inputs at least 16 px.
-- Every step and "Done" go into `scripts/design/screens.json`; `scripts/design/compare.sh` runs before and after, phone and computer, judged by eye.
+### Diseño
 
-### Reviewing a change against the design (criterion 6)
+- Solo elementos del design system: tokens, componentes y los dos temas. Sin ilustraciones, animación, textos de marketing, colores nuevos ni componentes nuevos.
+- Si nada existente sirve para el indicador de avance o la disposición del paso, diseño lo dibuja solo a partir de tokens, dentro del design system, antes de construirlo; nunca se inventa en el código.
+- El texto del producto sigue el **Product language** (product-language.md). Nada recortado entre 320 y 430 px ni con el texto al 130 %; controles de al menos 44 px de alto y campos de al menos 16 px.
+- Cada paso y "Done" entran en `scripts/design/screens.json`; `scripts/design/compare.sh` corre antes y después, en celular y computadora, juzgado a ojo. Home ya no tiene filas del Onboarding: las filas `InicioOnboardingEnCurso*` e `InicioOnboardingCompleto*` se retiraron.
 
-- **The evidence matrix**: every cell is captured on the task base (before) and on the head (after) with `scripts/design/comparisons.mjs --strict`. One script from one install takes both sides, on the same Argentina day, with fonts pinned (ADR-0042). The PR records the installed `@fontsource/plus-jakarta-sans` version. The cells are:
-  - every Onboarding step and "Done", light and dark, phone and computer;
-  - the "Go on to the setup" notice on Home, `InicioOscuro` (dark theme) and `InicioCompu` (computer layout);
-  - when the change touches step 2's chip, the stock entry form opened from a variety with no entries ("Initial stock" preselected), light and dark, phone and computer.
+### Revisar un cambio contra el diseño (criterio 6)
 
-  Screens the change does not touch are left out.
-- **Registry rows**: a cell with no row in `scripts/design/screens.json` gets one under design-capture.md's rules:
-  - the row reaches its screen the way a seller does;
-  - it captures the named section whole;
-  - the two registry tests are declared as seams;
-  - every guard of those tests is kept.
-- **Every difference is listed** in the PR as intended, as a known design defect (such as the drawing's "Origin" label on step 2), or as a defect.
-  - A difference the change introduced compared with the task base is a regression, and it is fixed in the same task, unless it is the change's own decided intent.
-  - A difference already present on the task base is filed as a new follow-up issue, which the PR links, and is not fixed there.
-  - No difference is left unexplained.
-- **A missing capture**: a cell that cannot be captured, on either side, means the change is not done. There is no exception (design-capture.md).
-- **Review evidence only**: the captures are judged by eye and are never a gate step (ADR-0042, gate.md).
+- **La matriz de evidencia**: cada celda se captura en la base de la tarea (antes) y en el head (después) con `scripts/design/comparisons.mjs --strict`. Un solo script desde una sola instalación toma los dos lados, en el mismo día de Argentina, con las fuentes fijadas (ADR-0042). El PR registra la versión instalada de `@fontsource/plus-jakarta-sans`. Las celdas son:
+  - cada paso del Onboarding y "Done", claro y oscuro, celular y computadora;
+  - cuando el cambio toca el chip del paso 2, el formulario de Stock entry abierto desde un Product sin Stock entries ("Initial stock" preseleccionado), claro y oscuro, celular y computadora.
 
-### Constraints
+  Las pantallas que el cambio no toca quedan afuera.
+- **Filas del registro**: una celda sin fila en `scripts/design/screens.json` recibe una bajo las reglas de design-capture.md:
+  - la fila llega a su pantalla como lo hace quien vende;
+  - captura la sección nombrada entera;
+  - los dos tests del registro se declaran como costuras;
+  - se conserva cada guard de esos tests.
+- **Cada diferencia se lista** en el PR como buscada, como un defecto conocido del diseño (como la etiqueta "Origin" del dibujo en el paso 2) o como un defecto.
+  - Una diferencia que el cambio introdujo respecto de la base de la tarea es una regresión, y se corrige en la misma tarea, salvo que sea la intención decidida del propio cambio.
+  - Una diferencia ya presente en la base de la tarea se carga como un issue de seguimiento nuevo, que el PR enlaza, y no se corrige ahí.
+  - No queda ninguna diferencia sin explicar.
+- **Una captura faltante**: una celda que no se puede capturar, de cualquiera de los dos lados, significa que el cambio no está terminado. No hay excepción (design-capture.md).
+- **Solo evidencia de revisión**: las capturas se juzgan a ojo y nunca son un paso del Gate (ADR-0042, gate.md).
 
-- The Onboarding's state carries `business_id`, taken from the session. Its routes join the isolation sweep and the gated-route test; another business's state does not exist (404 or absent).
-- Business removal exports and deletes it through ADR-0015's schema reflection, and the dry run counts it.
-- Every step calls its owner's own use cases and refusal codes (`contract.json`, ADR-0008); there is no copy of any rule.
-- Nothing about it goes to logs, the console or browser storage (ADR-0005, ADR-0026). Nothing is stored or logged about time taken or where a seller left.
+### Restricciones
 
-## Metrics
+- El estado del Onboarding lleva `business_id`, tomado de la sesión. Sus rutas entran en el barrido de aislamiento y en el test de rutas protegidas; el estado de otro Business no existe (404 o ausente).
+- `/onboarding-progress` sigue existiendo y lo lee solo `OnboardingLayout`; Home no lo lee.
+- Abrir `/onboarding` con cada paso hecho o pasado manda `advance` una sola vez por montaje y puede terminar solo el Onboarding del Business de la Session; el pedido no nombra ningún Business, y en cualquier otro estado no escribe nada (ADR-0081).
+- La **Business removal** lo exporta y lo borra mediante la reflexión de esquema de ADR-0015, y la corrida de prueba lo cuenta.
+- Cada paso llama a los casos de uso y códigos de rechazo propios de su dueño (`contract.json`, ADR-0008); no hay copia de ninguna regla.
+- Nada sobre él va a los logs, la consola ni el almacenamiento del navegador (ADR-0005, ADR-0026). No se guarda ni se registra nada sobre el tiempo que llevó ni sobre dónde se fue quien vende.
+- No hay ninguna ruta, campo ni estado para una palabra de lo que vende el Business.
 
-There is no telemetry.
+## Métricas
 
-- **Under 5 minutes (criterion 1)**: an end-to-end front run from a phone viewport accepts a new-business invitation, prices a variety, loads its opening stock, passes the optional steps and opens New sale from "Done" (`web/e2e/onboarding.spec.ts`); its duration is not measured by any test.
-- **Nothing lost (criterion 3)**:
-  - a second end-to-end run leaves halfway, resumes from Home's notice and lands on the first step neither done nor passed;
-  - a resume matrix, 100 % passing, covers:
-    - required steps worked out from the data;
-    - optional passes remembered;
-    - "Done" for data that already exists;
-    - no end before both required steps are met, and none from a change made outside the Onboarding;
-    - every step done or passed outside it: the notice reads "6 of 6 steps" with no "Missing" line, opens "Done", and reaching "Done" ends it;
-    - the end on reaching "Done".
-- **One fact, one place (criterion 4)**: a value saved in each step reads the same in Settings or on the variety's page, and the reverse.
-- **Only the sale is required (criterion 2)**: front tests show:
-  - every optional step skipped in one tap;
-  - "Skip the rest" only once both required steps are done, and never on step 6;
-  - "Skip" and "Skip the rest" as text links on one line;
-  - "Done" naming where each skipped step lives.
-- **The step frame**: front tests show no "Back" on step 1 and "Back" opening the step before on steps 2–6.
-- **Step 1**: front tests show:
-  - one primary action, saving the variety and its price;
-  - a refused price keeping everything typed, with the retry sending only the price and no second variety created;
-  - returning to step 1 after a variety is priced today showing that variety marked "Done", and moving on to step 2 adding no variety;
-  - with one variety priced today and a second saved with no price, returning to step 1 showing the second's name kept and only its price to fill in, saving only the price, with the progress count unchanged;
-  - the "$" before the list, bulk and VIP price and never before the bulk minimum, and no date field or date chip.
-- **Step 2's chip**: front tests (`web/src/screens/StockEntryForm.test.tsx`) show:
-  - no "Origin" label over the fixed "Initial stock" chip on step 2. The assertion that it was present changes to absent in the same diff as this doc, and the PR lists it (icon-and-text-rule.md criterion 5);
-  - the full stock entry form's origin choice unchanged, with every assertion about it unedited.
+No hay telemetría.
 
-  0 open findings on the label.
-- **Who gets it**:
-  - a brand-new business gets it;
-  - an imported business (including one that landed in the Onboarding before the import) never sees it again;
-  - a joined user's business and a pre-existing business never see it;
-  - the remembered passes never make the import refuse.
-- **Home and chrome**, front tests on phone and computer:
-  - the notice sits at the top with its words, cannot be dismissed, and keeps its count on steps 1–2 while varieties are added;
-  - "Start with your varieties" never shows with it;
-  - "+ New sale" and "Send catalog" behave as for any business while it runs;
-  - the Onboarding has no bar and no "+ New sale";
-  - New sale opened from "Done" returns to Home.
-- **Isolation**: the routes are in the isolation sweep and the gated-route test; business removal leaves 0 rows of the state and exported count = deleted count.
-- **Design (criterion 5)**: every screen in `screens.json`, `compare.sh` before and after, and a by-eye pass on phone and computer in both themes; the step frame and step 1 match `OnboardingVariedad` (the varieties step) and `OnboardingCategorias` (the expense categories step). Step 1's price step is registered in `screens.json` and captured before and after the "$" reaches it (varieties.md).
-- **Approval from the evidence (criterion 6)**, read from the PR:
-  - before and after captures are attached for every cell of the matrix: 0 cells missing;
-  - every difference is listed as intended, a known design defect or a defect: 0 unlisted;
-  - 0 regressions left on the head that merges, and every pre-existing difference is linked to a follow-up issue;
-  - every suite passes, and the only edited tests are the registry tests within their declared seams and any assertion changed in the same diff as the doc that decides it;
-  - no capture or comparison step is added to `.agentic/stack.yaml`, CI or the gate.
-- **Business metrics**, read by the operator from existing records only (no tool, no dashboard, never shown in the app):
-  - the share of brand-new businesses with a priced variety and a stock entry;
-  - the share whose first sale falls on the day they were opened.
+- **Menos de 5 minutos (criterio 1)**: una corrida de punta a punta del front desde un viewport de celular acepta una Invitation de Business nuevo, le pone precio a un Product, carga su Opening stock, pasa los pasos opcionales y abre New sale desde "Done" (`web/e2e/onboarding.spec.ts`); ningún test mide su duración.
+- **Nada perdido (criterio 3)**:
+  - una segunda corrida de punta a punta sale a mitad de camino con "Close", cae en Home sin ningún aviso, retoma abriendo `/onboarding` y cae en el primer paso ni hecho ni pasado;
+  - una matriz de retomar, 100 % en verde, cubre:
+    - los pasos obligatorios calculados a partir de los datos;
+    - los pasos opcionales pasados recordados;
+    - "Done" para datos que ya existen;
+    - ningún final antes de que se cumplan los dos pasos obligatorios, y ninguno por un cambio hecho fuera del Onboarding;
+    - cada paso hecho o pasado fuera de él: abrir `/onboarding` abre "Done" con un solo `advance` (también en StrictMode), y llegar a "Done" lo termina; una segunda apertura lleva a Home;
+    - el final al llegar a "Done".
+- **Un dato, un lugar (criterio 4)**: un valor guardado en cada paso se lee igual en Settings o en la página del Product, y al revés.
+- **Solo la venta es obligatoria (criterio 2)**: tests del front muestran:
+  - cada paso opcional salteado con un toque;
+  - "Skip the rest" solo una vez que los dos pasos obligatorios están hechos, y nunca en el paso 6;
+  - "Skip" y "Skip the rest" como links de texto en una línea;
+  - "Done" nombrando dónde vive cada paso salteado.
+- **El marco del paso**: tests del front muestran que no hay "Back" en el paso 1 y que "Back" abre el paso anterior en los pasos 2–6.
+- **Paso 1**: tests del front muestran:
+  - una acción principal, que guarda el Product y su precio;
+  - un precio rechazado que conserva todo lo tipeado, con el reintento que manda solo el precio y sin crear un segundo Product;
+  - al volver al paso 1 después de que un Product tiene precio para hoy, ese Product marcado "Done", y pasar al paso 2 sin agregar ningún Product;
+  - con un Product con precio para hoy y un segundo guardado sin precio, al volver al paso 1, el nombre del segundo conservado y solo su precio por completar, guardando solo el precio, con el conteo de avance sin cambios;
+  - el "$" antes del List price, el Bulk price y el VIP price y nunca antes del Bulk minimum, y ningún campo ni chip de fecha.
+- **El chip del paso 2**: tests del front (`web/src/screens/StockEntryForm.test.tsx`) muestran:
+  - ninguna etiqueta "Origin" sobre el chip fijo "Initial stock" del paso 2. La aserción de que estaba presente pasa a ausente en el mismo diff que este doc, y el PR la lista (icon-and-text-rule.md criterio 5);
+  - la elección de origen del formulario completo de Stock entry sin cambios, con cada aserción sobre ella sin editar.
 
-## Out of scope
+  0 hallazgos abiertos sobre la etiqueta.
+- **A quién le toca**:
+  - a un Business recién creado le toca;
+  - un Business importado (incluido uno que cayó en el Onboarding antes de la Spreadsheet import) nunca lo vuelve a ver: `/onboarding` lleva a Home;
+  - el Business de un User que se sumó y un Business preexistente nunca lo ven;
+  - los pasos pasados recordados nunca hacen que la Spreadsheet import rechace.
+- **Home limpio (criterio 8)**, tests del front en celular y computadora: Home no muestra ningún aviso del Onboarding ni "Start with your products" para un Business sin empezar, a mitad de camino, con todo hecho o pasado sin "Done", ni terminado; ninguna pantalla fuera del Onboarding enlaza a `/onboarding`; nada bajo `web/src`, `web/e2e` ni `tests` nombra `OnboardingNotice`.
+- **Marco**: "+ New sale" y "Send catalog" se comportan como para cualquier Business mientras corre; el Onboarding no tiene barra ni "+ New sale"; New sale abierta desde "Done" vuelve a Home.
+- **Ninguna palabra que elegir (criterio 7)**: tests del front muestran que ningún paso ni "Done" muestra "What you sell", ningún campo de Unit ni la palabra "variety"; el barrido de palabras de varieties.md cubre los textos del Onboarding.
+- **Aislamiento**: las rutas están en el barrido de aislamiento y en el test de rutas protegidas; la Business removal deja 0 filas del estado y conteo exportado = conteo borrado.
+- **Diseño (criterio 5)**: cada pantalla en `screens.json`, `compare.sh` antes y después, y una pasada a ojo en celular y computadora en los dos temas; el marco del paso y el paso 1 coinciden con `OnboardingVariedad` (el paso del Product) y `OnboardingCategorias` (el paso de las Expense categories). El paso de precio del paso 1 está registrado en `screens.json` y capturado antes y después de que le llegue el "$" (varieties.md).
+- **Aprobación con la evidencia (criterio 6)**, leída del PR:
+  - se adjuntan capturas de antes y después para cada celda de la matriz: 0 celdas faltantes;
+  - cada diferencia se lista como buscada, defecto conocido del diseño o defecto: 0 sin listar;
+  - 0 regresiones en el head que se integra, y cada diferencia preexistente enlazada a un issue de seguimiento;
+  - cada suite pasa, y los únicos tests editados son los tests del registro dentro de sus costuras declaradas y cualquier aserción cambiada en el mismo diff que el doc que la decide;
+  - no se agrega ningún paso de captura ni de comparación a `.agentic/stack.yaml`, al CI ni al Gate.
+- **Métricas de negocio**, que el **Operator** lee solo de los registros existentes (sin herramienta, sin dashboard, nunca mostradas en la app):
+  - la proporción de Businesses recién creados con un Product con precio y una Stock entry;
+  - la proporción cuya primera Sale cae el mismo día en que se abrieron.
 
-- A business-name step: the name is taken at the invitation.
-- Per-variety catalog attributes and the low-stock threshold in the Onboarding.
-- An Appearance step.
-- A step for #85's pricing switches: that issue decides it once they exist.
-- Running it again, or any entry pointing back to it once it is over.
-- "Finish for now" as a second exit.
-- Offering it to imported, joined or pre-existing businesses.
-- Building the first-run checklist, its side rules ("+ New sale" saying what is missing, "Send catalog" disabled) or the after-import notice: their own task (navigation.md).
-- Ending the Onboarding from outside it, without reaching "Done".
-- Publishing the catalog from the Onboarding.
-- Waiting for a partner to join.
-- Editing or renaming a saved variety from step 1: that is the variety's page.
-- A date field or date chip in step 1: it always saves a price effective today.
-- An "Origin" label over step 2's chip; any change to the full stock entry form's origin choice or its label.
-- Correcting `Onboarding*.dc.html` as part of a change's review: design corrects its own drawings.
-- Fixing, in the change under review, a design difference already present on its task base: it goes to a follow-up.
-- Making the design comparison a gate step, or any automated check of a capture.
-- Usage tracking, a dashboard or an operator script for its metrics.
-- Illustrations, animation, marketing copy, new colours or new components.
-- Live updates between partners while it is open.
+## Fuera de alcance
+
+- Un paso para el nombre del Business: el nombre se toma en la Invitation.
+- Los **Catalog attributes** por Product y el **Low-stock threshold** en el Onboarding.
+- Un paso de Appearance.
+- Un paso para los interruptores de precio de #85: lo decide ese issue una vez que existan.
+- Un paso "What you sell" o cualquier pregunta por la palabra de lo que vende el Business: no existe ninguna palabra configurable.
+- Preguntar la Unit en el Onboarding: se elige por Product al crearlo (#390).
+- Hacerlo de nuevo, o cualquier entrada que vuelva a apuntar a él una vez que terminó.
+- Cualquier aviso, insignia, recordatorio o link hacia el Onboarding en Home, Settings, More o cualquier otra pantalla; un mensaje a los Users existentes de que el aviso de Home se fue.
+- "Finish for now" como segunda salida.
+- Ofrecerlo a Businesses importados, de un User que se sumó o preexistentes.
+- Las reglas laterales de "+ New sale" y "Send catalog" para Businesses preexistentes (navigation.md).
+- Quitar `/onboarding-progress` o `/first-run` del backend: decisión aparte.
+- Terminar el Onboarding desde afuera, sin llegar a "Done".
+- Publicar el Catalog desde el Onboarding.
+- Esperar a que se sume un socio.
+- Editar o renombrar un Product guardado desde el paso 1: eso es la página del Product.
+- Un campo o chip de fecha en el paso 1: siempre guarda un precio que rige desde hoy.
+- Una etiqueta "Origin" sobre el chip del paso 2; cualquier cambio en la elección de origen del formulario completo de Stock entry o en su etiqueta.
+- Corregir `Onboarding*.dc.html` como parte de la revisión de un cambio: diseño corrige sus propios dibujos.
+- Corregir, en el cambio en revisión, una diferencia de diseño ya presente en su base de tarea: va a un seguimiento.
+- Hacer de la comparación de diseño un paso del Gate, o cualquier control automático de una captura.
+- Seguimiento de uso, un dashboard o un script del Operator para sus métricas.
+- Ilustraciones, animación, textos de marketing, colores nuevos o componentes nuevos.
+- Actualizaciones en vivo entre socios mientras está abierto.
 
 ## Planned in GH-318
 
-Not built yet. Until the part named ships, the sections above are what the app does.
+Todavía no está construido. Hasta que salga la parte nombrada, las secciones de arriba son lo que hace la app.
 
-Each passage names the ADR that decides it, the part that will deliver it, and the current sentence it will replace. The part that delivers a passage removes it from here and edits Behaviour and Out of scope in the same diff.
+Cada pasaje nombra el ADR que lo decide, la parte que lo va a entregar y la oración actual que va a reemplazar. La parte que entrega un pasaje lo quita de acá y edita Comportamiento y Fuera de alcance en el mismo diff.
 
-### Setup
+### Configuración inicial
 
-Decided in docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md and docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md and docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; delivered by the onboarding setup part.
+Decidido en docs/adr/0055-configuration-is-stored-per-business-in-hexagons-split-by-reason-to-change-with-frozen-shared-values-read-through-each-reader-s-own-protocol.md y docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md y docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-and-is-stored-per-business-at-scale-0-or-2-behind-one-adapter-helper.md; lo entrega la parte onboarding setup.
 
-- Setup will be the Onboarding, extended. The required steps will stay a product priced today and its opening stock. Confirming the time zone will be one tap inside the flow, with the accepting phone's time zone suggested.
-- The product word, units, currency, categories, attributes and catalog template will be optional steps with their defaults filled in ("Product" / "Products", "unit" with 0 decimals, "$" with 0 decimals, "Products" and "General"). The flow will stay phone first, with icons and big buttons.
-- The first-run checklist for businesses that existed before the Onboarding will not change.
-- It will replace: "### The six steps, in order" (the table of six steps), "A variety with today's price" (step 1's wording), and "Per-variety catalog attributes and the low-stock threshold in the Onboarding." in Out of scope.
-- It will also replace, in Step 2, "Its opening stock": the opening stock will be entered in the product's unit (docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md).
+- La configuración inicial va a ser el Onboarding, extendido. Los pasos obligatorios van a seguir siendo un Product con precio para hoy y su Opening stock. Confirmar la zona horaria va a ser un toque dentro del flujo, con la zona horaria del teléfono que acepta como sugerencia.
+- La moneda, las categorías, los atributos y la plantilla del Catalog van a ser pasos opcionales con sus valores por defecto completos ("$" con 0 decimales, "Products" y "General"). El flujo va a seguir siendo para el celular primero, con íconos y botones grandes. No va a haber paso de palabra para lo que vende el Business (no existe ninguna) ni paso de Units: la Unit se elige por Product al crearlo (#390).
+- Los Businesses que existían antes del Onboarding no lo van a recibir.
+- Va a reemplazar: "### Los seis pasos, en orden" (la tabla de seis pasos), "A product with today's price" (la redacción del paso 1) y "Los **Catalog attributes** por Product y el **Low-stock threshold** en el Onboarding." en Fuera de alcance.
+- También va a reemplazar, en el paso 2, "Its opening stock": el Opening stock se va a ingresar en la Unit del Product (docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md).

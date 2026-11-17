@@ -19,14 +19,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date, datetime
-from enum import StrEnum
 from typing import Literal
 
-
-class PaymentMethod(StrEnum):
-    CASH = "cash"
-    TRANSFER = "transfer"
-
+from app.shared.payment_method import PaymentMethodLabel
 
 Standing = Literal["owes", "credit", "settled"]
 
@@ -51,7 +46,7 @@ class OwedSale:
     date: date
     recorded_at: datetime
     total: int
-    on_the_spot_method: PaymentMethod | None = None
+    on_the_spot_method: PaymentMethodLabel | None = None
 
     @property
     def paid_on_the_spot(self) -> bool:
@@ -68,7 +63,7 @@ class LaterPaymentEntry:
     paid_on: date
     recorded_at: datetime
     amount: int
-    method: PaymentMethod | None = None
+    method: PaymentMethodLabel | None = None
 
 
 @dataclass(frozen=True)

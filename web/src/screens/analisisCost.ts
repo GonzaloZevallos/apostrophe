@@ -6,7 +6,7 @@
  */
 
 import type { ReasonCost, RowCost } from '../api/analysis'
-import { formatGrams, formatMoney } from '../format/money'
+import { formatGrams, type MoneyFormatter } from '../format/money'
 import { ANALYSIS_TEXT } from '../copy/analysis'
 
 /** A figure split for the screen: the amount (absent when all of it is pending, never a
@@ -15,27 +15,27 @@ import { ANALYSIS_TEXT } from '../copy/analysis'
 export type AmountParts = { amount: string | null; marker: string }
 
 /** A plain amount with its own "and N g without cost", only when grams are pending. */
-export function amountParts(amount: number, pendingGrams: number): AmountParts {
+export function amountParts(amount: number, pendingGrams: number, money: MoneyFormatter): AmountParts {
   return {
-    amount: formatMoney(amount),
+    amount: money.money(amount),
     marker: pendingGrams > 0 ? ANALYSIS_TEXT.pendingSuffix(formatGrams(pendingGrams)) : '',
   }
 }
 
 /** "4 g without cost" alone when everything behind the figure is pending (never "$ 0"),
  * "$ 9.000" + " and 2,5 g without cost" when part of it is, "$ 9.000" when none is. */
-export function rowCostParts(cost: RowCost): AmountParts {
+export function rowCostParts(cost: RowCost, money: MoneyFormatter): AmountParts {
   if (cost.all_pending) {
     return { amount: null, marker: ANALYSIS_TEXT.noCostAlone(formatGrams(cost.pending_quantity)) }
   }
-  return amountParts(cost.amount, cost.pending_quantity)
+  return amountParts(cost.amount, cost.pending_quantity, money)
 }
 
 /** A withdrawal reason's line: the amount is `null` when every gram is pending, which reads
  * as the grams alone, never "$ 0"; otherwise the amount and its own pending grams. */
-export function reasonCostParts(cost: ReasonCost): AmountParts {
+export function reasonCostParts(cost: ReasonCost, money: MoneyFormatter): AmountParts {
   if (cost.amount === null) {
     return { amount: null, marker: ANALYSIS_TEXT.noCostAlone(formatGrams(cost.pending_quantity)) }
   }
-  return amountParts(cost.amount, cost.pending_quantity)
+  return amountParts(cost.amount, cost.pending_quantity, money)
 }

@@ -8,15 +8,22 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import cast
 
-from sqlalchemy import CursorResult, func, insert, literal, null, select
+from sqlalchemy import CursorResult, exists, func, insert, literal, null, select
 from sqlalchemy import delete as sa_delete
 from sqlalchemy.orm import Session
 
+from app.db import (
+    money_of_domain,
+    money_scale_factor,
+    money_stored_value,
+    scaled,
+)
+from app.payment_methods.adapters.tables import PaymentMethodRow
 from app.payments.adapters.tables import LATER, PaymentRow
 from app.payments.application.ports import StoredPayment
 from app.payments.domain.payment import PaymentAboveBalance
-from app.payments.domain.settlement import PaymentMethod
 from app.sales.adapters.tables import SaleLineRow, SaleRow
+from app.shared.payment_method import PaymentMethodId, PaymentMethodUnavailable
 
 
 class SqlPayments:
@@ -37,7 +44,7 @@ class SqlPayments:
         customer_id: int,
         paid_on: date,
         amount: int,
-        method: PaymentMethod,
+        method: PaymentMethodId,
         recorded_at: datetime,
     ) -> int:
         """One `INSERT … SELECT … WHERE :amount <= bought - paid` (ADR-0012): bought
@@ -54,8 +61,14 @@ class SqlPayments:
         statement itself inserts the row correctly; `RETURNING` works the same way on
         both drivers.
         """
+        # The guard compares in hundredths on both sides: the sums are read through
+        # `scaled()` and the amount is bound as the hundredths it is, while the row is
+        # written with the integer the business's column holds (docs/adr/0058).
+        money = money_of_domain(self._session, self._business_id, amount)
+        stored = money_stored_value(self._session, self._business_id, money)
+        factor = money_scale_factor(self._session, self._business_id)
         shipping = (
-            select(func.coalesce(func.sum(SaleRow.shipping_charged), 0))
+            select(func.coalesce(func.sum(scaled(SaleRow.shipping_charged, factor)), 0))
             .where(
                 SaleRow.business_id == self._business_id,
                 SaleRow.customer_id == customer_id,
@@ -63,7 +76,7 @@ class SqlPayments:
             .scalar_subquery()
         )
         line_totals = (
-            select(func.coalesce(func.sum(SaleLineRow.line_total), 0))
+            select(func.coalesce(func.sum(scaled(SaleLineRow.line_total, factor)), 0))
             .select_from(SaleLineRow)
             .join(SaleRow, SaleRow.id == SaleLineRow.sale_id)
             .where(
@@ -73,7 +86,7 @@ class SqlPayments:
             .scalar_subquery()
         )
         paid = (
-            select(func.coalesce(func.sum(PaymentRow.amount), 0))
+            select(func.coalesce(func.sum(scaled(PaymentRow.amount, factor)), 0))
             .where(
                 PaymentRow.business_id == self._business_id,
                 PaymentRow.customer_id == customer_id,
@@ -86,10 +99,17 @@ class SqlPayments:
             literal(customer_id),
             null(),
             literal(paid_on),
-            literal(amount),
+            literal(stored),
             literal(method.value),
             literal(recorded_at),
-        ).where(literal(amount) <= (shipping + line_totals) - paid)
+        ).where(
+            literal(money.hundredths) <= (shipping + line_totals) - paid,
+            exists().where(
+                PaymentMethodRow.id == method.value,
+                PaymentMethodRow.business_id == self._business_id,
+                PaymentMethodRow.archived_at.is_(None),
+            ),
+        )
 
         statement = (
             insert(PaymentRow)
@@ -100,7 +120,7 @@ class SqlPayments:
                     "sale_id",
                     "paid_on",
                     "amount",
-                    "method",
+                    "payment_method_id",
                     "recorded_at",
                 ],
                 guarded_select,
@@ -109,9 +129,24 @@ class SqlPayments:
         )
         row = self._session.execute(statement).first()
         if row is None:
+            # Same uncommitted transaction: this read tells which half of the guard failed.
+            if not self._offered(method):
+                raise PaymentMethodUnavailable()
             raise PaymentAboveBalance()
         self._session.flush()
         return int(row.id)
+
+    def _offered(self, method: PaymentMethodId) -> bool:
+        return (
+            self._session.execute(
+                select(PaymentMethodRow.id).where(
+                    PaymentMethodRow.id == method.value,
+                    PaymentMethodRow.business_id == self._business_id,
+                    PaymentMethodRow.archived_at.is_(None),
+                )
+            ).first()
+            is not None
+        )
 
     def delete_later(self, payment_id: int) -> int:
         result = cast(

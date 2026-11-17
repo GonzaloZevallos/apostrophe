@@ -5,9 +5,10 @@ import pytest
 
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.product import CatalogPrice, StockStatus, catalog_state
+from app.shared.money import Money
 from app.shared.quantity import Quantity
 
-PRICE = CatalogPrice(list_price=11000, bulk_price=None, bulk_minimum=None)
+PRICE = CatalogPrice(list_price=Money.of_units(11000), bulk_price=None, bulk_minimum=None)
 STOCK_STATUSES: tuple[StockStatus, ...] = ("no_entries", "sold_out", "low", "ok")
 
 
@@ -41,16 +42,24 @@ def test_shown_priced_and_in_stock_is_in(stock_status: StockStatus) -> None:
 
 
 def test_a_catalog_price_accepts_both_bulk_fields_or_neither() -> None:
-    CatalogPrice(list_price=11000, bulk_price=10000, bulk_minimum=Quantity.of("10"))
-    CatalogPrice(list_price=11000, bulk_price=None, bulk_minimum=None)
+    CatalogPrice(
+        list_price=Money.of_units(11000),
+        bulk_price=Money.of_units(10000),
+        bulk_minimum=Quantity.of("10"),
+    )
+    CatalogPrice(list_price=Money.of_units(11000), bulk_price=None, bulk_minimum=None)
 
 
 def test_a_catalog_price_refuses_a_bulk_price_with_no_bulk_minimum() -> None:
     """The enforcement artefact: a bulk price with no bulk minimum is rejected."""
     with pytest.raises(ValueError):
-        CatalogPrice(list_price=11000, bulk_price=10000, bulk_minimum=None)
+        CatalogPrice(
+            list_price=Money.of_units(11000), bulk_price=Money.of_units(10000), bulk_minimum=None
+        )
 
 
 def test_a_catalog_price_refuses_a_bulk_minimum_with_no_bulk_price() -> None:
     with pytest.raises(ValueError):
-        CatalogPrice(list_price=11000, bulk_price=None, bulk_minimum=Quantity.of("10"))
+        CatalogPrice(
+            list_price=Money.of_units(11000), bulk_price=None, bulk_minimum=Quantity.of("10")
+        )

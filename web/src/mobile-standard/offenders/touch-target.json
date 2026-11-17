@@ -1,5 +1,305 @@
 [
   {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-target",
+    "target": "button:Move Cash down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-target",
+    "target": "button:Move Cash up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-target",
+    "target": "button:Move Transfer down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
+    "rule": "touch-target",
+    "target": "button:Move Transfer up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-target",
+    "target": "button:Move Cash down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-target",
+    "target": "button:Move Cash up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-target",
+    "target": "button:Move Transfer down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
+    "rule": "touch-target",
+    "target": "button:Move Transfer up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-target",
+    "target": "button:Move Cash down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-target",
+    "target": "button:Move Cash up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-target",
+    "target": "button:Move Transfer down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-target",
+    "target": "button:Move Transfer up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-target",
+    "target": "radio:Bank",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-target",
+    "target": "radio:Card",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-target",
+    "target": "radio:Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-target",
+    "target": "radio:Coins",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-target",
+    "target": "radio:Other",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-target",
+    "target": "radio:Phone",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-target",
+    "target": "radio:QR code",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoEditar",
+    "rule": "touch-target",
+    "target": "radio:Wallet",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "touch-target",
+    "target": "button:Move Cash down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "touch-target",
+    "target": "button:Move Cash up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "touch-target",
+    "target": "button:Move Transfer down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoLista",
+    "rule": "touch-target",
+    "target": "button:Move Transfer up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-target",
+    "target": "button:Move Cash down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-target",
+    "target": "button:Move Cash up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-target",
+    "target": "button:Move Transfer down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-target",
+    "target": "button:Move Transfer up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-target",
+    "target": "radio:Bank",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-target",
+    "target": "radio:Card",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-target",
+    "target": "radio:Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-target",
+    "target": "radio:Coins",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-target",
+    "target": "radio:Other",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-target",
+    "target": "radio:Phone",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-target",
+    "target": "radio:QR code",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNombreRepetido",
+    "rule": "touch-target",
+    "target": "radio:Wallet",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-target",
+    "target": "button:Move Cash down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-target",
+    "target": "button:Move Cash up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-target",
+    "target": "button:Move Transfer down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-target",
+    "target": "button:Move Transfer up",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-target",
+    "target": "radio:Bank",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-target",
+    "target": "radio:Card",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-target",
+    "target": "radio:Cash",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-target",
+    "target": "radio:Coins",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-target",
+    "target": "radio:Other",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-target",
+    "target": "radio:Phone",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-target",
+    "target": "radio:QR code",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoNuevo",
+    "rule": "touch-target",
+    "target": "radio:Wallet",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoUltimo",
+    "rule": "touch-target",
+    "target": "button:Move Cash down",
+    "issue": 60
+  },
+  {
+    "screen": "ConfiguracionMediosPagoUltimo",
+    "rule": "touch-target",
+    "target": "button:Move Cash up",
+    "issue": 60
+  },
+  {
     "screen": "NuevaVentaCliente",
     "rule": "touch-target",
     "target": "button:New customer",

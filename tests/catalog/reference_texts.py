@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from app.catalog.domain.attributes import CatalogAttributes
 from app.catalog.domain.product import CatalogPrice
 from app.catalog.domain.text import CatalogEntry
+from app.shared.money import Money
 from app.shared.quantity import Quantity
 
 
@@ -28,8 +29,8 @@ def entry(
         shown=True, emoji=emoji, indica_share=indica_share, aroma=aroma
     )
     price = CatalogPrice(
-        list_price=list_price,
-        bulk_price=bulk_price,
+        list_price=Money.of_units(list_price),
+        bulk_price=Money.of_units(bulk_price) if bulk_price is not None else None,
         bulk_minimum=Quantity.of(bulk_minimum) if bulk_minimum is not None else None,
     )
     return CatalogEntry(name=name, attributes=attributes, price=price)

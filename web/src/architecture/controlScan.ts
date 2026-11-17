@@ -58,7 +58,7 @@ export function productSources(): SourceFile[] {
 // ---- lexing helpers ------------------------------------------------------------------
 
 /** Comments become spaces (newlines kept), so indexes and line numbers stay the same. */
-function mask(source: string): string {
+export function mask(source: string): string {
   return source
     .replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' '))
     .replace(/(^|[ \t])\/\/[^\n]*/gm, (line, lead: string) => lead + ' '.repeat(line.length - lead.length))
@@ -270,7 +270,7 @@ function declarationRegion(src: string, name: string): string | null {
 }
 
 /** `src/shell/Shell.tsx` + `../components/x` -> `src/components/x`. */
-function relativePath(from: string, spec: string): string {
+export function relativePath(from: string, spec: string): string {
   const parts = from.split(/\//).slice(0, -1)
   for (const step of spec.split(/\//)) {
     if (step === '..') parts.pop()

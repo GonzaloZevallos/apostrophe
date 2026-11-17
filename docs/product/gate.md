@@ -54,7 +54,7 @@ Criterios de éxito:
 
 **Cuando** un cambio arregla algunos nodos que fallan en una pantalla y, como resultado, un nodo que falla, no tocado y con el mismo texto enmascarado, cambia su ordinal de target, **quiero** (como el Developer que hace ese cambio, o el revisor que lo aprueba) una regla escrita que deje que el mismo cambio reemplace la clave vieja por la nueva, **para que** arreglar infractores nunca quede bloqueado ni escalado porque el conteo renombró un nodo que nadie tocó.
 
-Antes de esto (GH-297 parte 1), el ordinal de un target (por ejemplo `span:$ #.#.#[2]`) contaba solo los nodos que fallan en la pantalla con el mismo texto enmascarado, en orden de página. Arreglar algunos en Analysis podía renumerar un monto por Variety no tocado, y la clave vieja y la nueva se leían como una entrada quitada más una agregada, algo que las reglas no cubrían.
+Antes de esto (GH-297 parte 1), el ordinal de un target (por ejemplo `span:$ #.#.#[2]`) contaba solo los nodos que fallan en la pantalla con el mismo texto enmascarado, en orden de página. Arreglar algunos en Analysis podía renumerar un monto por Product no tocado, y la clave vieja y la nueva se leían como una entrada quitada más una agregada, algo que las reglas no cubrían.
 
 Criterios de éxito:
 
@@ -67,7 +67,7 @@ Criterios de éxito:
 
 **Cuando** un pull request está listo para integrarse, **quiero** (como dueño; el agente que pide el merge actúa por mí) que `agentic merge` rechace cualquier head que tenga un job del CI de GitHub en rojo, e2e incluido, **para que** lo que llega a master mantenga el Gate en verde y nunca me encuentre un e2e roto después del hecho.
 
-Antes de esto (GH-533), el job `e2e` de `.github/workflows/ci.yml` corría en cada pull request pero no frenaba nada: `ci:` en `.agentic/stack.yaml` listaba solo `test`, `web` y `docs`, y el `web-e2e` local está apagado en esta máquina (dueño, 2026-10-26). Lo único que lo reemplazaba era mirar el job a mano antes de integrar, y nada lo exigía. El 2026-10-29 eso falló dos veces: #523 se integró con `web/e2e/scrollOnNavigate.spec.ts` fallando (revertido en #532) y #525 con `web/e2e/leaveWithBack.spec.ts:20` fallando.
+Antes de esto (GH-533), el job `e2e` de `.github/workflows/ci.yml` corría en cada pull request pero no frenaba nada: `ci:` en `.agentic/stack.yaml` listaba solo `test`, `web` y `docs`, y el e2e local estaba apagado en esta máquina (dueño, 2026-10-26). Lo único que lo reemplazaba era mirar el job a mano antes de integrar, y nada lo exigía. El 2026-10-29 eso falló dos veces: #523 se integró con `web/e2e/scrollOnNavigate.spec.ts` fallando (revertido en #532) y #525 con `web/e2e/leaveWithBack.spec.ts:20` fallando.
 
 Criterios de éxito:
 
@@ -108,10 +108,10 @@ Criterios de éxito:
 
 ### Cuándo se integra un pull request
 
-- **Todos los jobs de `ci:` en verde.** Un pull request se integra solo con todos los jobs de CI listados en `ci:` de `.agentic/stack.yaml` en verde en su head, e2e incluido (regla del dueño). `agentic merge` lo hace cumplir. Desde GH-476, `ci:` lista solo `ci-ok`, que depende de todos los demás jobs (`changes`, `checks`, `web`, `docs`, `pytest`, `vitest`, `e2e-shard`, `e2e`, `coverage`) y lee las banderas de `changes`: una suite omitida por no afectada cuenta como pasada solo si su bandera es `"false"`, y e2e sigue gateando (ADR-0067). `e2e-shard` es la matriz de shards; `e2e` es el agregador, un único check-run con ese nombre exacto que queda en verde solo si todos los shards lo están, y es el job que `ci_covers` usa para cubrir `web-e2e` cuando ese check agota el tiempo en local (ADR-0067, addendum GH-557 parte 2).
+- **Todos los jobs de `ci:` en verde.** Un pull request se integra solo con todos los jobs de CI listados en `ci:` de `.agentic/stack.yaml` en verde en su head, e2e incluido (regla del dueño). `agentic merge` lo hace cumplir. Desde GH-476, `ci:` lista solo `ci-ok`, que depende de todos los demás jobs (`changes`, `checks`, `web`, `docs`, `pytest`, `vitest`, `e2e-shard`, `e2e`, `coverage`) y lee las banderas de `changes`: una suite omitida por no afectada cuenta como pasada solo si su bandera es `"false"`, y e2e sigue gateando (ADR-0067). `e2e-shard` es la matriz de shards; `e2e` es el agregador, un único check-run con ese nombre exacto que queda en verde solo si todos los shards lo están, y es el job del que depende `ci-ok` para juzgar e2e. Desde GH-699 no existe `ci_covers`: ningún check local corre e2e (ADR-0054).
 - **Cualquier estado que no sea éxito frena.** Para cada job de `ci:`, `agentic merge` rechaza un head cuyo job falló, se canceló, se salteó, sigue pendiente o falta, y nombra el job. e2e sigue la misma regla que los demás jobs, sin una regla propia. La prueba de ese rechazo vive fuera de este repo, en el sistema agentic (hallazgo `outside`); si alguno de los jobs existentes no se comportara así, eso se registra como una falla del comportamiento existente.
 - **Un spec e2e nuevo o cambiado se ve pasar en GitHub sin pasos extra.** Desde GH-476 el job `e2e-shard` corre en shards solo los specs que el cambio afecta (la suite completa en cada push a master, y en un pull request o un push a `agentic-ci/**` cuando el cambio es de infraestructura o no coincide con ninguna regla). Un push a `agentic-ci/**` selecciona contra el merge-base con `origin/master`, y cualquier falla para obtenerlo corre todo (ADR-0067, addendum GH-557). Un Dispatch de `ci.yml` en un sha es otra vía de entrada: corre el workflow y los scripts de master sobre el árbol de ese head, selecciona contra el merge-base del head con `origin/master` y corre todo ante cualquier falla (ADR-0072, addendum GH-562 de ADR-0067). `ci-ok` lee la bandera `e2e` de `changes` (ADR-0064, reglas 7 y 8; ADR-0067). Así, un pull request que agrega o cambia un spec e2e cumple "ver pasar ese spec en GitHub antes de pedir el merge" con solo cumplir la regla anterior. No es un paso manual aparte.
-- **El `web-e2e` vuelve a ser un check declarado (GH-476).** `.agentic/stack.yaml` lo restaura en `checks` y en `affected_checks`, de modo que lo corre el tier completo; no está en `delivery_checks`, así que la entrega de cada subtask no lo corre. El freno del merge sigue siendo el job e2e de GitHub, leído por `ci-ok` (la decisión del dueño del 2026-10-26 de apagarlo en esta máquina queda reemplazada para el tier completo).
+- **El e2e lo juzga solo el CI de GitHub (GH-699).** `web-e2e` sale de `checks` y de `affected_checks` en `.agentic/stack.yaml`: ningún check local corre Playwright, ni el tier completo ni la entrega. Los fallos de GH-407 fueron solo por carga (carga sobre 40 en 16 núcleos, con los shards de CI en verde). El freno del merge sigue siendo el job `e2e` de GitHub, leído por `ci-ok`. Correr un solo spec a mano para depurar es una herramienta, no un freno. Si el `e2e` de master queda en rojo tras un merge (un head solo de backend no selecciona specs, así que nada lo corrió antes), es una regresión de producto y se abre un issue propio que nombra la corrida, el sha y el spec que falla (ADR-0054, enmienda GH-699).
 - **Nunca verde a la fuerza.** Un rojo se arregla encontrando su causa, en el spec o en el código que atrapó. Nunca se saltea, se pone en cuarentena ni se afloja una aserción. La única repetición que existe es el reintento único de CI de la sección siguiente, y un test que falla dos veces queda en rojo. Un spec sigue la definición escrita vigente, nunca al revés.
 
 ### Un test que falla una vez en CI: reintento único y reporte de flake
@@ -126,6 +126,25 @@ Decisión del dueño del 2026-11-03, que reemplaza la regla anterior de "nunca s
 - **Sin `skip`, cuarentena ni aserción aflojada**, como antes. Un reintento en verde no registra el spec como correcto: queda en el reporte como flake.
 - **Un flake sigue siendo un defecto del Gate**, no ruido con el que convivir. Un test que aparece como flake en el reporte se arregla, como #428; si el spec lo agrega o cambia el pull request, el head no se integra hasta que se arregle.
 - Si un job `e2e-shard` se cancela o llega a su `timeout-minutes` (30), se vuelve a correr una sola vez, solo para distinguir un flake de una regresión. El workflow no tiene ningún bucle de re-run fuera del reintento por test.
+
+### Listas de infractores del texto en el front (GH-379, parte 2)
+
+La guarda de textos con key (ADR-0049) guarda dos listas en `web/src/architecture/i18nOffenders/`, ambas derivadas del árbol, un JSON ordenado con una entrada por línea:
+
+- `copyExportsText.json` lista cada archivo de `web/src/copy/` que todavía escribe palabras propias: `{ file, issue }`. `common.ts` es la única entrada con `issue: null`, con su `reason`.
+  - `emptyStates.ts` nunca es entrada: solo exporta keys y los strings de sus límites (`EMPTY_STATE_LIMITS`) no son texto (`NOT_TEXT_EXPORTS` en `owners.ts`, que exime solo ese export: una palabra real agregada a ese archivo sí es infractora).
+- `copyImports.json` lista cada archivo de `screens/`, `shell/` o `components/` que importa esas palabras: `{ file, imports, issue }`, una entrada por par de archivo importador y dueño. Los imports de `common.ts` y `emptyStates.ts` nunca son entradas.
+
+El `issue` sale de `COPY_OWNER` (`owners.ts`), la única tabla que escribe un número de issue para un archivo de copy. `lists.test.ts` recalcula ambas listas desde el árbol y falla ante un infractor sin entrada, una entrada vencida (un archivo borrado incluido), un `issue` distinto del dueño, un `null` fuera de `common.ts` y cualquier hallazgo de `wordsOf`.
+
+Las listas solo se achican: cada parte de área (#350 a #353) borra únicamente sus propias entradas cuando mueve sus palabras a keys. Nunca se agrega una entrada para tapar un infractor nuevo: se lo mueve a una key.
+
+### Restos conocidos de un solo tipo de negocio
+
+Textos que la app todavía muestra con una palabra propia de un solo tipo de negocio, que la definición escrita (expenses.md, results.md) ya no usa. La app no cambia por esta lista; la redacción de cada texto queda pendiente bajo #330.
+
+- `web/src/copy/common.ts`: la etiqueta de la cifra de Purchases del período (Week y Month de Home y Analysis). #330.
+- `web/src/copy/expenses.ts`: la línea fija de Expenses que recuerda que una Purchase se registra en Stock, nunca como Expense. #330.
 
 ### Listas de infractores del estándar móvil
 
@@ -173,7 +192,7 @@ El ordinal de un target (`[n]`) cuenta solo los nodos que fallan en la pantalla 
   3. **Sin crecimiento neto.** Para esa pantalla, regla y texto enmascarado, no hay más entradas después del cambio que antes.
   4. **El nodo no se tocó.** El markup propio del nodo renumerado no está en el diff de código del cambio.
 - **Si no, es crecimiento.** Un cambio de clave que no cumple alguna de estas condiciones es una entrada agregada como cualquier otra. Se arregla en el mismo cambio o se escala, nunca se lista.
-- **Registrado.** GH-297 parte 1 (Analysis) es el primer caso: montos por Variety no tocados podían renumerarse cuando la franja de resumen, las filas de costo y el bloque "since the first record" dejaron de fallar. Esos canjes de clave conservan #48 y se listan en los targets movidos del cambio como `clave vieja → clave nueva`.
+- **Registrado.** GH-297 parte 1 (Analysis) es el primer caso: montos por Product no tocados podían renumerarse cuando la franja de resumen, las filas de costo y el bloque "since the first record" dejaron de fallar. Esos canjes de clave conservan #48 y se listan en los targets movidos del cambio como `clave vieja → clave nueva`.
 
 #### Común a los tres
 
@@ -332,6 +351,6 @@ No hay telemetría. Se leen de la evidencia de la tarea y de la revisión.
 - Cambiar cómo se calcula el ordinal de un target: la regla de renumeración acepta el ordinal tal como es.
 - Dejar crecer las listas de infractores en cualquier caso que no sea el canje o una fila nueva del registro.
 - Traducir `docs/product/design-system/README.md`.
-- Meter `web-e2e` en `delivery_checks` o dar al e2e un respaldo local distinto del job e2e de GitHub.
+- Volver a declarar `web-e2e` en `checks`, `affected_checks` o `delivery_checks`, o dar al e2e un respaldo local o un `ci_covers` distinto del job e2e de GitHub.
 - Saltear, poner en cuarentena, reintentar más de la única vez que hace CI o aflojar una aserción para poner el Gate en verde.
 - Una regla de merge propia de e2e distinta de la de los demás jobs de `ci:`.

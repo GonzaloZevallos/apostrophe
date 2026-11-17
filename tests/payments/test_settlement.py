@@ -14,11 +14,11 @@ from app.payments.domain.settlement import (
     LaterPaymentEntry,
     Ledger,
     OwedSale,
-    PaymentMethod,
     SaleSettlement,
     settle,
     standing_of,
 )
+from app.shared.payment_method import PaymentMethodLabel
 
 AT = datetime(2026, 9, 1, 10, 0)
 
@@ -28,7 +28,7 @@ def _sale(
     day: date,
     total: int,
     recorded_at: datetime = AT,
-    on_the_spot: PaymentMethod | None = None,
+    on_the_spot: PaymentMethodLabel | None = None,
 ) -> OwedSale:
     return OwedSale(
         id=id, date=day, recorded_at=recorded_at, total=total, on_the_spot_method=on_the_spot
@@ -40,7 +40,7 @@ def _payment(
     paid_on: date,
     amount: int,
     recorded_at: datetime = AT,
-    method: PaymentMethod | None = None,
+    method: PaymentMethodLabel | None = None,
 ) -> LaterPaymentEntry:
     return LaterPaymentEntry(
         id=id, paid_on=paid_on, recorded_at=recorded_at, amount=amount, method=method
@@ -76,7 +76,7 @@ def test_one_sale_left_owing_with_no_payment_owes_its_whole_total() -> None:
 
 
 def test_an_on_the_spot_sale_never_enters_the_walk() -> None:
-    sale = _sale(1, date(2026, 9, 1), 100, on_the_spot=PaymentMethod.CASH)
+    sale = _sale(1, date(2026, 9, 1), 100, on_the_spot=CASH)
 
     result = settle(Ledger((sale,), ()))
 
@@ -185,3 +185,7 @@ def test_later_payments_on_the_same_date_are_applied_oldest_recorded_first() -> 
     ordered = sorted(result.payments, key=lambda p: p.payment_id)
     assert ordered[0].splits[0].amount == 30
     assert ordered[1].splits[0].amount == 30
+
+
+CASH = PaymentMethodLabel(1, "Cash", "banknote")
+TRANSFER = PaymentMethodLabel(2, "Transfer", "bank")
