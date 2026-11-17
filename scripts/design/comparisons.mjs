@@ -188,9 +188,10 @@ async function run(page, rawStep, placeholders) {
   else if (step.wait) await page.getByText(step.wait, { exact: true }).first().waitFor()
   // Puts back to 0 the one scroller that holds the text (`scrollTopInPage`), so the shot starts
   // unscrolled whatever the earlier clicks scrolled. It advances no clock itself: only the loop's
-  // standard settle (SETTLE_ADVANCE_MS) runs after it. A last step on VentaVuelve must keep the
-  // toast in the frame: TOAST_MS is 2500 and the settles after the save spend about 4 x 350 ms plus
-  // frames, so it is still shown.
+  // standard settle (SETTLE_ADVANCE_MS) runs after it. Toast budget: TOAST_MS is 2500 and the
+  // settles after the save spend about 4 x 350 ms plus frames, so the step never outlives it. The
+  // toast itself is rendered by FlashProvider after the layer, below the fold, so it is not in
+  // the shot whatever this step does (GH-795 probe).
   else if (step.scroll_top) await page.evaluate(scrollTopInPage, step.scroll_top)
   // The page has settled by now: only the network goes, the page is never reloaded. Every
   // font face it has not loaded yet is loaded first, since offline it could never be. The
