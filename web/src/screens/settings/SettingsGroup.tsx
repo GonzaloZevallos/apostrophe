@@ -3,13 +3,16 @@
  * the title, "Cerrar", and the unsaved-changes confirmation. It is a form, so it carries no
  * bar and no "+ Nueva venta" (the route says `chrome: 'none'`; `Shell` reads it).
  *
- * "Cerrar" goes through `useBackOr(/settings)` and never calls `disarm()`: a dirty group
- * always asks, and only discarding lets it through. `disarm` is handed to the child so a
+ * "Cerrar" goes through `useBackOr` and never calls `disarm()`. With nothing in history it
+ * lands on the parent the route list declares for the screen it frames (`screenAtPath` +
+ * `parentOf`, the same answer as the back arrow), and on /settings when the list has none. A
+ * dirty group always asks, and only discarding lets it through. `disarm` is handed to the child so a
  * save that navigates (invariant: only right before a navigation after a successful save or
  * logout) can drop the guard first.
  */
 
-import { SETTINGS, parentOf } from '../../routes'
+import { useLocation } from 'react-router'
+import { SETTINGS, parentOf, screenAtPath } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import type { ReactNode } from 'react'
 import Boton from '../../components/Boton'
@@ -44,7 +47,9 @@ export interface SettingsGroupProps {
 
 export default function SettingsGroup({ title, dirty, leave, className, children }: SettingsGroupProps) {
   const { blocker, disarm } = useLeaveGuard(dirty)
-  const close = useBackOr(parentOf('settings-business', useViewport())?.path ?? SETTINGS_PATH)
+  const viewport = useViewport()
+  const screen = screenAtPath(useLocation().pathname)
+  const close = useBackOr((screen === undefined ? undefined : parentOf(screen.id, viewport)?.path) ?? SETTINGS_PATH)
 
   return (
     <ContentArea as="main" className={className === undefined ? 'pantalla ajustes-grupo' : `pantalla ajustes-grupo ${className}`}>

@@ -408,7 +408,7 @@ export const SCREENS = [
     path: EXPENSE_CATEGORIES,
     declaredKind: 'form',
     titleKey: 'common:expenseCategories',
-    parent: 'settings',
+    parent: 'settings-payments',
   }),
   screen({
     id: 'settings-currency',

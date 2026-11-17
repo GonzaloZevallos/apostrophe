@@ -9,7 +9,7 @@
  * the console holds nothing.
  */
 
-import { CATALOG, HOME, LOGIN } from '../src/routes.js'
+import { CATALOG, HOME, LOGIN, SETTINGS_PAYMENTS } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
@@ -88,8 +88,10 @@ test('a seller goes through every Configuración group from the phone, with no c
   await expectToast(page, 'Catalog saved', () => page.getByRole('button', { name: 'Save the message' }).click())
   await close()
 
-  // Categorías de gastos: add, rename, a refused removal, then remove.
-  await openGroup('Expense categories')
+  // Categorías de gastos, the second row of Cobros y gastos: add, rename, a refused removal,
+  // then remove; its Close returns to the group, and the group's Close to the list.
+  await openGroup('Payments and expenses')
+  await page.getByRole('link', { name: 'Expense categories', exact: true }).click()
   await page.getByLabel('New category', { exact: true }).fill('Delivery en bici')
   await page.getByRole('button', { name: '+ Category' }).click()
   await expect(page.getByText('Category saved')).toBeVisible()
@@ -107,6 +109,8 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(page.getByText('Category deleted')).toBeVisible()
   await expect(page.getByText('Mensajería')).toHaveCount(0)
+  await page.getByRole('button', { name: 'Close', exact: true }).click()
+  await expectPath(page, SETTINGS_PAYMENTS)
   await close()
 
   // Apariencia: Oscuro applies at once, Claro removes it.
