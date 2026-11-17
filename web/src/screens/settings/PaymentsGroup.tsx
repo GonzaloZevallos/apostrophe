@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next'
 import { paymentMethodsQueryOptions } from '../../api/paymentMethods'
 import Icono from '../../components/Icono'
 import InAppLink from '../../components/InAppLink'
-import { COMMON_TEXT } from '../../copy/common'
 import { EXPENSE_CATEGORIES, SETTINGS_PAYMENT_METHODS } from '../../routes'
 import SettingsGroup from './SettingsGroup'
 
@@ -38,7 +37,7 @@ export default function PaymentsGroup() {
             <span className="ajustes__item-icono">
               <Icono nombre="categorias" />
             </span>
-            <span className="ajustes__item-rotulo">{COMMON_TEXT.expenseCategories}</span>
+            <span className="ajustes__item-rotulo">{t('common:expenseCategories')}</span>
             <span className="ajustes__item-flecha">
               <Icono nombre="chevron" />
             </span>
