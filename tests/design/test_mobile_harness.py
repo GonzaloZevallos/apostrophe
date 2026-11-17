@@ -4,6 +4,7 @@ comparisons ever seeing it (`sample_app.main` never calls it)."""
 
 import ast
 import os
+import re
 from collections.abc import Iterator
 from dataclasses import asdict
 from datetime import date, datetime, timedelta
@@ -191,3 +192,29 @@ def _seeded_twice() -> tuple[dict[str, Any], list[Any]]:
 
 def test_two_pinned_seedings_give_the_same_sample_and_the_same_sales() -> None:
     assert _seeded_twice() == _seeded_twice()
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+PIN_SOURCE = REPO_ROOT / "web" / "src" / "mobile-standard" / "pin.ts"
+SKIPPED_DIRECTORIES = {"node_modules", "dist", "playwright-report", "test-results"}
+
+
+def test_the_front_pin_is_the_same_instant_as_the_servers() -> None:
+    literals = re.findall(r"new Date\('([^']+)'\)", PIN_SOURCE.read_text(encoding="utf-8"))
+    assert len(literals) == 1, f"pin.ts must hold exactly one new Date('...') literal, found {literals}"
+    front = datetime.fromisoformat(literals[0].replace("Z", "+00:00"))
+    assert front == PINNED_INSTANT
+
+
+def test_no_file_under_web_but_pin_ts_writes_the_pinned_literal() -> None:
+    literal = "2026-09-16T15:00:00"
+    offenders: list[str] = []
+    for directory, subdirectories, files in os.walk(REPO_ROOT / "web"):
+        subdirectories[:] = [name for name in subdirectories if name not in SKIPPED_DIRECTORIES]
+        for name in files:
+            path = Path(directory) / name
+            if path == PIN_SOURCE:
+                continue
+            if literal in path.read_text(encoding="utf-8", errors="ignore"):
+                offenders.append(str(path.relative_to(REPO_ROOT)))
+    assert offenders == [], f"the pinned literal is written outside pin.ts: {offenders}"
