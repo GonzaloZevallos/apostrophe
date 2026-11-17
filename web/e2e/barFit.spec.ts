@@ -180,6 +180,8 @@ interface Slot {
   height: number
   /** The label's drawn width at weight 600 (a Range over its text, with the weight forced); 0 for the +. */
   labelWidth: number
+  /** Whether the label is drawn (not the visually hidden text of the icons-only bar); false for the +. */
+  shown: boolean
 }
 
 /** Every slot of the bar in order, as it lays out now: the tabs' and the +'s boxes and each label's width at weight 600. */
@@ -191,7 +193,7 @@ async function measureSlots(page: Page): Promise<Slot[]> {
         const box = slot.getBoundingClientRect()
         const label = slot.querySelector('span')
         if (!slot.matches(args.item) || label === null) {
-          return { kind: 'plus', label: '+', width: box.width, height: box.height, labelWidth: 0 }
+          return { kind: 'plus', label: '+', width: box.width, height: box.height, labelWidth: 0, shown: false }
         }
         const before = label.style.fontWeight
         label.style.fontWeight = String(args.weight)
@@ -199,33 +201,40 @@ async function measureSlots(page: Page): Promise<Slot[]> {
         range.selectNodeContents(label.firstChild ?? label)
         const labelWidth = range.getBoundingClientRect().width
         label.style.fontWeight = before
-        return { kind: 'tab', label: label.textContent ?? '', width: box.width, height: box.height, labelWidth }
+        const shown = label.getBoundingClientRect().width > 1
+        return { kind: 'tab', label: label.textContent ?? '', width: box.width, height: box.height, labelWidth, shown }
       })
     },
     { item: BOTTOM_BAR_ITEM, plus: BOTTOM_BAR_PLUS, weight: LABEL_WEIGHT },
   )
 }
 
-/** Why the slots do not fit, one line each; empty when every label is whole in its slot and every box is big enough. */
+/**
+ * Why the slots do not fit, one line each; empty when the bar is right for this width. Every tab box is
+ * at least 44 px each way at every width. Where 44 px for every tab, each label whole at weight 600 and
+ * the 52 px + are wider than the viewport, the bar is icons only (Human Decision 3, GH-789): no label is
+ * drawn but each stays in the DOM as the tab's name. Anywhere else every label is drawn whole in its box.
+ */
 function slotProblems(slots: Slot[], viewport: number): string[] {
   const found: string[] = []
-  // Human Decision 2 (GH-789): where 44 px for every tab, with every label whole and the 52 px +, is wider
-  // than the viewport, a tab may be narrower than 44 px, but never narrower than its own label. At 246 px
-  // 44 + 44 + 65 + 53 + 52 = 258 px does not fit; nowhere else is a tab under 44 px wide.
+  const tabs = slots.filter((slot) => slot.kind === 'tab')
   const wanted = slots.reduce((sum, slot) => sum + (slot.kind === 'plus' ? PLUS_BOX : Math.max(TAB_BOX, slot.labelWidth)), 0)
-  const tight = wanted > viewport + TOLERANCE
+  const iconsOnly = wanted > viewport + TOLERANCE
   if (slots.map((slot) => slot.label).join('|') !== ['Home', 'Sales', '+', 'Customers', 'Products'].join('|')) {
     found.push('the slots are not Home, Sales, +, Customers, Products')
   }
   for (const slot of slots) {
-    const [minWidth, minHeight] =
-      slot.kind === 'plus' ? [PLUS_BOX, PLUS_BOX] : [tight ? slot.labelWidth : TAB_BOX, TAB_BOX]
+    const [minWidth, minHeight] = slot.kind === 'plus' ? [PLUS_BOX, PLUS_BOX] : [TAB_BOX, TAB_BOX]
     if (slot.width < minWidth - TOLERANCE) found.push(`${slot.label} is ${slot.width} px wide, under ${minWidth}`)
     if (slot.height < minHeight - TOLERANCE) found.push(`${slot.label} is ${slot.height} px tall, under ${minHeight}`)
-    if (slot.kind === 'tab' && slot.labelWidth > slot.width + TOLERANCE) {
+    if (slot.kind === 'tab' && slot.label.trim() === '') found.push('a tab has no name')
+    if (slot.kind === 'tab' && !iconsOnly && !slot.shown) found.push(`${slot.label} has no visible label where every label fits`)
+    if (slot.kind === 'tab' && iconsOnly && slot.shown) found.push(`${slot.label} draws its label where 44 px for every tab does not fit`)
+    if (slot.kind === 'tab' && slot.shown && slot.labelWidth > slot.width + TOLERANCE) {
       found.push(`${slot.label} is ${slot.labelWidth} px of text in a ${slot.width} px slot`)
     }
   }
+  if (tabs.length === 0) found.push('the bar has no tabs')
   if (slots.reduce((sum, slot) => sum + slot.width, 0) > viewport + TOLERANCE) found.push('the slots are wider than the viewport')
   return found
 }
@@ -235,16 +244,23 @@ function slotTable(slots: Slot[], viewport: number, theme: string): string {
     (slot) =>
       `| ${slot.label} | ${slot.width.toFixed(2)} | ${slot.kind === 'tab' ? slot.labelWidth.toFixed(2) : '-'} | ${
         slot.kind === 'tab' ? (slot.width - slot.labelWidth).toFixed(2) : '-'
-      } | ${viewport} | ${theme} |`,
+      } | ${viewport} | ${theme} | ${slot.kind === 'tab' ? (slot.shown ? 'label' : 'icon only') : '-'} |`,
   )
-  return ['| label | slot width | label width at 600 | slack | viewport | theme |', '|---|---|---|---|---|---|', ...rows].join('\n')
+  return ['| label | slot width | label width at 600 | slack | viewport | theme | mode |', '|---|---|---|---|---|---|---|', ...rows].join('\n')
 }
 
+const tabSlot = (label: string, width: number, labelWidth: number, shown = true): Slot => ({
+  kind: 'tab',
+  label,
+  width,
+  height: 44,
+  labelWidth,
+  shown,
+})
+const PLUS_SLOT: Slot = { kind: 'plus', label: '+', width: 52, height: 52, labelWidth: 0, shown: false }
+
 test('the slot check rejects a bar whose label is wider than its slot', () => {
-  const slots: Slot[] = [
-    { kind: 'tab', label: 'Home', width: 40, height: 44, labelWidth: 30 },
-    { kind: 'tab', label: 'Customers', width: 46, height: 44, labelWidth: 58 },
-  ]
+  const slots: Slot[] = [tabSlot('Home', 40, 30), tabSlot('Customers', 46, 58)]
 
   expect(slotProblems(slots, 246)).toEqual([
     'the slots are not Home, Sales, +, Customers, Products',
@@ -253,23 +269,45 @@ test('the slot check rejects a bar whose label is wider than its slot', () => {
   ])
 })
 
-test('the slot check lets a tab be under 44 px wide only where 44 px for every tab does not fit', () => {
-  const tabs = (home: number): Slot[] => [
-    { kind: 'tab', label: 'Home', width: home, height: 44, labelWidth: 34 },
-    { kind: 'tab', label: 'Sales', width: home, height: 44, labelWidth: 33 },
-    { kind: 'plus', label: '+', width: 52, height: 52, labelWidth: 0 },
-    { kind: 'tab', label: 'Customers', width: 65, height: 44, labelWidth: 65 },
-    { kind: 'tab', label: 'Products', width: 53, height: 44, labelWidth: 53 },
+test('the slot check wants icons only where 44 px for every tab and every label does not fit, and labels elsewhere', () => {
+  const bar = (home: number, shown: boolean): Slot[] => [
+    tabSlot('Home', home, 34, shown),
+    tabSlot('Sales', home, 33, shown),
+    PLUS_SLOT,
+    tabSlot('Customers', 48.5, 65, shown),
+    tabSlot('Products', 48.5, 53, shown),
   ]
 
-  expect(slotProblems(tabs(38), 246)).toEqual([])
-  expect(slotProblems(tabs(30), 246)).toEqual([
-    'Home is 30 px wide, under 34',
-    'Home is 34 px of text in a 30 px slot',
-    'Sales is 30 px wide, under 33',
-    'Sales is 33 px of text in a 30 px slot',
+  // 246 px: 44 + 44 + 52 + 65 + 53 = 258 does not fit, so icons only, every tab 44 px or more.
+  expect(slotProblems(bar(48.5, false), 246)).toEqual([])
+  expect(slotProblems(bar(48.5, true), 246)).toEqual([
+    'Home draws its label where 44 px for every tab does not fit',
+    'Sales draws its label where 44 px for every tab does not fit',
+    'Customers draws its label where 44 px for every tab does not fit',
+    'Customers is 65 px of text in a 48.5 px slot',
+    'Products draws its label where 44 px for every tab does not fit',
+    'Products is 53 px of text in a 48.5 px slot',
   ])
-  expect(slotProblems(tabs(38), 320)).toEqual(['Home is 38 px wide, under 44', 'Sales is 38 px wide, under 44'])
+  expect(slotProblems(bar(38, false), 246)).toEqual(['Home is 38 px wide, under 44', 'Sales is 38 px wide, under 44'])
+  // 320 px: every label fits, so every label is drawn and icons only is wrong.
+  const wide: Slot[] = [
+    tabSlot('Home', 60, 34),
+    tabSlot('Sales', 60, 33),
+    PLUS_SLOT,
+    tabSlot('Customers', 70, 65),
+    tabSlot('Products', 60, 53),
+  ]
+  expect(slotProblems(wide, 320)).toEqual([])
+  expect(slotProblems(bar(44, true), 320)).toEqual([
+    'Customers is 65 px of text in a 48.5 px slot',
+    'Products is 53 px of text in a 48.5 px slot',
+  ])
+  expect(slotProblems(bar(44, false), 320)).toEqual([
+    'Home has no visible label where every label fits',
+    'Sales has no visible label where every label fits',
+    'Customers has no visible label where every label fits',
+    'Products has no visible label where every label fits',
+  ])
 })
 
 // One business for the three tests: signing up is the slow step, and each test only reads layout.
@@ -295,7 +333,7 @@ test.describe.serial('bar and rail fit', () => {
   })
 
   for (const theme of ['light', 'dark'] as const) {
-    test(`at 246 px in ${theme}, every slot fits its label whole at weight 600 and no box is under its minimum`, async () => {
+    test(`at 246 px in ${theme}, the bar is icons only, every tab named and no box under its minimum`, async () => {
       await page.emulateMedia({ colorScheme: theme })
       await page.setViewportSize(NARROW)
       await page.goto(HOME)

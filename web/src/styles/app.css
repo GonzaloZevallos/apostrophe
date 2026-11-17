@@ -5228,6 +5228,30 @@ a.ajustes-tema__opcion {
     font-size: 0.75rem;
   }
 
+  /* Too narrow for every tab to keep both its visible label and 44 px (Human Decision 3, GH-789):
+   * four labels at 12 px, weight 600, the 52 px + and a 44 px box for each of Home and Sales need
+   * 44 + 44 + 52 + 65 + 53 = 258 px (measured in `e2e/barFit.spec.ts`), so below 258 px the 44 px
+   * minimum wins and the bar shows icons only. The label stays in the DOM, visually hidden, so each
+   * tab keeps its accessible name; nothing is shrunk, cut or renamed, and no tab is under 44 px.
+   * (A viewport this narrow has no side insets, so the viewport is the bar's width.) */
+  @media (max-width: 257.98px) {
+    .bar-inferior__item {
+      min-width: var(--alto-tocable);
+    }
+
+    .bar-inferior__item > span {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  }
+
   /* A text keyboard is up: hidden and untappable, never pushed above it. The padding stays, so
    * nothing shifts. */
   .disposicion[data-teclado='abierto'] .bar-inferior {
