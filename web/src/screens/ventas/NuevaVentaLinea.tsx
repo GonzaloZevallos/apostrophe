@@ -7,7 +7,7 @@
  * price per gram, rule and total, and "Quitar"). It only renders what it is given.
  */
 
-import type { FocusEvent, KeyboardEvent, RefObject } from 'react'
+import { type FocusEvent, type KeyboardEvent, type RefObject, useState } from 'react'
 import Boton from '../../components/Boton'
 import MoneyInput from '../../components/MoneyInput'
 import Loading from '../../components/Loading'
@@ -19,6 +19,9 @@ import { useMoney } from '../../format/moneyContext'
 import { type priceLine, fromHundredths } from '../../sales/pricing'
 import { GRAMS_HELP, SALES_TEXT } from '../../copy/sales'
 import { useViewport } from '../../shell/useViewport'
+import { NO_PRICE_HINT } from '../../sales/nothingSellable'
+import type { NothingSellable } from '../../sales/nothingSellable'
+import Icono from '../../components/Icono'
 import type { Variety } from '../Variedades'
 import { COMMON_TEXT } from '../../copy/common'
 import { useTranslation } from 'react-i18next'
@@ -59,6 +62,9 @@ function onEnter(event: KeyboardEvent<HTMLInputElement>, action: () => void): vo
   action()
 }
 
+/** The open line's hint when nothing is sellable: the Product field's `aria-describedby` names it. */
+const NOTHING_SELLABLE_ID = 'nueva-venta-sin-vendible'
+
 interface NuevaVentaLineaProps {
   /** The line's 1-based position, for its accessible names. */
   n: number
@@ -75,6 +81,9 @@ interface NuevaVentaLineaProps {
   varieties: Variety[]
   /** The Products have not loaded successfully: the Product field waits, never reads as empty. */
   varietiesLoading: boolean
+  /** What is missing for any line to sell on the sale's date, from a successful answer for that
+   * date only (never while loading, refetching or failed); only the open line is given it. */
+  nothingSellable: NothingSellable
   /** "Quitar" is only offered when the sale has more than one line. */
   canRemove: boolean
   varietyRef: RefObject<HTMLButtonElement | null>
@@ -97,6 +106,7 @@ export default function NuevaVentaLinea({
   variety,
   varieties,
   varietiesLoading,
+  nothingSellable,
   canRemove,
   varietyRef,
   listHost,
@@ -112,6 +122,10 @@ export default function NuevaVentaLinea({
   const isComputer = useViewport() === 'computer'
   const { t } = useTranslation()
   const gone = line.varietyId !== '' && variety === undefined
+  // The Product list is showing: with no Products its own message says the same words as the hint,
+  // so the hint steps aside while it shows and the sentence is never on screen twice.
+  const [listShowing, setListShowing] = useState(false)
+  const hintShown = nothingSellable !== null && !(nothingSellable === 'noProducts' && listShowing)
   // Focus bubbles out of the Selector's list (a portal) too: only the field itself scrolls the form.
   function onVarietyFocus(event: FocusEvent<HTMLElement>): void {
     if (event.target === varietyRef.current) scrollFieldIntoView(event.target)
@@ -160,6 +174,14 @@ export default function NuevaVentaLinea({
 
   return (
     <div className="nueva-venta__linea nueva-venta__linea--abierta">
+      {hintShown && (
+        <p id={NOTHING_SELLABLE_ID} className="pie nueva-venta__sin-vendible">
+          <span className="aviso-ambar__icono">
+            <Icono nombre="atencion" />
+          </span>
+          <span>{nothingSellable === 'noProducts' ? t('emptyStates:selectorNoVarieties') : NO_PRICE_HINT}</span>
+        </p>
+      )}
       <div className="campo" onFocus={onVarietyFocus}>
         <Selector
           required
@@ -170,6 +192,8 @@ export default function NuevaVentaLinea({
           value={line.varietyId === '' ? null : line.varietyId}
           selected={gone ? { value: line.varietyId, label: line.varietyName } : undefined}
           loading={varietiesLoading}
+          describedBy={hintShown ? NOTHING_SELLABLE_ID : undefined}
+          onOpenChange={setListShowing}
           emptySetMessage={t('emptyStates:selectorNoVarieties')}
           fieldRef={varietyRef}
           listHost={listHost}

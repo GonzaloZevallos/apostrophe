@@ -6245,6 +6245,18 @@ a.ajustes-tema__opcion {
   margin: calc(-1 * var(--espacio-lg) + var(--espacio-xs)) 0 var(--espacio-lg);
 }
 
+/* New sale's hint when nothing is sellable on the sale's date: the Attention icon beside the
+ * sentence, above the open line's Product field. It wraps freely and never reserves height. */
+.nueva-venta__sin-vendible {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-xs);
+  margin: 0;
+  /* Flush above the field, not `.pie`'s own screen padding and centring. */
+  padding: 0;
+  text-align: start;
+}
+
 .variedades__motivo {
   flex-basis: 100%;
   margin: 0;

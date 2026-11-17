@@ -75,6 +75,7 @@ import {
   validateSale,
 } from '../../sales/pricing'
 import { paymentMethodName } from '../../sales/paymentMethods'
+import { nothingSellable } from '../../sales/nothingSellable'
 import { OWING_HINT, SALES_TEXT } from '../../copy/sales'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
@@ -312,6 +313,10 @@ function NuevaVentaForm() {
   // Until the first prices arrive the body is the shared loading state; after a date change
   // the form stays and every figure that depends on a price waits behind a compact bar.
   const opening = varietiesQuery.isPending || settingsQuery.isPending
+  // The hint is worked out only from a successful answer for the date shown: `isSuccess` stays
+  // true while a date change keeps the previous day's list (`isPlaceholderData`), so both count.
+  const sellable =
+    varietiesQuery.isSuccess && !varietiesQuery.isPlaceholderData ? nothingSellable(varietiesQuery.data) : null
   const repricing = varietiesQuery.isPlaceholderData || settingsQuery.isPlaceholderData
   const settings: PricingSettings =
     settingsQuery.data === undefined
@@ -767,6 +772,7 @@ function NuevaVentaForm() {
                     variety={varietyOf(line.varietyId)}
                     varieties={varieties}
                     varietiesLoading={!varietiesQuery.isSuccess}
+                    nothingSellable={line.key === openKey ? sellable : null}
                     canRemove={lines.length > 1}
                     varietyRef={varietyFieldRef}
                     listHost={listHost}
