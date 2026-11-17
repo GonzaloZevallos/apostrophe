@@ -24,7 +24,7 @@ function filesUnder(directory: string): string[] {
 }
 
 const READ = filesUnder(E2E_DIR).map((file) => ({
-  path: path.relative(E2E_DIR, file).split(path.sep).join('/'),
+  path: path.relative(E2E_DIR, file).split(path.sep).join(path.posix.sep),
   text: readFileSync(file, 'utf-8'),
 }))
 

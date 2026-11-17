@@ -18,7 +18,7 @@ describe('findChromeLandmarks, on inputs it must reject', () => {
   })
 
   it('rejects a landmark in a comment', () => {
-    expect(findChromeLandmarks([spec("// the bar is `.bar-inferior`\nawait page.goto('/')")])).toEqual(['phone.spec.ts'])
+    expect(findChromeLandmarks([spec("// the bar is `.bar-inferior`\nawait page.reload()")])).toEqual(['phone.spec.ts'])
   })
 
   it('rejects a landmark in a helper other than the chrome module, and names every offender in order', () => {
