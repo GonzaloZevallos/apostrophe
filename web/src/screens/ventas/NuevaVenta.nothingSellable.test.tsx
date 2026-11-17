@@ -6,7 +6,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -152,7 +152,9 @@ test('a date change from an unpriced day to a priced one drops the hint at once 
   changeDate('2026-10-01')
 
   await waitFor(() => expect(pending.has('/api/products?on=2026-10-01')).toBe(true))
-  expect(screen.queryByText(NO_PRICE)).not.toBeInTheDocument()
+  for (const copy of screen.queryAllByText(NO_PRICE, { ignore: false })) expect(copy).not.toBeVisible()
+  expect(screen.queryAllByText(NO_PRICE, { ignore: false }).length).toBeLessThanOrEqual(1)
+  expect(productField(1).getAttribute('aria-describedby') ?? '').not.toContain('nueva-venta-sin-vendible')
 
   answer('2026-10-01', PRICED)
 
@@ -225,4 +227,89 @@ test('with no Products on the computer the hint steps aside while the dropdown s
   await waitFor(() => expect(productField(1)).toHaveAttribute('aria-expanded', 'false'))
   expect(screen.getAllByText(NO_PRODUCTS)).toHaveLength(1)
   expect(screen.getByText(NO_PRODUCTS).closest('#nueva-venta-sin-vendible')).not.toBeNull()
+})
+
+/** Every copy of the sentence in the markup, hidden or not, and never more than one. */
+function copies(sentence: string): HTMLElement[] {
+  const found = screen.queryAllByText(sentence, { ignore: false })
+  expect(found.length).toBeLessThanOrEqual(1)
+  return found
+}
+
+test('a date change from a priced day to another priced one keeps no sentence while the answer is held', async () => {
+  await openWith(PRICED)
+
+  changeDate('2026-10-01')
+
+  await waitFor(() => expect(pending.has('/api/products?on=2026-10-01')).toBe(true))
+  expect(copies(NO_PRICE)).toHaveLength(0)
+  expect(copies(NO_PRODUCTS)).toHaveLength(0)
+
+  answer('2026-10-01', PRICED)
+
+  await waitFor(() => expect(screen.queryByRole('progressbar')).not.toBeInTheDocument())
+  expect(copies(NO_PRICE)).toHaveLength(0)
+})
+
+test('a date change from an unpriced day keeps the hint\'s space as one hidden, undescribed copy, then the real hint returns', async () => {
+  await openWith(UNPRICED)
+
+  changeDate('2026-10-01')
+
+  await waitFor(() => expect(pending.has('/api/products?on=2026-10-01')).toBe(true))
+  const [kept] = copies(NO_PRICE)
+  expect(kept).toBeDefined()
+  expect(kept).not.toBeVisible()
+  const keptParagraph = kept?.closest('p') as HTMLElement
+  expect(keptParagraph).not.toHaveAttribute('id')
+  expect(keptParagraph).toHaveAttribute('aria-hidden', 'true')
+  expect(productField(1).getAttribute('aria-describedby') ?? '').not.toContain('nueva-venta-sin-vendible')
+
+  answer('2026-10-01', UNPRICED)
+
+  await waitFor(() => {
+    const found = copies(NO_PRICE)
+    expect(found).toHaveLength(1)
+    expect(found[0]).toBeVisible()
+  })
+  const real = copies(NO_PRICE)[0]?.closest('p')
+  expect(real).toHaveAttribute('id', 'nueva-venta-sin-vendible')
+  expect(real).not.toHaveAttribute('aria-hidden')
+  expect(productField(1).getAttribute('aria-describedby')).toContain('nueva-venta-sin-vendible')
+})
+
+test('with no Products and the list open while a date change is held, the sentence is on screen at most once, and the space returns when the list closes', async () => {
+  const user = userEvent.setup()
+  await openWith([])
+  changeDate('2026-10-01')
+  await waitFor(() => expect(pending.has('/api/products?on=2026-10-01')).toBe(true))
+  expect(copies(NO_PRODUCTS)).toHaveLength(1)
+  expect(copies(NO_PRODUCTS)[0]).not.toBeVisible()
+
+  await user.click(productField(1))
+
+  const list = await screen.findByRole('dialog', { name: 'Line 1 product options' })
+  expect(copies(NO_PRODUCTS)).toHaveLength(1)
+  expect(screen.getByText(NO_PRODUCTS).closest('p.nueva-venta__sin-vendible')).toBeNull()
+
+  await user.click(within(list).getByRole('button', { name: 'Close' }))
+
+  await waitFor(() => expect(list).not.toBeInTheDocument())
+  expect(copies(NO_PRODUCTS)).toHaveLength(1)
+  expect(copies(NO_PRODUCTS)[0]).not.toBeVisible()
+})
+
+test('a date change from an unpriced day whose answer fails leaves no sentence, visible or hidden', async () => {
+  await openWith(UNPRICED)
+
+  changeDate('2026-10-01')
+
+  await waitFor(() => expect(pending.has('/api/products?on=2026-10-01')).toBe(true))
+  expect(copies(NO_PRICE)).toHaveLength(1)
+  const resolve = pending.get('/api/products?on=2026-10-01') as (response: Response) => void
+  pending.delete('/api/products?on=2026-10-01')
+  act(() => resolve(json(500, { detail: 'boom', code: 'server.error' })))
+
+  await waitFor(() => expect(copies(NO_PRICE)).toHaveLength(0))
+  expect(productField(1).getAttribute('aria-describedby') ?? '').not.toContain('nueva-venta-sin-vendible')
 })
