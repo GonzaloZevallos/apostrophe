@@ -607,3 +607,7 @@ _Avoid_: enum, static list, constant set, hard-coded options
 **Detected country**:
 El Phone country que el formulario de un Customer propone por defecto, calculado solo en el dispositivo: la primera región de idioma del teléfono que está en la lista; si no hay, el país de su zona horaria, cuando está en la lista; si no, Other. Nunca se guarda ni se envía como tal, no hace ninguna llamada de red, y el formulario nunca recuerda una elección. En la app: no tiene palabra propia; se ve como el valor del campo Phone country.
 _Avoid_: guessed country, auto-detect, geolocation, locale, default country
+
+**Retired address**:
+Una dirección del front que la app dejó de admitir, como los paths viejos en español (`/ventas`, `/clientes/7`) o `/more` y `/mas`. Se borra: nunca redirige y responde exactamente como cualquier dirección desconocida, así que no queda ninguna lista de direcciones viejas que mantener y la única redirección de un path del front es la de un path actual con una sola barra final. Regla del dueño del 2026-11-16; en la app no tiene palabra propia.
+_Avoid_: legacy path, old path, alias, redirect, moved page, dirección vieja

@@ -14,7 +14,6 @@
  */
 
 import { ANALYSIS, CUSTOMER, CUSTOMER_NEW, EXPENSES, EXPENSE_CATEGORIES, SETTINGS_BUSINESS, SETTINGS_USERS, STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
-import { legacyFor } from './helpers/legacyPaths.js'
 import { expectAnyPath, expectPath } from './helpers/url.js'
 import { expectToast } from './helpers/toast.js'
 import { expect, test, withToastRecorder } from './fixtures.js'
@@ -146,16 +145,13 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByRole('button', { name: 'Next month' }).click()
   await expect(page.getByText(/Flower purchases don't go here/)).toBeVisible()
 
-  // The Spanish paths stay on purpose here: the server answers them with a 308 and the
-  // app shows the English screen (the one old Gastos path and one old Análisis path of
-  // the run; every other step reaches a screen through the nav or its real path).
-  await page.goto(`${legacyFor(EXPENSES)}?month=2026-01`)
+  await page.goto(`${EXPENSES}?month=2026-01`)
   await expectPath(page, EXPENSES, '?month=2026-01')
   await expect(page.getByText(/Flower purchases don't go here/)).toBeVisible()
   await page.reload()
   await expectPath(page, EXPENSES, '?month=2026-01')
   await expect(page.getByText(/Flower purchases don't go here/)).toBeVisible()
-  await page.goto(legacyFor(ANALYSIS))
+  await page.goto(ANALYSIS)
   await expectPath(page, ANALYSIS)
   await expect(
     page.getByText('There is nothing to analyze yet.'),

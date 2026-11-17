@@ -34,10 +34,6 @@ ALLOWLIST: dict[str, str] = {
     "app/migrations/versions/*": (
         "a migration is never edited (invariant 4); it may quote the Spanish defaults it once wrote"
     ),
-    "app/legacy_front_paths.json": (
-        "the legacy Spanish routes are redirected exactly as today (ADR-0024, ADR-0033); "
-        "not Python, listed so the exemption is on record"
-    ),
     "app/spreadsheet_import/adapters/layout.py": (
         "the import recognises the Spanish sheet: its tabs and column titles (invariant 7)"
     ),

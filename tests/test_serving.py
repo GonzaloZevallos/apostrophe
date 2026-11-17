@@ -17,14 +17,9 @@ from sqlalchemy.engine import Engine
 
 from app.main import create_app
 from app.settings import Settings
-from app.static_spa import (
-    LEGACY_FRONT_PATHS_FILE,
-    SHARED_FRONT_PATHS,
-    MissingBuiltFront,
-)
+from app.static_spa import SHARED_FRONT_PATHS, MissingBuiltFront
 from tests.conftest import SETTINGS, TEST_HASHER, MovableClock
 from tests.fakes.telegram import FakeTelegram
-from tests.legacy_pin import PINNED_LEGACY_ROWS
 
 SECRET = "sv-secret-only-outside-dist"
 
@@ -150,7 +145,7 @@ def test_startup_fails_without_an_index_html(
         )
 
 
-# --- Front navigation: shared front paths and legacy 308s (docs/adr/0024) ----------------
+# --- Front navigation: shared front paths and their trailing-slash 308s (docs/adr/0024) --
 
 SHELL = "shell"
 REDIRECT = "308"
@@ -159,6 +154,8 @@ API = "api"
 HTML = "text/html"
 JSON = "application/json"
 ANY = "*/*"
+# A query with a percent-escape: a slash redirect keeps it byte for byte.
+QUERY = "?month=2026-01&x=%C3%B1"
 
 # What a request to a path both the front and the API's router name (`/expenses`,
 # `/expenses/new`) gets, by (method, Accept, trailing slash): only a GET or HEAD asking
@@ -247,66 +244,6 @@ def test_a_shared_front_path_is_the_shell_only_for_a_browser_navigation(
             assert "location" not in response.headers, cell
 
 
-# The expected target of every row is the hand-written fixture's
-# (`tests/fixtures/legacy_front_paths.json`, read through `tests/legacy_pin.py`), never the
-# app's own file's: a wrong target in `app/legacy_front_paths.json` fails here. That the
-# app holds exactly these rows is `tests/test_static_spa.py`'s to check. An id is carried
-# across: `{id}` is 4821.
-LEGACY_CASES = [
-    (old.replace("{id}", "4821"), now.replace("{id}", "4821")) for old, now in PINNED_LEGACY_ROWS
-]
-
-
-@pytest.mark.parametrize(("legacy", "target"), LEGACY_CASES)
-def test_a_legacy_spanish_path_redirects_permanently_whatever_the_request(
-    served_client: TestClient, legacy: str, target: str
-) -> None:
-    # One app per row, many cheap requests: the whole grid of method, Accept, trailing
-    # slash and query string, so each row is tested one by one without 700 app builds.
-    for method in ("GET", "HEAD", "POST", "OPTIONS"):
-        for accept in (HTML, JSON, ANY):
-            for slash in (False, True):
-                response = _request(served_client, method, legacy + ("/" if slash else ""), accept)
-                assert response.status_code == 308, (method, accept, slash)
-                assert response.headers["location"] == target, (method, accept, slash)
-    for slash in (False, True):
-        response = _request(
-            served_client, "GET", legacy + ("/" if slash else ""), HTML, "?month=2026-09&x=%C3%B1"
-        )
-        assert response.headers["location"] == f"{target}?month=2026-09&x=%C3%B1"
-
-
-def test_the_app_finds_the_legacy_rows_at_their_shipped_path(
-    served_client: TestClient,
-) -> None:
-    shipped = Path(__file__).resolve().parent.parent / "app" / "legacy_front_paths.json"
-
-    assert LEGACY_FRONT_PATHS_FILE == shipped
-    assert shipped.is_file()
-    response = _request(served_client, "GET", "/variedades/7", HTML)
-    assert response.status_code == 308
-    assert response.headers["location"] == "/varieties/7"
-
-
-def test_an_unmatched_spanish_path_is_not_redirected(served_client: TestClient) -> None:
-    for path in (
-        "/ventas/basura",
-        "/ventas/7/basura",
-        "/clientes/7/borrar",
-        "/clientes/nuevo/7",
-        "/mi-stock/entradas",
-        "/mi-stock/entradas/abc",
-        "/gastos/categorias/7",
-        "/variedades/abc",
-        "/negocio/otro",
-    ):
-        response = _request(served_client, "GET", path, HTML)
-
-        assert response.status_code == 200, path
-        assert "the app shell" in response.text, path
-    assert "location" not in response.headers
-
-
 def test_the_varieties_front_paths_are_the_shell_and_a_trailing_slash_redirects(
     served_client: TestClient,
 ) -> None:
@@ -317,10 +254,10 @@ def test_the_varieties_front_paths_are_the_shell_and_a_trailing_slash_redirects(
 
         assert response.status_code == 200, path
         assert "the app shell" in response.text, path
-    redirect = _request(served_client, "GET", "/varieties/7/", HTML, "?a=1")
+    redirect = _request(served_client, "GET", "/varieties/7/", HTML, QUERY)
 
     assert redirect.status_code == 308
-    assert redirect.headers["location"] == "/varieties/7?a=1"
+    assert redirect.headers["location"] == f"/varieties/7{QUERY}"
 
 
 # What a shared template with {id} = 7 is, concretely: `/sales/{id}` -> `/sales/7`.
@@ -374,10 +311,10 @@ def test_a_shared_template_plus_one_slash_is_a_308_to_the_slashless_path(
     served_client: TestClient,
 ) -> None:
     for path in SHARED_CONCRETE:
-        response = _request(served_client, "GET", path + "/", HTML, "?a=1")
+        response = _request(served_client, "GET", path + "/", HTML, QUERY)
 
         assert response.status_code == 308, path
-        assert response.headers["location"] == f"{path}?a=1", path
+        assert response.headers["location"] == f"{path}{QUERY}", path
 
 
 def _assert_the_api_answered(through_the_front: Response, api_alone: Response) -> None:
@@ -461,15 +398,6 @@ def test_a_browser_s_own_accept_header_gets_the_shell(served_client: TestClient)
 
     assert response.status_code == 200
     assert "the app shell" in response.text
-
-
-def test_a_double_trailing_slash_on_a_legacy_path_is_not_redirected(
-    served_client: TestClient,
-) -> None:
-    for path in ("/gastos/", "/analisis/"):
-        response = _request(served_client, "GET", path + "/", HTML)
-
-        assert response.status_code != 308, path
 
 
 def test_the_shell_on_a_shared_path_carries_the_same_headers_as_the_root(
@@ -573,10 +501,10 @@ def test_a_near_miss_of_a_shared_pattern_is_never_the_shell(
 def test_a_shared_path_with_one_trailing_slash_is_a_308_to_the_slashless_path(
     served_client: TestClient, path: str, target: str
 ) -> None:
-    response = _request(served_client, "GET", path, HTML, "?a=1")
+    response = _request(served_client, "GET", path, HTML, QUERY)
 
     assert response.status_code == 308
-    assert response.headers["location"] == f"{target}?a=1"
+    assert response.headers["location"] == f"{target}{QUERY}"
 
 
 def test_a_head_navigation_to_a_slashed_shared_path_is_a_308_too(
