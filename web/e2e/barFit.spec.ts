@@ -208,11 +208,17 @@ async function measureSlots(page: Page): Promise<Slot[]> {
 /** Why the slots do not fit, one line each; empty when every label is whole in its slot and every box is big enough. */
 function slotProblems(slots: Slot[], viewport: number): string[] {
   const found: string[] = []
+  // Human Decision 2 (GH-789): where 44 px for every tab, with every label whole and the 52 px +, is wider
+  // than the viewport, a tab may be narrower than 44 px, but never narrower than its own label. At 246 px
+  // 44 + 44 + 65 + 53 + 52 = 258 px does not fit; nowhere else is a tab under 44 px wide.
+  const wanted = slots.reduce((sum, slot) => sum + (slot.kind === 'plus' ? PLUS_BOX : Math.max(TAB_BOX, slot.labelWidth)), 0)
+  const tight = wanted > viewport + TOLERANCE
   if (slots.map((slot) => slot.label).join('|') !== ['Home', 'Sales', '+', 'Customers', 'Products'].join('|')) {
     found.push('the slots are not Home, Sales, +, Customers, Products')
   }
   for (const slot of slots) {
-    const [minWidth, minHeight] = slot.kind === 'plus' ? [PLUS_BOX, PLUS_BOX] : [TAB_BOX, TAB_BOX]
+    const [minWidth, minHeight] =
+      slot.kind === 'plus' ? [PLUS_BOX, PLUS_BOX] : [tight ? slot.labelWidth : TAB_BOX, TAB_BOX]
     if (slot.width < minWidth - TOLERANCE) found.push(`${slot.label} is ${slot.width} px wide, under ${minWidth}`)
     if (slot.height < minHeight - TOLERANCE) found.push(`${slot.label} is ${slot.height} px tall, under ${minHeight}`)
     if (slot.kind === 'tab' && slot.labelWidth > slot.width + TOLERANCE) {
@@ -244,6 +250,25 @@ test('the slot check rejects a bar whose label is wider than its slot', () => {
     'Home is 40 px wide, under 44',
     'Customers is 58 px of text in a 46 px slot',
   ])
+})
+
+test('the slot check lets a tab be under 44 px wide only where 44 px for every tab does not fit', () => {
+  const tabs = (home: number): Slot[] => [
+    { kind: 'tab', label: 'Home', width: home, height: 44, labelWidth: 34 },
+    { kind: 'tab', label: 'Sales', width: home, height: 44, labelWidth: 33 },
+    { kind: 'plus', label: '+', width: 52, height: 52, labelWidth: 0 },
+    { kind: 'tab', label: 'Customers', width: 65, height: 44, labelWidth: 65 },
+    { kind: 'tab', label: 'Products', width: 53, height: 44, labelWidth: 53 },
+  ]
+
+  expect(slotProblems(tabs(38), 246)).toEqual([])
+  expect(slotProblems(tabs(30), 246)).toEqual([
+    'Home is 30 px wide, under 34',
+    'Home is 34 px of text in a 30 px slot',
+    'Sales is 30 px wide, under 33',
+    'Sales is 33 px of text in a 30 px slot',
+  ])
+  expect(slotProblems(tabs(38), 320)).toEqual(['Home is 38 px wide, under 44', 'Sales is 38 px wide, under 44'])
 })
 
 // One business for the three tests: signing up is the slow step, and each test only reads layout.

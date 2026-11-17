@@ -589,11 +589,13 @@ body {
 }
 
 /* The four tabs share what the + leaves, in equal parts: no side padding beyond the insets, no
- * gap between slots, and no tab wider because its word is. Each box is at least 44 px each way
- * (`--alto-tocable`). */
+ * gap between slots. Each box is 44 px each way (`--alto-tocable`) or more. Where four equal parts
+ * no longer hold every label at 12 px, weight 600 (the width sizer below makes that the item's
+ * min-content), a tab takes the width its own label needs and the others share out what is left
+ * evenly: only then are the tabs unequal, and a tab's width is the same active or not. */
 .bar-inferior__item {
-  flex: 1 1 0;
-  min-width: var(--alto-tocable);
+  flex: 1 1 var(--alto-tocable);
+  min-width: min-content;
   min-height: var(--alto-tocable);
   display: flex;
   flex-direction: column;
