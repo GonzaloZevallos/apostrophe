@@ -201,7 +201,9 @@ SKIPPED_DIRECTORIES = {"node_modules", "dist", "playwright-report", "test-result
 
 def test_the_front_pin_is_the_same_instant_as_the_servers() -> None:
     literals = re.findall(r"new Date\('([^']+)'\)", PIN_SOURCE.read_text(encoding="utf-8"))
-    assert len(literals) == 1, f"pin.ts must hold exactly one new Date('...') literal, found {literals}"
+    assert len(literals) == 1, (
+        f"pin.ts must hold exactly one new Date('...') literal, found {literals}"
+    )
     front = datetime.fromisoformat(literals[0].replace("Z", "+00:00"))
     assert front == PINNED_INSTANT
 
