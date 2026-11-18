@@ -814,9 +814,24 @@ describe('assertScreens checks every step against one closed list of shapes', ()
     ).not.toThrow()
   })
 
+  it('accepts a scroll_top with a non-empty text', () => {
+    expect(() => assertScreens(withSteps([{ click: 'Expense' }, { scroll_top: 'Other things to record' }]))).not.toThrow()
+  })
+
+  it('refuses a scroll_top that is empty or not a string, and one beside another key', () => {
+    for (const value of ['', 7, true, null, { label: 'A' }]) {
+      expect(() => assertScreens(withSteps([{ scroll_top: value }]))).toThrow(
+        /^Paso: step 0 scroll_top must be a non-empty string$/,
+      )
+    }
+    expect(() => assertScreens(withSteps([{ scroll_top: 'x', wait: 'y' }]))).toThrow(
+      /^Paso: step 0 must have exactly one key$/,
+    )
+  })
+
   it('refuses a step with an unknown key, naming the entry and the step index', () => {
     expect(() => assertScreens(withSteps([{ click: 'A' }, { hover: 'B' }]))).toThrow(
-      /^Paso: step 1 is not one of click, press, wait, fill, select, offline$/,
+      /^Paso: step 1 is not one of click, press, wait, scroll_top, fill, select, offline$/,
     )
   })
 

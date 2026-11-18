@@ -31,6 +31,7 @@ const CONVERTED = {
     { fill: { label: 'common:variety', value: 'common:close' } },
     { select: { label: 'common:sales', index: 1 } },
     { wait: 'common:catalog' },
+    { scroll_top: 'common:catalog' },
     { offline: true },
   ],
 }
@@ -64,6 +65,7 @@ describe('rowProblems', () => {
     [1, 'press'],
     [2, 'fill.label'],
     [4, 'wait'],
+    [5, 'scroll_top'],
   ])('a mixed row fails on the field that is plain text: step %i %s', (index, field) => {
     const problems = rowProblems(withField(index, field, 'Plain text'), en)
     expect(problems).toEqual([`Pantalla: step ${index} ${field} is not a resolving key`])
@@ -75,6 +77,7 @@ describe('rowProblems', () => {
     [1, 'press'],
     [2, 'fill.label'],
     [4, 'wait'],
+    [5, 'scroll_top'],
   ])('a typo key fails on the field that holds it: step %i %s', (index, field) => {
     const problems = rowProblems(withField(index, field, 'comon:close'), en)
     expect(problems).toEqual([`Pantalla: step ${index} ${field} is not a resolving key`])
@@ -95,6 +98,24 @@ describe('rowProblems', () => {
       steps: [{ click: 'common:home' }, { fill: { label: 'common:variety', value: 'kg:5' } }, { select: { label: 'x', index: 0 } }, { offline: true }],
     }
     expect(rowProblems(row, en)).toEqual([])
+  })
+})
+
+describe('a row with a scroll_top', () => {
+  test('a key-shaped scroll_top and a key-shaped click make a converted row, judged on both', () => {
+    const row = { screen: 'D', steps: [{ click: 'common:home' }, { scroll_top: 'common:close' }] }
+    expect(isConvertedRow(row)).toBe(true)
+    expect(rowProblems(row, en)).toEqual([])
+    expect(rowProblems({ screen: 'D', steps: [{ click: 'common:home' }, { scroll_top: 'Close' }] }, en)).toEqual([
+      'D: step 1 scroll_top is not a resolving key',
+    ])
+    expect(rowProblems({ screen: 'D', steps: [{ click: 'Home' }, { scroll_top: 'common:close' }] }, en)).toEqual([
+      'D: step 0 click is not a resolving key',
+    ])
+  })
+
+  test('an English scroll_top alone leaves the row unconverted', () => {
+    expect(isConvertedRow({ screen: 'D', steps: [{ scroll_top: 'Other things to record' }] })).toBe(false)
   })
 })
 
@@ -123,6 +144,11 @@ describe('resolveStep', () => {
     const select = { select: { label: 'common:close', index: 2 } }
     expect(resolveStep(select, en)).toEqual(select)
     expect(resolveStep({ offline: true }, en)).toEqual({ offline: true })
+  })
+
+  test('a scroll_top is a named text: a key resolves, an English text passes unchanged', () => {
+    expect(resolveStep({ scroll_top: 'common:close' }, en)).toEqual({ scroll_top: 'Close' })
+    expect(resolveStep({ scroll_top: 'Other things to record' }, en)).toEqual({ scroll_top: 'Other things to record' })
   })
 
   test('a plain text step is returned as it is', () => {

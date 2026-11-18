@@ -115,6 +115,18 @@ describe('steps', () => {
     expect(parseRegistry({ screens: [entry({ steps })] })[0]?.steps).toEqual(steps)
   })
 
+  test('accepts a scroll_top and keeps its text', () => {
+    const steps = [{ click: 'Expense' }, { scroll_top: 'Other things to record' }]
+    expect(parseRegistry({ screens: [entry({ steps })] })[0]?.steps).toEqual(steps)
+  })
+
+  test.each([
+    ['a scroll_top that is not text', { scroll_top: 3 }, /step scroll_top is not text/],
+    ['a scroll_top that is empty', { scroll_top: '' }, /step scroll_top is not text/],
+  ])('refuses %s', (_name, step, message) => {
+    expect(() => parseRegistry({ screens: [entry({ steps: [step] })] })).toThrow(message)
+  })
+
   test('a screen without steps has none', () => {
     expect(parseRegistry({ screens: [entry({})] })[0]?.steps).toEqual([])
   })
@@ -247,7 +259,10 @@ describe('walked_as: a row whose screen a walked state proves', () => {
         screen: screen.screen,
         reason: skipWalkedAs(state.screen),
       })
-      expect(screen.steps, screen.screen).toEqual([...state.steps, { wait: state.visible }])
+      // The state's steps, its wait, and at most one trailing scroll_top (the capture's own reset of New sale's form).
+      const trailing = screen.steps.at(-1)
+      const own = trailing !== undefined && 'scroll_top' in trailing ? screen.steps.slice(0, -1) : screen.steps
+      expect(own, screen.screen).toEqual([...state.steps, { wait: state.visible }])
       expect(screen.route, screen.screen).toBe(state.route)
     }
   })

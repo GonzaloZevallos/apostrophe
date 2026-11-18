@@ -104,3 +104,13 @@ rows and compared each with the target the same file names.
 Risk: one commit that edits a target in both files passes. Review, guided by this
 amendment, is the guard. A mistake made in both ADR-0024's table and the app file would be
 pinned wrongly.
+
+## Amendment (GH-780): the legacy rows are deleted
+
+Quedan revertidas las filas heredadas, su único lugar en `app/legacy_front_paths.json` y el
+fixture de paths viejos fijados (incluida la enmienda de GH-134): una dirección retirada
+responde como una desconocida y ya no se redirige. Lo decide
+ADR-20261117-retired-addresses-answer-as-unknown-and-the-legacy-redirects-are-deleted.
+
+Siguen en pie las plantillas de id, `matches_template` como único comparador y el cruce con
+`screens.json` sin lista de excepción. Por eso el estado de este ADR no cambia.

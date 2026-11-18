@@ -85,8 +85,8 @@ Criterios de éxito:
   - No se migra nada.
 - **Datos de ejemplo y de fixtures** (los nombres y cifras del Business de ejemplo): son datos de quien vende y quedan como están.
 - **Formatos**: todos los formatos numéricos y de fecha, en la app y en el Catalog.
-- **Redirecciones heredadas**: cada redirección heredada en español (ADR-0024, ADR-0033, `app/legacy_front_paths.json`) funciona exactamente como hoy, sin agregar ni quitar ninguna fila.
 - **Identificadores**: las rutas del front `/varieties/*`, las columnas `variety_id`, los identificadores del código y los ids del registro de diseño no cambian con la palabra de pantalla (ADR-0061).
+- **Direcciones retiradas**: los paths viejos en español (y `/more` y `/mas`) son **Retired addresses**: responden exactamente como cualquier dirección desconocida y no se guarda ninguna lista de paths viejos (`navigation.md`, «Direcciones retiradas»; [ADR-20261117-retired-addresses-answer-as-unknown-and-the-legacy-redirects-are-deleted](../adr/20261117-retired-addresses-answer-as-unknown-and-the-legacy-redirects-are-deleted.md)).
 
 ### Valores por defecto de un Business abierto después de este cambio
 
@@ -117,7 +117,7 @@ Criterios de éxito:
 ### Rutas
 
 - Las rutas que la app muestra, enlaza o a las que navega están en inglés, `scripts/design/screens.json` incluido.
-- "Ninguna ruta en español" nunca se aplica a las redirecciones heredadas.
+- Los paths viejos en español no son rutas de la app: responden como una dirección desconocida (navigation.md, Direcciones retiradas).
 
 ### Vocabulario
 

@@ -143,7 +143,7 @@ export function sectionOccurrences(html, label) {
 
 // Every step is an object with exactly one key, from one closed list. A refusal names the
 // entry and the step's index, never the step's data.
-const STRING_STEPS = ['click', 'press', 'wait']
+const STRING_STEPS = ['click', 'press', 'wait', 'scroll_top']
 const STEP_KEYS = [...STRING_STEPS, 'fill', 'select', 'offline']
 
 /** @param {unknown} value */

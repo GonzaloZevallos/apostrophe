@@ -32,6 +32,7 @@ export type RegistryStep =
   | { select: { label: string; index: number } }
   | { fill: { label: string; value: string } }
   | { wait: string }
+  | { scroll_top: string }
   | { offline: true }
 
 export interface RegistryScreen {
@@ -166,10 +167,11 @@ function parseStep(value: unknown, screen: string): RegistryStep {
   const step = asRecord(value, where)
   const keys = Object.keys(step)
   const only = keys.length === 1 ? keys[0] : undefined
-  if (only === 'click' || only === 'wait' || only === 'press') {
+  if (only === 'click' || only === 'wait' || only === 'press' || only === 'scroll_top') {
     const text = step[only]
     if (typeof text !== 'string' || text === '') throw new Error(`${where} ${only} is not text`)
     if (only === 'press') return { press: text }
+    if (only === 'scroll_top') return { scroll_top: text }
     return only === 'click' ? { click: text } : { wait: text }
   }
   if (only === 'select') {
@@ -192,7 +194,7 @@ function parseStep(value: unknown, screen: string): RegistryStep {
     if (step['offline'] !== true) throw new Error(`${where} offline is not true`)
     return { offline: true }
   }
-  throw new Error(`${where} is not a click, press, fill, select, wait or offline`)
+  throw new Error(`${where} is not a click, press, fill, select, wait, scroll_top or offline`)
 }
 
 function parseSteps(value: unknown, screen: string): readonly RegistryStep[] {
