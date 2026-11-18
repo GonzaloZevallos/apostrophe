@@ -7,6 +7,7 @@ import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
 import { NO_PRICE_HINT, SALES_TEXT } from '../copy/sales.ts'
 import { DAY_BEFORE_PIN } from './pin.ts'
+import { SAMPLE_TYPED_CUSTOMER, SAMPLE_TYPES } from './statesRecords.ts'
 import type { Expense } from '../api/expenses.ts'
 import type { WalkState } from './states.ts'
 
@@ -289,6 +290,18 @@ export const SALES_STATES: readonly WalkState[] = [
     route: CUSTOMER.replace(':id', '{debtor}'),
     steps: [{ click: CUSTOMERS_TEXT.deletePayment }],
     visible: common('common:yesDelete'),
+  },
+  {
+    // The card showing the bar and its +, nothing opened over it. The customer is a stub with no payment rows: the sample debtor's card also draws a "Delete payment" button, whose touch-action cell is listed under ClienteFicha and CobroBorrar only, and no offender entry may be added.
+    screen: 'customer/card-with-bar',
+    route: CUSTOMER.replace(':id', '{debtor}'),
+    steps: [],
+    visible: `${CUSTOMERS_TEXT.newSaleTo}${SAMPLE_TYPED_CUSTOMER.name}`,
+    reads: [
+      { path: /^\/api\/customer-types$/, status: 200, body: SAMPLE_TYPES },
+      { path: /^\/customers\/\d+$/, status: 200, body: SAMPLE_TYPED_CUSTOMER },
+      { path: /^\/customers\/\d+\/account$/, status: 200, body: { balance: 0, owing_since: null, standing: 'settled', rows: [] } },
+    ],
   },
   {
     screen: 'VentasFechas',

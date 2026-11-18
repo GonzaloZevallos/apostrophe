@@ -193,9 +193,10 @@ function useBackParentStore(): BackParentStore {
 const RAIL_MISSING_ID = 'nueva-venta-falta-riel'
 
 /** Whether `GET /first-run` says the checklist shows with its priced-variety step not done.
- * Asked only where the rail's "+ Nueva venta" is drawn (the computer); the phone's + reads nothing from it; while pending or failed it is `false`, so the
- * button draws normally. The shell decides nothing: it shows the server's answer. */
-function useNuevaVentaMissing(enabled: boolean): boolean {
+ * Asked only where the computer's rail "+ Nueva venta" is drawn; the phone's bar and its + read nothing
+ * from it. While pending or failed it is `false`, so the button draws normally. The shell decides
+ * nothing: it shows the server's answer. */
+function useRailMissingPrice(enabled: boolean): boolean {
   const data = actionableFirstRun(useQuery({ ...firstRunQuery, enabled }))
   return (
     data?.kind === 'checklist' &&
@@ -215,7 +216,7 @@ export default function Shell() {
   const layoutRef = useRef<HTMLDivElement>(null)
   // The shell hides its bar and button while a text keyboard is up (ADR-0028); it pins nothing.
   useVisualViewport(layoutRef, { fixedForm: false })
-  const missing = useNuevaVentaMissing(viewport === 'computer' && chrome.railNuevaVenta)
+  const missing = useRailMissingPrice(viewport === 'computer' && chrome.railNuevaVenta)
   const railDescribedBy = missing ? RAIL_MISSING_ID : undefined
 
   return (

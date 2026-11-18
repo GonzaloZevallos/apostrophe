@@ -13,6 +13,7 @@ import {
   SKIP_NO_ROUTE,
   SKIP_THEME_TWIN,
   skipWalkedAs,
+  skipSameWalkAs,
   skippedScreens,
   STATE_NAMES,
   walkableScreens,
@@ -263,6 +264,41 @@ describe('walked_as: a row whose screen a walked state proves', () => {
       const own = trailing !== undefined && 'scroll_top' in trailing ? screen.steps.slice(0, -1) : screen.steps
       expect(own, screen.screen).toEqual([...state.steps, { wait: state.visible }])
       expect(screen.route, screen.screen).toBe(state.route)
+    }
+  })
+})
+
+describe('same_walk_as: a row that repeats an earlier row at another width', () => {
+  const home = entry({ screen: 'Home', route: 'r', path: 'p' })
+  const twin = (extra: Record<string, unknown> = {}) =>
+    entry({ screen: 'Twin', route: 'r', path: 'p', viewport: [375, 844], same_walk_as: 'Home', ...extra })
+
+  test('is skipped with its named reason and the row it repeats stays walked', () => {
+    const parsed = parseRegistry({ screens: [home, twin()] })
+    expect(walkableScreens(parsed).map((s) => s.screen)).toEqual(['Home'])
+    expect(skippedScreens(parsed)).toEqual([{ screen: 'Twin', reason: skipSameWalkAs('Home') }])
+  })
+
+  test('refuses a name that is not an earlier screen', () => {
+    expect(() => parseRegistry({ screens: [twin()] })).toThrow('Twin: same_walk_as "Home" is not an earlier screen')
+    expect(() => parseRegistry({ screens: [home, twin({ same_walk_as: 'Nowhere' })] })).toThrow(/not an earlier screen/)
+  })
+
+  test('refuses a row that does not repeat the walk: another path or other steps', () => {
+    expect(() => parseRegistry({ screens: [home, twin({ path: 'q' })] })).toThrow(/does not have the same route, path and steps/)
+    expect(() => parseRegistry({ screens: [home, twin({ steps: [{ click: 'Week' }] })] })).toThrow(/same route, path and steps/)
+  })
+
+  test('refuses a same_walk_as that is not text', () => {
+    expect(() => parseRegistry({ screens: [home, twin({ same_walk_as: 3 })] })).toThrow(/same_walk_as is not text/)
+  })
+
+  test('every real row that has one is skipped and repeats a walked row', () => {
+    const repeats = REGISTRY.filter((screen) => screen.sameWalkAs !== null)
+    expect(repeats.map((screen) => screen.screen)).toEqual(['BarraInferior320', 'BarraInferior375', 'BarraInferior430'])
+    for (const screen of repeats) {
+      expect(walkableScreens(REGISTRY).map((s) => s.screen), screen.screen).toContain(String(screen.sameWalkAs))
+      expect(skippedScreens(REGISTRY)).toContainEqual({ screen: screen.screen, reason: skipSameWalkAs(String(screen.sameWalkAs)) })
     }
   })
 })

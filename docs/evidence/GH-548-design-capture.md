@@ -107,3 +107,15 @@ Decisión humana sobre CI: las dos corridas fallidas de `ci-ok` fueron cancelaci
 
 Estado de las corridas de CI por cabeza (consultado con `gh run list`): `93516bdc` terminó en éxito (42391028088, tras la cancelada 42390700607); `08efdb4f` terminó en éxito (42392668135, tras la cancelada 42392355633); `b6f26e01` terminó en éxito (42394295598, tras la cancelada 42393982482). Las cabezas `e9f4aa28` (42403074078 y su repetición 42403366963) y `baf288ed` (42404157485) quedaron canceladas (el trabajo `ci-ok` lo registra como `cancelled` en pytest, docs y e2e-shard; no se verificó qué push las canceló); ninguna terminó con una prueba en rojo. La corrida de la cabeza final se deja correr sin más pushes.
 En la corrida cancelada 42404157485 el trabajo `coverage` figura como fallo, pero su paso fallido es el mensaje «no pytest data … (a shard failed before uploading, or none ran)»: los fragmentos de pytest fueron cancelados antes de subir datos, y `ci_verdict.py` lo marca «failure (warning)». Es un efecto de la cancelación, no una prueba roja. La repetición 42404489186 sobre `baf288ed` seguía en curso cuando se escribió esta nota.
+
+## GH-806: las seis filas BarraInferior
+
+Las seis filas `BarraInferior320|375|430` (clara y `Oscuro`) comparan la sección «BarraInferior · RielLateral · Aviso · Confirmacion» de `Componentes.dc.html`. Esa sección es un marco de 390 px más una columna `1fr`, más ancha que cualquier viewport del lado construido (320, 375, 430), así que el lado del diseño falla con «section outside the viewport» si usa el viewport de la fila. Por eso llevan `design_viewport: [1360, 844]`, el ancho propio del dibujo. Medido con el mismo cálculo de `sectionClip`, Geist local:
+
+| screen | scrollWidth | innerWidth | clip x | clip right | frame width | @media |
+|---|---|---|---|---|---|---|
+| BarraInferior320 (y Oscuro) | 1360 | 1360 | 56 | 1304 | 1360 | no |
+| BarraInferior375 (y Oscuro) | 1360 | 1360 | 56 | 1304 | 1360 | no |
+| BarraInferior430 (y Oscuro) | 1360 | 1360 | 56 | 1304 | 1360 | no |
+
+Dos corridas de las seis filas sobre la misma cabeza: AE 0 en los doce PNG (construido y diseño de cada fila). El recorte del diseño es la fila del título de la sección (el padre del texto de la etiqueta), no los marcos de abajo. Las filas `Oscuro` salen idénticas a las claras, igual que `VentasOscuro` e `InicioOscuro` en esta cabeza: el atributo `data-tema` que pone la captura no llega a pintar el tema oscuro.

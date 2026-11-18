@@ -15,7 +15,7 @@
  */
 
 import { expect, test, withToastRecorder } from './fixtures.js'
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import { watchConsole } from './console.js'
 import {
   PHONE_CONTEXT,
@@ -26,7 +26,12 @@ import {
   expectTextScaled,
 } from './helpers/textScale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
-import { HOME } from '../src/routes.js'
+import { seedLedger } from './helpers/ledger.js'
+import { uniqueTag } from './helpers/unique.js'
+import { expectToast } from './helpers/toast.js'
+import { choosePaymentMethod } from './helpers/paymentMethod.js'
+import { CUSTOMERS_TEXT } from '../src/copy/customers.js'
+import { CUSTOMERS, HOME } from '../src/routes.js'
 import { BOTTOM_BAR, BOTTOM_BAR_ITEM, BOTTOM_BAR_PLUS, bottomBar } from './helpers/chrome.js'
 
 const PHONE = { width: 320, height: 700 }
@@ -310,6 +315,75 @@ test('the slot check wants icons only where 44 px for every tab and every label 
   ])
 })
 
+/**
+ * Why the tabs are not equal widths, one line each; empty when the bar is right for this width. The even
+ * share of a bar is `(viewport - 52) / 4`. Where that share holds every tab's own need (44 px or its label
+ * at weight 600, the wider) every tab is the same width; where it does not, only a tab whose label needs
+ * more than the share may be wider, and the tabs that fit the share are equal to each other.
+ */
+function equalWidthProblems(slots: Slot[], viewport: number): string[] {
+  const tabs = slots.filter((slot) => slot.kind === 'tab')
+  const share = (viewport - PLUS_BOX) / 4
+  const needing = tabs.filter((tab) => Math.max(TAB_BOX, tab.labelWidth) > share + TOLERANCE)
+  const even = tabs.filter((tab) => !needing.includes(tab))
+  if (even.length === 0) return []
+  const narrowest = Math.min(...even.map((tab) => tab.width))
+  const widest = Math.max(...even.map((tab) => tab.width))
+  if (widest - narrowest <= TOLERANCE) return []
+  return [
+    `the tabs are not equal: ${even.map((tab) => `${tab.label} ${tab.width.toFixed(2)}`).join(', ')} (share ${share.toFixed(2)}, wider only for ${
+      needing.map((tab) => tab.label).join(', ') || 'none'
+    })`,
+  ]
+}
+
+interface Box {
+  left: number
+  right: number
+  top: number
+  bottom: number
+}
+
+/** Two boxes share area; boxes that only touch along an edge do not (zero tolerance). */
+function intersects(a: Box, b: Box): boolean {
+  return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+}
+
+const boxOf = (left: number, top: number, right: number, bottom: number): Box => ({ left, top, right, bottom })
+
+test('the equal-width check accepts an even bar and one where only a long label is wider, and rejects an unequal one', () => {
+  const bar = (widths: [number, number, number, number], labels: [number, number, number, number] = [34, 33, 65, 53]): Slot[] => [
+    tabSlot('Home', widths[0], labels[0]),
+    tabSlot('Sales', widths[1], labels[1]),
+    PLUS_SLOT,
+    tabSlot('Customers', widths[2], labels[2]),
+    tabSlot('Products', widths[3], labels[3]),
+  ]
+
+  // 320 px: the share is 67 and holds every label, so every tab is 67.
+  expect(equalWidthProblems(bar([67, 67, 67, 67]), 320)).toEqual([])
+  expect(equalWidthProblems(bar([67, 67.3, 66.9, 67]), 320)).toEqual([])
+  // 246 px: the share is 48.5 and Customers (65) needs more, so only it may be wider.
+  expect(equalWidthProblems(bar([45.5, 45.5, 65, 45.5]), 246)).toEqual([])
+  expect(equalWidthProblems(bar([48.5, 48.5, 48.5, 48.5]), 246)).toEqual([])
+
+  expect(equalWidthProblems(bar([60, 67, 67, 67]), 320)).toEqual([
+    'the tabs are not equal: Home 60.00, Sales 67.00, Customers 67.00, Products 67.00 (share 67.00, wider only for none)',
+  ])
+  // Customers is wider than the share needs and so is the only exception; Products wider than Home is not one.
+  expect(equalWidthProblems(bar([45, 45, 65, 52], [34, 33, 65, 40]), 246)).toEqual([
+    'the tabs are not equal: Home 45.00, Sales 45.00, Products 52.00 (share 48.50, wider only for Customers)',
+  ])
+  // A wide tab at 320 where every label fits the share is not an exception either.
+  expect(equalWidthProblems(bar([60, 60, 80, 60]), 320)).toHaveLength(1)
+})
+
+test('the overlap check rejects boxes that share area and accepts boxes that only touch', () => {
+  expect(intersects(boxOf(0, 0, 10, 10), boxOf(5, 5, 15, 15))).toBe(true)
+  expect(intersects(boxOf(0, 0, 10, 10), boxOf(0, 10, 10, 20))).toBe(false)
+  expect(intersects(boxOf(0, 0, 10, 10), boxOf(11, 0, 20, 10))).toBe(false)
+})
+
 // One business for the three tests: signing up is the slow step, and each test only reads layout.
 test.describe.serial('bar and rail fit', () => {
   let page: Page
@@ -415,4 +489,105 @@ test('the pointer check rejects a page whose pointer is not coarse', async ({ br
   await desktop.goto('about:blank')
   await expect(expectCoarsePointer(desktop, 'a desktop')).rejects.toThrow(/coarse pointer/)
   await context.close()
+})
+
+const WIDTHS = [246, 320, 375, 430]
+/** A 60-character name: long enough to make the card's pinned action wrap on a phone. */
+const LONG_NAME = `${uniqueTag()} Fernandez Gonzalez Perez Ramirez Lopez Diaz Torres Vega`.slice(0, 60)
+
+async function rectOf(locator: Locator): Promise<Box> {
+  return locator.evaluate((element) => {
+    const { left, right, top, bottom } = element.getBoundingClientRect()
+    return { left, right, top, bottom }
+  })
+}
+
+/** The one toast on screen whose text starts with `prefix`, read from the page while it is up; throws when none is. */
+async function toastBox(page: Page, prefix: string): Promise<Box> {
+  const box = await page.evaluate((wanted) => {
+    const toast = [...document.querySelectorAll('[role=status]')].find((element) => (element.textContent ?? '').startsWith(wanted))
+    if (toast === undefined) return null
+    const { left, right, top, bottom } = toast.getBoundingClientRect()
+    return { left, right, top, bottom }
+  }, prefix)
+  if (box === null) throw new Error(`no toast starting with ${JSON.stringify(prefix)} is on screen`)
+  return box
+}
+
+const pageScrollsSideways = (page: Page): Promise<boolean> =>
+  page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth)
+
+// One business with one customer with a 60-character name and one sale owing: each width only reads layout
+// and makes, then deletes, one payment.
+test.describe.serial('the bar at four phone widths', () => {
+  let page: Page
+  let card = ''
+  const consoleMessages: string[] = []
+
+  test.beforeAll(async ({ browser, workerServer }) => {
+    page = await (await withToastRecorder(browser.newContext({ ...PHONE_CONTEXT, baseURL: workerServer.url, viewport: PHONE }))).newPage()
+    watchConsole(page, consoleMessages)
+    await signUpNewBusiness(page)
+    expect(LONG_NAME).toHaveLength(60)
+    expect(LONG_NAME).toBe(LONG_NAME.trim())
+    await seedLedger(page, LONG_NAME, 1)
+    card = new URL(page.url()).pathname
+  })
+
+  test.afterAll(async () => {
+    await page.context().close()
+  })
+
+  for (const width of WIDTHS) {
+    test(`at ${width} px the tabs are equal widths on Home and on Customers, and the page does not scroll sideways`, async () => {
+      await page.setViewportSize({ width, height: PHONE.height })
+      for (const route of [HOME, CUSTOMERS]) {
+        await page.goto(route)
+        await expect(bottomBar(page)).toBeVisible()
+        await expect(page.locator(BOTTOM_BAR_PLUS)).toHaveCount(1)
+        const slots = await measureSlots(page)
+        expect(slots.filter((slot) => slot.kind === 'tab')).toHaveLength(4)
+        expect(equalWidthProblems(slots, width), `${route}\n${slotTable(slots, width, 'light')}`).toEqual([])
+        expect(await pageScrollsSideways(page), `${route} scrolls sideways`).toBe(false)
+      }
+    })
+
+    test(`at ${width} px the card's New sale action ends at or above the +, and the page does not scroll sideways`, async () => {
+      await page.setViewportSize({ width, height: PHONE.height })
+      await page.goto(card)
+      const action = page.getByRole('link', { name: `${CUSTOMERS_TEXT.newSaleTo}${LONG_NAME}` })
+      await expect(action).toBeVisible()
+      await expect(page.locator(BOTTOM_BAR_PLUS)).toHaveCount(1)
+
+      const actionBox = await rectOf(action)
+      const plusBox = await rectOf(page.locator(BOTTOM_BAR_PLUS))
+      expect(actionBox.bottom, `the action ends at ${actionBox.bottom}, the + starts at ${plusBox.top}`).toBeLessThanOrEqual(plusBox.top)
+      expect(await pageScrollsSideways(page), 'the card scrolls sideways').toBe(false)
+    })
+
+    test(`at ${width} px a toast clears the bar and the + on Home, and the card's action and the + on the card`, async () => {
+      await page.setViewportSize({ width, height: PHONE.height })
+      await page.goto(HOME)
+      await page.getByRole('link', { name: `Collect from ${LONG_NAME}` }).click()
+      await page.getByLabel('Amount', { exact: true }).fill('100')
+      await choosePaymentMethod(page, 'Cash')
+      await expectToast(page, 'Payment saved · still owing $ 900', () => page.getByRole('button', { name: 'Save' }).click())
+      await expect(bottomBar(page)).toBeVisible()
+      const onHome = await toastBox(page, 'Payment saved')
+      expect(intersects(onHome, await rectOf(bottomBar(page))), 'the toast overlaps the bar').toBe(false)
+      expect(intersects(onHome, await rectOf(page.locator(BOTTOM_BAR_PLUS))), 'the toast overlaps the +').toBe(false)
+
+      await page.goto(card)
+      const action = page.getByRole('link', { name: `${CUSTOMERS_TEXT.newSaleTo}${LONG_NAME}` })
+      await page.getByRole('button', { name: CUSTOMERS_TEXT.deletePayment }).click()
+      await expectToast(page, CUSTOMERS_TEXT.paymentDeleted, () => page.getByRole('button', { name: 'Yes, delete it' }).click())
+      const onCard = await toastBox(page, CUSTOMERS_TEXT.paymentDeleted)
+      expect(intersects(onCard, await rectOf(action)), "the toast overlaps the card's action").toBe(false)
+      expect(intersects(onCard, await rectOf(page.locator(BOTTOM_BAR_PLUS))), 'the toast overlaps the + on the card').toBe(false)
+    })
+  }
+
+  test('the page logged nothing to the console', () => {
+    expect(consoleMessages).toEqual([])
+  })
 })
