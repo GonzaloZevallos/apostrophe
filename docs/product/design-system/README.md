@@ -248,12 +248,11 @@ ADR-0048 ya decidieron un punto, acá se cita y no se repite. El documento de pr
 área.
 
 1. **Chrome.**
-   - Chequeado: la barra inferior, el encabezado y "+ Nueva venta" están dentro de la
-     pantalla al cargar y después de scrollear hasta la mitad (`chrome-at-load`,
-     `chrome-mid-scroll`). Qué tipo lleva qué chrome: una raíz de pestaña tiene la barra y
-     "+ Nueva venta"; una ficha o detalle tiene la barra y no "+ Nueva venta"; un formulario
-     o una pantalla de ingreso no tiene ninguno; el encabezado está donde la pantalla lo
-     tenga. Una hoja o confirmación se juzga por la pantalla que tiene debajo, y el chrome
+   - Chequeado: la barra inferior con su +, y el encabezado, están dentro de la pantalla al
+     cargar y después de scrollear hasta la mitad (`chrome-at-load`, `chrome-mid-scroll`).
+     Qué tipo lleva qué chrome: una raíz de pestaña, una ficha o un detalle tiene la barra
+     con su +; un formulario o una pantalla de ingreso no tiene ninguno; el encabezado está
+     donde la pantalla lo tenga. Una hoja o confirmación se juzga por la pantalla que tiene debajo, y el chrome
      tapado (dentro de `[inert]` o `[aria-hidden="true"]`, o debajo de un diálogo modal
      abierto) pasa; el chrome prohibido que está presente y sin tapar se informa.
    - Revisión: la barra y el encabezado son fijos; el contenido tiene relleno para que nada
