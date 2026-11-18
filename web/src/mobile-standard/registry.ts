@@ -62,7 +62,6 @@ export const STATE_NAMES: readonly string[] = [
   'CobroDesdeClientes',
   'CobroDesdeInicio',
   'CobroBorrar',
-  'customer/card-with-bar',
   'VentasFechas',
   // Getting in and the shared Estados (`states-getting-in`).
   'EntrarFreno',

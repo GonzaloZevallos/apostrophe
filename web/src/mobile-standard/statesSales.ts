@@ -291,13 +291,6 @@ export const SALES_STATES: readonly WalkState[] = [
     visible: common('common:yesDelete'),
   },
   {
-    // The card with the bar and its +, nothing opened over it: the screen the bar's capture rows and the Phone rule's "Chrome" are about.
-    screen: 'customer/card-with-bar',
-    route: CUSTOMER.replace(':id', '{debtor}'),
-    steps: [],
-    visible: `${CUSTOMERS_TEXT.newSaleTo}Nico Parra`,
-  },
-  {
     screen: 'VentasFechas',
     route: SALES,
     steps: [{ click: SALES_TEXT.dates }],
