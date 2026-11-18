@@ -241,7 +241,7 @@ Criterios de éxito, las direcciones retiradas (parte 1 de GH-780). Rigen en el 
 
 ### La barra del celular y su + (parte 3 de GH-727)
 
-Solo por debajo de 900 px. Reemplaza al "+ New sale" flotante y a su línea de precio faltante, como lo dibujan `Inicio` e `InicioOscuro`. Las decisiones están en el ADR `docs/adr/20261118-the-phone-bar-s-round-plus-is-the-third-slot-of-its-own-nav-and-bottom-space-is-one-token.md` (delta sobre ADR-0045; ADR-0027, ADR-0028 y ADR-0045 no cambian).
+Solo por debajo de 900 px. Reemplaza al "+ New sale" flotante y a su línea de precio faltante, como lo dibujan `Inicio` e `InicioOscuro`. Las decisiones están en el ADR [20261118-the-phone-bar-s-round-plus-is-the-third-slot-of-its-own-nav-and-bottom-space-is-one-token](../adr/20261118-the-phone-bar-s-round-plus-is-the-third-slot-of-its-own-nav-and-bottom-space-is-one-token.md) (delta sobre ADR-0045; ADR-0027, ADR-0028 y ADR-0045 no cambian).
 
 - **Dónde se ve**: en cada pantalla que no es un formulario: los Tab roots, Analysis, Expenses, las tarjetas y los detalles (incluidas la lista de grupos de Settings y la lista de Payment methods). En los formularios, las Sheets y las pantallas de entrada (Sign in, la aceptación de una Invitation, el reseteo de contraseña) no hay ni barra ni +. Mientras hay un teclado de texto abierto, la barra y su + se ocultan juntos (Disposición en el celular).
 - **El + es un link** a New sale (`SALE_NEW`), nunca un botón ni una pestaña:
