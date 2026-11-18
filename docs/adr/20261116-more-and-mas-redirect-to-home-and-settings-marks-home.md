@@ -33,3 +33,12 @@ El ADR del 2026-11-09 retiró More y dejó dos decisiones que esta parte inviert
 
 - **Agregar dos filas a `legacy_front_paths.json`.** Rompe su contrato y su fixture fijado de 19 filas.
 - **Una redirección en el front.** El servidor es el único mecanismo de redirección.
+
+## Amendment (GH-780): /more and /mas answer as unknown
+
+Quedan revertidas las viñetas 1 a 3 de Decisión y la línea de Consecuencias sobre la 308: `/more` y
+`/mas` responden como cualquier dirección desconocida, sin redirección. Lo decide
+ADR-20261117-retired-addresses-answer-as-unknown-and-the-legacy-redirects-are-deleted.
+
+La viñeta 4 sigue en pie: Settings y sus pantallas marcan Home en la barra del celular. Por eso el
+estado de este ADR no cambia.
