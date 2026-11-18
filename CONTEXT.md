@@ -383,11 +383,11 @@ Un link que el Operator imprime con scripts/reset-password.sh y que permite a un
 _Avoid_: recovery code, reset token, magic link, forgot-password email
 
 **Navigation**:
-La estructura fija de la app para un Business: las pestañas del celular, la barra lateral de la computadora, el avatar "Settings" del encabezado del celular, Settings, y la única regla que le da a cada pantalla su marco y su camino de vuelta. Decide desde dónde se llega a cada capacidad, nunca qué hace; desde GH-651 no hay pantalla More, y cada uno de sus destinos tiene su propia entrada. En la app: no tiene palabra propia.
-_Avoid_: menu, sitemap, routing, shell, More
+La estructura fija de la app para un Business: la barra del celular (Home · Sales · + · Customers · Products, con el + redondo como tercer lugar de su propio `<nav>`), la barra lateral de la computadora con su "+ New sale", el avatar "Settings" del encabezado del celular, Settings, y la única regla que le da a cada pantalla su marco y su camino de vuelta. Decide desde dónde se llega a cada capacidad, nunca qué hace; desde GH-651 no hay pantalla More, y desde la parte 3 de GH-727 no hay "+ New sale" flotante en el celular. En la app: no tiene palabra propia.
+_Avoid_: menu, sitemap, routing, shell, More, floating button
 
 **Tab root**:
-Una pantalla que muestra la barra con su + en el celular, o la barra lateral con su "+ New sale" en una computadora: Home, Sales, Customers, Products y Analysis, y en una computadora también Expenses, que se abre desde la barra lateral. En el celular, a Analysis se llega con el segmento Home | Analysis de Home, cuyas opciones reemplazan la entrada del historial, y Analysis marca Home como activa; Expenses es un detalle con "‹ Analysis". Desde la parte 3 de GH-727, las tarjetas y los detalles (con una flecha de regreso a su pantalla madre) también muestran la barra con su +, y solo un formulario o una Sheet (con "Close") no muestra ni la barra ni el +.
+Una pantalla principal de una pestaña: Home, Sales, Customers, Products y Analysis, y en una computadora también Expenses, que se abre desde la barra lateral. En el celular, a Analysis se llega con el segmento Home | Analysis de Home, cuyas opciones reemplazan la entrada del historial, y Analysis marca Home como activa; Expenses es un detalle con "‹ Analysis". Muestra la barra con su + en el celular, igual que las tarjetas y los detalles desde la parte 3 de GH-727, o la barra lateral con su "+ New sale" en una computadora; solo un formulario, una Sheet o una pantalla de entrada no muestra ni la barra ni el +, y no hay ningún botón flotante (docs/product/navigation.md).
 _Avoid_: home, main screen, section, More
 
 **Settings**:
