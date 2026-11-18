@@ -40,7 +40,7 @@ Cómo se ve la app en claro y en oscuro, y quién decide cuál se muestra en cad
 
 ## Contraste
 
-- Todo par de texto y todo ícono con significado llega a 4.5:1 en ambos temas, sobre los fondos donde realmente aparece (barra inferior, "New sale" flotante, sheets y toasts incluidos). Los bordes decorativos (`--linea`, `--deuda-linea`) están exentos.
+- Todo par de texto y todo ícono con significado llega a 4.5:1 en ambos temas, sobre los fondos donde realmente aparece (barra inferior con su +, sheets y toasts incluidos). Los bordes decorativos (`--linea`, `--deuda-linea`) están exentos.
 - La tabla de contraste del README de diseño (ADR-0029) tiene una fila por token y tema. Si un par falla, se mueve solo ese token, entero, al valor más cercano que pase, y el movimiento queda escrito junto a los ratios como desvío del pedido de la dueña.
 - Desvío vigente, el único: `--deuda` en claro pasó de #a85a06 a #a35706, porque sobre `--acento-suave` medía 4,35.
 - "Undo" en la barra usa opacidad 0,8 en lugar del 0,75 del dibujo: con 0,75 el texto blanco sobre el `--boton` Yerba quedaba en 4,42:1, y con 0,8 llega a 4,79:1.

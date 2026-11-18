@@ -166,7 +166,7 @@ Lo que entra a un **Business** (**Stock entries**), lo que sale de él sin una v
   - costo total, con "Required for a purchase";
   - nota;
   - el costo por gramo antes de guardar ("It comes to $ 8.500 per gram") siempre que haya un costo.
-- **Take from stock**, el formulario de retiro, un formulario (navigation.md): "Close", sin barra, sin "+ New sale", y una confirmación al salir con algo tipeado. Sigue el estándar del teléfono para campos y zonas de toque (#80).
+- **Take from stock**, el formulario de retiro, un formulario (navigation.md): "Close", sin barra ni +, y una confirmación al salir con algo tipeado. Sigue el estándar del teléfono para campos y zonas de toque (#80).
   - Se abre desde el "Take from stock" secundario de Products (con el ícono `salidaStock`, justo después de "+ Stock entry", en todos los estados de la pantalla, en teléfono y computadora), sin Product elegido, y desde "Take from stock" en la página de un Product, con ese Product ya elegido. Desde GH-651 no hay More: en el teléfono, el de Products es la entrada a 2 toques desde cualquier otra pestaña. La página de un Archived product no ofrece "Take from stock".
   - motivo, fecha (con hoy), una o más líneas de Product y gramos, y nota.
   - **Reason**: un Selector obligatorio sobre los Withdrawal reasons del Business, en el orden de su lista, leídos de la API al abrir el formulario y con el estado de esa consulta como `loading`. Ninguno arranca elegido, ni siquiera con un solo motivo, y "Save the withdrawal" queda desactivado hasta que se elige uno; no se pierde nada de lo tipeado. Si la API igual recibe un retiro sin motivo, lo rechaza con "Pick a reason.".
@@ -188,7 +188,7 @@ Lo que entra a un **Business** (**Stock entries**), lo que sale de él sin una v
   - con una lista del Selector abierta en el teléfono: volver cierra solo la lista y conserva lo tipeado; un segundo volver abre la confirmación si hay algo tipeado;
   - en la computadora, Escape con el desplegable abierto cierra solo el desplegable;
   - el `StockStep` no tiene Selector, así que ahí valen solo los dos primeros casos.
-- **El detalle de un retiro**, abierto desde su fila: un detalle (navigation.md), con la barra o la barra lateral y un "‹" de regreso a la página del Product desde la que se llegó (Products cuando no hay historial), y sin "+ New sale". Muestra la fecha, el nombre actual del motivo ("Reason: Marketing"), cada línea y la nota, con "Edit" y "Delete", también cuando el Product de una línea está archivado.
+- **El detalle de un retiro**, abierto desde su fila: un detalle (navigation.md), con la barra o la barra lateral y un "‹" de regreso a la página del Product desde la que se llegó (Products cuando no hay historial), y, en el celular, con el + de la barra. Muestra la fecha, el nombre actual del motivo ("Reason: Marketing"), cada línea y la nota, con "Edit" y "Delete", también cuando el Product de una línea está archivado.
 - **Settings → Business → Withdrawal reasons** (`/settings/withdrawal-reasons`):
   - **Entrada**: una fila "Withdrawal reasons" en el grupo Business de Settings, debajo del nombre del Business, con su ícono, la etiqueta y una flecha, hecha con la fila de entrada común de Settings. La pantalla tiene "Close" y el regreso del teléfono sigue el historial.
   - **Arriba**: el título y la línea "The reasons you pick when you take stock out without selling it."

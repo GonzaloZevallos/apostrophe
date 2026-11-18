@@ -125,7 +125,7 @@ Criterios de éxito:
 ### En pantalla: la pantalla del Catalog
 
 - **Ruta**: `/varieties/catalog`. El viejo `/catalogo` responde como una dirección desconocida (navigation.md, Direcciones retiradas).
-- **Se abre desde**: "Send catalog" en Products, y el aviso "Your Telegram catalog is out of date" de Home. Es un detalle (navigation.md): la barra o la barra lateral y "‹ Products", sin "+ New sale".
+- **Se abre desde**: "Send catalog" en Products, y el aviso "Your Telegram catalog is out of date" de Home. Es un detalle (navigation.md): la barra con su + en el celular, o la barra lateral en la computadora, y "‹ Products".
 - **Siempre se abre**, también cuando nada califica: muestra entonces el estado vacío, y el Pinned catalog conserva su propio mensaje vacío y "Up to date" (pinned-catalog.md). "Send catalog" está desactivado, con su motivo en palabras (p. ej. "Add a product with a price and its stock"), solo para un Business anterior al Onboarding que no cumplió los dos pasos obligatorios, mientras nada califica (navigation.md).
 - **"How it looks in Telegram"**: el texto como lo lee un cliente. No cambia por cómo funciona Copy.
   - La negrita sigue la regla de emparejamiento de arriba.

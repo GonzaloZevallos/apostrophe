@@ -28,7 +28,7 @@ Línea de base de la parte 2 de GH-769: antes, en el teléfono, cerrar una Expen
 
 Criterios de éxito:
 
-1. Una Expense se registra desde el teléfono en menos de un minuto. En el teléfono su formulario abre en 2 toques desde Home, Sales, Customers, Products y Analysis ("+ New sale", después "Expense"), también en 2 desde Home por la tarjeta (el segmento "Analysis", después "Record expense"), y en 1 toque desde Expenses ("Add expense"). Esto reemplaza los 3 toques de antes desde Sales, Customers y Products. El presupuesto de toques vive en navigation.md, criterio 1. En una computadora no lleva más toques que en el teléfono. La fecha ya viene en hoy, y la Expense category se elige de la lista del negocio.
+1. Una Expense se registra desde el teléfono en menos de un minuto. En el teléfono su formulario abre en 2 toques desde Home, Sales, Customers, Products y Analysis (el + de la barra, después "Expense"), también en 2 desde Home por la tarjeta (el segmento "Analysis", después "Record expense"), y en 1 toque desde Expenses ("Add expense"). Esto reemplaza los 3 toques de antes desde Sales, Customers y Products. El presupuesto de toques vive en navigation.md, criterio 1. En una computadora no lleva más toques que en el teléfono. La fecha ya viene en hoy, y la Expense category se elige de la lista del negocio.
 2. Para cualquier mes, la vista muestra cada Expense de ese mes y el total del mes. Las desglosa por Expense category, con un subtotal para cada una. Los totales siempre son iguales a la suma de las Expenses que se muestran, también justo después de una edición o una eliminación.
 3. Una Purchase de Stock nunca es una Expense. Nada de acá registra gramos ni un producto, y una Purchase nunca aparece en las listas de Expenses. Así, los resultados pueden contar las Expenses y las Purchases por separado sin contar nada dos veces.
 4. Todo lo de acá se hace desde el teléfono, sin ninguna llamada a la API a mano.
@@ -139,7 +139,7 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
   - Pasar a ancho de computadora con el formulario abierto lo cierra sin preguntar: lo tipeado en la Expense se pierde y la venta queda intacta. Al volver al teléfono y abrirla de nuevo, la Expense arranca sin cambios.
   - En una computadora la fila no se dibuja: `NuevaVentaCompu`, la barra lateral, More, `/more` y `/mas` no cambian. A 900 px o más, la guarda no agrega ninguna pregunta por la Expense, y la guarda "Discard the sale?" de siempre no cambia en ningún ancho.
 - **Expenses** (`Expenses`, ruta `/expenses`; la vieja `/gastos` responde como una dirección desconocida (navigation.md, Direcciones retiradas)) es la única pantalla cuyo tipo depende del ancho (navigation.md, el ADR de GH-651):
-  - en el teléfono, un detalle con "‹ Analysis" (su pantalla madre), la barra con Home marcada como activa y sin "+ New sale". Su encabezado es el título y la acción "Add expense", sin el avatar "Settings" ni ningún elemento llamado "Settings" o "Ajustes y cuenta", en ningún estado de la pantalla (cargando, vacía, con error, sin conexión o con datos) ni en claro ni en oscuro, como los dibujos `Gastos` y `GastosOscuro` (decisión del dueño en #724, 2026-11-14). Se sale por "‹ Analysis" o el gesto de volver del teléfono. A Settings se llega desde el avatar de Home, Sales, Customers, Products y Analysis, a 1 toque de cada Tab root (navigation.md); Expenses en el teléfono es un detalle, no un Tab root, así que no tiene una cifra de toques hasta Settings. El texto del encabezado no cambia: "Gastos" y "+ Anotar gasto" son las etiquetas del dibujo, no las palabras de la app (Product language);
+  - en el teléfono, un detalle con "‹ Analysis" (su pantalla madre), la barra con Home marcada como activa y con el + de la barra. Su encabezado es el título y la acción "Add expense", sin el avatar "Settings" ni ningún elemento llamado "Settings" o "Ajustes y cuenta", en ningún estado de la pantalla (cargando, vacía, con error, sin conexión o con datos) ni en claro ni en oscuro, como los dibujos `Gastos` y `GastosOscuro` (decisión del dueño en #724, 2026-11-14). Se sale por "‹ Analysis" o el gesto de volver del teléfono. A Settings se llega desde el avatar de Home, Sales, Customers, Products y Analysis, a 1 toque de cada Tab root (navigation.md); Expenses en el teléfono es un detalle, no un Tab root, así que no tiene una cifra de toques hasta Settings. El texto del encabezado no cambia: "Gastos" y "+ Anotar gasto" son las etiquetas del dibujo, no las palabras de la app (Product language);
   - en una computadora, una Tab root con la barra lateral, Expenses activa y "+ New sale", a la que se llega desde la barra lateral, debajo del separador. No tiene avatar en el encabezado: Settings se abre desde la fila del Business de la barra lateral, a 1 toque.
 
   Tiene:
@@ -151,7 +151,7 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
     - en una computadora, el botón "Add expense" en la cabecera de la página.
 
     Su aspecto exacto lo decide diseño.
-- **El formulario de la Expense** es un formulario (navigation.md), una Sheet en el teléfono: sin barra y sin "+ New sale", y se cierra con "Close". Su título y el nombre del diálogo de la Sheet son "Add expense", lo abra la tarjeta, Expenses o New sale.
+- **El formulario de la Expense** es un formulario (navigation.md), una Sheet en el teléfono: sin barra y sin el +, y se cierra con "Close". Su título y el nombre del diálogo de la Sheet son "Add expense", lo abra la tarjeta, Expenses o New sale.
   - "Category", "Amount" y "Details" se marcan como obligatorios.
   - El envío se bloquea mientras el detalle está en blanco o no hay Expense category elegida.
   - La fecha viene completada con hoy.
@@ -220,15 +220,15 @@ Se leen de los datos y de las pruebas; no hay telemetría.
   - edita y elimina una;
   - se mueve entre meses;
   - agrega, renombra y elimina una Expense category en Settings, un rechazo de eliminación incluido.
-- **M7, toques (criterios 1 y 12)**: la corrida de punta a punta (`tapBudget.spec.ts`) cuenta los toques para abrir el formulario de la Expense, en ventanas de teléfono y de computadora, salvo el camino por "+ New sale" que se explica en el primer punto:
-  - en el teléfono, 2 desde Home, Sales, Customers, Products y Analysis ("+ New sale", después "Expense"), terminando en el diálogo "Add expense" sobre New sale; la app ya lo cumple, y #757 no le agrega un conteo de toques por Tab root: lo muestran "+ New sale" en cada Tab root (`chrome-at-load`) y el tile "Expense", siempre ofrecido, recorrido en el estado `sale/expense-strip` del Mobile check; `tapBudget.spec.ts` sigue contando el camino por Analysis (navigation.md, criterio 1);
+- **M7, toques (criterios 1 y 12)**: la corrida de punta a punta (`tapBudget.spec.ts`) cuenta los toques para abrir el formulario de la Expense, en ventanas de teléfono y de computadora, salvo el camino por el + de la barra que se explica en el primer punto:
+  - en el teléfono, 2 desde Home, Sales, Customers, Products y Analysis (el + de la barra, después "Expense"), terminando en el diálogo "Add expense" sobre New sale; la app ya lo cumple, y #757 no le agrega un conteo de toques por Tab root: lo muestra el + de la barra en cada Tab root (`chrome-at-load`) y el tile "Expense", siempre ofrecido, recorrido en el estado `sale/expense-strip` del Mobile check; `tapBudget.spec.ts` sigue contando el camino por Analysis (navigation.md, criterio 1);
   - desde Home por Analysis → "Record expense", también 2;
   - desde Expenses, 1;
   - en una computadora, nunca más que en el teléfono.
 
   Meta: 100% dentro del límite.
 - **M8, el marco de Expenses (criterios 1, 5, 12)**: las pruebas del front muestran:
-  - en el teléfono, "‹ Analysis", la barra, ningún "+ New sale" y ningún avatar "Settings"; en una computadora, la barra lateral con "+ New sale" y sin flecha de regreso;
+  - en el teléfono, "‹ Analysis", la barra con su + y ningún avatar "Settings"; en una computadora, la barra lateral con "+ New sale" y sin flecha de regreso;
   - la navegación por mes y la línea fija que recuerda que una Purchase se registra en Stock, nunca como Expense (`web/src/copy/expenses.ts`);
   - la acción de registrar: secundaria en el teléfono (sin un segundo "+" flotante), el botón de la cabecera en una computadora.
 - **M9, las Expense categories salieron de Expenses (criterio 5)**: las pruebas del front muestran:

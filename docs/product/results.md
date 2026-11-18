@@ -33,6 +33,8 @@ Afina el job del Panel: Home muestra el día, no configura el Business. Antes, H
 
 **Cuando** un Product que cargué por error, o uno con el que ya no trabajo, sigue apareciendo en mis listas y selectores, **quiero** sacarlo desde el teléfono en pocos toques, eliminándolo si nunca se movió y archivándolo si tiene historial, **para que** mis listas muestren solo lo que todavía vendo, ninguna cifra pasada de ventas, stock, costo o Profit cambie, y pueda volver a tenerla exactamente como estaba si empiezo a venderla de nuevo. (Acá lo sirve What you have left, que deja afuera los Archived products mientras todas las cifras del período siguen iguales; se define en varieties.md.)
 
+**Cuando** cambio o reviso la barra del celular, **quiero** que un ADR y los docs del producto digan qué es el +, dónde vive, cuándo se muestra y cómo se llama, **para** distinguir una regresión del diseño decidido sin leer el código ni el plan de GH-727. (Parte 4 de GH-727: es el job del mantenedor y de quien revisa en su nombre, y su lugar de referencia es navigation.md, "La barra del celular y su +". Acá lo sirve que Home nombre como su acción principal el + de la barra del celular, nunca un "+ New sale" flotante, que ya no existe.)
+
 Criterios de éxito:
 
 1. **Un vistazo, desde el teléfono**: el Panel abre, y cambiar entre Today, Week (de lunes a domingo) y Month responde, en menos de 300 ms con unos cientos de ventas. Cada período muestra su rango de fechas.
@@ -70,6 +72,7 @@ Criterios de éxito:
 15. **El segmento nombra sus vistas** (#733): en el teléfono, las opciones del segmento dicen "Home" y "Analysis", en pantalla y en su nombre accesible; ninguna dice "Today". La única "Today" de Home es la pestaña del Panel.
 16. **El encabezado del día** (parte 2 de GH-723): en el teléfono, Home muestra arriba la fecha de hoy como dd/mm, el avatar "Settings" y el segmento, en el mismo lugar que Analysis, sin el nombre del Business, sin la Yerba mark y con un solo h1, oculto a la vista. Nada más del encabezado se toca, y está en todos los estados de Home. En la computadora, el nombre del Business sigue arriba del h1 visible y la pantalla se ve igual que antes.
 17. **Settings a un toque, como el dibujo** (parte 3 de GH-495): en el teléfono, el avatar de Home abre Settings en 1 toque, muestra las iniciales del Business, un lector de pantalla dice "Settings" y se alcanza con el teclado; su caja táctil mide 44×44 y pasa `touch-target`; no aparece a 900 px y más. Los criterios propios están en navigation.md (38–41).
+18. **Ningún botón flotante descrito como actual** (parte 4 de GH-727): este archivo nombra la acción principal de Home en el teléfono como el + de la barra (navigation.md, "La barra del celular y su +"), y todo "+ New sale" que queda acá es el de la barra lateral de la computadora. Nada de lo que ve o hace quien vende cambia.
 
 # Resultados
 
@@ -197,7 +200,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 - Sigue los temas claro y oscuro, y coincide con `docs/product/design-system/pantallas/` en los dos. Las líneas de los Withdrawal reasons usan la fila de resultado existente (la etiqueta a la izquierda y la cifra a la derecha); no tienen dibujo propio.
 - No es un menú de acciones:
   - no registra nada por sí mismo y no tiene toasts propios;
-  - su única acción principal es el "+ New sale" del marco; "Collect" en las filas de deudor es la única otra acción directa, además del aviso, que solo abre donde está su arreglo. El avatar "Settings" y el segmento solo llevan a otras pantallas.
+  - su única acción principal es abrir una New sale desde el marco: en el teléfono, el + de la barra (navigation.md, "La barra del celular y su +"; desde la parte 3 de GH-727 ya no hay "+ New sale" flotante ni su línea de qué falta), y en una computadora, el "+ New sale" de la barra lateral. "Collect" en las filas de deudor es la única otra acción directa, además del aviso, que solo abre donde está su arreglo. El avatar "Settings" y el segmento solo llevan a otras pantallas.
 - Las cifras se leen al abrir el Panel, sin actualizaciones en vivo.
 - Una red caída muestra "No connection"; un error del servidor muestra el reintento genérico (accounts.md).
 
@@ -206,7 +209,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 - El Business sale de la Session.
 - La ruta del Panel entra en el barrido de aislamiento y en la prueba de rutas protegidas.
 - Cada cifra se calcula en el servidor, y también si se muestra el aviso de desactualizado, qué líneas de Withdrawal reason se muestran y en qué orden, y si una línea de Withdrawal reason está toda pendiente. El navegador nunca ordena ni suma nada.
-- Home no lee `/first-run` ni `/onboarding-progress`. Esas rutas siguen en el backend: `/onboarding-progress` lo lee el Onboarding, y `/first-run` el marco y Products para las reglas laterales de navigation.md.
+- Home no lee `/first-run` ni `/onboarding-progress`. Esas rutas siguen en el backend: `/onboarding-progress` lo lee el Onboarding, y `/first-run` la línea de precio faltante del "+ New sale" de la barra lateral de la computadora y Products, para las reglas laterales de navigation.md. Ningún código del marco del celular lee `/first-run`.
 - Ninguna cifra ni nombre va a los logs, la consola ni el almacenamiento del navegador.
 - Las palabras del avatar y del segmento ("Settings", "Home", "Analysis", "Home view") salen del Copy module; la opción "Home" es `common:homeSegmentHome`. La línea de fecha usa el formateador de fechas que ya existe y no suma nada al Copy module. Las iniciales del avatar salen solo de `initialsOf`, y el avatar no agrega ninguna ruta de API.
 
@@ -249,6 +252,7 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 
   El proyecto e2e `mobile` pasa en `InicioHoy` e `InicioOscuro` a 320, 360 y 390 px y al 130 %, con la línea de fecha en una sola línea y sin ningún infractor agregado, y la captura de `InicioHoyCompu` no cambia. 100% de aprobación.
 - **Settings a un toque, como el dibujo (criterio 17, parte 3 de GH-495)**: las métricas de los criterios 38–41 de navigation.md: el link "Settings" con sus iniciales y su estado sin letras, 0 infractores `touch-target` en `InicioHoy` e `InicioOscuro` a 320, 360 y 390 px y al 130 %, y el avatar juzgado a ojo, lado a lado, contra `Inicio`, `InicioOscuro`, `Analisis` y `AnalisisOscuro` (decisión 1 del humano), con las capturas de antes y después que prueban que nada fuera del avatar cambia; ninguna tolerancia agrandada ni infractor listado. La métrica de primer uso se mide por rama: ni `pre_onboarding`, `imported` ni `onboarding` muestran un aviso de primer uso en Home, y Home no pide `/first-run` ni `/onboarding-progress`.
+- **Ningún botón flotante descrito como actual (criterio 18, parte 4 de GH-727)**: una búsqueda en este archivo y en el resto de `docs/product/` no encuentra ningún "+ New sale" flotante del celular, ni su línea de qué falta, descrito como actual; cada "+ New sale" que queda nombra la barra lateral de la computadora, y la acción del teléfono remite al + de la barra en navigation.md. 0 excepciones; `checks` y `docs` en verde.
 - **Bordes de período**: una semana que cruza un mes y un año, el lunes como primer día y un cambio de día en hora argentina. 100% de aprobación.
 - **Avance de deudores (criterio 4)**: ordenado por Balance, después por Owing since y después por nombre; los Credits excluidos; "Nobody owes you" cuando nadie debe; "Collect" con su nombre accesible en cada fila. Ningún estado se dice solo por color, en los dos temas.
 - **Aislamiento (criterio 5)**: desde otro Business, la ruta del Panel no muestra ninguna cifra ni nombre de Withdrawal reason del primer Business. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen cifras ni nombres.
@@ -261,14 +265,15 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 ## Fuera de alcance
 
 - Dates o cualquier rango a medida; comparar con períodos anteriores; gráficos.
-- Registrar cualquier cosa desde el Panel salvo con "+ New sale" y "Collect".
+- Registrar cualquier cosa desde el Panel salvo abriendo una New sale desde el marco (el + de la barra del celular o el "+ New sale" de la barra lateral de la computadora) y con "Collect".
 - Actualizaciones en vivo entre socios.
 - Margin por Product (#8), Stock shortfall por Product, y el costo de cada Withdrawal reason por Product.
 - Gramos pendientes contados en el Panel ("and N g without cost") para una cifra con parte pendiente: la nota del Panel es fija y no lleva gramos; Analysis muestra las cuentas.
 - Los gramos totales del stock en el Panel.
 - Cualquier aviso, insignia, recordatorio o elemento de primer uso en Home, o un reemplazo de los avisos sacados en otra pantalla; un mensaje a los Users existentes de que se fueron.
 - Un link al Onboarding desde Home.
-- Quitar `/first-run` o `/onboarding-progress` del backend, o cambiar las reglas laterales de "+ New sale" y "Send catalog" (navigation.md).
+- Quitar `/first-run` o `/onboarding-progress` del backend, o cambiar las reglas laterales del "+ New sale" de la barra lateral de la computadora y de "Send catalog" (navigation.md).
+- Una línea de precio faltante o cualquier otro aviso de qué falta en el marco del celular; ese motivo lo da New sale en su campo de producto (sales.md).
 - Archived products en el Panel.
 - Poner primero los Products bajos en What you have left.
 - Rediseñar Record payment según `Cobro.dc.html`: es trabajo propio de la pantalla de payments.

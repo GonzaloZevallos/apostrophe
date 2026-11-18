@@ -158,7 +158,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 
 ![Analysis en el teléfono](../assets/screens/Analisis.webp)
 
-- **Dónde**: en el teléfono, una Tab root a la que se llega con el segmento Home | Analysis de Home: muestra la barra con Home marcada como activa y "+ New sale". En la computadora, "Analysis" en la barra lateral, debajo del separador (navigation.md). More ya no existe (GH-651).
+- **Dónde**: en el teléfono, una Tab root a la que se llega con el segmento Home | Analysis de Home: muestra la barra con Home marcada como activa y su + (navigation.md). En la computadora, "Analysis" en la barra lateral, debajo del separador (navigation.md). More ya no existe (GH-651).
 - **Encabezado del teléfono** (compartido con Home desde la parte 2 de GH-723, navigation.md): el mismo encabezado de Home, en el mismo lugar, dibujado por el layout de ruta `HomeLayout` arriba del contenido y fuera de su área de contenido. Es un `div`, no es fijo y se va con el scroll. En este orden:
   1. Una fila con la línea de fecha, un lugar vacío y el avatar "Settings" al final. La línea de fecha es el hoy del Business como dd/mm, tomado del `me.today` de la Session, nunca el mes que se lee: ese lo nombra el selector de mes. Nunca se parte en dos líneas y se corta con puntos suspensivos antes de que el avatar se achique. El lugar vacío ocupa el lugar que el dibujo le da a "Sumar gráfico" y no tiene link, botón, rol, texto ni elemento enfocable.
   2. El segmento Home | Analysis.
@@ -281,7 +281,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
   - No queda ninguna entrada `touch-target`, `text-size`, `h-scroll`, `name-overflow` ni `figure-split` para una celda de contenido de Analysis que este trabajo arregló.
   - Cada entrada que pasó a verde se borra.
   - No se agrega ninguna fuera de las reglas de gate.md.
-- **Se llega sin More (criterio 12)**: pruebas de Testing Library a través del router real, en ancho de teléfono: tocar "Analysis" en el segmento de Home lleva a `/analysis`; tocar "Home" en el de Analysis lleva a `/`; "Record expense" de la tarjeta abre el formulario de la Expense y "See expenses" abre Expenses; Analysis tiene la barra, "+ New sale" y Home marcada como activa. 100% de aprobación.
+- **Se llega sin More (criterio 12)**: pruebas de Testing Library a través del router real, en ancho de teléfono: tocar "Analysis" en el segmento de Home lleva a `/analysis`; tocar "Home" en el de Analysis lleva a `/`; "Record expense" de la tarjeta abre el formulario de la Expense y "See expenses" abre Expenses; Analysis tiene la barra con su + y Home marcada como activa. 100% de aprobación.
 - **El segmento nombra sus vistas (criterio 13, #733)**: en ancho de teléfono, el grupo "Home view" de Analysis tiene exactamente dos links, de nombre accesible "Home" y "Analysis", y ninguno "Today"; el proyecto e2e `mobile` pasa en `Analisis` y `AnalisisOscuro` sin ningún infractor agregado. 100% de aprobación.
 - **El mismo encabezado que Home (criterio 14, parte 2 de GH-723)**: pruebas de Testing Library a través del router real (`HomeLayout.test.tsx`): en `/analysis` hay exactamente un h1, con `visualmente-oculto` en el teléfono y visible en la computadora, también cargando y con error; la línea de fecha muestra el hoy de la Session (`03/10` para 2026-10-03); la fila del encabezado no tiene otro elemento interactivo que las dos opciones del segmento y el avatar; cambiar de opción deja `router.state.historyAction === 'REPLACE'` con el índice del historial sin cambios, y la vista elegida abre arriba. El proyecto e2e `mobile` pasa en `Analisis` y `AnalisisOscuro` a 320, 360 y 390 px y al 130 %, con la línea de fecha en una sola línea y sin ningún infractor agregado, y la captura de `AnalisisCompu` no cambia. 100% de aprobación.
 - **Aislamiento (criterio 5)**: cada ruta de Analysis está en el barrido y responde solo las cifras y los nombres de Withdrawal reason de su propio negocio, nunca los datos del otro negocio sembrado.
@@ -309,7 +309,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 - Atar un Stock withdrawal a ventas posteriores: las promociones aplicadas se van a registrar en la venta misma (docs/adr/0060-the-applied-promotion-snapshot-is-typed-sale-promotion-rows-recorded-as-the-sale-stood-when-saved-and-never-recomputed.md; `sales.md`), no atadas después.
 - Mostrar una línea en $0 para un Withdrawal reason sin Stock withdrawals en el período.
 - En el teléfono: secciones plegables, saltos entre secciones, o textos nuevos para las tarjetas o la semana actual.
-- La barra inferior, el "+ New sale" flotante y las etiquetas de la barra en Analysis (son de Navigation, parte 1 de GH-319).
+- La barra inferior con su + y las etiquetas de la barra en Analysis (son de Navigation, parte 1 de GH-319 y parte 3 de GH-727; el "+ New sale" flotante ya no existe).
 - La pantalla Analysis rediseñada completa (sus pestañas Day/Week/Month/Year, la tarjeta Expenses con superficie propia y ubicada después de los resúmenes) y un conteo de Expenses en la tarjeta: los construye su propio issue de rediseño.
 - Mostrar en el encabezado el período que se lee ("Octubre de 2026" en el dibujo) y una función detrás del lugar vacío ("Sumar gráfico" en el dibujo) (parte 2 de GH-723).
 

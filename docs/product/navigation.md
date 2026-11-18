@@ -84,7 +84,7 @@ GH-480 afina el mismo job para la página en sí: una pantalla a la que llego em
 
 **Cuando** acabo de abrir mi negocio y todavía está vacío, **quiero** que me guíen por lo que necesita, un paso corto por vez, con los valores por defecto ya completos, **para** registrar mi primera venta el mismo día sin buscar entre Settings, Products y la pantalla del Catalog. (Lo sirve acá el **Onboarding** como el único elemento de primer uso de un **Business** recién creado, abierto al aceptar la **Invitation** y en su propia dirección, `/onboarding`; definido en onboarding.md.)
 
-**Cuando** reviso un cambio en las reglas de primer uso que quedan (la línea de precio faltante de "+ New sale" y el "Send catalog" deshabilitado) antes de aprobarlo, **quiero** que los tests y el contrato `/first-run` prueben lo que dicen navigation.md y ADR-0046 en cada estado en que pueden estar y en los dos temas, **para poder** aprobar solo con la evidencia, sin confiar en controles parciales ni arrastrar hallazgos abiertos a la próxima tarea.
+**Cuando** reviso un cambio en las reglas de primer uso que quedan (la línea de precio faltante del "+ New sale" de la barra lateral y el "Send catalog" deshabilitado) antes de aprobarlo, **quiero** que los tests y el contrato `/first-run` prueben lo que dicen navigation.md y ADR-0046 en cada estado en que pueden estar y en los dos temas, **para poder** aprobar solo con la evidencia, sin confiar en controles parciales ni arrastrar hallazgos abiertos a la próxima tarea.
 
 - Su protagonista es el mantenedor, o quien revisa en su nombre, como en gate.md, design-capture.md y el criterio 6 de onboarding.md. Quien vende se ve afectado solo de forma indirecta: un head que nadie puede aprobar frena el trabajo que espera.
 - Afina el criterio 12 y ADR-0046 (su lugar en Home ya no existe: ADR-0081); no es un job de producto nuevo y no agrega comportamiento de producto.
@@ -241,7 +241,7 @@ Criterios de éxito, las direcciones retiradas (parte 1 de GH-780). Rigen en el 
 
 ### La barra del celular y su + (parte 3 de GH-727)
 
-Solo por debajo de 900 px. Reemplaza al "+ New sale" flotante y a su línea de precio faltante, como lo dibujan `Inicio` e `InicioOscuro`.
+Solo por debajo de 900 px. Reemplaza al "+ New sale" flotante y a su línea de precio faltante, como lo dibujan `Inicio` e `InicioOscuro`. Las decisiones están en el ADR [20261118-the-phone-bar-s-round-plus-is-the-third-slot-of-its-own-nav-and-bottom-space-is-one-token](../adr/20261118-the-phone-bar-s-round-plus-is-the-third-slot-of-its-own-nav-and-bottom-space-is-one-token.md) (delta sobre ADR-0045; ADR-0027, ADR-0028 y ADR-0045 no cambian).
 
 - **Dónde se ve**: en cada pantalla que no es un formulario: los Tab roots, Analysis, Expenses, las tarjetas y los detalles (incluidas la lista de grupos de Settings y la lista de Payment methods). En los formularios, las Sheets y las pantallas de entrada (Sign in, la aceptación de una Invitation, el reseteo de contraseña) no hay ni barra ni +. Mientras hay un teclado de texto abierto, la barra y su + se ocultan juntos (Disposición en el celular).
 - **El + es un link** a New sale (`SALE_NEW`), nunca un botón ni una pestaña:
@@ -255,6 +255,23 @@ Solo por debajo de 900 px. Reemplaza al "+ New sale" flotante y a su línea de p
 - **Qué queda marcado** sale solo de `placeOf` en `routes.ts`; ningún componente compara una dirección, un estado ni el historial. El + nunca se marca.
 - **Precio faltante**: el celular no tiene línea de precio faltante ni ningún otro lugar nuevo para ese aviso. New sale sigue diciendo lo que ya dice cuando no hay nada para vender, evaluado solo sobre una respuesta exitosa de Products para la fecha mostrada, nunca sobre un marcador de carga (sales.md). Ningún código de la barra del celular lee `/first-run`.
 - **Si no entra**: el ajuste de la barra se midió a 246 px, en claro y en oscuro, antes de cualquier migración (`web/e2e/barFit.spec.ts`: el ancho de cada lugar y el de cada etiqueta con peso 600). Cuatro pestañas iguales no entraban, y el dueño decidió dos veces: anchos según la etiqueta solo donde hace falta (decisión 2 del humano en GH-789) y, por debajo de 258 px, solo íconos con 44 px por pestaña (decisión 3). Si un cambio posterior hace que la barra se desborde, o falla la prueba de 320 px con el texto al 130 % del criterio 6, el trabajo se frena y va a una persona con esas cifras. Nunca se achica una etiqueta por debajo de 12 px, se corta, se le ponen puntos suspensivos ni se renombra, y el mínimo de 44 px nunca se levanta.
+
+  **Anchos medidos** (`web/e2e/barFit.spec.ts`, corrida real en un navegador, commit `88cb8a689dcae68329a8fcb42b6eb8b0367d21e6`; la salida cruda de la corrida es la tabla que el spec imprime). A 246 px, en claro y en oscuro, la barra está en modo de solo íconos:
+
+  | label | slot width | label width at 600 | slack | viewport | theme | mode |
+  |---|---|---|---|---|---|---|
+  | Home | 48.50 | 34.00 | 14.50 | 246 | light | icon only |
+  | Sales | 48.50 | 33.00 | 15.50 | 246 | light | icon only |
+  | + | 52.00 | - | - | 246 | light | - |
+  | Customers | 48.50 | 65.00 | -16.50 | 246 | light | icon only |
+  | Products | 48.50 | 53.00 | -4.50 | 246 | light | icon only |
+  | Home | 48.50 | 34.00 | 14.50 | 246 | dark | icon only |
+  | Sales | 48.50 | 33.00 | 15.50 | 246 | dark | icon only |
+  | + | 52.00 | - | - | 246 | dark | - |
+  | Customers | 48.50 | 65.00 | -16.50 | 246 | dark | icon only |
+  | Products | 48.50 | 53.00 | -4.50 | 246 | dark | icon only |
+
+  A 320 px, con el texto al 130 %, el spec no imprime anchos: afirma que cada etiqueta entra entera (criterio 6) y pasa en esa misma corrida. Por eso este documento no cita cifras a 320 px.
 - **Computadora**: la barra lateral, su "+ New sale" y su línea de precio faltante quedan exactamente como están, en claro y en oscuro.
 
 ### El segmento Home | Analysis (celular, GH-723)
