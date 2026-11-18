@@ -52,7 +52,7 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
 ### Bot settings, por negocio (Settings → Integrations)
 
 - Un token, un chat del canal y un chat propio por Business.
-- **Dónde**: el grupo Integrations de Settings, un formulario (navigation.md): "Close", y una confirmación al salir con algo tipeado y sin guardar. Es el único lugar donde se ven o se cambian; la pantalla del Catalog ya no los tiene, y los paths viejos que llevaban a ellos redirigen acá.
+- **Dónde**: el grupo Integrations de Settings, un formulario (navigation.md): "Close", y una confirmación al salir con algo tipeado y sin guardar. Es el único lugar donde se ven o se cambian; la pantalla del Catalog ya no los tiene.
 - **Token**:
   - se guarda cifrado, con una clave derivada de `APOSTROPHE_SECRET_KEY`;
   - una vez guardado, ninguna ruta lo devuelve y nunca se registra en logs;
