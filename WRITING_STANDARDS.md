@@ -1,8 +1,6 @@
 # Writing standards
 
-Los criterios para el español neutro se agregan en una sección posterior de este documento.
-
-Las reglas de redacción del texto que la app muestra en pantalla: cuánto puede medir cada tipo de texto, cómo suena en inglés, qué palabras se evitan, qué no puede dar por hecho un texto y cómo se ve un buen texto de cada tipo. Está escrito en español rioplatense (el **Documentation language**); las palabras de pantalla y los ejemplos en inglés quedan en inglés. La capacidad que lo define, y que manda sobre el sentido de este archivo, es `docs/product/writing-standards.md`.
+Las reglas de redacción del texto que la app muestra en pantalla: cuánto puede medir cada tipo de texto, cómo suena en inglés, qué palabras se evitan, qué no puede dar por hecho un texto y cómo se ve un buen texto de cada tipo. Está escrito en español rioplatense (el **Documentation language**); las palabras de pantalla y los ejemplos en inglés quedan en inglés. Los ejemplos de la sección "Español neutro" son texto de producto en español neutro, escrito con tú. La capacidad que lo define, y que manda sobre el sentido de este archivo, es `docs/product/writing-standards.md`.
 
 Lo usan quien mantiene el producto, los roles agénticos y quien revisa, para decidir un texto en una sola pasada. Es para el vendedor, que lo lee en el teléfono entre pedido y pedido.
 
@@ -44,7 +42,7 @@ Para los demás tipos no se escribe ninguna cifra; se enlaza a la regla que las 
 **Qué controla cada límite.**
 
 - [`web/src/copy/copyLimits.test.ts`](web/src/copy/copyLimits.test.ts) controla las líneas de ayuda, los avisos, More info, el título y la línea de un estado vacío, el objetivo de los rechazos y la lista `LONG_REFUSALS`.
-- Se controlan solo en revisión: los tres límites nuevos (botón, título y toast), la voz y la lista de palabras a evitar.
+- Se controlan solo en revisión: los tres límites nuevos (botón, título y toast), la voz, la lista de palabras a evitar y las tres reglas del español neutro (tú, infinitivo en los botones, sin regionalismos).
 
 **En todos los idiomas.** Los límites valen en cada idioma. Un texto que no entra se reescribe; el límite nunca se sube.
 
@@ -54,7 +52,7 @@ Para los demás tipos no se escribe ninguna cifra; se enlaza a la regla que las 
 
 Cada regla que no se puede contar lleva una prueba que se corre sobre el texto solo. Quien escribe y quien revisa tienen que llegar a la misma respuesta.
 
-Cada ejemplo lleva una marca: **real** (citado carácter por carácter de `web/src/copy/`, con su pantalla), **escrito para el documento** (un mal ejemplo inventado para mostrar la regla) o **patrón** (una forma con un marcador, no un texto real).
+Cada ejemplo lleva una marca: **real** (citado carácter por carácter de `web/src/copy/`, con su pantalla), **escrito para el documento** (un mal ejemplo inventado para mostrar la regla) o **patrón** (una forma con un marcador, no un texto real). Hay una cuarta marca, que llevan todos los ejemplos en español, buenos o malos, y ningún otro: `Texto de producto en español, todavía no está en la app`.
 
 ### Voz activa
 
@@ -140,7 +138,7 @@ Un texto nunca nombra un tipo de producto, y nunca fija una unidad, una moneda o
 
 ## Patrones
 
-Hay uno por tipo de texto. Cada uno tiene su forma, un ejemplo bueno y uno malo. Un ejemplo bueno es un texto real, citado carácter por carácter de `web/src/copy/`, con su pantalla; respeta su propio límite. Los avisos, More info y los estados vacíos no son patrones: siguen [`docs/product/icon-and-text-rule.md`](docs/product/icon-and-text-rule.md).
+Hay uno por tipo de texto. Cada uno tiene su forma, un ejemplo bueno y uno malo. En los patrones en inglés, un ejemplo bueno es un texto real, citado carácter por carácter de `web/src/copy/`, con su pantalla; respeta su propio límite. Los patrones en español no tienen texto real hasta #317. Los avisos, More info y los estados vacíos no son patrones: siguen [`docs/product/icon-and-text-rule.md`](docs/product/icon-and-text-rule.md).
 
 ### Botón
 
@@ -179,3 +177,117 @@ Hay uno por tipo de texto. Cada uno tiene su forma, un ejemplo bueno y uno malo.
 - Bien (real, error de Rename product): "That name belongs to an archived product. Look for it in Archived."
 - Mal (real, error del idioma en Settings → Business, va a #328): "That language isn't available for your business." Tiene una contracción.
 - Mal (escrito para el documento): "You entered an invalid name." Culpa a la persona y usa una palabra de la lista.
+
+## Español neutro
+
+Ningún ejemplo de esta sección fija una palabra de pantalla en español: esas palabras las decide #317, una palabra por concepto, y cada ejemplo lleva la marca de que todavía no está en la app.
+
+**Criterios.** Los tres valen para todo el texto de producto en español.
+
+- **Tú en los mensajes.** El texto le habla a la persona de tú.
+- **Infinitivo en los botones.** La etiqueta es un verbo en infinitivo.
+- **Sin regionalismos.** Ni voseo ni jerga local.
+
+**Largo.** Los límites son los mismos que en inglés: están en la [tabla de límites de largo por tipo de texto](#límites-de-largo-por-tipo-de-texto) y en la regla [En todos los idiomas](#límites-de-largo-por-tipo-de-texto), que es un párrafo de esa misma sección. Acá no se escribe ninguna cifra. Un texto en español que no entra se reescribe; el límite no se sube.
+
+**Qué muestran los ejemplos.** Solo la forma: persona, modo y largo. Sus verbos salen de un conjunto cerrado (guardar, cancelar, intentar y poder) y no fijan ninguna palabra de pantalla.
+
+**Línea de ayuda.** En español la línea de ayuda mantiene la cosa como sujeto, acá con la forma con "se". Esa es la forma española de "la cosa como sujeto", así que la prueba de voz activa del inglés no se le aplica.
+
+### Pruebas de decisión
+
+- **Voseo.** Se corre en orden y se frena en el primer "sí".
+  1. ¿Aparece el pronombre "vos"? Si aparece, es voseo.
+  2. Se reescribe cada verbo en tú, en el mismo tiempo y modo (presente, subjuntivo e imperativo). Si la forma en tú difiere de la escrita, es voseo.
+  3. Pasan porque la forma es la misma en los dos sistemas: *estás*, el futuro (*podrás*) y las palabras que no son verbos pero llevan acento final, como *más*, *además* y *después*.
+- **Palabras a evitar** (sin ejemplo a propósito). Se busca en las líneas `_Avoid_` de [`CONTEXT.md`](CONTEXT.md), tal como están hoy, por palabra entera y sin distinguir mayúsculas. Las palabras no se copian en esta sección, y ningún ejemplo de ella usa una.
+- **Jerga.** Es la única prueba que necesita una fuente externa: el DLE. Falla un texto con una palabra cuya marca nombra un solo país. Una marca regional amplia (Am.) no falla. Un caso que la prueba resuelve mal va a una decisión del dueño. Los ejemplos evitan además las palabras de dispositivo, que cambian de un país a otro.
+- **Botón.** ¿La etiqueta es un verbo en infinitivo? Se mira como verbo, no solo por la terminación.
+
+Estas pruebas cambian solo por decisión del dueño.
+
+### Ejemplos
+
+Cada ejemplo va en su propio bloque, debajo de una línea con "Bien" o "Mal" y la marca. Una línea "Mal" nombra también la única prueba que falla.
+
+#### Botón
+
+Bien. Texto de producto en español, todavía no está en la app
+
+```
+Guardar
+```
+
+Bien. Texto de producto en español, todavía no está en la app
+
+```
+Cancelar
+```
+
+Mal (falla la prueba de botón (infinitivo)). Texto de producto en español, todavía no está en la app
+
+```
+Guarda
+```
+
+#### Título
+
+Bien. Texto de producto en español, todavía no está en la app
+
+```
+Últimos cambios
+```
+
+Mal (falla la prueba de sentence case (Títulos)). Texto de producto en español, todavía no está en la app
+
+```
+Últimos Cambios
+```
+
+#### Línea de ayuda
+
+Bien. Texto de producto en español, todavía no está en la app
+
+```
+Cada cambio se guarda aunque canceles después.
+```
+
+Mal (falla la prueba de voseo). Texto de producto en español, todavía no está en la app
+
+```
+Cada cambio se guarda aunque cancelés después.
+```
+
+#### Toast
+
+Bien. Texto de producto en español, todavía no está en la app
+
+```
+Cambios guardados
+```
+
+Mal (falla la prueba de resultado, no acción). Texto de producto en español, todavía no está en la app
+
+```
+Guardaste los cambios
+```
+
+#### Error
+
+Bien. Texto de producto en español, todavía no está en la app
+
+```
+No se pudo guardar. Inténtalo de nuevo.
+```
+
+Mal (falla la prueba de voseo). Texto de producto en español, todavía no está en la app
+
+```
+No se pudo guardar. Intentá de nuevo.
+```
+
+Mal (falla la prueba de no culpar a la persona). Texto de producto en español, todavía no está en la app
+
+```
+No pudiste guardar. Inténtalo de nuevo.
+```
