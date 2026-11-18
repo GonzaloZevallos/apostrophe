@@ -4,7 +4,7 @@
 
 ## Qué es
 
-Los Writing standards son las reglas de redacción del texto que la app muestra en pantalla. Su texto completo vive en `WRITING_STANDARDS.md`, en la raíz del repo, junto a `DESIGN_STANDARDS.md`. Está escrito en español rioplatense (el Documentation language). Las palabras de pantalla y los ejemplos en inglés quedan en inglés.
+Los Writing standards son las reglas de redacción del texto que la app muestra en pantalla. Su texto completo vive en `WRITING_STANDARDS.md`, en la raíz del repo, junto a `DESIGN_STANDARDS.md`. Está escrito en español rioplatense (el Documentation language). Las palabras de pantalla y los ejemplos en inglés quedan en inglés. Los ejemplos de la sección "Español neutro" son texto de producto en español neutro, escrito con tú.
 
 Lo usan quien mantiene el producto, los roles agénticos y quien revisa. Es para el vendedor, que lee ese texto en el teléfono entre pedido y pedido (criterios Phone first y Assume nothing).
 
@@ -53,12 +53,12 @@ El documento apunta a sus fuentes y no copia ninguna:
   - Un ejemplo bueno es un texto real y ya neutral, citado carácter por carácter de `web/src/copy/`, con su pantalla nombrada, y respeta su propio límite.
   - Donde el único ejemplo real menciona gramos, el patrón usa `<quantity>` y queda marcado como patrón.
   - Un texto real que da por hecho gramos o un tipo de producto aparece solo como ejemplo malo, con su pantalla nombrada.
+- **Español neutro.** Tres reglas (tú en los mensajes, infinitivo en los botones, sin regionalismos), cada una con su prueba de decisión, y un ejemplo bueno y uno malo por tipo de texto, cada uno marcado como todavía no está en la app. Ningún ejemplo fija una palabra de pantalla: las decide #317.
 - **Pruebas de decisión.** Cada regla que no se puede contar lleva una prueba que se corre sobre el texto solo, y quien escribe y quien revisa llegan a la misma respuesta.
 
 ## Qué no cubre
 
 - La salida de los scripts del Operator, las líneas fijas del Catalog, el `detail` de la API y los datos del vendedor (nombres de Products y de Customers, Notes, Catalog header and footer).
-- Los criterios para el español neutral, que llegan en una sección posterior (GH-786, parte 2).
 - Corregir textos existentes que rompen una regla: van a #328.
 - Cualquier control automático de botones, títulos, toasts o de la lista de palabras.
 
