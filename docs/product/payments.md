@@ -131,7 +131,7 @@ Criterios de éxito:
   - En el celular la Sheet no tiene afuera: "Close" arriba y el gesto de volver del celular, que son la misma acción, son sus únicas salidas. Un toque en la franja de área segura junto a la barra de estado no hace nada.
   - En el celular la acción principal queda fija abajo del formulario, encima del teclado, con los rechazos en línea arriba de ella. El alto de la Sheet sigue al viewport visible.
   - En la computadora es un modal sobre la misma pantalla, exactamente como antes: tocar su fondo lo cierra solo cuando no se escribió ni se eligió nada.
-  - Sin barra y sin "+ New sale". "Close", con una confirmación al salir con algo escrito o elegido.
+  - Sin barra y sin el +. "Close", con una confirmación al salir con algo escrito o elegido.
   - Guardar o "Close" deja al vendedor de vuelta en la pantalla desde la que se abrió.
   - Cambiar el tamaño cruzando 900 px o rotar el celular conserva lo escrito.
 - **Foco al abrir**: en el celular el foco va al primer campo de la Sheet; el modal de la computadora enfoca su título.

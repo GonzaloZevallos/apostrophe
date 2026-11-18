@@ -52,7 +52,7 @@ Criterios de éxito:
 ### Home y las demás pantallas mientras no terminó
 
 - **Home no muestra nada del Onboarding**: ni avance, ni paso que falta, ni "Start with your products". Un Business a mitad de camino ve el Panel normal con sus estados vacíos de siempre, sin texto de configuración (results.md).
-- **Sin reglas laterales propias**: "+ New sale" y "Send catalog" se comportan mientras corre el Onboarding como para cualquier Business. Lo que falta lo dicen el propio "<product> has no price for that date" de New sale antes de guardar y el estado vacío propio de la pantalla del Catalog. Las reglas laterales de "+ New sale" y "Send catalog" para un Business que existía antes del Onboarding (navigation.md) no son del Onboarding.
+- **Sin reglas laterales propias**: el + de la barra, el "+ New sale" de la barra lateral y "Send catalog" se comportan mientras corre el Onboarding como para cualquier Business. Lo que falta lo dicen el propio "<product> has no price for that date" de New sale antes de guardar y el estado vacío propio de la pantalla del Catalog. Las reglas laterales del "+ New sale" de la barra lateral y de "Send catalog" para un Business que existía antes del Onboarding (navigation.md) no son del Onboarding.
 - **El Onboarding no arma nada en Home** y no lee ni escribe el estado de primer uso de `/first-run` más allá de su propio fin.
 
 ### Entrada y cómo se vuelve
@@ -64,7 +64,7 @@ Criterios de éxito:
 
 ### Las pantallas
 
-- **Tipo**: una pantalla completa del tipo formulario o Sheet (navigation.md): sin barra ni barra lateral, sin "+ New sale". Una sola columna centrada, del ancho de un celular, en todo viewport, sin disposición propia para la computadora.
+- **Tipo**: una pantalla completa del tipo formulario o Sheet (navigation.md): sin barra, sin el + y sin barra lateral. Una sola columna centrada, del ancho de un celular, en todo viewport, sin disposición propia para la computadora.
 - **Cada paso muestra**:
   - un título corto y una oración sobre por qué importa;
   - sus campos y una acción principal;
@@ -228,7 +228,7 @@ No hay telemetría.
   - el Business de un User que se sumó y un Business preexistente nunca lo ven;
   - los pasos pasados recordados nunca hacen que la Spreadsheet import rechace.
 - **Home limpio (criterio 8)**, tests del front en celular y computadora: Home no muestra ningún aviso del Onboarding ni "Start with your products" para un Business sin empezar, a mitad de camino, con todo hecho o pasado sin "Done", ni terminado; ninguna pantalla fuera del Onboarding enlaza a `/onboarding`; nada bajo `web/src`, `web/e2e` ni `tests` nombra `OnboardingNotice`.
-- **Marco**: "+ New sale" y "Send catalog" se comportan como para cualquier Business mientras corre; el Onboarding no tiene barra ni "+ New sale"; New sale abierta desde "Done" vuelve a Home.
+- **Marco**: el + de la barra, el "+ New sale" de la barra lateral y "Send catalog" se comportan como para cualquier Business mientras corre; el Onboarding no tiene barra ni +; New sale abierta desde "Done" vuelve a Home.
 - **Ninguna palabra que elegir (criterio 7)**: tests del front muestran que ningún paso ni "Done" muestra "What you sell", ningún campo de Unit ni la palabra "variety"; el barrido de palabras de varieties.md cubre los textos del Onboarding.
 - **Aislamiento**: las rutas están en el barrido de aislamiento y en el test de rutas protegidas; la Business removal deja 0 filas del estado y conteo exportado = conteo borrado.
 - **Diseño (criterio 5)**: cada pantalla en `screens.json`, `compare.sh` antes y después, y una pasada a ojo en celular y computadora en los dos temas; el marco del paso y el paso 1 coinciden con `OnboardingVariedad` (el paso del Product) y `OnboardingCategorias` (el paso de las Expense categories). El paso de precio del paso 1 está registrado en `screens.json` y capturado antes y después de que le llegue el "$" (varieties.md).
@@ -254,7 +254,7 @@ No hay telemetría.
 - Cualquier aviso, insignia, recordatorio o link hacia el Onboarding en Home, Settings, More o cualquier otra pantalla; un mensaje a los Users existentes de que el aviso de Home se fue.
 - "Finish for now" como segunda salida.
 - Ofrecerlo a Businesses importados, de un User que se sumó o preexistentes.
-- Las reglas laterales de "+ New sale" y "Send catalog" para Businesses preexistentes (navigation.md).
+- Las reglas laterales del "+ New sale" de la barra lateral y de "Send catalog" para Businesses preexistentes (navigation.md).
 - Quitar `/onboarding-progress` o `/first-run` del backend: decisión aparte.
 - Terminar el Onboarding desde afuera, sin llegar a "Done".
 - Publicar el Catalog desde el Onboarding.

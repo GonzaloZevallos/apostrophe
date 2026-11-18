@@ -19,7 +19,7 @@ Qué campos de precio muestra y guarda una **Price entry** sigue los **Pricing s
 
 Este afina el job de arriba para el celular y la computadora (en la computadora, la página del Product queda detrás del formulario); no es un job nuevo. Su situación secundaria es el paso 1 del **Onboarding**, que comparte los campos de precio (onboarding.md). Antes, la computadora abría el formulario de precio como una página propia, los montos no llevaban "$" y la fecha era un campo de fecha nativo.
 
-**Cuando** cambio un mensaje o el marco de una pantalla, **quiero** que cada mensaje compartido viva en un solo lugar y que la regla del marco se pruebe con un test de lo que muestra la pantalla, **para** no arreglar nunca un mensaje en una pantalla y dejarlo viejo en otra, y no publicar nunca sin notarlo una tarjeta que muestre "+ New sale".
+**Cuando** cambio un mensaje o el marco de una pantalla, **quiero** que cada mensaje compartido viva en un solo lugar y que la regla del marco se pruebe con un test de lo que muestra la pantalla, **para** no arreglar nunca un mensaje en una pantalla y dejarlo viejo en otra, y no publicar nunca sin notarlo una tarjeta que muestre un botón flotante de New sale, que ya no existe.
 
 Su protagonista es quien mantiene la app, o quien revisa en su nombre, al estilo del job del mantenedor de accounts.md; quien vende se ve afectado solo de forma indirecta. Lo sirven acá la única fuente de "Check the grams entered" y "Price saved", y el test del marco que pide la métrica del marco de navigation.md. No cambia ningún comportamiento de la app.
 
@@ -292,7 +292,7 @@ Criterios de éxito:
 ### En pantalla: Archived
 
 - **Una tarjeta** (navigation.md) en `/varieties/archived`: la barra o la barra lateral y
-  "‹ Products", sin "+ New sale".
+  "‹ Products", con el + de la barra en el celular.
 - Lista cada Archived product por nombre. Cada fila marca "Archived" como un badge
   neutro (una palabra, sin que ningún color lleve el estado, en los dos temas) y "Hidden", en su
   propio estilo de texto al lado, cuando el Product está oculto, así quien vende sabe qué va a traer
@@ -305,8 +305,7 @@ Criterios de éxito:
 
 ### En pantalla: la página de un Product (`VariedadDetalle`)
 
-- **Un detalle** (navigation.md): la barra o la barra lateral y "‹ Products", sin
-  "+ New sale".
+- **Un detalle** (navigation.md): la barra con su + en el celular, o la barra lateral en la computadora, y "‹ Products".
 - **La línea de resumen** arriba: gramos, estado, Days left y el List price de hoy (p. ej.
   "64 g · ok · 21 days · $ 11.000 x g"), con "Hidden" cuando está oculto.
 - **Tres acciones**: "+ Entry" (el formulario de Stock entry con este Product elegido, y
@@ -392,7 +391,7 @@ Criterios de éxito:
   - para eliminar un Archived product sin historial, quien vende primero lo restaura y después
     lo elimina. No hay un segundo camino.
 - **Las listas "See all"** son tarjetas (navigation.md): la barra o la barra lateral y "‹ <product>",
-  sin "+ New sale"; volver sin historial de navegación lleva a la página del Product. El historial completo
+  con el + de la barra en el celular; volver sin historial de navegación lleva a la página del Product. El historial completo
   de precios sigue la misma regla de interruptores que la sección Prices.
 - **Renombrar** el Product se hace acá.
 - **Los formularios** que se abren desde acá (New price, + Entry, Take from stock, renombrar, el aviso de Stock bajo, los
@@ -425,7 +424,7 @@ Criterios de éxito:
 
 ### En pantalla: el formulario de Price entry ("New price")
 
-- **Tipo**: un formulario (navigation.md) en los dos dispositivos: sin barra y sin "+ New sale"; "Close"; salir con algo tipeado pregunta antes de descartar, y un formulario sin tocar se cierra de inmediato. Volver sin historial de navegación lleva a la página del Product. Solo difiere cómo se dibuja en la computadora.
+- **Tipo**: un formulario (navigation.md) en los dos dispositivos: sin barra y sin el +; "Close"; salir con algo tipeado pregunta antes de descartar, y un formulario sin tocar se cierra de inmediato. Volver sin historial de navegación lleva a la página del Product. Solo difiere cómo se dibuja en la computadora.
 - **Campos**:
   - la fecha de vigencia y el List price;
   - el Bulk price y el Bulk minimum solo mientras Bulk price está activado, y "VIP price" solo mientras Customer types está activado y el Business tiene su VIP type (`GET /api/customer-types` lista un tipo con `is_vip`), cada uno opcional. Sin VIP type el campo no está, sin ningún lugar vacío; su etiqueta, su lugar, su línea de ayuda y su rechazo son los de siempre;
@@ -615,7 +614,7 @@ Criterios de éxito:
 - **Modal (criterio 16)**: tests del front a través de las rutas reales muestran el modal en un viewport de computadora y una Sheet a pantalla completa en el celular, un link directo que dibuja el modal sobre su Product, la lista de atrás inerte, y los flujos de cerrar, guardar ("Price saved", la Price entry nueva en Prices) y descartar. Un test de cambio de viewport (de celular a computadora y de vuelta) conserva lo tipeado (GH-319).
 - **Sheets en un Product (GH-319)**: tests del front muestran el foco en el primer campo y exactamente un "Close" en New product y en las Sheets de renombre, de aviso de Stock bajo y de Catalog attributes; una dirección directa a New product la muestra sobre Products; una corrida e2e muestra la acción de la Sheet de renombre dentro de `--inset-abajo` del borde inferior de la Sheet.
 - **Una fuente (criterio 18)**: un test muestra "Check the grams entered" y "Price saved" definidos una sola vez cada uno, y el texto que se dibuja en cada pantalla que los muestra sin cambios.
-- **Marco probado por comportamiento** (navigation.md, criterio 5): un test del Shell muestra "+ New sale" en un Tab root y ausente bajo el marco de tarjeta.
+- **Marco probado por comportamiento** (navigation.md, criterio 5): un test del Shell muestra el + de la barra en un Tab root, en una tarjeta y en un detalle, y ausente en un formulario.
 - **Sin regresiones (criterios 16–18)**: las suites existentes pasan; los únicos tests editados son los que encontraban el input de fecha nativo o la disposición de la página, cada uno listado en el PR; el guard de contraste (ADR-0029) pasa sin cambiar ningún token.
 - **Una sola palabra (criterio 22)**: un barrido permanente, 100% en verde y sin depender del calendario ni del orden de los tests:
   - en vitest (`web/src/copy/productWord.test.ts`), cada valor del Copy module, en cada Language con textos y en el **Test locale**, y cada nombre accesible no contiene "variety", "varieties", "variedad" ni "variedades", sin importar mayúsculas; no se barren claves, ids del registro ni rutas;

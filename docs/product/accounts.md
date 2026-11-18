@@ -161,7 +161,7 @@ Criterios de éxito, Sign in con el nuevo estilo y "Forgot your password?" (GH-5
 Criterios de éxito, la app instalada:
 
 33. **Nada bajo las áreas del sistema.**
-    - En un teléfono con la app instalada, con notch y barra de inicio, en vertical, el contenido de cada pantalla se ve entero y se puede tocar: la barra de pestañas, la cabecera, "+ New sale", las **Sheets** y los toasts incluidos.
+    - En un teléfono con la app instalada, con notch y barra de inicio, en vertical, el contenido de cada pantalla se ve entero y se puede tocar: la barra de pestañas con su +, la cabecera, las **Sheets** y los toasts incluidos.
     - La altura de una pantalla sigue a la pantalla visible, así que nada salta ni se corta cuando aparecen o desaparecen las barras propias del navegador.
     - Con el teclado abierto, el campo con foco queda a la vista.
 34. **La barra de estado es del color de la app.**
@@ -456,7 +456,7 @@ Cómo la app llena la pantalla de un teléfono y responde al toque una vez insta
   - no hay ningún par de metas con `prefers-color-scheme`: la configuración del sistema llega a la página solo a través del módulo del tema;
   - solo Android lo sigue en vivo; iOS mantiene la franja clara `default` en ambos temas.
 - **Insets**: cuatro tokens, `--inset-arriba`, `--inset-abajo`, `--inset-izquierda` y `--inset-derecha`, armados a partir de `env(safe-area-inset-*)`.
-  - Los de arriba y abajo los usan la barra, la cabecera, el "+ New sale" fijo, las Sheets y los toasts.
+  - Los de arriba y abajo los usan la barra, la cabecera, el + de la barra, las Sheets y los toasts.
   - Los de izquierda y derecha mantienen el contenido, la barra, las Sheets y los toasts lejos de un recorte lateral, así que la horizontal es segura pero no está diseñada.
 - **Altura**: toda altura atada a la pantalla usa `dvh`, `.pantalla`, `.disposicion` y las Sheets incluidas.
 - **Gestos y toque**:
@@ -466,7 +466,7 @@ Cómo la app llena la pantalla de un teléfono y responde al toque una vez insta
   - `.boton*`, las filas y los ítems de la barra reciben un estado `:active` armado con tokens, en ambos temas.
 - **Teclado**: en iOS y Android, cuando se abre el teclado, la página y cada Sheet mantienen a la vista el campo con foco y se pueden desplazar, así que "Save" o "Record payment" se alcanzan desplazándose.
   - No se promete una acción de guardar fija sobre el teclado; esa es una decisión propia de cada pantalla.
-  - La barra de pestañas y "+ New sale" no necesitan quedar sobre el teclado, porque los formularios y las Sheets no los muestran (navigation.md).
+  - La barra de pestañas y su + no necesitan quedar sobre el teclado, porque los formularios y las Sheets no los muestran (navigation.md).
 - **Manifest**:
   - `id` `"/"` (nunca cambia una vez publicado), `scope` `"/"`, `lang` `"en"`, `display` `"standalone"`;
   - `theme_color` y `background_color` con el `--papel` claro, y sin `orientation`;
@@ -641,7 +641,7 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo renovado a partir del 
   - manifest, test rápido: `id: "/"`, `scope: "/"`, `lang: "en"`, `display: "standalone"`, `theme_color` y `background_color` iguales a `--papel`, sin `orientation`; íconos 192 y 512 `any` y un 512 `maskable` presentes;
   - instalabilidad: el manifest sigue pasando el control de instalabilidad del navegador en `localhost` con sus campos nuevos;
   - barra de estado, test del front que maneja `data-tema` directamente: `theme-color` es el `--papel` claro sin atributo, el token de papel oscuro con `oscuro`, y claro otra vez una vez que se quita el atributo (la lectura del sistema llega al atributo solo a través del módulo del tema);
-  - controles estáticos: no queda ningún `vh` atado a la pantalla en `app.css` (en su lugar `dvh`); los cuatro tokens de inset existen, y la barra, la cabecera, "+ New sale", las Sheets y los toasts los usan; ningún valor de token existente cambió salvo la paleta Yerba;
+  - controles estáticos: no queda ningún `vh` atado a la pantalla en `app.css` (en su lugar `dvh`); los cuatro tokens de inset existen, y la barra con su +, la cabecera, las Sheets y los toasts los usan; ningún valor de token existente cambió salvo la paleta Yerba;
   - regresión: las suites de cuentas, Navigation y avisos pasan sin cambios; la barra entra en 320 px con el texto al 130 %; el estado presionado usa solo tokens, en ambos temas;
   - a ojo, en vertical, en un iPhone real instalado por la red de casa y en un teléfono Android real en la instalación publicada:
     - el criterio 33, con New sale, Record payment y el formulario de Expense abiertos con el teclado;

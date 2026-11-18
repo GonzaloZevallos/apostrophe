@@ -28,7 +28,7 @@
 
 **Cuando** doy de alta un cliente (desde Customers, en medio de una venta o con la **Spreadsheet import** única) y no tengo su **Phone number**, **quiero** guardarlo igual con su nombre y agregar el número más adelante si algún día lo consigo, **para** registrar cada venta y cada deuda a nombre de la persona que de verdad debe, sin inventar un número ni dejar a esa persona fuera de la app. (Acá lo sirve "New customer" de Pick a customer; definido en `customers.md`).
 
-**Cuando** manejo mi negocio desde el teléfono entre pedido y pedido o en medio del chat con un cliente, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, **para** volver con el cliente en lugar de buscar entre menús. (La historia de navegación, navigation.md: acá la sirve "+ New sale", a un toque desde cada **Tab root**).
+**Cuando** manejo mi negocio desde el teléfono entre pedido y pedido o en medio del chat con un cliente, varias veces por día, **quiero** que la app esté ordenada según lo que hago de verdad y con qué frecuencia, **para** volver con el cliente en lugar de buscar entre menús. (La historia de navegación, navigation.md: acá la sirve el + de la barra del celular y, en la computadora, el "+ New sale" de la barra lateral, a un toque desde cada **Tab root**; navigation.md, "La barra del celular y su +").
 
 **Cuando** estoy en medio de una venta en el teléfono y me acuerdo de una Expense (por ejemplo, packaging o envío y transporte; lo que se compra para el Stock es una **Purchase**, nunca una Expense), **quiero** registrarla desde New sale y volver a mi venta como la dejé, **para** que las cuentas queden bien sin perder el pedido ni hacer esperar al cliente. (Parte 3 de GH-725, compartido con expenses.md, que es la referencia: acá lo sirven la fila "Other things to record" de New sale en el teléfono con su tile "Expense", y que cerrar la Expense deje la venta como estaba. "Como la dejé" vale solo dentro de la misma sesión: la venta en curso vive en memoria, sin borradores, y una recarga la pierde. La parte 4 de GH-725 recorre el flujo en el **Mobile check** y lo escribe acá, para que no se rompa en silencio).
 
@@ -117,7 +117,7 @@ Criterios de éxito, producto de una línea (Selector, parte 4 de GH-581):
 
 28. **Buscar y tocar.** Con 12 productos o más, la vendedora elige el producto de una línea con una búsqueda y un toque. Nada en la línea usa un `<select>` nativo ni un grupo de radio para el producto.
 29. **El precio sigue.** Después de elegir, la vista previa de la línea sigue el Current price de ese producto, como hasta ahora.
-30. **La venta nunca se pierde por la lista.** Con la lista abierta, volver o "Close" cierran solo la lista y la venta queda intacta. "Discard the sale?" aparece solo ante un volver desde el propio formulario con datos sin guardar. Vale desde "+ New sale" y desde New sale abierto en la ficha de un cliente.
+30. **La venta nunca se pierde por la lista.** Con la lista abierta, volver o "Close" cierran solo la lista y la venta queda intacta. "Discard the sale?" aparece solo ante un volver desde el propio formulario con datos sin guardar. Vale desde el + de la barra del celular, desde el "+ New sale" de la barra lateral y desde New sale abierto en la ficha de un cliente.
 31. **Un producto que ya no se ofrece.** En una línea existente cuyo producto ya no se ofrece (archivado), el campo muestra su nombre con la marca "no longer available", y el rechazo de esa línea queda como hasta ahora.
 32. **Nunca vacío mientras carga.** Mientras cargan los productos, el campo nunca parece vacío ni muestra el texto de conjunto vacío.
 
@@ -284,10 +284,10 @@ Criterios de éxito, Sale number:
 ### En pantalla: New sale (`NuevaVenta`, `NuevaVentaCompu`)
 
 - **Cómo se abre el formulario**:
-  - desde el botón fijo "+ New sale", en cada Tab root (navigation.md);
+  - desde el + de la barra del celular o el "+ New sale" de la barra lateral de la computadora, en cada Tab root, tarjeta y detalle (navigation.md, "La barra del celular y su +"; el botón flotante ya no existe);
   - o desde "New sale to <name>" en la ficha de un cliente, con ese cliente ya elegido.
-  - Sin ningún producto con precio hoy, "+ New sale" sigue visible y dice con palabras qué falta (navigation.md).
-- **Un formulario** (navigation.md): sin barra y sin "+ New sale"; se cierra con "Close".
+  - Sin ningún producto con precio hoy, el formulario lo dice en el campo de producto, con la pista de los criterios 44 a 50. El + del celular no lleva ninguna línea de "qué falta" (navigation.md); en la computadora la dice el "+ New sale" de la barra lateral.
+- **Un formulario** (navigation.md): sin barra, sin el + y sin barra lateral; se cierra con "Close".
 - **Campos**:
   - la fecha: hoy por defecto, mostrada como "Today 02/10", nunca un día posterior;
   - el cliente;
@@ -394,7 +394,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
 - **Objetivos táctiles**: las opciones Paid · Owing, "Add another product" y los botones de diálogo miden al menos 44 px de alto; todo campo tiene al menos 16 px. La lista de productos de una línea y la de medios siguen las medidas del Selector (filas y búsqueda de 44 px, texto de 16 px).
 - **Teclados**: gramos `inputmode="decimal"`; pesos (envío, Special price) `inputmode="numeric"`; los campos de una línea llevan `enterkeyhint` para que la tecla de acción del teclado avance entre ellos.
 - **Other things to record** (partes 3 y 4 de GH-725; la referencia del formulario de gasto es `expenses.md`):
-  - **La fila y su único tile**: una fila bajo el pie, "Other things to record", con un solo botón, "Expense" (ícono de recibo). Solo en el teléfono. Siempre se ofrece, también en una New sale sin líneas, así que el formulario de gasto queda a 2 toques de cada Tab root ("+ New sale" → "Expense", navigation.md, criterio 1). Mientras el guardado de la venta está en curso, la fila queda `inert` y no hace nada.
+  - **La fila y su único tile**: una fila bajo el pie, "Other things to record", con un solo botón, "Expense" (ícono de recibo). Solo en el teléfono. Siempre se ofrece, también en una New sale sin líneas, así que el formulario de gasto queda a 2 toques de cada Tab root (el + de la barra → "Expense", navigation.md, criterio 1). Mientras el guardado de la venta está en curso, la fila queda `inert` y no hace nada.
   - **El formulario, sobre la venta**: "Expense" abre el formulario de gasto en el lugar, como una Sheet sobre la venta, que sigue montada debajo con todo lo cargado. La Sheet es una entrada del historial sobre New sale (nivel 1; sus propias listas de Selector se abren en el nivel 2). "Close", el Back de la franja y el gesto de volver del sistema son la misma acción: cierran solo la Sheet y vuelven a New sale en un movimiento, sin preguntar "Discard the sale?" por la venta.
   - **La venta en curso vive en memoria**: no hay borradores ni guardado automático. "Como la dejé" vale solo dentro de la misma sesión: una recarga pierde la venta y lo tipeado en el gasto.
   - **La franja "Sale in progress"**: con al menos una línea con producto elegido, la Sheet muestra arriba la franja "Sale in progress · N products · total · Back", donde N cuenta las líneas con producto y el total es el total de la venta tal como lo muestra el pie. Sin ninguna línea con producto, la franja no se muestra. Mientras la venta se vuelve a cotizar (por ejemplo, porque llegan los precios), la franja muestra un estado sin monto en lugar del total, nunca una cifra de relleno, y vuelve a mostrar el total cuando la cotización termina.
@@ -412,7 +412,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
 
 ### En pantalla: Sales (`Sales`, `VentasCompu`)
 
-- **Una Tab root** (navigation.md): la barra o la barra lateral y "+ New sale".
+- **Una Tab root** (navigation.md): la barra con su + en el celular, o la barra lateral y su "+ New sale" en la computadora.
 - **Períodos**: Today · Week · Month · Dates, en hora de Argentina.
   - Week es la semana de lunes a domingo que contiene hoy.
   - Month es el mes calendario actual.
@@ -441,7 +441,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
 
 ### En pantalla: Sale #N (`VentaDetalle`, el detalle de la venta)
 
-- **Un detalle** (navigation.md): la barra o la barra lateral y "‹ Sales", sin "+ New sale".
+- **Un detalle** (navigation.md): la barra con su + en el celular, o la barra lateral en la computadora, y "‹ Sales".
 - **Título**: "Sale #N", del Copy module, en el encabezado del detalle, con "‹ Sales" como camino de vuelta. Sin ceros a la izquierda, sin prefijo y sin separador de miles: la primera venta se lee "Sale #1". Es texto plano que se puede seleccionar y copiar: no es un botón ni una insignia, y el color no lleva su significado. Igual en claro y en oscuro. En la computadora va en el mismo lugar, sin pulido dedicado (Phone first). La palabra "Venta" del dibujo cede ante el Product language (Drawing as guide).
 - **Carga**: mientras carga la venta, muestra el estado de carga compartido (accounts.md, `Estados`), nunca una página en blanco. El título queda vacío: nunca un número de relleno ni "Sale #0".
 - **Muestra**:
@@ -606,7 +606,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **Sin regresiones (criterio 16)**: los tests existentes de ventas y de navegación pasan sin editarlos; la matriz de cotización y "vista previa = guardado" siguen en 0 diferencias; `NuevaVentaCompu` y `VentasCompu` no cambian, salvo el desplegable del Selector en el producto de cada línea (parte 4 de GH-581) y en el medio de pago (parte 5), únicos pasos de elección que esos tests actualizan. Los tests que elegían Cash o Transfer por radio cambian solo sus pasos (Paid, el campo, la opción); sus aserciones quedan, también los `toBeDisabled()`/`toBeEnabled()` de Owing.
 - **Producto de una línea, buscar y tocar (criterio 28)**: un test del front con 12 productos o más (`NuevaVenta.lineSelector.test.tsx`) elige el producto de una línea con la búsqueda y un toque, y no encuentra ningún `<select>` ni `role="radio"` para el producto.
 - **Producto de una línea, el precio sigue (criterio 29)**: después de elegir, el precio por gramo, la insignia de regla y el total de la línea coinciden con el Current price del producto elegido.
-- **Producto de una línea, volver (criterio 30)**: desde "+ New sale" y desde New sale en la ficha de un cliente, volver o "Close" con la lista abierta cierran solo la lista (el historial sube una entrada al abrir y la baja al cerrar), la venta queda intacta y "Discard the sale?" no aparece; elegir en un formulario sin tocar tampoco lo hace aparecer; volver desde el formulario con datos sin guardar sí. Con la lista abierta no aparece Pick a customer, y abrirlo después muestra solo esa hoja.
+- **Producto de una línea, volver (criterio 30)**: desde el + de la barra, desde el "+ New sale" de la barra lateral y desde New sale en la ficha de un cliente, volver o "Close" con la lista abierta cierran solo la lista (el historial sube una entrada al abrir y la baja al cerrar), la venta queda intacta y "Discard the sale?" no aparece; elegir en un formulario sin tocar tampoco lo hace aparecer; volver desde el formulario con datos sin guardar sí. Con la lista abierta no aparece Pick a customer, y abrirlo después muestra solo esa hoja.
 - **Producto de una línea, ya no se ofrece (criterio 31)**: una línea con un producto archivado muestra su nombre con "no longer available" en el campo y su nombre en la fila cerrada, la lista no lo ofrece y el rechazo de esa línea no cambia.
 - **Producto de una línea, carga y conjunto vacío (criterio 32)**: mientras cargan los productos, y con la consulta fallida, el campo tiene `aria-busy`, sin texto, y la lista no se abre; sin productos, la lista abierta muestra "No products yet. Add them in the Products tab." y cerrarla conserva la venta.
 - **Producto de una línea, agregar una línea**: agregar una línea le da el foco a su campo de producto sin abrir la lista.
