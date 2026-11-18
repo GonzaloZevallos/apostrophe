@@ -86,7 +86,7 @@ Criterios de éxito:
 
 ### En pantalla: la sección "Owed to you" de Customers
 
-- **Dónde**: la sección de arriba de Customers (customers.md), sobre todos de la A a la Z. Reemplaza a la antigua pantalla Owed to you, que ya no existe; su ruta vieja redirige a Customers (navigation.md). El título Owed to you de Home abre Customers en esta sección (results.md).
+- **Dónde**: la sección de arriba de Customers (customers.md), sobre todos de la A a la Z. Reemplaza a la antigua pantalla Owed to you, que ya no existe; su ruta vieja responde como una dirección desconocida (navigation.md, Direcciones retiradas). El título Owed to you de Home abre Customers en esta sección (results.md).
 - **Su cabecera**: el Total owed y la cantidad de Sales still owing.
   - La cantidad dice "1 sale owing" cuando es una sola Sale que todavía se debe, y "N sales owing" cuando son dos o más (por ejemplo "4 sales owing"). Es la misma regla de singular y plural que usa el bloque "Owed to you" de Home para la misma cantidad (results.md).
 - **Sus filas**: solo los Customers cuyo Balance es mayor que $0, por Owing since (el más viejo primero), los empates por nombre.

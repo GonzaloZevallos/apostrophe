@@ -9,7 +9,7 @@ Products es la única pantalla de un Product. Su lista y la página de cada Prod
 - su **Stock**, sus **Stock entry**, sus **Stock withdrawal** y su **Low-stock threshold** (`stock.md`);
 - sus **Catalog attributes** (`catalog.md`).
 
-Qué campos de precio muestra y guarda una **Price entry** sigue los **Pricing settings** del Business (pricing-settings.md). Products es una pestaña (navigation.md). Reemplazó a la antigua pestaña Stock, a la vieja pantalla Catalog y a las viejas pantallas de Products (las anteriores a esta pestaña); sus rutas redirigen (navigation.md). También cubre el final de la vida de un Product: un Product sin **Product history** se puede eliminar, y uno con historial se puede archivar y restaurar más adelante, sin que se mueva ninguna cifra pasada.
+Qué campos de precio muestra y guarda una **Price entry** sigue los **Pricing settings** del Business (pricing-settings.md). Products es una pestaña (navigation.md). Reemplazó a la antigua pestaña Stock, a la vieja pantalla Catalog y a las viejas pantallas de Products (las anteriores a esta pestaña); sus rutas responden como una dirección desconocida (navigation.md, Direcciones retiradas). También cubre el final de la vida de un Product: un Product sin **Product history** se puede eliminar, y uno con historial se puede archivar y restaurar más adelante, sin que se mueva ninguna cifra pasada.
 
 ## Jobs
 
@@ -95,8 +95,8 @@ Criterios de éxito:
    necesita más que el celular. Una Stock entry iniciada desde la página de un Product tiene ese Product
    elegido, con "Initial stock" preseleccionado solo cuando no tiene Stock entries.
 8. **Nada perdido, nada inventado**: todo lo que quien vendía podía hacer en las antiguas pantallas Stock,
-   Catalog y Products sigue al alcance; cada ruta vieja redirige
-   de forma permanente; ningún link apunta a una pantalla que no existe.
+   Catalog y Products sigue al alcance; cada ruta vieja responde como una dirección desconocida
+   (navigation.md, Direcciones retiradas); ningún link apunta a una pantalla que no existe.
 9. **Fuera del camino en pocos toques**: desde la propia página de un Product, en celular y computadora, quien
    vende lo saca de toda lista y selector. La app ofrece Delete solo cuando el
    Product no tiene historial, y Archive en el resto de los casos. Nunca ofrece una eliminación que va a ser
@@ -147,7 +147,7 @@ Criterios de éxito:
 - **Product**: un nombre, sin espacios al principio ni al final, con los espacios internos colapsados, de hasta 60 caracteres. Renombrarlo conserva sus precios. Los Products se listan por nombre.
 - **La palabra en pantalla**: "Product" / "Products" (y sus compuestos: Product history, Archived product, Hidden product, la pestaña Products), a través del Copy module, igual para todo Business sin importar su **Stored language** ni su historia. No hay ninguna configuración de la palabra, ni en Settings ni en el Onboarding (docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
   - Los textos visibles de esta capacidad dicen, entre otros: "Products", "New product", "Delete product", "Archive product", "N products · all ok", "Back to Products", "‹ Products", y los toasts "Product saved", "Product deleted", "Product archived" y "Product restored".
-  - Lo que no cambia: los datos de quien vende (nombres, Notes, Catalog header and footer guardados, Expense categories), las rutas del front `/varieties/*`, las redirecciones heredadas, los ids del registro de diseño y los identificadores del código (ADR-0061). Las demás palabras propias de un solo tipo de negocio (gramos, "g", **Indica share**, **Aroma**, 🌿) quedan para #420 y #390, así que una pantalla puede leer "Product" junto a "g" o "% indica" por ahora; ningún texto nuevo de esta capacidad agrega una.
+  - Lo que no cambia: los datos de quien vende (nombres, Notes, Catalog header and footer guardados, Expense categories), las rutas del front `/varieties/*`, los ids del registro de diseño y los identificadores del código (ADR-0061). Las demás palabras propias de un solo tipo de negocio (gramos, "g", **Indica share**, **Aroma**, 🌿) quedan para #420 y #390, así que una pantalla puede leer "Product" junto a "g" o "% indica" por ahora; ningún texto nuevo de esta capacidad agrega una.
 - **Price entry**: una fecha de vigencia y un List price por gramo en pesos enteros. Opcionalmente, también tiene:
   - un Bulk price por gramo con su Bulk minimum en gramos (hasta dos decimales). Los dos van juntos o ninguno, y el Bulk price es menor que el List price;
   - un VIP price por gramo, mayor que cero, con hasta los decimales del **Money format** del Business, y menor que el List price de esa Price entry. Es independiente del Bulk price y del Bulk minimum (una Price entry puede tener cualquiera de los dos solo) y nunca se compara con el Bulk price.
@@ -246,7 +246,7 @@ Criterios de éxito:
   ADR-0033 rigen las rutas compartidas con la API).
 - Las rutas viejas (`/variedades`, `/mi-stock`, `/mi-stock/nueva-entrada`,
   `/mi-stock/entradas/{id}`, `/catalogo` y toda otra ruta de las antiguas Stock, Products o
-  Catalog) redirigen de forma permanente (navigation.md).
+  Catalog) responden como una dirección desconocida (navigation.md, Direcciones retiradas).
 
 ### En pantalla: la lista de Products (`Products`)
 
@@ -527,8 +527,8 @@ Criterios de éxito:
   por nombre; sin Products el panel derecho queda sin ninguna cifra; archivar o
   eliminar el Product seleccionado selecciona el siguiente, si no el anterior, si no el estado
   vacío; en el celular la lista nunca abre un Product.
-- **Nada perdido (criterio 8)**: cada ruta vieja de Stock, Products y Catalog responde una
-  redirección permanente, probada una por una, `/mi-stock/entradas/{id}` incluida; cada acción
+- **Nada perdido (criterio 8)**: cada ruta vieja de Stock, Products y Catalog responde como una
+  dirección desconocida (navigation.md, Direcciones retiradas, criterio 52), `/mi-stock/entradas/{id}` incluida; cada acción
   vieja tiene un lugar en las pantallas nuevas; ningún link apunta a una pantalla que falta; recargar
   `/varieties/{low}/entries`, `/varieties/entries/{id}` y `/varieties/archived`
   abre la pantalla.
