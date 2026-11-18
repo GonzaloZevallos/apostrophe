@@ -374,7 +374,7 @@ Criterios de éxito, el test de seguridad de la cookie (seguimiento de GH-130):
 - **Cómo se sirve**: el backend sirve el front compilado desde `web/dist` en el mismo origen y puerto de la API.
   - Las rutas del front nunca chocan con las de la API.
   - No se puede llegar a nada fuera de `web/dist`.
-  - Las rutas del front son archivos estáticos públicos, fuera de la lista de rutas de la API. Sus rutas están en inglés, con redirecciones desde las viejas en español (navigation.md).
+  - Las rutas del front son archivos estáticos públicos, fuera de la lista de rutas de la API. Sus rutas están en inglés, y las viejas en español responden como una dirección desconocida (navigation.md, Direcciones retiradas).
 - **Instalable, sin modo offline**:
   - un manifest con nombre, colores e íconos para Android e iOS (sus campos están en "La app instalada", más abajo);
   - un service worker que no guarda nada en caché.
@@ -514,7 +514,7 @@ Este archivo solo dice dónde se aplica y cómo se mantiene. No repite los requi
 
 ### En Settings: Business, Users, Appearance, Your account
 
-Estos grupos de Settings (navigation.md) reemplazan a la antigua pantalla Business, que ya no existe; `/negocio` redirige a Settings. Cada uno es su propia subpantalla, un formulario: "Close", y una confirmación al salir con cambios sin guardar; uno sin tocar se cierra al instante. (Prices, entre Users e Integrations, es pricing-settings.md.)
+Estos grupos de Settings (navigation.md) reemplazan a la antigua pantalla Business, que ya no existe; `/negocio` responde como una dirección desconocida (navigation.md, Direcciones retiradas). Cada uno es su propia subpantalla, un formulario: "Close", y una confirmación al salir con cambios sin guardar; uno sin tocar se cierra al instante. (Prices, entre Users e Integrations, es pricing-settings.md.)
 
 - **Business**: renombrar el Business, con un solo Save. Toast "Saved"; rechazos en línea, conservando lo tipeado.
 - **Users**:

@@ -117,7 +117,7 @@ Criterios de éxito:
 ### Rutas
 
 - Las rutas que la app muestra, enlaza o a las que navega están en inglés, `scripts/design/screens.json` incluido.
-- "Ninguna ruta en español" nunca se aplica a las redirecciones heredadas.
+- Los paths viejos en español no son rutas de la app: responden como una dirección desconocida (navigation.md, Direcciones retiradas).
 
 ### Vocabulario
 
