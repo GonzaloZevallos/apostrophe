@@ -254,9 +254,9 @@ describe('walked_as: a row whose screen a walked state proves', () => {
 })
 
 describe('same_walk_as: a row that repeats an earlier row at another width', () => {
-  const home = entry({ screen: 'Home', route: '/', path: '/' })
+  const home = entry({ screen: 'Home', route: 'r', path: 'p' })
   const twin = (extra: Record<string, unknown> = {}) =>
-    entry({ screen: 'Twin', route: '/', path: '/', viewport: [375, 844], same_walk_as: 'Home', ...extra })
+    entry({ screen: 'Twin', route: 'r', path: 'p', viewport: [375, 844], same_walk_as: 'Home', ...extra })
 
   test('is skipped with its named reason and the row it repeats stays walked', () => {
     const parsed = parseRegistry({ screens: [home, twin()] })
@@ -270,7 +270,7 @@ describe('same_walk_as: a row that repeats an earlier row at another width', () 
   })
 
   test('refuses a row that does not repeat the walk: another path or other steps', () => {
-    expect(() => parseRegistry({ screens: [home, twin({ path: '/sales' })] })).toThrow(/does not have the same route, path and steps/)
+    expect(() => parseRegistry({ screens: [home, twin({ path: 'q' })] })).toThrow(/does not have the same route, path and steps/)
     expect(() => parseRegistry({ screens: [home, twin({ steps: [{ click: 'Week' }] })] })).toThrow(/same route, path and steps/)
   })
 
