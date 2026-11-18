@@ -3673,8 +3673,8 @@ a.ajustes-tema__opcion {
   }
 
   /* `.pantalla` asks for `min-height: 100dvh`. On a page taller than its viewport that grows
-     with the viewport and pushes the "Nueva venta" button and the bar below it down, so the
-     page changes when only its height does. Analysis fills the column's leftover room
+     with the viewport and pushes what sits under the content down (the bar and its + on the
+     phone), so the page changes when only its height does. Analysis fills the column's leftover room
      instead, which keeps the bar at the bottom of a short page and moves nothing on a tall one. */
   .analisis.pantalla {
     min-height: 0;
@@ -3682,9 +3682,9 @@ a.ajustes-tema__opcion {
   }
 
   /* The screen is as tall as its content and no more: with the base `min-height: 100dvh` a page
-     taller than the viewport grows by the button and bar below it when the viewport grows to
-     fit it. `.columna-principal` still fills the screen, so a short page keeps its bar at the
-     bottom. */
+     taller than the viewport grows by what sits under the content (the bar and its +) when the
+     viewport grows to fit it. `.columna-principal` still fills the screen, so a short page keeps
+     its bar at the bottom. */
   .analisis.pantalla {
     min-height: 0;
     flex: 1 0 auto;

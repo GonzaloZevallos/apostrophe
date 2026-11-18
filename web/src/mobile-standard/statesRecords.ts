@@ -65,12 +65,12 @@ const PAYMENT_METHODS_BODY = [
 
 const PAYMENT_METHODS_READ = { path: /^\/api\/payment-methods$/, status: 200, body: PAYMENT_METHODS_BODY }
 
-const SAMPLE_TYPES = [
+export const SAMPLE_TYPES = [
   { id: 1, name: 'Friends', icon: 'heart', is_vip: false },
   { id: 2, name: 'Wholesale', icon: 'star', is_vip: true },
 ]
 
-const SAMPLE_TYPED_CUSTOMER = {
+export const SAMPLE_TYPED_CUSTOMER = {
   id: 1,
   name: 'Ana Pérez',
   phone: null,

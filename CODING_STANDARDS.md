@@ -136,11 +136,10 @@ already decides a point, this section cites it and does not restate it. An area'
 doc may record a deliberate exception; without one, this standard wins over an area issue.
 
 1. **Chrome.**
-   - Checked: the bottom bar, the header and "+ Nueva venta" are inside the viewport at load
+   - Checked: the bottom bar with its +, and the header, are inside the viewport at load
      and after scrolling to the middle (`chrome-at-load`, `chrome-mid-scroll`). Which kind
-     carries which chrome: a tab root has the bar and "+ Nueva venta"; a card or detail has
-     the bar and no "+ Nueva venta"; a form or a getting-in screen has neither; the header is
-     there where the screen has one. A sheet or confirmation is judged by the screen beneath
+     carries which chrome: a tab root, a card or a detail has the bar with its +; a form or a
+     getting-in screen has neither; the header is there where the screen has one. A sheet or confirmation is judged by the screen beneath
      it, and covered chrome (inside `[inert]` or `[aria-hidden="true"]`, or beneath an open
      modal dialog) passes; forbidden chrome that is present and uncovered is reported.
    - Review: the bar and header are fixed; content is padded so nothing sits behind them.

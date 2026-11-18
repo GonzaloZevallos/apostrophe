@@ -335,7 +335,13 @@
     { "screen": "CampoAplicarHermanas", "route": null, "path": "/settings/products/categories/1/fields/apply-to-siblings" },
     { "screen": "CampoAplicarHermanasOscuro", "route": null, "path": "/settings/products/categories/1/fields/apply-to-siblings", "tema": "oscuro" },
     { "screen": "CamposCopiar", "route": null, "path": "/settings/products/categories/1/fields/copy" },
-    { "screen": "CamposCopiarOscuro", "route": null, "path": "/settings/products/categories/1/fields/copy", "tema": "oscuro" }
+    { "screen": "CamposCopiarOscuro", "route": null, "path": "/settings/products/categories/1/fields/copy", "tema": "oscuro" },
+    { "screen": "BarraInferior320", "design_viewport": [1360, 844], "design": "Componentes", "section": "BarraInferior · RielLateral · Aviso · Confirmacion", "route": "/", "path": "/", "viewport": [320, 844] },
+    { "screen": "BarraInferior320Oscuro", "design_viewport": [1360, 844], "design": "Componentes", "section": "BarraInferior · RielLateral · Aviso · Confirmacion", "route": "/", "path": "/", "viewport": [320, 844], "tema": "oscuro" },
+    { "screen": "BarraInferior375", "design_viewport": [1360, 844], "design": "Componentes", "section": "BarraInferior · RielLateral · Aviso · Confirmacion", "route": "/", "path": "/", "viewport": [375, 844] },
+    { "screen": "BarraInferior375Oscuro", "design_viewport": [1360, 844], "design": "Componentes", "section": "BarraInferior · RielLateral · Aviso · Confirmacion", "route": "/", "path": "/", "viewport": [375, 844], "tema": "oscuro" },
+    { "screen": "BarraInferior430", "design_viewport": [1360, 844], "design": "Componentes", "section": "BarraInferior · RielLateral · Aviso · Confirmacion", "route": "/", "path": "/", "viewport": [430, 844] },
+    { "screen": "BarraInferior430Oscuro", "design_viewport": [1360, 844], "design": "Componentes", "section": "BarraInferior · RielLateral · Aviso · Confirmacion", "route": "/", "path": "/", "viewport": [430, 844], "tema": "oscuro" }
   ],
   "registry": [
     { "path": "/customers/new", "kind": "form", "parent": "/customers" },
