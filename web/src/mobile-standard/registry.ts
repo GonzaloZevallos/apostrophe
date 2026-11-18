@@ -20,6 +20,10 @@ export function skipWalkedAs(state: string): string {
 }
 /** The computer breakpoint, in CSS px (design README, accounts.md). */
 export const COMPUTER_MIN_WIDTH = 900
+/** An earlier row of the registry already is this walk: same route, path and steps, so the cells visit it once. */
+export function skipSameWalkAs(screen: string): string {
+  return `same walk as ${screen}: every cell already visits it at every phone width`
+}
 
 /** One step of a registry entry, as `scripts/design/comparisons.mjs` runs it. */
 export type RegistryStep =
@@ -40,6 +44,8 @@ export interface RegistryScreen {
   steps: readonly RegistryStep[]
   /** The walked state (`STATE_NAMES`) that proves this row's screen, or `null`. */
   walkedAs: string | null
+  /** The earlier row whose walk this one repeats (a capture row at another width), or `null`. */
+  sameWalkAs: string | null
 }
 
 /**
@@ -203,6 +209,7 @@ export function parseRegistry(
   const screens = asRecord(raw, 'registry')['screens']
   if (!Array.isArray(screens)) throw new Error('registry has no screens list')
   const seen = new Set<string>(stateNames)
+  const rowsByName = new Map<string, Record<string, unknown>>()
   if (seen.size !== stateNames.length) throw new Error('a state name is a repeat')
   return screens.map((item: unknown, index): RegistryScreen => {
     const row = asRecord(item, `screen #${index}`)
@@ -220,6 +227,19 @@ export function parseRegistry(
     if (typeof walkedAs === 'string' && !stateNames.includes(walkedAs)) {
       throw new Error(`${name}: walked_as "${walkedAs}" is not a walked state`)
     }
+    const sameWalkAs = row['same_walk_as']
+    if (sameWalkAs !== undefined && typeof sameWalkAs !== 'string') throw new Error(`${name}: same_walk_as is not text`)
+    if (typeof sameWalkAs === 'string') {
+      const earlier = rowsByName.get(sameWalkAs)
+      if (earlier === undefined) throw new Error(`${name}: same_walk_as "${sameWalkAs}" is not an earlier screen`)
+      const sameRoute = earlier['route'] === route && earlier['path'] === path
+      const sameSteps = JSON.stringify(earlier['steps'] ?? []) === JSON.stringify(row['steps'] ?? [])
+      const sameSession = (earlier['signed_out'] === true) === (row['signed_out'] === true)
+      if (!sameRoute || !sameSteps || !sameSession) {
+        throw new Error(`${name}: same_walk_as "${sameWalkAs}" does not have the same route, path and steps`)
+      }
+    }
+    rowsByName.set(name, row)
     return {
       screen: name,
       route,
@@ -229,6 +249,7 @@ export function parseRegistry(
       theme: typeof theme === 'string' ? theme : null,
       steps: parseSteps(row['steps'], name),
       walkedAs: walkedAs ?? null,
+      sameWalkAs: sameWalkAs ?? null,
     }
   })
 }
@@ -249,6 +270,7 @@ export function resolvePlaceholders(
 function skipReason(screen: RegistryScreen): string | null {
   if (screen.route === null) return SKIP_NO_ROUTE
   if (screen.walkedAs !== null) return skipWalkedAs(screen.walkedAs)
+  if (screen.sameWalkAs !== null) return skipSameWalkAs(screen.sameWalkAs)
   if (screen.theme !== null) return SKIP_THEME_TWIN
   if (screen.viewport !== null && screen.viewport[0] >= COMPUTER_MIN_WIDTH) return SKIP_COMPUTER_VIEWPORT
   return null
