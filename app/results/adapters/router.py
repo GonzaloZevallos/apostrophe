@@ -129,7 +129,9 @@ def get_panel(
     debts: DebtSummaryDep,
     reasons: WithdrawalReasonsDep,
 ) -> PanelOut:
-    panel = read_panel(clock(), BUSINESS_TIMEZONE, stock, sales, payments, expenses, purchases, debts, reasons)
+    panel = read_panel(
+        clock(), BUSINESS_TIMEZONE, stock, sales, payments, expenses, purchases, debts, reasons
+    )
     return PanelOut.of(panel)
 
 
