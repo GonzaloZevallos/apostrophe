@@ -10,17 +10,16 @@ variety's stock is a plain sum of signed grams, by day.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date
 from typing import Literal, assert_never
 
+from app.shared.calendar import DAYS_LEFT_WINDOW, trailing_window
 from app.shared.quantity import Quantity
 from app.stock.domain.draw_source import DrawSource
 from app.stock.domain.lot_order import Draw, Lot
 from app.stock.domain.threshold import Threshold
 
 Status = Literal["no_entries", "sold_out", "low", "ok"]
-
-DAYS_LEFT_WINDOW = 30
 
 
 @dataclass(frozen=True)
@@ -86,7 +85,7 @@ def _days_left(quantity: Quantity, draws: list[Draw], today: date) -> int | None
     correcting the figure, not grams going out. `None` with nothing to pace from."""
     if quantity.hundredths <= 0:
         return None
-    window_start = today - timedelta(days=DAYS_LEFT_WINDOW - 1)
+    window_start = trailing_window(today)[0]
     out_hundredths = sum(
         draw.quantity.hundredths
         for draw in draws
