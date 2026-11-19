@@ -40,6 +40,8 @@ classDiagram
   }
   class sale_bill {
   }
+  class suggest_for_new_sale {
+  }
   class view_sales {
   }
   assign_customer --> errors
@@ -48,6 +50,7 @@ classDiagram
   delete_sale --> ports
   record_sale --> ports
   sale_bill --> ports
+  suggest_for_new_sale --> ports
   view_sales --> errors
   view_sales --> ports
   view_sales --> sale_bill
@@ -75,6 +78,8 @@ classDiagram
   }
   class sql_sales {
   }
+  class sql_suggestions {
+  }
   class tables {
   }
   import_port --> price_book
@@ -85,8 +90,10 @@ classDiagram
   router --> price_book
   router --> schemas
   router --> sql_sales
+  router --> sql_suggestions
   sales_ledger --> tables
   sql_sales --> tables
+  sql_suggestions --> tables
 ```
 
 ## domain
@@ -262,6 +269,10 @@ classDiagram
     balance : int
     still_owed : Mapping~int, int~
   }
+  class LastPaidMethod {
+    is_archived : bool
+    payment_method_id : int
+  }
   class LineCost {
     costed : int #124; None
     pending_quantity : Quantity
@@ -277,6 +288,16 @@ classDiagram
   }
   class MoneyFormatReader {
     current() MoneyFormat
+  }
+  class NewSaleSuggestionIds {
+    last_payment_method_id : int #124; None
+    most_sold_product_ids : list~int~
+    recent_customer_ids : list~int~
+  }
+  class NewSaleSuggestions {
+    last_paid_method() LastPaidMethod #124; None
+    most_sold_product_ids(start: date, end: date, limit: int) list~int~
+    recent_customer_ids(limit: int) list~int~
   }
   class OwingSales {
     settlement_of(customer_id: int) CustomerSettlement
@@ -492,6 +513,11 @@ classDiagram
   class SqlCustomerFacts {
     get(customer_id: int) CustomerFact #124; None
   }
+  class SqlNewSaleSuggestions {
+    last_paid_method() LastPaidMethod #124; None
+    most_sold_product_ids(start: date, end: date, limit: int) list~int~
+    recent_customer_ids(limit: int) list~int~
+  }
   class SqlPriceBook {
     for_variety(variety_id: int, day: date, customer_type_id: int #124; None) VarietyPricing #124; None
   }
@@ -506,6 +532,12 @@ classDiagram
   }
   class SqlSalesLedger {
     all() list~SaleRecord~
+  }
+  class SuggestionsOut {
+    last_payment_method_id : int #124; None
+    most_sold_product_ids : list~int~
+    recent_customer_ids : list~int~
+    of(ids: NewSaleSuggestionIds) 'SuggestionsOut'
   }
   class _FixedSettings {
     current() PricingSettings
