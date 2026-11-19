@@ -1339,6 +1339,32 @@
         "title": "CustomerTypePatchIn",
         "type": "object"
       },
+      "DaySalesOut": {
+        "properties": {
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "sales": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Sales"
+          }
+        },
+        "required": [
+          "day",
+          "sales"
+        ],
+        "title": "DaySalesOut",
+        "type": "object"
+      },
       "DebtorCustomerOut": {
         "properties": {
           "id": {
@@ -2173,6 +2199,36 @@
         "title": "MethodIn",
         "type": "object"
       },
+      "MethodMoneyOut": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Amount"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "payment_method_id": {
+            "title": "Payment Method Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "payment_method_id",
+          "name",
+          "amount"
+        ],
+        "title": "MethodMoneyOut",
+        "type": "object"
+      },
       "MethodOut": {
         "properties": {
           "icon": {
@@ -2266,6 +2322,35 @@
           "decimals"
         ],
         "title": "MoneyFormatOut",
+        "type": "object"
+      },
+      "MoneyInOut": {
+        "description": "Today's Payments by method, only methods with a Payment today, in list order.",
+        "properties": {
+          "methods": {
+            "items": {
+              "$ref": "#/components/schemas/MethodMoneyOut"
+            },
+            "title": "Methods",
+            "type": "array"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "total",
+          "methods"
+        ],
+        "title": "MoneyInOut",
         "type": "object"
       },
       "MonthRowOut": {
@@ -4890,6 +4975,13 @@
             "title": "Hourly Today",
             "type": "array"
           },
+          "last_7_days": {
+            "items": {
+              "$ref": "#/components/schemas/DaySalesOut"
+            },
+            "title": "Last 7 Days",
+            "type": "array"
+          },
           "last_week_day": {
             "format": "date",
             "title": "Last Week Day",
@@ -4905,6 +4997,9 @@
               }
             ],
             "title": "Last Week So Far"
+          },
+          "money_in": {
+            "$ref": "#/components/schemas/MoneyInOut"
           },
           "sales": {
             "anyOf": [
@@ -4941,7 +5036,9 @@
           "last_week_day",
           "change_percent",
           "hourly_today",
-          "hourly_last_week"
+          "hourly_last_week",
+          "last_7_days",
+          "money_in"
         ],
         "title": "TodayOut",
         "type": "object"
