@@ -65,11 +65,10 @@ import {
   type PayState,
   type PaymentChoice,
   paymentChoiceOf,
-  type PriceQuote,
   type PricingSettings,
   fromHundredths,
-  hundredthsOfApiGrams,
   priceLine,
+  quoteOf,
   saleTotals,
   toHundredths,
   validateSale,
@@ -107,24 +106,6 @@ function emptyLine(): LineState {
 
 function isBlank(line: LineState): boolean {
   return line.varietyId === '' && line.grams.trim() === '' && !line.gift && line.specialPrice.trim() === ''
-}
-
-/** The price the Customer's type has in the entry, from the current price's `type_prices`; `null`
- * for a Customer with no type or a type with no price in it. */
-function typePriceOf(variety: Variety, typeId: number | null): number | null {
-  if (typeId === null) return null
-  const found = variety.current_price?.type_prices?.find((price) => price.customer_type_id === typeId)
-  return found === undefined ? null : found.price
-}
-
-function quoteOf(variety: Variety, typeId: number | null): PriceQuote | null {
-  const price = variety.current_price
-  if (price === null) return null
-  const bulk =
-    price.bulk_price !== null && price.bulk_minimum !== null
-      ? { price: price.bulk_price, minimumHundredths: hundredthsOfApiGrams(price.bulk_minimum) }
-      : null
-  return { listPrice: price.list_price, bulk, vipPrice: typePriceOf(variety, typeId) }
 }
 
 /** Both rules off: what prices a line while the switches have not come, or could not be read.
