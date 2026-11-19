@@ -16,6 +16,7 @@ from app.results.adapters.schemas import (
     ExpenseCategoryTotalOut,
     MarginOut,
     MonthRowOut,
+    PanelProductOut,
     ProductRowOut,
     RowCostOut,
     SinceFirstRecordOut,
@@ -23,9 +24,9 @@ from app.results.adapters.schemas import (
     WeekOut,
     reason_costs,
 )
+from app.results.application.analyse import Analysis
 from app.results.domain.figures import (
     AmountWithPending,
-    AnalysisFigures,
     CostFigure,
     ExpenseBreakdown,
     MarginFigure,
@@ -81,7 +82,8 @@ def _breakdown(breakdown: ExpenseBreakdown) -> ExpenseBreakdownOut:
     )
 
 
-def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
+def assemble(today: date, analysis: Analysis) -> AnalysisOut:
+    figures = analysis.figures
     month = figures.month
     since = figures.since_first_record
     return AnalysisOut(
@@ -173,4 +175,5 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
         ),
         month_expenses=_breakdown(figures.month_expenses),
         since_first_record_expenses=_breakdown(figures.since_first_record_expenses),
+        stock=[PanelProductOut.of_row(row) for row in analysis.stock],
     )

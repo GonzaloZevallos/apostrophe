@@ -98,29 +98,56 @@ def test_rows_include_a_variety_with_no_entries_and_translate_stock_level(
     assert by_id[untouched].name == "Zarzamora"
 
 
-def test_draws_are_costed_the_same_way_sql_draw_costs_answers_them(
+def test_draws_are_costed_the_way_each_sale_line_s_own_cost_answers_them(
     client: TestClient, engine: Engine
 ) -> None:
-    """`read`'s `draws` go through the same shared builder `SqlDrawCosts` uses (plan
-    invariant: one draw-row builder in `app/stock/adapters/`), so a sale-line draw
-    here costs exactly what `GET /analysis`'s own `DrawCosts` port would answer for it."""
-    variety_id = _variety(client, "Lavanda")
-    _entry(client, variety_id, quantity="10", total_cost=1_000)
+    """`read`'s `draws` go through the one draw-row builder in `app/stock/adapters/`
+    (plan invariant), so every sale-line draw costs exactly what `GET /sales/{id}` shows
+    for its line — a line split across two Lots with pending grams and a gift alike —
+    and a negative Adjustment is a shortfall, never mixed into a sale line."""
+    # Split across two Lots: 8 g costed ($5 000 + $6 000), 2 g of a 10 g line pending.
+    split_variety = _variety(client, "Variedad dividida")
+    _entry(client, split_variety, quantity="5", total_cost=5_000)
+    _entry(client, split_variety, quantity="3", total_cost=6_000)
+    gift_variety = _variety(client, "Variedad regalada")
+    _entry(client, gift_variety, quantity="5", total_cost=2_000)
+    shortfall_variety = _variety(client, "Variedad con faltante")
+    _entry(client, shortfall_variety, quantity="4", total_cost=4_000)
+    _entry(client, shortfall_variety, origin="adjustment", quantity="-1")
+
     sale = client.post(
         "/sales",
         json={
             "payment": {"kind": "paid", "payment_method_id": 1},
-            "lines": [{"product_id": variety_id, "quantity": "10"}],
+            "lines": [
+                {"product_id": split_variety, "quantity": "10"},
+                {"product_id": gift_variety, "quantity": "2", "gift": True},
+            ],
         },
     )
     assert sale.status_code == 201, sale.text
+    sale_id = sale.json()["id"]
+    detail = client.get(f"/sales/{sale_id}").json()
+    line_by_variety = {line["product_id"]: line for line in detail["lines"]}
 
-    business_id = _business_id_of_variety(engine, variety_id)
+    business_id = _business_id_of_variety(engine, split_variety)
     with Session(engine) as session:
-        figures = SqlStockFigures(session, business_id)
-        answer = figures.read(TODAY)
+        answer = SqlStockFigures(session, business_id).read(TODAY)
 
-    sale_draws = [d for d in answer.draws if d.kind != "shortfall"]
-    assert len(sale_draws) == 1
-    assert sale_draws[0].costed == 1_000
-    assert sale_draws[0].variety_id == variety_id
+    sale_rows = {d.variety_id: d for d in answer.draws if d.kind != "shortfall"}
+    split_row, gift_row = sale_rows[split_variety], sale_rows[gift_variety]
+    split_line, gift_line = line_by_variety[split_variety], line_by_variety[gift_variety]
+    assert split_row.kind == "sold"
+    assert split_row.costed == split_line["cost"]["costed"] == 11_000
+    assert float(split_row.pending.as_decimal()) == split_line["cost"]["pending_quantity"] == 2.0
+    assert gift_row.kind == "gifted"
+    assert gift_row.costed == gift_line["cost"]["costed"] == 800
+    assert float(gift_row.pending.as_decimal()) == gift_line["cost"]["pending_quantity"] == 0.0
+
+    shortfalls = [d for d in answer.draws if d.kind == "shortfall"]
+    assert len(shortfalls) == 1
+    assert shortfalls[0].sale_id is None
+    assert shortfalls[0].variety_id is None
+    # 1 g out of the 4 g @ $4 000 lot: $1 000, fully costed.
+    assert shortfalls[0].costed == 1_000
+    assert float(shortfalls[0].pending.as_decimal()) == 0.0

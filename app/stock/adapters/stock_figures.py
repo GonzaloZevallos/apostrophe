@@ -8,10 +8,9 @@ One `history` load answers the panel's stock rows and its draws together
 (plan invariant): `for_varieties(None)` entries, sale-line draws and withdrawal-line
 draws are each read exactly once per call, then grouped once. The draws are turned into
 `DrawRow`s by
-`build_draw_rows` (`app/stock/adapters/draw_rows.py`), the same function
-`SqlDrawCosts` uses — cost of goods and purchases are no longer summed here at all;
-`read_panel` feeds these draws into `period_figures.scan`/`totals_between` instead
-(ADR-0020's one computation). `today` is the one passed in; this adapter never reads
+`build_draw_rows` (`app/stock/adapters/draw_rows.py`) — cost of goods and purchases
+are not summed here at all; `read_panel` and `analyse` feed these draws into
+`period_figures.scan`/`totals_between` instead (ADR-0020's one computation). `today` is the one passed in; this adapter never reads
 the clock.
 """
 

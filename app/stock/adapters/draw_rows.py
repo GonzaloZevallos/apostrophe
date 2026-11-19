@@ -1,9 +1,8 @@
 """The one function that decides a draw's `kind` or calls `allocate` for results
-(the plan's invariant; ADR-0009, ADR-0020, ADR-0013 amendment GH-70): both
-`SqlDrawCosts.rows` (results' `DrawCosts` port, for `GET /analysis`) and
-`SqlStockFigures.read` (results' `StockFigures` port, for `GET /panel`) call this over
-their own `lots_and_draws` grouping, so neither repeats the decision or runs
-`allocate` a second way.
+(the plan's invariant; ADR-0009, ADR-0020, ADR-0013 amendment GH-70):
+`SqlStockFigures.read` (results' `StockFigures` port, for `GET /panel` and
+`GET /analysis`) calls this over its `lots_and_draws` grouping, so the decision and
+`allocate` are never run a second way.
 
 `pricing_rule` is read here, so stock's own domain stays unaware of gifts (ADR-0020's
 "considered and rejected": a gift is never told by a $0 line total). A draw's kind is

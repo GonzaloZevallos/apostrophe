@@ -1,22 +1,27 @@
 """Análisis's one use case (ADR-0020, docs/product/analysis.md): resolves and
 validates the chosen month, reads every ledger once through its port, and hands them
-to `period_figures` — the one computation, never a second one."""
+to `period_figures` — the one computation, never a second one. The one `StockFigures`
+read answers both the draws `period_figures` costs and the What you have left list,
+sorted the way `read_panel` sorts it."""
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import date
 from typing import ClassVar
 
 from app.results.application.ports import (
-    DrawCosts,
     ExpensesLedger,
     PaymentsLedger,
     Purchases,
     SalesLedger,
+    StockFigures,
+    StockRow,
     WithdrawalReasons,
 )
 from app.results.domain.figures import AnalysisFigures
 from app.results.domain.period_figures import period_figures
+from app.results.domain.sorting import sorted_by_name
 from app.shared.calendar import Month
 
 
@@ -38,8 +43,17 @@ class MonthOutOfRange(AnalysisRuleBroken):
         super().__init__("the chosen month is outside the business's history")
 
 
+@dataclass(frozen=True)
+class Analysis:
+    """The period figures plus What you have left as of today, never of the chosen month.
+    `stock` is an application type: `StockRow` never enters the domain."""
+
+    figures: AnalysisFigures
+    stock: tuple[StockRow, ...]
+
+
 def analyse(
-    draw_costs: DrawCosts,
+    stock: StockFigures,
     sales: SalesLedger,
     payments: PaymentsLedger,
     expenses: ExpensesLedger,
@@ -48,11 +62,13 @@ def analyse(
     *,
     today: date,
     month: str | None,
-) -> AnalysisFigures:
+) -> Analysis:
     try:
         requested = Month.containing(today) if month is None else Month.of(month)
     except ValueError:
         raise MonthInvalid() from None
+
+    answer = stock.read(today)
 
     # One read of every ledger, one pass over each inside `period_figures` — which
     # works out `first_record` itself, in that same pass. The month is validated
@@ -60,7 +76,7 @@ def analyse(
     figures = period_figures(
         today=today,
         month=requested,
-        draws=draw_costs.rows(),
+        draws=answer.draws,
         sales=sales.all(),
         payments=payments.all(),
         expenses=expenses.all(),
@@ -76,4 +92,4 @@ def analyse(
     if requested < lower_bound or requested > current_month:
         raise MonthOutOfRange()
 
-    return figures
+    return Analysis(figures=figures, stock=sorted_by_name(answer.rows))

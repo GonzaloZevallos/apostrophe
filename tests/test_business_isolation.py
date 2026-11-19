@@ -1190,6 +1190,13 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
     assert a_analysis["month"]["sales"] > 0
     assert a_analysis["month"]["average_sale"] is not None
     assert any(MARKER in variety["name"] for variety in a_analysis["month"]["products"])
+    # The new period figures and What you have left carry A's own records only.
+    assert a_analysis["month"]["quantity_sold"] > 0
+    assert a_analysis["weeks"][0]["quantity_sold"] > 0
+    assert a_analysis["weeks"][0]["average_sale"] is not None
+    assert a_analysis["months"][0]["purchases"] == 0
+    assert [row["name"] for row in a_analysis["stock"]] == [f"{MARKER} sales variety"]
+    assert MARKER not in str(b_analysis)
 
     current_month = str(Month.containing(TODAY))
     assert b_analysis == {
@@ -1219,6 +1226,7 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
         "since_first_record": None,
         "month_expenses": {"categories": [], "total": 0, "purchases": 0},
         "since_first_record_expenses": {"categories": [], "total": 0, "purchases": 0},
+        "stock": [],
     }
 
 

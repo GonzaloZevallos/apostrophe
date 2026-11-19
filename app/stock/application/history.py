@@ -2,7 +2,7 @@
 ADR-0031). It reads the three sources — stock entries, sale-line draws and
 withdrawal-line draws — with the same `variety_ids` (`None` for every variety) and
 hands them to `_assemble`, the only caller of `lots_and_draws`. Every reader that costs
-or counts grams (`read_stock`, `read_variety_stock`, `costs_for_sale`, `SqlDrawCosts`,
+or counts grams (`read_stock`, `read_variety_stock`, `costs_for_sale`,
 `SqlStockFigures`) calls this, so a source added later is added in one place, and
 `withdrawal_draws` is a required argument so a reader that forgets it does not
 compile.

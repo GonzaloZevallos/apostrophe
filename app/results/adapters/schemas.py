@@ -331,3 +331,4 @@ class AnalysisOut(BaseModel):
     since_first_record: SinceFirstRecordOut | None
     month_expenses: ExpenseBreakdownOut
     since_first_record_expenses: ExpenseBreakdownOut
+    stock: list[PanelProductOut]

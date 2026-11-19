@@ -6,7 +6,7 @@ every statement — and every join's ON clause — filters on it (CODING_STANDAR
 section 9).
 
 `variety_name`, `line_total` and `pricing_rule` ride along on the same row (ADR-0020):
-results' `DrawCosts` needs them attached to this exact draw, never looked up again by
+results' `StockFigures` needs them attached to this exact draw, never looked up again by
 `(sale_id, position)` afterwards.
 """
 

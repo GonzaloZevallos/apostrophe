@@ -81,7 +81,6 @@ from app.shared.language import BusinessLanguage
 from app.shared.money import MoneyNotRepresentable, TooManyDecimals
 from app.static_spa import FrontNavigation, MissingBuiltFront, ShellPage, SpaStatic, api_segments
 from app.stock.adapters.babel_defaults import BabelReasonDefaults
-from app.stock.adapters.draw_costs import SqlDrawCosts
 from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.onboarding_facts import SqlStockFacts
@@ -325,14 +324,13 @@ def create_app(
     # business_id)` factory shape as `line_costs` and `balances` above.
     app.state.debt_summary = SqlDebtSummary
     # Five more factories of the same shape: results reaches every ledger only
-    # through its own ports (`DrawCosts`, `SalesLedger`, `PaymentsLedger`,
+    # through its own ports (`StockFigures`, `SalesLedger`, `PaymentsLedger`,
     # `ExpensesLedger`, `Purchases`), never `app.stock`, `app.sales`, `app.payments`
     # or `app.expenses` adapters directly. `app/results/adapters/router.py` builds
     # each over the request's own `Session` and business, the way `get_line_costs`
     # already does for `line_costs`. `GET /panel` and `GET /analysis` share every one
     # of these (ADR-0013 amendment GH-70): both read `period_figures`'s one
     # computation, never a second sum of their own.
-    app.state.draw_costs = SqlDrawCosts
     app.state.results_withdrawal_reasons = SqlResultsWithdrawalReasons
     app.state.sales_ledger = SqlSalesLedger
     app.state.payments_ledger = SqlPaymentsLedger

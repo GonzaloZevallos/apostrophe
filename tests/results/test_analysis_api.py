@@ -650,3 +650,138 @@ def test_an_empty_period_has_no_average_sale_and_a_real_zero_elsewhere(client: T
     assert empty_week["quantity_gifted"] == 0
     assert empty_week["purchases"] == 0
     assert empty_week["cash"] == 0
+
+
+def _stock_entry(client: TestClient, variety_id: int, **overrides: Any) -> None:
+    body: dict[str, Any] = {"product_id": variety_id, "origin": "purchase", "quantity": "5"}
+    body.update(overrides)
+    response = client.post("/stock/entries", json=body)
+    assert response.status_code == 201, response.text
+
+
+def test_analysis_matches_home_after_a_late_entry_an_adjustment_pending_grams_and_a_withdrawal(
+    client: TestClient,
+) -> None:
+    """The draws behind Analysis are the same ones behind Home: a Stock entry dated
+    before existing draws (Lot reorder), a negative Adjustment, a Sale line with pending
+    grams and a Stock withdrawal all land the same on both."""
+    flor = _variety_with_price(client, "Flor", 1_000)
+    rama = _variety_with_price(client, "Rama", 800)
+    _stock_entry(client, flor, quantity="10", total_cost=2_000, date=TODAY.isoformat())
+    _stock_entry(client, rama, quantity="4", total_cost=1_200, date=TODAY.isoformat())
+    _stock_entry(client, flor, quantity="-1", origin="adjustment", date=TODAY.isoformat())
+    # Wants 6 g of Rama, has 4 g: 2 g pending.
+    for variety_id, quantity in ((flor, "3"), (rama, "6")):
+        sale = client.post(
+            "/sales",
+            json={
+                "payment": {"kind": "paid", "payment_method_id": 1},
+                "lines": [{"product_id": variety_id, "quantity": quantity}],
+            },
+        )
+        assert sale.status_code == 201, sale.text
+    withdrawal = client.post(
+        "/stock/withdrawals",
+        json={
+            "reason_id": reason_id(client, "Marketing"),
+            "lines": [{"product_id": flor, "quantity": "1"}],
+        },
+    )
+    assert withdrawal.status_code == 201, withdrawal.text
+    # A Lot that arrives late, dated before every draw above: it reorders the Lots.
+    _stock_entry(
+        client,
+        flor,
+        quantity="5",
+        total_cost=500,
+        date=(TODAY - timedelta(days=3)).isoformat(),
+    )
+
+    panel = client.get("/panel").json()
+    analysis = client.get("/analysis").json()
+    today_iso = TODAY.isoformat()
+    week = next(w for w in analysis["weeks"] if w["first_day"] <= today_iso <= w["last_day"])
+    month_row = next(m for m in analysis["months"] if m["month"] == str(TODAY)[:7])
+    header = analysis["month"]
+    home_week, home_month = panel["periods"]["week"], panel["periods"]["month"]
+
+    for figures, home in ((week, home_week), (month_row, home_month), (header, home_month)):
+        assert figures["sales"] == home["sales"]
+        assert figures["average_sale"] == home["average_sale"]
+        assert figures["quantity_sold"] == home["quantity_sold"]
+        assert figures["quantity_gifted"] == home["quantity_gifted"]
+        assert figures["purchases"] == home["purchases"]
+        assert figures["cash"] == home["cash"]
+        assert [w["amount"] for w in figures["withdrawals"]] == [
+            w["amount"] for w in home["withdrawals"]
+        ]
+    assert header["cash"] == home_month["cash"]
+    assert week["profit"]["amount"] == home_week["profit"]
+    assert month_row["profit"]["amount"] == home_month["profit"]
+    assert analysis["stock"] == panel["stock"]
+
+
+def test_what_you_have_left_lists_every_listed_product_by_name_whatever_the_month(
+    client: TestClient,
+) -> None:
+    negative = _variety_with_price(client, "Negativa", 1_000)
+    _stock_entry(client, negative, quantity="2", total_cost=200, date=TODAY.isoformat())
+    selling = _variety_with_price(client, "Ventas", 1_000)
+    _stock_entry(client, selling, quantity="10", total_cost=1_000, date=TODAY.isoformat())
+    _variety_with_price(client, "Sin entradas", 1_000)
+    unpriced = client.post("/api/products", json={"name": "Sin precio"}).json()
+    hidden = _variety_with_price(client, "Oculta", 1_000)
+    _stock_entry(client, hidden, quantity="3", total_cost=300, date=TODAY.isoformat())
+    shown = client.put(
+        f"/catalog/products/{hidden}",
+        json={"shown": False, "emoji": None, "indica_share": None, "aroma": None},
+    )
+    assert shown.status_code == 200, shown.text
+    archived = _variety_with_price(client, "Archivada", 1_000)
+    assert client.post(f"/api/products/{archived}/archive").status_code == 200
+    # Negativa goes below zero: a gift of more than it holds.
+    for variety_id, quantity in ((negative, "5"), (selling, "2")):
+        sale = client.post(
+            "/sales",
+            json={
+                "payment": {"kind": "paid", "payment_method_id": 1},
+                "lines": [{"product_id": variety_id, "quantity": quantity}],
+            },
+        )
+        assert sale.status_code == 201, sale.text
+
+    last_month_day = TODAY.replace(day=1) - timedelta(days=1)
+    category = client.post("/expense-categories", json={"name": "Varios"}).json()
+    expense = client.post(
+        "/expenses",
+        json={
+            "spent_on": last_month_day.isoformat(),
+            "category_id": category["id"],
+            "amount": 100,
+            "detail": "gasto",
+        },
+    )
+    assert expense.status_code == 201, expense.text
+
+    panel = client.get("/panel").json()
+    analysis = client.get("/analysis").json()
+    earlier = client.get(
+        "/analysis", params={"month": last_month_day.isoformat()[:7]}
+    )
+
+    stock = analysis["stock"]
+    names = [row["name"] for row in stock]
+    assert names == sorted(names, key=str.casefold)
+    assert "Archivada" not in names
+    assert {"Negativa", "Ventas", "Sin entradas", "Sin precio", "Oculta"} <= set(names)
+    by_name = {row["name"]: row for row in stock}
+    assert by_name["Negativa"]["quantity"] < 0
+    assert by_name["Negativa"]["days_left"] is None
+    assert by_name["Sin entradas"]["status"] == "no_entries"
+    assert by_name["Sin entradas"]["days_left"] is None
+    assert by_name["Ventas"]["days_left"] is not None
+    assert by_name["Oculta"]["days_left"] is None
+    assert by_name["Sin precio"]["product_id"] == unpriced["id"]
+    assert stock == panel["stock"]
+    assert earlier.status_code == 200, earlier.text
+    assert earlier.json()["stock"] == stock

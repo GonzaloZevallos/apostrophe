@@ -33,7 +33,6 @@ from app.results.adapters.schemas import AnalysisOut, PanelOut
 from app.results.application.analyse import AnalysisRuleBroken, analyse
 from app.results.application.ports import (
     DebtSummary,
-    DrawCosts,
     ExpensesLedger,
     PaymentsLedger,
     Purchases,
@@ -60,13 +59,6 @@ def get_debt_summary(
     request: Request, session: SessionDep, business_id: CurrentBusinessId
 ) -> DebtSummary:
     factory = cast(Callable[[Session, int], DebtSummary], request.app.state.debt_summary)
-    return factory(session, business_id)
-
-
-def get_draw_costs(
-    request: Request, session: SessionDep, business_id: CurrentBusinessId
-) -> DrawCosts:
-    factory = cast(Callable[[Session, int], DrawCosts], request.app.state.draw_costs)
     return factory(session, business_id)
 
 
@@ -110,7 +102,6 @@ def get_withdrawal_reasons(
 WithdrawalReasonsDep = Annotated[WithdrawalReasons, Depends(get_withdrawal_reasons)]
 StockFiguresDep = Annotated[StockFigures, Depends(get_stock_figures)]
 DebtSummaryDep = Annotated[DebtSummary, Depends(get_debt_summary)]
-DrawCostsDep = Annotated[DrawCosts, Depends(get_draw_costs)]
 SalesLedgerDep = Annotated[SalesLedger, Depends(get_sales_ledger)]
 PaymentsLedgerDep = Annotated[PaymentsLedger, Depends(get_payments_ledger)]
 ExpensesLedgerDep = Annotated[ExpensesLedger, Depends(get_expenses_ledger)]
@@ -137,7 +128,7 @@ as_http = TranslateErrors([(422, (AnalysisRuleBroken,))])
 
 @router.get("/analysis")
 def get_analysis(
-    draw_costs: DrawCostsDep,
+    stock: StockFiguresDep,
     sales: SalesLedgerDep,
     payments: PaymentsLedgerDep,
     expenses: ExpensesLedgerDep,
@@ -147,7 +138,7 @@ def get_analysis(
     month: str | None = None,
 ) -> AnalysisOut:
     with as_http:
-        figures = analyse(
-            draw_costs, sales, payments, expenses, purchases, reasons, today=today, month=month
+        analysis = analyse(
+            stock, sales, payments, expenses, purchases, reasons, today=today, month=month
         )
-        return assemble(today, figures)
+        return assemble(today, analysis)

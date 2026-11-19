@@ -13,7 +13,7 @@ What results needs from the rest of the business (docs/adr/0006, ADR-0020). Each
 port is built for one business; a record of another business is, from here, a record
 that does not exist (docs/adr/0004).
 
-`DrawCosts` and `StockFigures.read`'s `draws` both answer one row per draw — a sale
+`StockFigures.read`'s `draws` answer one row per draw — a sale
 line (sold or gifted) or a negative adjustment (shortfall) — already costed through
 `app.stock.domain.allocation.allocate`, called once per variety for the whole business
 (the plan's invariant: no other code multiplies grams by a cost or rounds a cost of
@@ -68,8 +68,8 @@ class StockFiguresAnswer:
 class StockFigures(Protocol):
     """One `lots_and_draws` load answers the panel's stock rows and its draws
     together (plan invariant): implemented in `app/stock/adapters/`. `read_panel`
-    feeds `draws` into `period_figures.scan`, exactly as `DrawCosts.rows()` feeds
-    `analyse` — never a second cost-of-goods or purchases sum here."""
+    and `analyse` both feed `draws` into `period_figures.scan`, and sort `rows` with
+    `sorted_by_name` — never a second cost-of-goods or purchases sum here."""
 
     def read(self, today: date) -> StockFiguresAnswer: ...
 
@@ -100,7 +100,6 @@ class DebtSummary(Protocol):
 
 
 __all__ = [
-    "DrawCosts",
     "DrawRow",
     "ExpenseRecord",
     "ExpensesLedger",
@@ -120,13 +119,6 @@ class WithdrawalReasons(Protocol):
     order `period_figures` answers each reason's cost in. Built for one business."""
 
     def all(self) -> Sequence[ReasonRecord]: ...
-
-
-class DrawCosts(Protocol):
-    """Every draw of one business, costed fresh on every read (ADR-0009). Built for
-    one business."""
-
-    def rows(self) -> Sequence[DrawRow]: ...
 
 
 class SalesLedger(Protocol):
