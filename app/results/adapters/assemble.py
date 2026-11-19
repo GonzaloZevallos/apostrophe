@@ -66,6 +66,10 @@ def _optional(figure: RowCost | None) -> RowCostOut | None:
     return None if figure is None else _row_cost(figure)
 
 
+def _optional_money(amount: int | None) -> Decimal | None:
+    return None if amount is None else Decimal(amount)
+
+
 def _breakdown(breakdown: ExpenseBreakdown) -> ExpenseBreakdownOut:
     return ExpenseBreakdownOut(
         categories=[
@@ -91,6 +95,9 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
             sales_without_shipping=Decimal(month.sales_without_shipping),
             quantity_sold=month.quantity_sold.as_decimal(),
             quantity_gifted=month.quantity_gifted.as_decimal(),
+            average_sale=_optional_money(month.average_sale),
+            purchases=Decimal(month.purchases),
+            cash=Decimal(month.cash),
             average_margin=_margin(month.average_margin),
             shortfall=_optional(month.shortfall),
             withdrawals=reason_costs(month.withdrawals),
@@ -114,6 +121,10 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
                 last_day=w.last_day,
                 sales=Decimal(w.sales),
                 quantity=w.quantity.as_decimal(),
+                average_sale=_optional_money(w.average_sale),
+                quantity_sold=w.quantity_sold.as_decimal(),
+                quantity_gifted=w.quantity_gifted.as_decimal(),
+                purchases=Decimal(w.purchases),
                 cost_of_goods=_row_cost(w.cost_of_goods),
                 shortfall=_optional(w.shortfall),
                 withdrawals=reason_costs(w.withdrawals),
@@ -131,6 +142,10 @@ def assemble(today: date, figures: AnalysisFigures) -> AnalysisOut:
                 last_day=m.last_day,
                 sales=Decimal(m.sales),
                 quantity=m.quantity.as_decimal(),
+                average_sale=_optional_money(m.average_sale),
+                quantity_sold=m.quantity_sold.as_decimal(),
+                quantity_gifted=m.quantity_gifted.as_decimal(),
+                purchases=Decimal(m.purchases),
                 cost_of_goods=_row_cost(m.cost_of_goods),
                 shortfall=_optional(m.shortfall),
                 withdrawals=reason_costs(m.withdrawals),

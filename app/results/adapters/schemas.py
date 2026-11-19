@@ -245,6 +245,9 @@ class AnalysisMonthOut(BaseModel):
     sales_without_shipping: MoneyOut
     quantity_sold: QuantityOut
     quantity_gifted: QuantityOut
+    average_sale: MoneyOut | None
+    purchases: MoneyOut
+    cash: MoneyOut
     average_margin: MarginOut
     shortfall: RowCostOut | None
     withdrawals: list[ReasonCostOut]
@@ -256,6 +259,10 @@ class WeekOut(BaseModel):
     last_day: date
     sales: MoneyOut
     quantity: QuantityOut
+    average_sale: MoneyOut | None
+    quantity_sold: QuantityOut
+    quantity_gifted: QuantityOut
+    purchases: MoneyOut
     cost_of_goods: RowCostOut
     shortfall: RowCostOut | None
     withdrawals: list[ReasonCostOut]
@@ -271,6 +278,10 @@ class MonthRowOut(BaseModel):
     last_day: date
     sales: MoneyOut
     quantity: QuantityOut
+    average_sale: MoneyOut | None
+    quantity_sold: QuantityOut
+    quantity_gifted: QuantityOut
+    purchases: MoneyOut
     cost_of_goods: RowCostOut
     shortfall: RowCostOut | None
     withdrawals: list[ReasonCostOut]

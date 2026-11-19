@@ -526,3 +526,127 @@ def test_a_seeded_history_s_figures_match_a_direct_computation(client: TestClien
         assert week["expenses"] == 0
         assert week["profit"]["amount"] == 0
         assert week["cash"] == 0
+
+
+def _seed_week_with_a_gift_a_purchase_an_expense_and_a_payment(client: TestClient) -> None:
+    """Inside today's week and month: a sold line, a gifted line, a Purchase, an Expense
+    and (through the paid Sale) a Payment; plus a sale in an earlier month."""
+    variety_id = _variety_with_price(client, "Flor", 1_000)
+    entry = client.post(
+        "/stock/entries",
+        json={
+            "product_id": variety_id,
+            "origin": "purchase",
+            "quantity": "50",
+            "total_cost": 5_000,
+            "date": TODAY.isoformat(),
+        },
+    )
+    assert entry.status_code == 201, entry.text
+    sales = [
+        ("2026-09-10", "2", False),
+        (TODAY.isoformat(), "3", False),
+        (TODAY.isoformat(), "4", False),
+        (TODAY.isoformat(), "2", True),
+    ]
+    for day, quantity, gift in sales:
+        sale = client.post(
+            "/sales",
+            json={
+                "date": day,
+                "payment": {"kind": "paid", "payment_method_id": 1},
+                "lines": [{"product_id": variety_id, "quantity": quantity, "gift": gift}],
+            },
+        )
+        assert sale.status_code == 201, sale.text
+    category = client.post("/expense-categories", json={"name": "Varios"}).json()
+    expense = client.post(
+        "/expenses",
+        json={
+            "spent_on": TODAY.isoformat(),
+            "category_id": category["id"],
+            "amount": 300,
+            "detail": "gasto",
+        },
+    )
+    assert expense.status_code == 201, expense.text
+
+
+def test_this_week_and_this_month_carry_the_figures_home_shows(client: TestClient) -> None:
+    _seed_week_with_a_gift_a_purchase_an_expense_and_a_payment(client)
+
+    panel = client.get("/panel").json()["periods"]
+    analysis = client.get("/analysis").json()
+    today_iso = TODAY.isoformat()
+    week = next(w for w in analysis["weeks"] if w["first_day"] <= today_iso <= w["last_day"])
+    month_row = next(m for m in analysis["months"] if m["month"] == "2026-10")
+    header = analysis["month"]
+
+    assert panel["week"]["quantity_gifted"] == 2
+    assert panel["week"]["purchases"] == 5_000
+    for analysis_figures, home in ((week, panel["week"]), (month_row, panel["month"])):
+        assert analysis_figures["average_sale"] == home["average_sale"] == 2_333
+        assert analysis_figures["quantity_sold"] == home["quantity_sold"] == 7
+        assert analysis_figures["quantity_gifted"] == home["quantity_gifted"] == 2
+        assert analysis_figures["purchases"] == home["purchases"]
+        # Figures Analysis already had keep Home's value.
+        assert analysis_figures["cash"] == home["cash"]
+        assert analysis_figures["sales"] == home["sales"]
+        assert analysis_figures["expenses"] == home["expenses"]
+        assert analysis_figures["profit"]["amount"] == home["profit"]
+        assert analysis_figures["quantity"] == (
+            analysis_figures["quantity_sold"] + analysis_figures["quantity_gifted"]
+        )
+        assert [w["amount"] for w in analysis_figures["withdrawals"]] == [
+            w["amount"] for w in home["withdrawals"]
+        ]
+        assert analysis_figures["shortfall"] is None and home["shortfall"] is None
+
+    home_month = panel["month"]
+    assert header["average_sale"] == home_month["average_sale"]
+    assert header["quantity_sold"] == home_month["quantity_sold"]
+    assert header["quantity_gifted"] == home_month["quantity_gifted"]
+    assert header["purchases"] == home_month["purchases"] == analysis["month_expenses"]["purchases"]
+    assert header["cash"] == home_month["cash"]
+    assert header["sales"] == home_month["sales"]
+
+
+def test_a_late_stock_entry_moves_analysis_purchases_exactly_as_it_moves_home(
+    client: TestClient,
+) -> None:
+    _seed_week_with_a_gift_a_purchase_an_expense_and_a_payment(client)
+    variety_id = int(client.get("/panel").json()["stock"][0]["product_id"])
+    late = client.post(
+        "/stock/entries",
+        json={
+            "product_id": variety_id,
+            "origin": "purchase",
+            "quantity": "10",
+            "total_cost": 900,
+            "date": (TODAY - timedelta(days=1)).isoformat(),
+        },
+    )
+    assert late.status_code == 201, late.text
+
+    panel = client.get("/panel").json()["periods"]
+    analysis = client.get("/analysis").json()
+    today_iso = TODAY.isoformat()
+    week = next(w for w in analysis["weeks"] if w["first_day"] <= today_iso <= w["last_day"])
+
+    assert panel["week"]["purchases"] == 5_900
+    assert week["purchases"] == panel["week"]["purchases"]
+    assert analysis["month"]["purchases"] == panel["month"]["purchases"]
+    assert analysis["month"]["cash"] == panel["month"]["cash"]
+
+
+def test_an_empty_period_has_no_average_sale_and_a_real_zero_elsewhere(client: TestClient) -> None:
+    _seed_week_with_a_gift_a_purchase_an_expense_and_a_payment(client)
+
+    analysis = client.get("/analysis").json()
+    empty_week = next(w for w in analysis["weeks"] if w["sales"] == 0)
+
+    assert empty_week["average_sale"] is None
+    assert empty_week["quantity_sold"] == 0
+    assert empty_week["quantity_gifted"] == 0
+    assert empty_week["purchases"] == 0
+    assert empty_week["cash"] == 0
