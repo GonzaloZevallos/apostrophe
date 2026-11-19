@@ -120,3 +120,59 @@ def test_panel_and_debtors_agree_with_a_direct_computation_and_a_credit_customer
     assert panel["oldest"] == debtors["debtors"][0]["owing_since"]
     assert [row["customer_id"] for row in panel["teaser"]] == [first, second]
     assert [row["balance"] for row in panel["teaser"]] == owed
+
+
+def _named_customer(client: TestClient, name: str, index: int) -> int:
+    customer = client.post(
+        "/customers",
+        json={"name": name, "phone": f"11 5{index:03d}-{index:04d}", "phone_country": "AR"},
+    )
+    assert customer.status_code == 201, customer.text
+    customer_id: int = customer.json()["id"]
+    return customer_id
+
+
+def _debtor_names(client: TestClient) -> list[str]:
+    body = client.get("/payments/debtors").json()
+    return [row["customer"]["name"] for row in body["debtors"]]
+
+
+def test_the_larger_balance_comes_first_on_the_same_owing_since(client: TestClient) -> None:
+    variety_id = _priced_variety(client)
+    _owing_sale(client, _named_customer(client, "Ana", 1), variety_id, 1)
+    _owing_sale(client, _named_customer(client, "Beto", 2), variety_id, 5)
+
+    assert _debtor_names(client) == ["Beto", "Ana"]
+
+
+def test_the_folded_name_breaks_a_tie_on_owing_since_and_balance(client: TestClient) -> None:
+    variety_id = _priced_variety(client)
+    _owing_sale(client, _named_customer(client, "Émile", 1), variety_id, 2)
+    _owing_sale(client, _named_customer(client, "Ana", 2), variety_id, 2)
+
+    assert _debtor_names(client) == ["Ana", "Émile"]
+
+
+def test_the_same_folded_name_falls_to_recording_order(client: TestClient) -> None:
+    variety_id = _priced_variety(client)
+    first = _named_customer(client, "Ana", 1)
+    second = _named_customer(client, "ANA", 2)
+    _owing_sale(client, second, variety_id, 2)
+    _owing_sale(client, first, variety_id, 2)
+
+    body = client.get("/payments/debtors").json()
+
+    assert [row["customer"]["id"] for row in body["debtors"]] == [first, second]
+
+
+def test_panel_teaser_keeps_its_own_order_on_an_owing_since_tie(client: TestClient) -> None:
+    variety_id = _priced_variety(client)
+    small = _named_customer(client, "Ana", 1)
+    large = _named_customer(client, "Zoe", 2)
+    _owing_sale(client, small, variety_id, 1)
+    _owing_sale(client, large, variety_id, 5)
+
+    panel = client.get("/panel").json()["debts"]
+
+    assert panel["oldest"] == SALE_DATE
+    assert [row["customer_id"] for row in panel["teaser"]] == [large, small]

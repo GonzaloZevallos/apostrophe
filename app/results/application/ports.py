@@ -85,8 +85,9 @@ class DebtorRow:
 @dataclass(frozen=True)
 class Debts:
     """`debtors` arrives in `debtors()` order (payments-domain): oldest debt first,
-    ties broken by `fold`ed name then id. The panel's own teaser re-sorts (by balance,
-    then owing since, then name) and cuts this; it never re-queries for it."""
+    then the larger balance, then `fold`ed name, then id. The panel's own teaser
+    re-sorts (by balance, then owing since, then name) and cuts this; it never
+    re-queries for it."""
 
     total_owed: int
     sales_owing_count: int
@@ -96,7 +97,7 @@ class Debts:
 class DebtSummary(Protocol):
     """Implemented in `app/payments/adapters/`, over `view_accounts.debtors()`."""
 
-    def read(self) -> Debts: ...
+    def read(self, today: date) -> Debts: ...
 
 
 __all__ = [

@@ -11,7 +11,14 @@ from datetime import date
 from app.payments.application.errors import CustomerNotFound
 from app.payments.application.ports import Ledgers
 from app.payments.domain.account import Account, account_of
-from app.payments.domain.settlement import Standing, settle
+from app.payments.domain.debt_age import (
+    DebtAgeBucket,
+    DebtAgeBuckets,
+    age_in_days,
+    bucket_of,
+    buckets,
+)
+from app.payments.domain.settlement import SaleSettlement, Standing, settle
 from app.shared.names import fold
 
 
@@ -29,6 +36,8 @@ class Debtor:
     balance: int
     owing_since: date | None
     standing: Standing
+    age_days: int
+    bucket: DebtAgeBucket
 
 
 @dataclass(frozen=True)
@@ -36,24 +45,41 @@ class Debtors:
     total_owed: int
     sales_owing_count: int
     debtors: tuple[Debtor, ...]
+    customer_count: int
+    debtor_count: int
+    buckets: DebtAgeBuckets
 
 
-def debtors(ledgers: Ledgers) -> Debtors:
-    """Every customer with a standing of `owes`, oldest debt first, ties by `fold`ed
-    name then id (the plan's invariant: every ordering of customers by name uses
-    `fold`, in Python). `total_owed` sums only those balances; `sales_owing_count` is
-    the size of the union of every customer's `still_owing`, counted once even when
-    a sale has no customer (`settle` never sees one, since `Ledgers` only reads sales
-    that have a customer)."""
+def debtors(ledgers: Ledgers, today: date) -> Debtors:
+    """Every customer with a standing of `owes`, oldest debt first, then the larger
+    balance, then `fold`ed name, then id (the plan's invariant: every ordering of
+    customers by name uses `fold`, in Python). `total_owed` sums only those balances;
+    `sales_owing_count` is the size of the union of every customer's `still_owing`,
+    counted once even when a sale has no customer (`settle` never sees one, since
+    `Ledgers` only reads sales that have a customer).
+
+    Each customer is settled once, and everything else is read off that one result: a
+    debtor's `age_days`/`bucket` are those of its Owing since, and `buckets` sums the
+    `SaleSettlement`s of debtors only, so a Credit never enters and the three add up to
+    `total_owed`. `customer_count` is every customer `Ledgers.all()` returned;
+    `debtor_count` only those who owe."""
     total_owed = 0
     sales_owing: set[int] = set()
     rows: list[Debtor] = []
-    for named in ledgers.all():
+    owing_sales: list[SaleSettlement] = []
+    named_ledgers = ledgers.all()
+    for named in named_ledgers:
         result = settle(named.ledger)
         sales_owing |= result.still_owing
         if result.standing != "owes":
             continue
+        # A balance above $0 always leaves at least one sale still owing (the walk
+        # can never spend more of a payment than the business's sales owe in total),
+        # so `owing_since` is never `None` here.
+        assert result.owing_since is not None
         total_owed += result.balance
+        owing_sales.extend(result.sales)
+        age_days = age_in_days(result.owing_since, today)
         rows.append(
             Debtor(
                 customer_id=named.id,
@@ -61,15 +87,21 @@ def debtors(ledgers: Ledgers) -> Debtors:
                 balance=result.balance,
                 owing_since=result.owing_since,
                 standing=result.standing,
+                age_days=age_days,
+                bucket=bucket_of(age_days),
             )
         )
 
-    def sort_key(debtor: Debtor) -> tuple[date, str, int]:
-        # A balance above $0 always leaves at least one sale still owing (the walk
-        # can never spend more of a payment than the business's sales owe in total),
-        # so `owing_since` is never `None` here.
+    def sort_key(debtor: Debtor) -> tuple[date, int, str, int]:
         assert debtor.owing_since is not None
-        return (debtor.owing_since, fold(debtor.name), debtor.customer_id)
+        return (debtor.owing_since, -debtor.balance, fold(debtor.name), debtor.customer_id)
 
     rows.sort(key=sort_key)
-    return Debtors(total_owed=total_owed, sales_owing_count=len(sales_owing), debtors=tuple(rows))
+    return Debtors(
+        total_owed=total_owed,
+        sales_owing_count=len(sales_owing),
+        debtors=tuple(rows),
+        customer_count=len(named_ledgers),
+        debtor_count=len(rows),
+        buckets=buckets(owing_sales, today),
+    )

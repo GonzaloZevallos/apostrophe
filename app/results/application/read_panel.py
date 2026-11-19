@@ -159,7 +159,7 @@ def read_panel(
             cash=totals.cash,
         )
 
-    debts_answer = debts.read()
+    debts_answer = debts.read(today)
     debts_summary = DebtsSummary(
         total_owed=debts_answer.total_owed,
         sales_owing_count=debts_answer.sales_owing_count,

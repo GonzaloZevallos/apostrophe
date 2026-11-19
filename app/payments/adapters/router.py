@@ -152,5 +152,5 @@ def delete_payment(payment_id: int, payments: PaymentsDep, session: SessionDep) 
 
 
 @router.get("/debtors")
-def get_debtors(ledgers: LedgersDep) -> DebtorsOut:
-    return DebtorsOut.of(debtors_use_case(ledgers))
+def get_debtors(ledgers: LedgersDep, today: TodayDep) -> DebtorsOut:
+    return DebtorsOut.of(debtors_use_case(ledgers, today))
