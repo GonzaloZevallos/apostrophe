@@ -22,6 +22,8 @@ Este job afina el primero para cada fila de semana y de mes; no es un job nuevo.
 
 **Cuando** abro Home en el celular entre pedidos, **quiero** que arriba de la pantalla se vea qué día estoy mirando y poder pasar entre Home y Analysis con un toque, **para poder** ver cómo va el día o el mes. No necesito que la app me diga en qué Business estoy, porque ya lo sé. (Parte 2 de GH-723, navigation.md: afina el job de navegación para el celular. Acá lo sirve el mismo encabezado de Home, en el mismo lugar, con "Analysis" elegido; el mes que se lee lo sigue nombrando el selector de mes.)
 
+**Cuando** miro hacia atrás una semana o un mes, **quiero** tener en Analysis, en un solo lugar, cada cifra que me daban Week y Month de Home (ventas, Average sale, cantidad vendida y regalada, costos, Purchases, Profit, Cash y lo que me queda), **para** saber si gano plata, cuánta tengo de verdad y qué reponer. (Parte 5 de GH-497, Decisión 3 del humano / Dibujo 9: es el job de resultados del brief aplicado a Analysis. Esta parte entrega solo la API y estos docs; la pantalla la entrega su propia parte de GH-497. Antes, el vendedor saltaba entre Week o Month de Home y Analysis.)
+
 Criterios de éxito:
 
 1. **Respuestas sin cuentas**: desde una sola pantalla en el teléfono, un vendedor puede nombrar el producto de mayor Margin del mes elegido y el de menor Margin, la Best week de las últimas 8 semanas, el Best weekday y la Expense category que más se llevó ese mes.
@@ -43,10 +45,11 @@ Criterios de éxito:
 12. **Se llega sin More** (GH-651): en el teléfono, Analysis se abre en 1 toque desde Home con el segmento Home | Analysis, y Expenses y su formulario se abren desde la tarjeta Expenses de Analysis.
 13. **El segmento nombra sus vistas** (#733): en el teléfono, las opciones del segmento de Analysis dicen "Home" y "Analysis", en pantalla y en su nombre accesible; ninguna dice "Today", y "Home" vuelve a Home en 1 toque.
 14. **El mismo encabezado que Home** (parte 2 de GH-723): en el teléfono, Analysis muestra la misma línea de fecha (el hoy del Business, nunca el mes que se lee), el mismo avatar y el mismo segmento, en el mismo lugar que Home, sin título visible y con un solo h1, oculto a la vista. Están en todos los estados de Analysis. En la computadora solo se ve el h1 "Analysis", como antes.
+15. **Todo lo de Home, en Analysis** (parte 5 de GH-497, Dibujo 9): para la misma semana y el mismo mes, cada cifra que muestran Week y Month de Home está en `GET /analysis` con exactamente el mismo valor, porque sale del mismo cálculo `totals_between`, nunca de una copia. El vendedor nunca necesita volver a Home por una cifra de período. What you have left está completa: cada Product sin archivar, con su Stock, su Stock status y sus Days left. Ninguna cifra ni nombre nuevo revela nada de otro negocio.
 
 # Análisis
 
-Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada producto: Margin por producto de un mes elegido; ventas, Cost of goods sold, Stock shortfall, Profit y Cash de las últimas 8 semanas y los últimos 12 meses; el patrón por día de la semana; los totales desde el First record, y las Expenses por Expense category. Es de solo lectura y lo ve solo su negocio (ADR-0004). Cada cifra que comparte con Resultados (#7) sale del cálculo de #7. El Cost of goods sold, el Stock shortfall y el costo de los Stock withdrawals por Withdrawal reason siguen a los Lots como están hoy (ADR-0009, ADR-0010). Lee ventas, stock (Stock entries, Stock withdrawals y la lista de Withdrawal reasons), Payments y Expenses. Se llega con el segmento Home | Analysis de Home en el teléfono y desde la barra lateral en la computadora (navigation.md). En el teléfono, además, es el lugar desde donde se llega a Expenses y al formulario de la Expense, por su tarjeta Expenses.
+Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada producto: Margin por producto de un mes elegido; ventas, Cost of goods sold, Stock shortfall, Profit y Cash de las últimas 8 semanas y los últimos 12 meses; el patrón por día de la semana; los totales desde el First record, y las Expenses por Expense category. Desde la parte 5 de GH-497, la API de Analysis también lleva cada cifra de Week y Month de Home y la lista What you have left (ver "Lo que sumó el Dibujo 9"). Es de solo lectura y lo ve solo su negocio (ADR-0004). Cada cifra que comparte con Resultados (#7) sale del cálculo de #7. El Cost of goods sold, el Stock shortfall y el costo de los Stock withdrawals por Withdrawal reason siguen a los Lots como están hoy (ADR-0009, ADR-0010). Lee ventas, stock (Stock entries, Stock withdrawals y la lista de Withdrawal reasons), Payments y Expenses. Se llega con el segmento Home | Analysis de Home en el teléfono y desde la barra lateral en la computadora (navigation.md). En el teléfono, además, es el lugar desde donde se llega a Expenses y al formulario de la Expense, por su tarjeta Expenses.
 
 ## Comportamiento
 
@@ -101,7 +104,8 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
   - "Stock shortfall $ X" cuando el mes tiene algún Stock shortfall, con su propia marca de pendiente, o solo sus gramos pendientes cuando está todo pendiente. Es la misma cifra, y se lee igual, que la de la fila del mes y la del Month de Home;
   - "<motivo> $ X" para cada Withdrawal reason con un Stock withdrawal en el mes (por ejemplo "Marketing $ X" u "Own use $ X"), en el orden de la lista del negocio, cada una con su propia marca de pendiente (o solo sus gramos pendientes cuando está todo pendiente), aparte del Stock shortfall;
   - la pantalla aclara que la tabla de productos suma las ventas del mes menos el envío;
-  - la cabecera no lleva un total de Cost of goods sold.
+  - la cabecera no lleva un total de Cost of goods sold;
+  - en la API, además, las cifras que sumó el Dibujo 9 (ver más abajo), todavía sin mostrarse en pantalla.
 - **Un mes sin ventas ni Gifts**: totales en $0, sin filas de producto y con una línea fija que dice que ese mes no se vendió nada. Su Stock shortfall y las líneas de sus Withdrawal reasons se siguen mostrando cuando los tiene.
 
 ### Semana por semana (últimas 8) y mes por mes (últimos 12)
@@ -116,7 +120,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
   7. Profit;
   8. Cash.
 
-  Los gramos retirados y ajustados nunca están en la cifra de gramos.
+  Los gramos retirados y ajustados nunca están en la cifra de gramos. En la API, cada fila lleva además las cifras que sumó el Dibujo 9 (ver más abajo), que la pantalla todavía no muestra.
 - **El Cost of goods sold** de una fila es el Cost of goods sold del período, también en los períodos pasados. Un período sin ventas muestra un $0 real. Nunca incluye un Stock shortfall ni un Stock withdrawal.
 - **El Stock shortfall** de una fila es el Stock shortfall del período, una cifra aparte que nunca entra en el Cost of goods sold. Un período sin Adjustment negativo no tiene línea de Stock shortfall.
 - **Gramos pendientes en una fila**:
@@ -136,6 +140,25 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 - **Best week**: la de más ventas; si hay empate, la semana más reciente. Cuando las 8 semanas están en $0, no se marca ninguna. Los Stock withdrawals nunca la afectan.
 - **Meses**: sin marca de "mejor".
 - No se dibuja ningún gráfico, variación ni comparación entre períodos.
+
+### Lo que sumó el Dibujo 9 (parte 5 de GH-497, solo en la API)
+
+La Decisión 3 del humano, Dibujo 9, dice que Week y Month de Analysis conservan cada cifra que hoy muestran Week y Month de Home. Esta parte lo entrega en `GET /analysis` y en estos docs. Ninguna pantalla cambia todavía: las tarjetas y las tablas siguen mostrando exactamente lo de "Semana por semana" y "Cabecera del mes", y la parte de pantalla de GH-497 decide cómo se ven las cifras nuevas.
+
+- **Dónde**: cada fila de semana, cada fila de mes y la cabecera del mes.
+- **Las cifras que sumó el Dibujo 9**:
+  - **Average sale**: el total de Sales del período, envío incluido, dividido por la cantidad de Sales (no de líneas), redondeado con mitad hacia arriba, tal como lo calcula el Panel (CONTEXT.md, Average sale). No está cuando el período no tiene Sales; nunca es 0.
+  - **Cantidad vendida** y **cantidad regalada**: dos cifras aparte, como en Home. La cifra única existente de gramos vendidos o regalados se conserva tal cual. Un período sin ninguna da un 0 real. La API las llama "quantity sold" y "quantity gifted", no "grams", en línea con Assume nothing y la Unit planificada (ADR-0056); los valores son los de hoy, sin cambios.
+  - **Purchases**: el costo de las Purchases del período, cada una en su fecha. Nunca entra en las Expenses. Un período sin ninguna da un 0 real.
+  - **Cash, solo en la cabecera del mes**: Payments − Expenses − Purchases del mes. Puede ser 0 o negativo y conserva su signo. Las filas ya tenían Cash y no se les agrega otro.
+- **Mismo cálculo que Home**: cada cifra sale del mismo cálculo `totals_between` que el Panel, nunca de uno paralelo ni de una copia; el front nunca suma, cuenta ni ordena. Una semana pasada lleva lo que `totals_between` da para esa semana. Los días se cuentan exactamente como ya los cuenta Analysis.
+- **What you have left**: una sola lista por respuesta, la misma de Home.
+  - Es el Stock de hoy, en el hoy del negocio, no el del final del mes que se está viendo: no cambia con el mes elegido, y ninguna fila de semana ni de mes lleva su propio Stock.
+  - Lleva cada Product sin archivar, en el orden de Products, con su nombre, Stock, Stock status y Days left. Incluye los Products sin movimientos, los Hidden products y los Products sin precio.
+  - Un Stock negativo se muestra, nunca se oculta.
+  - Los Days left no están donde el glosario lo dice: Stock en cero o menos, o nada salido en los últimos 30 días.
+  - Un Archived product nunca aparece.
+- **Superposiciones**: nada de lo que Analysis ya informaba cambia. Una cifra que ya informaba con el mismo significado para el mismo período (las ventas, la cifra única de gramos, el Cost of goods sold, el Stock shortfall, el costo de cada Withdrawal reason, las Expenses, el Profit y el Cash de las filas) no se agrega de nuevo, y una prueba verifica que es igual a la de Home.
 
 ### Por día de la semana, desde el First record
 
@@ -169,6 +192,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 - **La tarjeta Expenses** (solo en el teléfono): debajo del segmento y antes de las cifras, con el título "Expenses", "Record expense" (abre el formulario de la Expense con la fecha de hoy) y "See expenses" (abre Expenses), cada una de al menos 44 px (expenses.md). No espera las cifras: está en los estados cargando, error, vacío y con datos. Es solo una entrada; no muestra ninguna cifra.
 - **Computadora**: la disposición de `AnalisisCompu`, con las tres secciones como tablas, y arriba solo el h1 visible "Analysis", sin nombre del Business. La disposición del teléfono nunca la cambia: su captura sigue igual, y la línea de fecha, el segmento, el avatar y la tarjeta Expenses no se dibujan.
 - **Filas de semana y de mes**: en el teléfono son tarjetas (ver En el teléfono); en la computadora, cómo se ubican en una fila el Cost of goods sold, el Stock shortfall y las líneas de los Withdrawal reasons (líneas o subfilas) lo decide diseño. Cada cifra va en palabras, y lo pendiente y lo negativo se dicen con una palabra o un signo, nunca solo con el color, en los dos temas.
+- **Las cifras del Dibujo 9**: todavía no se muestran; viajan en la API para la parte de pantalla de GH-497.
 - **Gráficos**: solo el acento y los tokens; cada barra lleva su cifra. Las marcas de mejor, las marcas de pendiente y los negativos se dicen con una palabra o una forma, nunca solo con el color.
 - **Idioma y formatos**: los textos están en el Product language (product-language.md), y cada uno sale del Copy module. El nombre de un Withdrawal reason es un dato del negocio y se muestra tal como está guardado. Los formatos siguen siendo argentinos: plata `$ 11.000`, gramos `3,5 g`, fechas `dd/mm`.
 - **Solo lectura**: sin formularios y sin avisos emergentes; la tarjeta Expenses solo lleva a otras pantallas. Las cifras, y qué líneas de Withdrawal reason se muestran y en qué orden, vienen de la API cada vez que se abre la pantalla; el navegador no calcula ni ordena nada, tampoco si una cifra está toda pendiente.
@@ -197,8 +221,10 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 
 ### Restricciones
 
-- El negocio sale de la Session. Cada ruta entra en el barrido de aislamiento y en la prueba de rutas protegidas.
-- Ningún monto ni nombre, los de los Withdrawal reasons incluidos, va a los logs, la consola ni el almacenamiento del navegador (CODING_STANDARDS §9, ADR-0005).
+- El negocio sale de la Session. Cada ruta entra en el barrido de aislamiento y en la prueba de rutas protegidas; el barrido cubre cada campo que sumó el Dibujo 9, la lista What you have left incluida.
+- Ningún monto ni nombre, los de los Withdrawal reasons y los de los Products de What you have left incluidos, va a los logs, a un mensaje de error, a la consola ni al almacenamiento del navegador (CODING_STANDARDS §9, ADR-0005).
+- El código de dominio de `app/results/domain/` recibe la zona horaria como un `tzinfo` y nunca importa `app.clock` ni `zoneinfo`.
+- La cantidad de sentencias de `GET /analysis` no crece con el tamaño de la historia (estilo ADR-0038); What you have left se arma una sola vez por respuesta.
 - Cada regla del teléfono va debajo del corte de 900 px; por ellas, las capturas de la computadora no cambian.
 
 ## Métricas
@@ -214,6 +240,12 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
     - Las líneas de los Withdrawal reasons siguen el orden de la lista y llevan el nombre actual del Withdrawal reason.
     - 0 diferencias.
   - `tests/design/test_muestra_seed.py` compara las filas con el Panel en vez de afirmar que el Stock shortfall no está.
+- **Todo lo de Home, en Analysis (criterio 15)**: 0 diferencias, 100% de aprobación.
+  - Pruebas de comportamiento con TestClient: para la semana y el mes en curso, el Average sale, la cantidad vendida, la cantidad regalada, las Purchases y el Cash de la cabecera del mes de `GET /analysis` son iguales a `periods.week` y `periods.month` de `/panel`; las cifras que Analysis ya tenía, el Cash de las filas incluido, también.
+  - Una fila de semana pasada es igual a `totals_between` para esa semana.
+  - What you have left es igual a la lista de Home: mismos Products, mismo orden, Stock negativo a la vista, Days left ausentes donde el glosario lo dice, Products sin movimientos, ocultos y sin precio adentro, Archived products afuera; y es la misma al pedir otro mes.
+  - Una prueba de dominio por cada cifra nueva: Average sale, cantidad vendida, cantidad regalada, Purchases, Cash de la cabecera y What you have left.
+  - Un período vacío: Average sale ausente (nunca 0), cantidades y Purchases en 0 real, Cash con su signo.
 - **Nada cambia para un negocio existente (criterio 11)**: sobre una historia sembrada, antes y después de la migración de los Withdrawal reasons, cada fila, la cabecera del mes y las líneas desde el First record son idénticas; la única etiqueta que difiere es "Promotion" → "Marketing".
 - **El First record incluye los Stock withdrawals (criterio 2)**: un Stock withdrawal con fecha anterior a todos los demás registros arranca la historia.
   - Sus filas de semana y de mes, y el Profit desde el First record, llevan su costo y son iguales a las cifras de Home para la misma semana y el mismo mes. 0 diferencias.
@@ -256,7 +288,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
   - un período sin Stock withdrawal de un Withdrawal reason no muestra línea para ese Withdrawal reason;
   - un negocio sin registros muestra su línea fija;
   - cada barra lleva su cifra, y ningún estado se dice solo con el color.
-- **Cifras que no cambian**: sobre la misma historia sembrada, estas conservan sus valores antes y después de que las filas sumaran el Cost of goods sold y el Stock shortfall:
+- **Cifras que no cambian**: sobre la misma historia sembrada, estas conservan sus valores antes y después de que las filas sumaran el Cost of goods sold y el Stock shortfall, y antes y después de que la API sumara las cifras del Dibujo 9:
   - el Profit y el Cash;
   - la cabecera del mes;
   - las cifras desde el First record;
@@ -284,7 +316,8 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 - **Se llega sin More (criterio 12)**: pruebas de Testing Library a través del router real, en ancho de teléfono: tocar "Analysis" en el segmento de Home lleva a `/analysis`; tocar "Home" en el de Analysis lleva a `/`; "Record expense" de la tarjeta abre el formulario de la Expense y "See expenses" abre Expenses; Analysis tiene la barra con su + y Home marcada como activa. 100% de aprobación.
 - **El segmento nombra sus vistas (criterio 13, #733)**: en ancho de teléfono, el grupo "Home view" de Analysis tiene exactamente dos links, de nombre accesible "Home" y "Analysis", y ninguno "Today"; el proyecto e2e `mobile` pasa en `Analisis` y `AnalisisOscuro` sin ningún infractor agregado. 100% de aprobación.
 - **El mismo encabezado que Home (criterio 14, parte 2 de GH-723)**: pruebas de Testing Library a través del router real (`HomeLayout.test.tsx`): en `/analysis` hay exactamente un h1, con `visualmente-oculto` en el teléfono y visible en la computadora, también cargando y con error; la línea de fecha muestra el hoy de la Session (`03/10` para 2026-10-03); la fila del encabezado no tiene otro elemento interactivo que las dos opciones del segmento y el avatar; cambiar de opción deja `router.state.historyAction === 'REPLACE'` con el índice del historial sin cambios, y la vista elegida abre arriba. El proyecto e2e `mobile` pasa en `Analisis` y `AnalisisOscuro` a 320, 360 y 390 px y al 130 %, con la línea de fecha en una sola línea y sin ningún infractor agregado, y la captura de `AnalisisCompu` no cambia. 100% de aprobación.
-- **Aislamiento (criterio 5)**: cada ruta de Analysis está en el barrido y responde solo las cifras y los nombres de Withdrawal reason de su propio negocio, nunca los datos del otro negocio sembrado.
+- **Aislamiento (criterio 5 y 15)**: cada ruta de Analysis está en el barrido y responde solo las cifras, los nombres de Withdrawal reason y los Products de su propio negocio, nunca los datos del otro negocio sembrado; el barrido cubre cada campo que sumó el Dibujo 9, la lista What you have left incluida.
+- **Sentencias que no crecen**: una prueba al estilo de ADR-0038 verifica que la cantidad de sentencias de `GET /analysis`, con las cifras del Dibujo 9 y What you have left, no crece con el tamaño de la historia.
 - **Sin eco**: después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen montos ni nombres.
 - **Velocidad**: la pantalla responde en menos de 300 ms con un año de unos cientos de ventas y unas decenas de productos (el disparador de revisión de ADR-0010).
 - **Sin curl**: la corrida de punta a punta del front:
@@ -312,6 +345,9 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 - La barra inferior con su + y las etiquetas de la barra en Analysis (son de Navigation, parte 1 de GH-319 y parte 3 de GH-727; el "+ New sale" flotante ya no existe).
 - La pantalla Analysis rediseñada completa (sus pestañas Day/Week/Month/Year, la tarjeta Expenses con superficie propia y ubicada después de los resúmenes) y un conteo de Expenses en la tarjeta: los construye su propio issue de rediseño.
 - Mostrar en el encabezado el período que se lee ("Octubre de 2026" en el dibujo) y una función detrás del lugar vacío ("Sumar gráfico" en el dibujo) (parte 2 de GH-723).
+- Mostrar en pantalla las cifras del Dibujo 9 y What you have left en Analysis: lo entrega la parte de pantalla de GH-497.
+- Sacar Week o Month de Home (parte parte 5 de GH-497 no saca nada de Home).
+- Una lista de Stock por fila de semana o de mes, o un Stock histórico.
 
 ## Planificado en GH-318
 
@@ -323,7 +359,7 @@ Cada pasaje nombra el ADR que lo decide, la parte que lo va a entregar y la orac
 
 Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-whatever-the-unit-and-decimals-only-validate-and-display.md; lo entrega la parte de unidades.
 
-- Nunca se van a sumar cantidades de unidades distintas. Una cantidad pendiente se va a contar por unidad, así que una cifra va a decir "and N <label> without cost" una vez por cada unidad que tenga pendiente. Los gramos de una semana, de un mes y de un producto van a pasar a ser un monto por unidad, cada uno con su etiqueta.
+- Nunca se van a sumar cantidades de unidades distintas. Una cantidad pendiente se va a contar por unidad, así que una cifra va a decir "and N <label> without cost" una vez por cada unidad que tenga pendiente. Los gramos de una semana, de un mes y de un producto van a pasar a ser un monto por unidad, cada uno con su etiqueta, la cantidad vendida y la cantidad regalada del Dibujo 9 incluidas.
 - Va a reemplazar: "Lleva "and N g without cost", donde N suma cada gramo pendiente que tiene detrás" y "**Gramos**: gramos vendidos y gramos regalados, como dos cifras."
 
 ### Plata
@@ -337,7 +373,7 @@ Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-an
 
 Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; lo entrega la parte de zona horaria.
 
-- Las ventanas, las semanas y la tabla por día de la semana van a seguir la zona horaria propia del negocio.
+- Las ventanas, las semanas, la tabla por día de la semana y el hoy de What you have left van a seguir la zona horaria propia del negocio.
 - Va a reemplazar: "**Mes elegido**: abre en el mes en curso en hora argentina" y "**Cada día de la semana, de lunes a domingo**: el total de ventas y la cantidad de ventas, según la fecha de cada venta en hora argentina."
 
 ### Agrupar por categoría
