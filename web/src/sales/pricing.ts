@@ -13,6 +13,7 @@
 
 import type { PaymentMethod } from '../api/payments'
 import { noPriceMessage, OWING_HINT } from '../copy/sales'
+import type { Variety } from '../screens/Variedades'
 
 /** `'vip'` is only read, from lines saved before customer types; a new line priced by a type's
  * price is `'type'` and carries the type's name (ADR-0059). */
@@ -208,6 +209,117 @@ export function fromHundredths(hundredths: number): number {
  * value itself. */
 export function hundredthsOfApiGrams(apiGrams: number): number {
   return toHundredths(String(apiGrams))
+}
+
+/** The price the Customer's type has in the entry, from the current price's `type_prices`; `null`
+ * for a Customer with no type or a type with no price in it. */
+export function typePriceOf(variety: Variety, typeId: number | null): number | null {
+  if (typeId === null) return null
+  const found = variety.current_price?.type_prices?.find((price) => price.customer_type_id === typeId)
+  return found === undefined ? null : found.price
+}
+
+export function quoteOf(variety: Variety, typeId: number | null): PriceQuote | null {
+  const price = variety.current_price
+  if (price === null) return null
+  const bulk =
+    price.bulk_price !== null && price.bulk_minimum !== null
+      ? { price: price.bulk_price, minimumHundredths: hundredthsOfApiGrams(price.bulk_minimum) }
+      : null
+  return { listPrice: price.list_price, bulk, vipPrice: typePriceOf(variety, typeId) }
+}
+
+/** One line of a sale as typed: what `priceSale` needs, nothing more. */
+export interface SaleLineInput {
+  id: string
+  productId: number
+  gramsHundredths: number
+  gift: boolean
+  specialPrice: number | null
+}
+
+/** A line's pricing plus the Customer type that priced it: set only for the `type` rule. */
+export interface PricedSaleLine {
+  id: string
+  gift: boolean
+  gramsHundredths: number
+  pricing: (LinePricing & { customerTypeId: number | null }) | null
+}
+
+export interface PricedSale {
+  lines: PricedSaleLine[]
+  totals: SaleTotals
+}
+
+/** Prices every line of a sale against `products` (the day's list, so no date here) and adds
+ * the totals. A line that breaks a sale rule (no price that day, grams not above zero, ...)
+ * is left unpriced (`pricing: null`) and adds 0 grams and $0 to the totals, as the screen does;
+ * any other error (e.g. a malformed bulk minimum from `quoteOf`) is a data fault and propagates.
+ * A missing product only means no quote: a Gift or a Special price is still priced. */
+export function priceSale(input: {
+  lines: readonly SaleLineInput[]
+  customerTypeId: number | null
+  pricingSettings: PricingSettings
+  products: readonly Variety[]
+  shippingCharged: number
+}): PricedSale {
+  const { lines, customerTypeId, pricingSettings, products, shippingCharged } = input
+  const priced: PricedSaleLine[] = lines.map((line) => {
+    const { id, gift, specialPrice, gramsHundredths } = line
+    const product = products.find((candidate) => candidate.id === line.productId)
+    const quote = product === undefined ? null : quoteOf(product, customerTypeId)
+    try {
+      const pricing = priceLine({
+        gift,
+        specialPrice,
+        customerIsVip: customerTypeId !== null,
+        settings: pricingSettings,
+        quote,
+        gramsHundredths,
+      })
+      return {
+        id,
+        gift,
+        gramsHundredths,
+        pricing: { ...pricing, customerTypeId: pricing.rule === 'type' ? customerTypeId : null },
+      }
+    } catch (error) {
+      if (error instanceof SaleRuleBroken) return { id, gift, gramsHundredths, pricing: null }
+      throw error
+    }
+  })
+  const totals = saleTotals(
+    priced.map((line) =>
+      line.pricing === null
+        ? { gift: line.gift, gramsHundredths: 0, lineTotal: 0 }
+        : { gift: line.gift, gramsHundredths: line.gramsHundredths, lineTotal: line.pricing.lineTotal },
+    ),
+    shippingCharged,
+  )
+  return { lines: priced, totals }
+}
+
+const RULE_PRICED: readonly PricingRule[] = ['list', 'bulk', 'type']
+
+/** Whether any line priced by a rule (list, bulk, type) in both results changed its price per
+ * gram, rule or Customer type. Lines are matched by id, never by position; a line on one side
+ * only, and any Gift, Special price or unpriced line, is not compared. Ids are unique within
+ * each side: duplicates are outside the contract. */
+export function linesRepriced(before: PricedSale, after: PricedSale): boolean {
+  const earlier = new Map(before.lines.map((line) => [line.id, line]))
+  for (const line of after.lines) {
+    const was = earlier.get(line.id)
+    if (was === undefined || was.pricing === null || line.pricing === null) continue
+    if (!RULE_PRICED.includes(was.pricing.rule) || !RULE_PRICED.includes(line.pricing.rule)) continue
+    if (
+      was.pricing.pricePerGram !== line.pricing.pricePerGram ||
+      was.pricing.rule !== line.pricing.rule ||
+      was.pricing.customerTypeId !== line.pricing.customerTypeId
+    ) {
+      return true
+    }
+  }
+  return false
 }
 
 /** The errors `validateSale` checks, each on its own field (plan: the only screen-side checks
