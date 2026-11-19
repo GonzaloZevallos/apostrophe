@@ -25,27 +25,26 @@ issue and turns it into a reviewed, tested pull request.
   </tr>
 </table>
 
-<sub>These are the approved redesign captures (phone at 390 px and computer at 1440 px, light
-and dark) that the system is building against right now, in epic
-[#494](https://github.com/GonzaloZevallos/apostrophe/issues/494). They use example data
-and are drawn in Spanish. The shipped UI is in English today and doesn't match these
-screens yet; Spanish as a second language is
+<sub>These are the approved redesign screens (phone at 390 px, computer at 1440 px, light
+and dark), drawn in Spanish with example data. The system is building them now, in epic
+[#494](https://github.com/GonzaloZevallos/apostrophe/issues/494). Heads up: the app today
+is in English and doesn't look like this yet. Spanish as a second language is
 [#317](https://github.com/GonzaloZevallos/apostrophe/issues/317).</sub>
 
 ## Why it exists
 
-A few friends run small businesses selling by the gram to a few dozen regular customers,
-who order over Telegram or WhatsApp. Their books were a spreadsheet, and it broke in ways
-that cost money:
+It started with a friend's small shop. It sells products by unit and by weight to a few
+dozen regular customers, who order over Telegram or WhatsApp. Everything lived in a
+spreadsheet, and it broke right where it costs money:
 
 - Settling a debt overwrote it. No payment date, no partial payments.
 - A customer was free text, so one person turned into two debtors.
 - An order with two products was two rows.
-- Profit dropped to zero the week they restocked.
+- Profit dropped to zero the week new stock came in.
 
-apostrophe replaces that spreadsheet. One installation, several businesses, and they never
-mix. The person I build for is the owner, on the phone, between orders. The computer works
-too, but the phone wins every trade-off.
+apostrophe replaces that spreadsheet. One install runs several businesses and their data
+never mixes. I build it for the owner, on the phone, between orders. It works on a computer
+too, but when there's a trade-off, the phone wins.
 
 ## What it does
 
@@ -58,7 +57,7 @@ Shipped:
   the payment methods the business actually takes. Each customer has a balance and an
   "owing since" date.
 - **Customers.** Identified by phone number within the business, found by name or number.
-- **Stock.** Purchases, harvests and counts per product, with cost, and a warning before
+- **Stock.** Purchases, own production and counts per product, with cost, and a warning before
   something runs out.
 - **Expenses and results.** Sales, cost, expenses, profit and actual cash for a day, a
   week or a month, side by side. An analysis screen shows what makes money over time.
@@ -67,27 +66,28 @@ Shipped:
   business can have its own Telegram bot that keeps the catalog pinned in its chat, after
   a test send to the owner.
 - **Multi-business isolation.** Sign-in by invitation only. No user, link or error reveals
-  another business's data, or even that it exists. This is enforced by tests on every route.
+  another business's data, or even that it exists. Tests check this on every route.
 - **No assumptions about the business.** Units, currency symbol, decimals and payment
   methods are settings with neutral defaults. No hard-coded business type.
 - **Onboarding and import.** A short guided setup, and a one-time import from the old
   spreadsheet.
-- **Light and dark**, following the phone.
+- **Light and dark**, following the phone's setting.
 
 Planned (open issues): the full redesign above ([#494](https://github.com/GonzaloZevallos/apostrophe/issues/494)),
 order states ([#326](https://github.com/GonzaloZevallos/apostrophe/issues/326)),
 promotions ([#411](https://github.com/GonzaloZevallos/apostrophe/issues/411)),
 a customizable analysis on a reports module ([#321](https://github.com/GonzaloZevallos/apostrophe/issues/321)),
 customers ordering from a Telegram Mini App ([#325](https://github.com/GonzaloZevallos/apostrophe/issues/325)),
-Spanish ([#317](https://github.com/GonzaloZevallos/apostrophe/issues/317)) and a public
-deployment ([#12](https://github.com/GonzaloZevallos/apostrophe/issues/12)).
+Spanish ([#317](https://github.com/GonzaloZevallos/apostrophe/issues/317)) and putting it
+online ([#12](https://github.com/GonzaloZevallos/apostrophe/issues/12)).
 
-Out of scope on purpose: roles inside a business, card payments, invoices and taxes.
+Left out on purpose: roles inside a business, card payments, invoices and taxes.
+
 
 ## Built by agents
 
 This repo is the second product of [agentic-system](https://github.com/GonzaloZevallos/agentic-system),
-a development system I'm building on LangGraph and the Claude Agent SDK. The loop:
+a development system I'm building on LangGraph and the Claude Agent SDK. How a change gets in:
 
 1. A capability starts as a GitHub issue labelled `agentic`. I write it, or the system's
    PM role proposes it.
@@ -129,14 +129,14 @@ The numbers, as of **2026-11-19** (first commit 2026-10-02):
 (excluding PRs, `state_reason == completed`); commits with `git log origin/master --format=%an`;
 tests with `pytest --collect-only`, `vitest list` and the files in `web/e2e/`.</sub>
 
-What's hard, and where most of the work in the system went: keeping agents from drifting
-from the spec, making review find real problems with evidence, keeping the test suite fast
-enough that it isn't the bottleneck, and not letting the UI drift from the approved design.
+The hard part, and where most of my work on the system went: keeping the agents on the
+spec, getting review to find real problems with evidence, keeping the tests fast enough that
+they aren't the bottleneck, and keeping the UI on the approved design.
 
 ## Stack and architecture
 
-- **Backend:** Python 3.13, FastAPI, SQLAlchemy 2, Alembic, Pydantic. SQLite locally,
-  libSQL (Turso) in the cloud.
+- **Backend:** Python 3.13, FastAPI, SQLAlchemy 2, Alembic, Pydantic. SQLite locally.
+  libSQL (Turso) is the plan for hosting.
 - **Frontend:** React 19, Vite, TanStack Query, React Router, i18next. Phone first.
 - **Shape:** one hexagon per capability under `app/` (`domain`, `application`, `adapters`),
   with the import rules enforced by tests in `tests/architecture/`.
@@ -157,12 +157,12 @@ More in [docs/architecture/](docs/architecture/README.md) (Spanish).
 
 ## Quality bar
 
-Everything here is checked in CI on every pull request, and a single `ci-ok` job gates the merge:
+CI runs all of this on every pull request, and one job, `ci-ok`, gates the merge:
 
 - `ruff` and strict `mypy` on the backend, typecheck and lint on the frontend. Nothing is
   silenced: the system refuses edits that add `# type: ignore`, `noqa` or `@ts-ignore`.
 - pytest, Vitest and Playwright end-to-end tests against the real backend, with coverage.
-- Guards worth knowing before adding a route or a table:
+- Know these before adding a route or a table:
   - `tests/test_gated_routes.py`: every route answers 401 without a session.
   - `tests/test_business_isolation.py`: no route reaches another business's records.
   - `tests/migrations/test_business_ownership.py`: every table carries `business_id`.
@@ -188,8 +188,11 @@ scripts/invite-business.sh    # prints a one-time link to open the first busines
 ```
 
 The full guide (reaching it from a phone, running every check, changing the schema) is in
-[docs/development.md](docs/development.md). Deployment (Render, Turso, UptimeRobot and an
-encrypted daily backup) is in [deploy/README.md](deploy/README.md).
+[docs/development.md](docs/development.md).
+
+It isn't online yet ([#12](https://github.com/GonzaloZevallos/apostrophe/issues/12)). The
+planned hosting (Render, Turso, UptimeRobot and an encrypted daily backup) is written up in
+[deploy/README.md](deploy/README.md).
 
 ## Docs
 
@@ -203,8 +206,8 @@ encrypted daily backup) is in [deploy/README.md](deploy/README.md).
 ## About me
 
 I'm Gonzalo Zevallos ([@GonzaloZevallos](https://github.com/GonzaloZevallos)). I design and
-build agentic development systems, and I use them to ship real products like this one.
-Open to roles in AI / agentic engineering.
+build agentic development systems and use them to ship real products, like this one. I'm
+open to AI / agentic engineering roles.
 
 ## License
 

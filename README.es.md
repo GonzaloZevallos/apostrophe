@@ -25,26 +25,25 @@ toma un issue de GitHub y lo convierte en un pull request revisado y con tests.
   </tr>
 </table>
 
-<sub>Son las capturas del rediseño aprobado (celular a 390 px y compu a 1440 px, claro y
-oscuro), que es contra lo que el sistema está construyendo ahora, en la épica
-[#494](https://github.com/GonzaloZevallos/apostrophe/issues/494). Tienen datos de ejemplo y
-están dibujadas en español. La app que corre hoy está en inglés y todavía no se ve así; el
-español como segundo idioma es el
+<sub>Son las pantallas del rediseño aprobado (celular a 390 px, compu a 1440 px, claro y
+oscuro), con datos de ejemplo. El sistema las está construyendo ahora, en la épica
+[#494](https://github.com/GonzaloZevallos/apostrophe/issues/494). Ojo: la app de hoy está
+en inglés y todavía no se ve así. El español como segundo idioma es el
 [#317](https://github.com/GonzaloZevallos/apostrophe/issues/317).</sub>
 
 ## Por qué existe
 
-Unos amigos tienen negocios chicos: venden por gramo a unas decenas de clientes fijos, que
-les piden por Telegram o WhatsApp. Llevaban todo en una planilla, y se rompía en lugares
-donde se pierde plata:
+Arrancó con el negocio chico de un amigo. Vende productos por unidad y por peso a unas
+decenas de clientes fijos, que le piden por Telegram o WhatsApp. Llevaba todo en una
+planilla, y se rompía justo donde se pierde plata:
 
 - Saldar una deuda la pisaba. No quedaba fecha de pago ni había pagos parciales.
 - El cliente era texto libre, así que una persona terminaba siendo dos deudores.
 - Un pedido con dos productos eran dos filas.
-- La ganancia se caía a cero la semana que reponían.
+- La ganancia se caía a cero la semana que reponía mercadería.
 
-apostrophe reemplaza esa planilla. Una sola instalación, varios negocios, y nunca se
-mezclan. Lo armo para el dueño del negocio, con el celular en la mano, entre pedido y
+apostrophe reemplaza esa planilla. Con una sola instalación andan varios negocios, y sus datos
+nunca se mezclan. Lo armo para el dueño del negocio, con el celular en la mano, entre pedido y
 pedido. En la compu también anda, pero cuando hay que elegir, gana el celular.
 
 ## Qué hace
@@ -59,7 +58,7 @@ Lo que ya está:
   cuándo debe.
 - **Clientes.** Se identifican por teléfono dentro de cada negocio, y los encontrás por
   nombre o por número.
-- **Stock.** Compras, cosechas y conteos por producto, con su costo, y un aviso antes de
+- **Stock.** Compras, producción propia y conteos por producto, con su costo, y un aviso antes de
   que algo se termine.
 - **Gastos y resultados.** Ventas, costo, gastos, ganancia y la plata que realmente se
   movió, del día, la semana o el mes, uno al lado del otro. Una pantalla de análisis te
@@ -70,27 +69,27 @@ Lo que ya está:
   compartir. Cada negocio puede tener su propio bot de Telegram que deja el catálogo fijado
   en su chat y lo mantiene al día, después de mandarte una copia de prueba.
 - **Negocios aislados.** Se entra solo por invitación. Ningún usuario, link ni error deja
-  ver datos de otro negocio, ni siquiera que existe. Hay tests que lo controlan en cada ruta.
+  ver datos de otro negocio, ni siquiera que existe. Los tests lo controlan en cada ruta.
 - **No asume nada del negocio.** Unidades, símbolo de moneda, decimales y medios de pago
   son configuración con valores neutros. No hay un rubro metido a mano en el código.
 - **Primeros pasos e importación.** Una configuración inicial guiada y corta, y una
   importación única desde la planilla vieja.
-- **Claro y oscuro**, según lo que tenga el celular.
+- **Claro y oscuro**, según lo que tengas en el celular.
 
 Lo que viene (issues abiertos): el rediseño de arriba ([#494](https://github.com/GonzaloZevallos/apostrophe/issues/494)),
 estados de pedido ([#326](https://github.com/GonzaloZevallos/apostrophe/issues/326)),
 promociones ([#411](https://github.com/GonzaloZevallos/apostrophe/issues/411)),
 un análisis armable sobre un módulo de reportes ([#321](https://github.com/GonzaloZevallos/apostrophe/issues/321)),
 clientes que piden desde una Mini App de Telegram ([#325](https://github.com/GonzaloZevallos/apostrophe/issues/325)),
-el español ([#317](https://github.com/GonzaloZevallos/apostrophe/issues/317)) y publicarla
-en internet ([#12](https://github.com/GonzaloZevallos/apostrophe/issues/12)).
+el español ([#317](https://github.com/GonzaloZevallos/apostrophe/issues/317)) y subirla a
+internet ([#12](https://github.com/GonzaloZevallos/apostrophe/issues/12)).
 
-Afuera a propósito: roles dentro de un negocio, pagos con tarjeta, facturas e impuestos.
+Queda afuera a propósito: roles dentro de un negocio, pagos con tarjeta, facturas e impuestos.
 
 ## Lo construyen agentes
 
 Este repo es el segundo producto de [agentic-system](https://github.com/GonzaloZevallos/agentic-system),
-un sistema de desarrollo que estoy armando sobre LangGraph y el Claude Agent SDK. El ciclo:
+un sistema de desarrollo que estoy armando sobre LangGraph y el Claude Agent SDK. Así entra un cambio:
 
 1. Cada capacidad arranca como un issue de GitHub con la etiqueta `agentic`. Lo escribo
    yo, o lo propone el rol de PM del sistema.
@@ -132,15 +131,15 @@ Los números, al **19 de noviembre de 2026** (el primer commit es del 2 de octub
 (sin los PRs, con `state_reason == completed`); los commits con `git log origin/master --format=%an`;
 los tests con `pytest --collect-only`, `vitest list` y los archivos de `web/e2e/`.</sub>
 
-Lo difícil, y donde se fue la mayor parte del trabajo en el sistema: que los agentes no se
-desvíen de la spec, que la revisión encuentre problemas reales y con evidencia, que los
-tests corran lo bastante rápido como para no ser el cuello de botella, y que la UI no se
-aleje del diseño aprobado.
+Lo difícil, y donde puse la mayor parte del trabajo en el sistema: que los agentes no se
+salgan de la spec, que la revisión encuentre problemas reales y con evidencia, que los
+tests corran rápido para no ser el cuello de botella, y que la UI no se aleje del diseño
+aprobado.
 
 ## Stack y arquitectura
 
-- **Backend:** Python 3.13, FastAPI, SQLAlchemy 2, Alembic, Pydantic. SQLite en local,
-  libSQL (Turso) en la nube.
+- **Backend:** Python 3.13, FastAPI, SQLAlchemy 2, Alembic, Pydantic. SQLite en local.
+  Para el hosting, el plan es libSQL (Turso).
 - **Frontend:** React 19, Vite, TanStack Query, React Router, i18next. Primero el celular.
 - **Forma:** un hexágono por capacidad en `app/` (`domain`, `application`, `adapters`), con
   las reglas de imports controladas por los tests de `tests/architecture/`.
@@ -167,7 +166,7 @@ Todo esto corre en el CI en cada pull request, y un solo job, `ci-ok`, habilita 
   nada: el sistema rechaza cualquier edición que agregue `# type: ignore`, `noqa` o
   `@ts-ignore`.
 - pytest, Vitest y tests end-to-end con Playwright contra el backend real, con coverage.
-- Los controles que conviene conocer antes de sumar una ruta o una tabla:
+- Antes de sumar una ruta o una tabla, conocé estos:
   - `tests/test_gated_routes.py`: toda ruta responde 401 sin sesión.
   - `tests/test_business_isolation.py`: ninguna ruta llega a los registros de otro negocio.
   - `tests/migrations/test_business_ownership.py`: toda tabla tiene `business_id`.
@@ -194,8 +193,11 @@ scripts/invite-business.sh    # imprime un link de un solo uso para abrir el pri
 ```
 
 La guía completa (entrar desde el celular, correr todos los controles, cambiar el esquema)
-está en [docs/development.md](docs/development.md), en inglés. El deploy (Render, Turso,
-UptimeRobot y una copia diaria cifrada) está en [deploy/README.md](deploy/README.md).
+está en [docs/development.md](docs/development.md), en inglés.
+
+Todavía no está en internet ([#12](https://github.com/GonzaloZevallos/apostrophe/issues/12)).
+El hosting que tengo planeado (Render, Turso, UptimeRobot y una copia diaria cifrada) está
+en [deploy/README.md](deploy/README.md).
 
 ## Documentación
 
@@ -209,7 +211,7 @@ UptimeRobot y una copia diaria cifrada) está en [deploy/README.md](deploy/READM
 ## Sobre mí
 
 Soy Gonzalo Zevallos ([@GonzaloZevallos](https://github.com/GonzaloZevallos)). Diseño y
-construyo sistemas de desarrollo agénticos, y los uso para sacar productos reales como
+construyo sistemas de desarrollo agénticos y los uso para sacar productos reales, como
 este. Estoy abierto a roles de IA / ingeniería agéntica.
 
 ## Licencia
