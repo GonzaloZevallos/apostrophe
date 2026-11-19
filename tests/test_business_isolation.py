@@ -1194,7 +1194,7 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
     assert a_analysis["month"]["quantity_sold"] > 0
     assert a_analysis["weeks"][0]["quantity_sold"] > 0
     assert a_analysis["weeks"][0]["average_sale"] is not None
-    assert a_analysis["months"][0]["purchases"] == 0
+    assert a_analysis["months"][0]["quantity_sold"] == a_analysis["month"]["quantity_sold"]
     assert [row["name"] for row in a_analysis["stock"]] == [f"{MARKER} sales variety"]
     assert MARKER not in str(b_analysis)
 
