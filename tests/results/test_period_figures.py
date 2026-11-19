@@ -25,6 +25,7 @@ from app.results.domain.ledger import (
 from app.results.domain.period_figures import Buckets, period_figures, scan, totals_between
 from app.shared.calendar import Month
 from app.shared.quantity import Quantity
+from tests.results.factories import sale_record
 
 TODAY = date(2026, 10, 4)  # a Sunday
 MONTH = Month.containing(TODAY)
@@ -239,7 +240,9 @@ def test_a_variety_only_gifted_has_a_negative_margin_and_no_percentage() -> None
             pending="0",
         )
     ]
-    figures = _figures(draws=draws, sales=[SaleRecord(1, TODAY, 0, 0)], earliest_entry_day=TODAY)
+    figures = _figures(
+        draws=draws, sales=[sale_record(1, TODAY, total=0)], earliest_entry_day=TODAY
+    )
 
     [row] = figures.month.varieties
     assert row.sales_without_shipping == 0
@@ -264,7 +267,7 @@ def test_a_mix_of_sold_and_gifted_sums_within_the_variety() -> None:
             day=TODAY, variety_id=1, name="Flor", sale_id=2, quantity="2", costed=600, pending="0"
         ),
     ]
-    sales = [SaleRecord(1, TODAY, 0, 10_000), SaleRecord(2, TODAY, 0, 0)]
+    sales = [sale_record(1, TODAY, total=10_000), sale_record(2, TODAY, total=0)]
     figures = _figures(draws=draws, sales=sales, earliest_entry_day=TODAY)
 
     [row] = figures.month.varieties
@@ -296,7 +299,7 @@ def test_pending_grams_are_marked_sorted_by_the_shown_figure() -> None:
         costed=1_000,
         pending="0",
     )
-    sales = [SaleRecord(1, TODAY, 0, 10_000), SaleRecord(2, TODAY, 0, 5_000)]
+    sales = [sale_record(1, TODAY, total=10_000), sale_record(2, TODAY, total=5_000)]
     figures = _figures(draws=[pending_line, clean_line], sales=sales, earliest_entry_day=TODAY)
 
     pending_row = next(v for v in figures.month.varieties if v.name == "Pending")
@@ -321,7 +324,9 @@ def test_a_negative_adjustment_is_kept_out_of_the_variety_table_and_counted_as_s
     )
     shortfall = _shortfall(day=TODAY, costed=1_000, pending="0")
     figures = _figures(
-        draws=[sold, shortfall], sales=[SaleRecord(1, TODAY, 0, 10_000)], earliest_entry_day=TODAY
+        draws=[sold, shortfall],
+        sales=[sale_record(1, TODAY, total=10_000)],
+        earliest_entry_day=TODAY,
     )
 
     assert len(figures.month.varieties) == 1
@@ -335,7 +340,9 @@ def test_a_month_with_only_gifts_has_no_share_and_no_average_percentage() -> Non
             day=TODAY, variety_id=1, name="Flor", sale_id=1, quantity="5", costed=2_000, pending="0"
         )
     ]
-    figures = _figures(draws=draws, sales=[SaleRecord(1, TODAY, 0, 0)], earliest_entry_day=TODAY)
+    figures = _figures(
+        draws=draws, sales=[sale_record(1, TODAY, total=0)], earliest_entry_day=TODAY
+    )
 
     assert figures.month.average_margin.percent is None
     assert figures.month.varieties[0].share_percent is None
@@ -357,7 +364,7 @@ def test_variety_sales_without_shipping_plus_shipping_equal_the_month_s_sales() 
             pending="0",
         ),
     ]
-    sales = [SaleRecord(1, TODAY, 1_500, 9_500)]
+    sales = [sale_record(1, TODAY, total=9_500, shipping=1_500)]
     figures = _figures(draws=draws, sales=sales, earliest_entry_day=TODAY)
 
     total_variety_sales = sum(v.sales_without_shipping for v in figures.month.varieties)
@@ -380,7 +387,9 @@ def test_profit_s_pending_n_counts_sold_gifted_and_shortfall_grams_in_its_own_we
     )
     shortfall = _shortfall(day=TODAY, costed=None, pending="2")
     figures = _figures(
-        draws=[sold, shortfall], sales=[SaleRecord(1, TODAY, 0, 4_000)], earliest_entry_day=TODAY
+        draws=[sold, shortfall],
+        sales=[sale_record(1, TODAY, total=4_000)],
+        earliest_entry_day=TODAY,
     )
 
     [week] = [w for w in figures.weeks if w.first_day <= TODAY <= w.last_day]
@@ -396,8 +405,8 @@ def test_best_week_is_by_sales_not_profit() -> None:
     week1_day = date(2026, 9, 21)  # Monday, two weeks before TODAY's week
     week2_day = date(2026, 9, 28)  # Monday, the week before TODAY's week
     sales = [
-        SaleRecord(1, week1_day, 0, 5_000),
-        SaleRecord(2, week2_day, 0, 9_000),
+        sale_record(1, week1_day, total=5_000),
+        sale_record(2, week2_day, total=9_000),
     ]
     figures = _figures(sales=sales, earliest_entry_day=week1_day)
 
@@ -409,7 +418,7 @@ def test_best_week_is_by_sales_not_profit() -> None:
 def test_a_week_tie_goes_to_the_most_recent() -> None:
     week1_day = date(2026, 9, 21)
     week2_day = date(2026, 9, 28)
-    sales = [SaleRecord(1, week1_day, 0, 5_000), SaleRecord(2, week2_day, 0, 5_000)]
+    sales = [sale_record(1, week1_day, total=5_000), sale_record(2, week2_day, total=5_000)]
     figures = _figures(sales=sales, earliest_entry_day=week1_day)
 
     best = [w for w in figures.weeks if w.best]
@@ -426,7 +435,7 @@ def test_all_zero_weeks_mark_none_best() -> None:
 def test_a_weekday_tie_goes_to_the_earlier_day() -> None:
     monday = date(2026, 9, 28)
     wednesday = date(2026, 9, 30)
-    sales = [SaleRecord(1, monday, 0, 3_000), SaleRecord(2, wednesday, 0, 3_000)]
+    sales = [sale_record(1, monday, total=3_000), sale_record(2, wednesday, total=3_000)]
     figures = _figures(sales=sales, earliest_entry_day=monday)
 
     best = [w for w in figures.weekdays if w.best]
@@ -491,7 +500,7 @@ def test_totals_between_splits_sold_and_gifted_grams_and_counts_sales() -> None:
     gifted = _gifted(
         day=TODAY, variety_id=2, name="Regalo", sale_id=2, quantity="2", costed=600, pending="0"
     )
-    sales = [SaleRecord(1, TODAY, 0, 10_000), SaleRecord(2, TODAY, 0, 0)]
+    sales = [sale_record(1, TODAY, total=10_000), sale_record(2, TODAY, total=0)]
     buckets, _ = scan(
         draws=[sold, gifted],
         sales=sales,
@@ -516,7 +525,7 @@ def test_totals_between_excludes_a_day_outside_the_window() -> None:
     """The enforcement artefact: a sale dated the day before the window must not leak
     into it — proof the window edge, not just "every day scanned", is honoured."""
     outside = TODAY - timedelta(days=1)
-    sale = SaleRecord(1, outside, 0, 5_000)
+    sale = sale_record(1, outside, total=5_000)
     buckets, _ = scan(
         draws=[],
         sales=[sale],
@@ -545,7 +554,7 @@ def test_totals_between_answers_shortfall_none_with_no_negative_adjustment() -> 
     )
     buckets, _ = scan(
         draws=[sold],
-        sales=[SaleRecord(1, TODAY, 0, 5_000)],
+        sales=[sale_record(1, TODAY, total=5_000)],
         payments=[],
         expenses=[],
         purchases=[],
@@ -593,7 +602,7 @@ def test_the_domain_time_guard_runs_a_year_of_history_in_under_a_second() -> Non
                 pending="0",
             )
         )
-        sales.append(SaleRecord(sale_id=i, day=day, shipping=0, total=1_000))
+        sales.append(sale_record(i, day, total=1_000))
     for i in range(100):
         day = TODAY - timedelta(days=i % 400)
         draws.append(_shortfall(day=day, costed=10, pending="0"))
@@ -650,7 +659,7 @@ def test_a_promotion_and_an_own_use_each_lower_profit_by_their_costed_amount_on_
     )
     promotion = _withdrawal(kind="promotion", day=YESTERDAY, quantity="2", costed=600, pending="0")
     own_use = _withdrawal(kind="own_use", day=TODAY, quantity="1", costed=300, pending="0")
-    buckets, _ = _scan([sold, promotion, own_use], [SaleRecord(1, TODAY, 0, 10_000)], TODAY)
+    buckets, _ = _scan([sold, promotion, own_use], [sale_record(1, TODAY, total=10_000)], TODAY)
 
     on_yesterday = totals_between(buckets, YESTERDAY, YESTERDAY)
     on_today = totals_between(buckets, TODAY, TODAY)
@@ -674,7 +683,7 @@ def test_a_withdrawal_leaves_cost_of_goods_shortfall_sales_and_grams_sold_untouc
         costed=3_000,
         pending="0",
     )
-    sales = [SaleRecord(1, TODAY, 0, 10_000)]
+    sales = [sale_record(1, TODAY, total=10_000)]
     without, _ = _scan([sold], sales, TODAY)
     withdrawals = [
         _withdrawal(kind="promotion", day=TODAY, quantity="2", costed=600, pending="1"),
@@ -712,7 +721,7 @@ def test_a_withdrawal_never_enters_the_month_s_variety_table_or_shortfall() -> N
     promotion = _withdrawal(kind="promotion", day=TODAY, quantity="2", costed=600, pending="0")
     figures = _figures(
         draws=[sold, promotion],
-        sales=[SaleRecord(1, TODAY, 0, 10_000)],
+        sales=[sale_record(1, TODAY, total=10_000)],
         earliest_entry_day=TODAY,
     )
 
@@ -747,7 +756,7 @@ def test_each_reason_counts_only_its_own_pending_grams_and_profit_adds_every_one
     )
     promotion = _withdrawal(kind="promotion", day=TODAY, quantity="4", costed=None, pending="4")
     own_use = _withdrawal(kind="own_use", day=TODAY, quantity="2", costed=None, pending="2")
-    buckets, _ = _scan([sold, promotion, own_use], [SaleRecord(1, TODAY, 0, 1_000)], TODAY)
+    buckets, _ = _scan([sold, promotion, own_use], [sale_record(1, TODAY, total=1_000)], TODAY)
 
     totals = totals_between(buckets, TODAY, TODAY)
 
@@ -770,7 +779,7 @@ def test_a_withdrawal_dated_before_every_other_record_moves_the_first_record() -
     )
     withdrawal = _withdrawal(kind="own_use", day=earlier, quantity="1", costed=100, pending="0")
 
-    _, first_record = _scan([sold, withdrawal], [SaleRecord(1, TODAY, 0, 1_000)], TODAY)
+    _, first_record = _scan([sold, withdrawal], [sale_record(1, TODAY, total=1_000)], TODAY)
 
     assert first_record == earlier
 
@@ -870,7 +879,7 @@ def test_a_withdrawal_moves_no_variety_row_share_average_margin_best_week_or_wee
         pending="0",
     )
     promotion = _withdrawal(kind="promotion", day=TODAY, quantity="5", costed=900, pending="0")
-    sales = [SaleRecord(1, TODAY, 0, 1_000)]
+    sales = [sale_record(1, TODAY, total=1_000)]
     alone = _figures(draws=[sold], sales=sales, earliest_entry_day=TODAY)
     with_withdrawal = _figures(draws=[sold, promotion], sales=sales, earliest_entry_day=TODAY)
 
@@ -898,7 +907,7 @@ def test_a_week_with_7_g_sold_2_g_promoted_and_1_g_own_use_pending_reads_exactly
     own_use = _withdrawal(kind="own_use", day=TODAY, quantity="1", costed=None, pending="1")
     figures = _figures(
         draws=[sold, promotion, own_use],
-        sales=[SaleRecord(1, TODAY, 0, 7_000)],
+        sales=[sale_record(1, TODAY, total=7_000)],
         earliest_entry_day=TODAY,
     )
 

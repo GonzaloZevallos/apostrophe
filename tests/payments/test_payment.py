@@ -23,10 +23,10 @@ from app.payments.domain.payment import (
 from app.payments.domain.settlement import (
     LaterPaymentEntry,
     Ledger,
-    OwedSale,
     settle,
 )
 from app.shared.payment_method import PaymentMethodId, PaymentMethodLabel
+from tests.payments.builders import owed_sale
 
 CASH_LABEL = PaymentMethodLabel(1, "Cash", "banknote")
 
@@ -35,7 +35,7 @@ AT = datetime(2026, 9, 1, 10, 0)
 
 
 def _ledger_owing(total: int) -> Ledger:
-    return Ledger((OwedSale(1, date(2026, 9, 1), AT, total),), ())
+    return Ledger((owed_sale(1, date(2026, 9, 1), total),), ())
 
 
 def test_a_candidate_with_a_non_positive_amount_is_refused() -> None:
@@ -74,7 +74,7 @@ def test_settle_candidate_refuses_any_amount_against_a_credit_or_settled_balance
         settle_candidate(settled, PaymentCandidate(paid_on=TODAY, amount=1), TODAY)
 
     credit = Ledger(
-        (OwedSale(1, date(2026, 9, 1), AT, 100),),
+        (owed_sale(1, date(2026, 9, 1), 100),),
         (LaterPaymentEntry(1, date(2026, 9, 2), AT, 130, CASH_LABEL),),
     )
     with pytest.raises(PaymentAboveBalance):
@@ -109,7 +109,7 @@ def test_settle_candidate_shares_paid_on_with_an_already_recorded_later_payment(
         method=CASH_LABEL,
     )
     ledger = Ledger(
-        (OwedSale(1, date(2026, 9, 1), AT, 100),),
+        (owed_sale(1, date(2026, 9, 1), 100),),
         (already_recorded,),
     )
     candidate = PaymentCandidate(paid_on=shared_day, amount=30)
@@ -126,8 +126,8 @@ def test_settle_candidate_answers_exactly_what_recording_it_would_settle() -> No
     payment and calling `settle()` again lands on the same splits and balance."""
     ledger = Ledger(
         (
-            OwedSale(1, date(2026, 9, 1), AT, 60),
-            OwedSale(2, date(2026, 9, 10), AT, 60),
+            owed_sale(1, date(2026, 9, 1), 60),
+            owed_sale(2, date(2026, 9, 10), 60),
         ),
         (),
     )

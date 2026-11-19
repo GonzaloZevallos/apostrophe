@@ -10,7 +10,7 @@ second sum of its own.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timedelta, tzinfo
 
 from app.results.application.ports import (
     DebtorRow,
@@ -28,6 +28,13 @@ from app.results.domain.figures import ReasonCost, RowCost
 from app.results.domain.period_figures import scan, totals_between
 from app.results.domain.periods import Period, periods
 from app.results.domain.sorting import oldest, sorted_by_name, teaser
+from app.results.domain.today_series import (
+    LAST_HOUR,
+    change_percent,
+    hourly_running_total,
+    so_far,
+)
+from app.shared.calendar import local_day
 from app.shared.quantity import Quantity
 
 
@@ -70,12 +77,29 @@ class DebtsSummary:
 
 
 @dataclass(frozen=True)
+class TodayFigures:
+    """Today's block: `sales` and `sales_count` are `periods.today`'s own totals; the
+    so-far pair is cut at the same local time of day, to the second. `hourly_today` runs
+    from hour 0 to the current hour and `hourly_last_week` through hour 23."""
+
+    sales: int
+    sales_count: int
+    so_far: int
+    last_week_so_far: int
+    last_week_day: date
+    change_percent: int | None
+    hourly_today: tuple[int, ...]
+    hourly_last_week: tuple[int, ...]
+
+
+@dataclass(frozen=True)
 class Panel:
     today: PeriodFigures
     week: PeriodFigures
     month: PeriodFigures
     debts: DebtsSummary
     stock: tuple[StockRow, ...]
+    today_block: TodayFigures
 
 
 def _cost_line(figure: RowCost | None) -> CostLineFigures | None:
@@ -87,7 +111,8 @@ def _cost_line(figure: RowCost | None) -> CostLineFigures | None:
 
 
 def read_panel(
-    today: date,
+    now: datetime,
+    tz: tzinfo,
     stock: StockFigures,
     sales: SalesLedger,
     payments: PaymentsLedger,
@@ -96,11 +121,17 @@ def read_panel(
     debts: DebtSummary,
     reasons: WithdrawalReasons,
 ) -> Panel:
+    now_local = now.astimezone(tz)
+    today = local_day(now, tz)
+    last_week_day = today - timedelta(days=7)
+    cut = now_local.time().replace(tzinfo=None, microsecond=0)
+    through_hour = now_local.hour
     the_periods = periods(today)
     stock_answer = stock.read(today)
+    all_sales = sales.all()
     buckets, _ = scan(
         draws=stock_answer.draws,
-        sales=sales.all(),
+        sales=all_sales,
         payments=payments.all(),
         expenses=expenses.all(),
         purchases=purchases.purchases(),
@@ -136,10 +167,26 @@ def read_panel(
         teaser=teaser(debts_answer.debtors),
     )
 
+    today_figures = figures_for(the_periods.today)
+    compared = [sale for sale in all_sales if sale.day in (today, last_week_day)]
+    today_so_far = so_far(compared, today, cut, tz)
+    last_week_so_far = so_far(compared, last_week_day, cut, tz)
+    today_block = TodayFigures(
+        sales=today_figures.sales,
+        sales_count=today_figures.sales_count,
+        so_far=today_so_far,
+        last_week_so_far=last_week_so_far,
+        last_week_day=last_week_day,
+        change_percent=change_percent(today_so_far, last_week_so_far),
+        hourly_today=hourly_running_total(compared, today, tz, through_hour=through_hour),
+        hourly_last_week=hourly_running_total(compared, last_week_day, tz, through_hour=LAST_HOUR),
+    )
+
     return Panel(
-        today=figures_for(the_periods.today),
+        today=today_figures,
         week=figures_for(the_periods.week),
         month=figures_for(the_periods.month),
         debts=debts_summary,
         stock=sorted_by_name(stock_answer.rows),
+        today_block=today_block,
     )

@@ -42,6 +42,8 @@ classDiagram
   }
   class sorting {
   }
+  class today_series {
+  }
   analyse --> figures
   analyse --> period_figures
   analyse --> ports
@@ -58,6 +60,7 @@ classDiagram
   read_panel --> periods
   read_panel --> ports
   read_panel --> sorting
+  read_panel --> today_series
   router --> analyse
   router --> assemble
   router --> ports
@@ -66,6 +69,8 @@ classDiagram
   schemas --> figures
   schemas --> ports
   schemas --> read_panel
+  today_series --> ledger
+  today_series --> rounding
 ```
 
 ## domain
@@ -237,6 +242,7 @@ classDiagram
   }
   class SaleRecord {
     day : date
+    recorded_at : datetime
     sale_id : int
     shipping : int
     total : int
@@ -377,6 +383,7 @@ classDiagram
     month
     stock : tuple~StockRow, ...~
     today
+    today_block
     week
   }
   class PaymentsLedger {
@@ -422,6 +429,16 @@ classDiagram
     threshold : Quantity #124; None
     variety_id : int
   }
+  class TodayFigures {
+    change_percent : int #124; None
+    hourly_last_week : tuple~int, ...~
+    hourly_today : tuple~int, ...~
+    last_week_day : date
+    last_week_so_far : int
+    sales : int
+    sales_count : int
+    so_far : int
+  }
   class WithdrawalReasons {
     all() Sequence~ReasonRecord~
   }
@@ -431,6 +448,7 @@ classDiagram
   Panel --> PeriodFigures : month
   Panel --> PeriodFigures : today
   Panel --> PeriodFigures : week
+  Panel --> TodayFigures : today_block
 ```
 
 ## adapters
@@ -498,6 +516,10 @@ classDiagram
     name : str
     total
   }
+  class HourlyPointOut {
+    hour : int
+    total
+  }
   class MarginOut {
     amount
     pending_quantity
@@ -520,6 +542,7 @@ classDiagram
     debts
     periods
     stock : list~PanelProductOut~
+    today
     of(panel: Panel) PanelOut
   }
   class PanelProductOut {
@@ -587,6 +610,17 @@ classDiagram
     shortfall : RowCostOut #124; None
     withdrawals : list~ReasonCostOut~
   }
+  class TodayOut {
+    change_percent : int #124; None
+    hourly_last_week : list~HourlyPointOut~
+    hourly_today : list~HourlyPointOut~
+    last_week_day : date
+    last_week_so_far
+    sales
+    sales_count : int
+    so_far
+    of(figures: TodayFigures) TodayOut
+  }
   class WeekOut {
     best : bool
     cash
@@ -614,6 +648,7 @@ classDiagram
   MonthRowOut --> RowCostOut : cost_of_goods
   PanelOut --> DebtsOut : debts
   PanelOut --> PeriodsOut : periods
+  PanelOut --> TodayOut : today
   PeriodsOut --> PeriodOut : month
   PeriodsOut --> PeriodOut : today
   PeriodsOut --> PeriodOut : week

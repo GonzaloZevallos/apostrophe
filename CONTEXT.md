@@ -619,3 +619,7 @@ _Avoid_: style guide, copy guide, UI guidelines
 **New sale suggestions**:
 Los ids que la lectura de ventas le ofrece a New sale para acortar elecciones: hasta 8 Customers a los que se les vendió más recientemente, hasta 8 Products más vendidos en los 30 días que terminan en la fecha de la venta (sin Gifts ni Archived products) y el Payment method de la última Sale pagada en el momento, o ninguno si ese medio está archivado. Solo acortan elecciones: nunca fijan un precio, un monto ni una cantidad, y salen solo del propio Business. En la app: todavía no tiene palabra propia.
 _Avoid_: recommendations, favorites, shortcuts, defaults, quick picks
+
+**So far**:
+Las ventas de un día registradas en su propia fecha hasta la hora local del día de ahora, al segundo, envío incluido, pagadas o no. Se compara con la misma medida del mismo día de la semana anterior; una Sale registrada en un día distinto de su fecha no entra nunca, y sin nada en la base no hay porcentaje. En la app: todavía no tiene palabra propia (la muestran partes posteriores de GH-497).
+_Avoid_: to date, running total, pace, progress, hasta ahora

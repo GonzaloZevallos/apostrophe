@@ -26,7 +26,13 @@ from pydantic import BaseModel
 from app.money_schema import MoneyOut
 from app.products.adapters.schemas import QuantityOut
 from app.results.application.ports import DebtorRow, StockRow
-from app.results.application.read_panel import CostLineFigures, DebtsSummary, Panel, PeriodFigures
+from app.results.application.read_panel import (
+    CostLineFigures,
+    DebtsSummary,
+    Panel,
+    PeriodFigures,
+    TodayFigures,
+)
 from app.results.domain.figures import ReasonCost
 from app.stock.adapters.schemas import Status
 
@@ -173,8 +179,47 @@ class PeriodsOut(BaseModel):
     month: PeriodOut
 
 
+class HourlyPointOut(BaseModel):
+    hour: int
+    total: MoneyOut
+
+
+def hourly_points(totals: tuple[int, ...]) -> list[HourlyPointOut]:
+    return [HourlyPointOut(hour=hour, total=Decimal(total)) for hour, total in enumerate(totals)]
+
+
+class TodayOut(BaseModel):
+    """Today's Sales and the so-far comparison against the same weekday last week.
+    `change_percent` is `null` when last week's so-far is 0, never 0 or infinite.
+    `hourly_today` ends at the current hour and can end below `sales` (a Sale recorded
+    on another day than its date counts at hour 23); `hourly_last_week` runs 0..23."""
+
+    sales: MoneyOut
+    sales_count: int
+    so_far: MoneyOut
+    last_week_so_far: MoneyOut
+    last_week_day: date
+    change_percent: int | None
+    hourly_today: list[HourlyPointOut]
+    hourly_last_week: list[HourlyPointOut]
+
+    @classmethod
+    def of(cls, figures: TodayFigures) -> TodayOut:
+        return cls(
+            sales=Decimal(figures.sales),
+            sales_count=figures.sales_count,
+            so_far=Decimal(figures.so_far),
+            last_week_so_far=Decimal(figures.last_week_so_far),
+            last_week_day=figures.last_week_day,
+            change_percent=figures.change_percent,
+            hourly_today=hourly_points(figures.hourly_today),
+            hourly_last_week=hourly_points(figures.hourly_last_week),
+        )
+
+
 class PanelOut(BaseModel):
     periods: PeriodsOut
+    today: TodayOut
     debts: DebtsOut
     stock: list[PanelProductOut]
 
@@ -186,6 +231,7 @@ class PanelOut(BaseModel):
                 week=PeriodOut.of(panel.week),
                 month=PeriodOut.of(panel.month),
             ),
+            today=TodayOut.of(panel.today_block),
             debts=DebtsOut.of(panel.debts),
             stock=[PanelProductOut.of_row(row) for row in panel.stock],
         )

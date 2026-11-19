@@ -8,7 +8,7 @@ from typing import Literal, Protocol
 import pytest
 
 from app.results.domain.figures import ReasonCost, RowCost
-from app.results.domain.ledger import DrawRow, ReasonRecord, SaleRecord
+from app.results.domain.ledger import DrawRow, ReasonRecord
 from app.results.domain.period_figures import (
     Buckets,
     period_figures,
@@ -18,6 +18,7 @@ from app.results.domain.period_figures import (
 )
 from app.shared.calendar import Month
 from app.shared.quantity import Quantity
+from tests.results.factories import sale_record
 
 TODAY = date(2026, 10, 4)  # a Sunday
 YESTERDAY = TODAY - timedelta(days=1)
@@ -81,7 +82,7 @@ def _draw(reason: Reason, day: date, *, quantity: str, costed: int | None, pendi
 def _scan(draws: list[DrawRow]) -> Buckets:
     buckets, _ = scan(
         draws=draws,
-        sales=[SaleRecord(1, TODAY, 0, 1_000)] if any(d.kind == "sold" for d in draws) else [],
+        sales=[sale_record(1, TODAY, total=1_000)] if any(d.kind == "sold" for d in draws) else [],
         payments=[],
         expenses=[],
         purchases=[],
@@ -226,7 +227,7 @@ def test_every_row_the_header_and_since_carry_the_same_row_cost_as_totals_betwee
         today=TODAY,
         month=month,
         draws=draws,
-        sales=[SaleRecord(1, TODAY, 0, 1_000)],
+        sales=[sale_record(1, TODAY, total=1_000)],
         payments=[],
         expenses=[],
         purchases=[],

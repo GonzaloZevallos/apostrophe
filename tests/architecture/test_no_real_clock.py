@@ -32,6 +32,8 @@ from pathlib import Path, PurePosixPath
 
 import pytest
 
+from tests.architecture.imports import import_table, imported_module
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCANNED = ("tests", "app")
 
@@ -86,7 +88,7 @@ def real_clock_reads(source: str, path: str = "") -> list[Read]:
     """Every read of the real clock in `source`, with the function that holds it."""
     tree = ast.parse(source)
     package = PurePosixPath(path).parent.parts
-    table = _import_table(tree, package)
+    table = import_table(tree, package)
     bound = _bound_names(tree)
     reads: set[Read] = set()
 
@@ -102,7 +104,7 @@ def real_clock_reads(source: str, path: str = "") -> list[Read]:
 
     def visit(node: ast.AST, symbol: str) -> None:
         if isinstance(node, ast.ImportFrom):
-            module = _imported_module(node, package)
+            module = imported_module(node, package)
             for alias in node.names:
                 if module is not None and f"{module}.{alias.name}" in TARGETS:
                     reads.add(Read(path, node.lineno, symbol, f"{module}.{alias.name}"))
@@ -121,36 +123,6 @@ def real_clock_reads(source: str, path: str = "") -> list[Read]:
 def real_clock_lines(source: str, path: str = "") -> list[int]:
     """The line of every read of the real clock in `source`, in order."""
     return sorted({read.line for read in real_clock_reads(source, path)})
-
-
-def _imported_module(node: ast.ImportFrom, package: tuple[str, ...]) -> str | None:
-    """The absolute dotted module a `from` import names; a relative one is resolved
-    against `package`, the dotted directory of the file that holds it."""
-    if not node.level:
-        return node.module
-    if node.level - 1 > len(package):
-        return None
-    base = package[: len(package) - (node.level - 1)]
-    return ".".join([*base, *([node.module] if node.module else [])])
-
-
-def _import_table(tree: ast.AST, package: tuple[str, ...]) -> dict[str, str]:
-    """local name -> the dotted thing it stands for ("dt" -> "datetime")."""
-    table: dict[str, str] = {}
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            for alias in node.names:
-                if alias.asname:
-                    table[alias.asname] = alias.name
-                else:
-                    top = alias.name.split(".")[0]
-                    table[top] = top
-        elif isinstance(node, ast.ImportFrom):
-            module = _imported_module(node, package)
-            for alias in node.names:
-                if module is not None:
-                    table[alias.asname or alias.name] = f"{module}.{alias.name}"
-    return table
 
 
 def _bound_names(tree: ast.AST) -> set[str]:

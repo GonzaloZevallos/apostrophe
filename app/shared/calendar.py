@@ -12,7 +12,14 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, tzinfo
+
+
+def local_day(instant: datetime, tz: tzinfo) -> date:
+    """The calendar day `instant` falls on in `tz`: the one place an instant becomes a
+    day (`app.clock` and the panel's today block both go through it)."""
+    return instant.astimezone(tz).date()
+
 
 _PATTERN = re.compile(r"^(\d{4})-(0[1-9]|1[0-2])$")
 

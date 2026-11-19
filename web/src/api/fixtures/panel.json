@@ -89,6 +89,162 @@
       ]
     }
   },
+  "today": {
+    "sales": 15000,
+    "sales_count": 2,
+    "so_far": 10000,
+    "last_week_so_far": 8000,
+    "last_week_day": "2026-09-26",
+    "change_percent": 25,
+    "hourly_today": [
+      {
+        "hour": 0,
+        "total": 0
+      },
+      {
+        "hour": 1,
+        "total": 0
+      },
+      {
+        "hour": 2,
+        "total": 0
+      },
+      {
+        "hour": 3,
+        "total": 0
+      },
+      {
+        "hour": 4,
+        "total": 0
+      },
+      {
+        "hour": 5,
+        "total": 0
+      },
+      {
+        "hour": 6,
+        "total": 0
+      },
+      {
+        "hour": 7,
+        "total": 0
+      },
+      {
+        "hour": 8,
+        "total": 0
+      },
+      {
+        "hour": 9,
+        "total": 5000
+      },
+      {
+        "hour": 10,
+        "total": 5000
+      },
+      {
+        "hour": 11,
+        "total": 10000
+      }
+    ],
+    "hourly_last_week": [
+      {
+        "hour": 0,
+        "total": 0
+      },
+      {
+        "hour": 1,
+        "total": 0
+      },
+      {
+        "hour": 2,
+        "total": 0
+      },
+      {
+        "hour": 3,
+        "total": 0
+      },
+      {
+        "hour": 4,
+        "total": 0
+      },
+      {
+        "hour": 5,
+        "total": 0
+      },
+      {
+        "hour": 6,
+        "total": 0
+      },
+      {
+        "hour": 7,
+        "total": 0
+      },
+      {
+        "hour": 8,
+        "total": 0
+      },
+      {
+        "hour": 9,
+        "total": 4000
+      },
+      {
+        "hour": 10,
+        "total": 4000
+      },
+      {
+        "hour": 11,
+        "total": 8000
+      },
+      {
+        "hour": 12,
+        "total": 8000
+      },
+      {
+        "hour": 13,
+        "total": 8000
+      },
+      {
+        "hour": 14,
+        "total": 12000
+      },
+      {
+        "hour": 15,
+        "total": 12000
+      },
+      {
+        "hour": 16,
+        "total": 12000
+      },
+      {
+        "hour": 17,
+        "total": 12000
+      },
+      {
+        "hour": 18,
+        "total": 20000
+      },
+      {
+        "hour": 19,
+        "total": 20000
+      },
+      {
+        "hour": 20,
+        "total": 20000
+      },
+      {
+        "hour": 21,
+        "total": 20000
+      },
+      {
+        "hour": 22,
+        "total": 20000
+      },
+      {
+        "hour": 23,
+        "total": 20000
+      }
+    ]
+  },
   "debts": {
     "total_owed": 37000,
     "sales_owing_count": 4,

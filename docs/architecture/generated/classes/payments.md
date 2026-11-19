@@ -12,6 +12,8 @@ classDiagram
   }
   class application {
   }
+  class debt_age {
+  }
   class delete_payment {
   }
   class domain {
@@ -51,6 +53,7 @@ classDiagram
   class view_accounts {
   }
   account --> settlement
+  debt_age --> settlement
   delete_payment --> errors
   delete_payment --> ports
   import_port --> tables
@@ -118,6 +121,12 @@ classDiagram
     running_balance : int
     standing : Literal
   }
+  class DebtAgeBuckets {
+    days_8_30 : int
+    over_30 : int
+    this_week : int
+    total : int
+  }
   class LaterPaymentEntry {
     amount : int
     id : int
@@ -138,6 +147,7 @@ classDiagram
   class OwedSale {
     date : date
     id : int
+    number : int
     on_the_spot_method : PaymentMethodLabel #124; None
     paid_on_the_spot : bool
     recorded_at : datetime
@@ -186,7 +196,9 @@ classDiagram
     total : int
   }
   class SaleSettlement {
+    sale_date : date
     sale_id : int
+    sale_number : int
     still_owed : int
   }
   class SettleResult {

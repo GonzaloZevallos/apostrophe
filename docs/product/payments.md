@@ -83,6 +83,7 @@ Criterios de éxito:
 
 - **Sales still owing**: toda Sale del Business que no está pagada por completo una vez aplicado el Settlement, las pagadas en parte incluidas, cada una contada una sola vez. Una Sale cubierta por un Credit está pagada.
 - **Total owed**: la suma de los Balances mayores que $0. Los Credits nunca la restan.
+- **Antigüedad de la deuda**: se mide por Sale que todavía se debe, nunca por Customer, en tramos de 0-7, 8-30 y 31+ días. Ver el ADR [20261119-debt-age-is-per-sale-still-owing-over-settlement](../adr/20261119-debt-age-is-per-sale-still-owing-over-settlement.md).
 
 ### En pantalla: la sección "Owed to you" de Customers
 
