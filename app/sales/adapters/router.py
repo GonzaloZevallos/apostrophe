@@ -23,8 +23,11 @@ from app.sales.adapters.schemas import (
     SaleDetailOut,
     SaleIn,
     SaleOut,
+    StrictDay,
+    SuggestionsOut,
 )
 from app.sales.adapters.sql_sales import SqlSales
+from app.sales.adapters.sql_suggestions import SqlNewSaleSuggestions
 from app.sales.application import view_sales
 from app.sales.application.assign_customer import assign_customer as assign_customer_use_case
 from app.sales.application.delete_sale import delete_sale as delete_sale_use_case
@@ -39,6 +42,7 @@ from app.sales.application.ports import (
 )
 from app.sales.application.record_sale import LineInput
 from app.sales.application.record_sale import record_sale as record_sale_use_case
+from app.sales.application.suggest_for_new_sale import suggest_for_new_sale
 from app.sales.domain.pricing import SaleRuleBroken
 from app.sales.domain.sale import (
     CustomerAlreadyAssigned,
@@ -90,7 +94,12 @@ def get_money_format(
     return factory(session, business_id)
 
 
+def get_suggestions(session: SessionDep, business_id: CurrentBusinessId) -> SqlNewSaleSuggestions:
+    return SqlNewSaleSuggestions(session, business_id)
+
+
 SalesDep = Annotated[SqlSales, Depends(get_sales)]
+SuggestionsDep = Annotated[SqlNewSaleSuggestions, Depends(get_suggestions)]
 PriceBookDep = Annotated[SqlPriceBook, Depends(get_price_book)]
 CustomerFactsDep = Annotated[SqlCustomerFacts, Depends(get_customer_facts)]
 
@@ -196,6 +205,13 @@ def list_sales(
     customer_ids = [view.customer.id for view in views if view.customer is not None]
     owing = owing_sales.still_owing(customer_ids)
     return [SaleOut.of(view, view.sale.id in owing) for view in views]
+
+
+@router.get("/suggestions")
+def new_sale_suggestions(on: StrictDay, suggestions: SuggestionsDep) -> SuggestionsOut:
+    # Declared before `/{sale_id}`, or "suggestions" would be read as a sale id. There is
+    # no limit parameter: the cap is the use case's alone.
+    return SuggestionsOut.of(suggest_for_new_sale(suggestions, on))
 
 
 @router.get("/{sale_id}")

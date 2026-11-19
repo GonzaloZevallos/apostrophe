@@ -204,3 +204,33 @@ class LineCosts(Protocol):
     def for_sale(self, sale: Sale) -> list[LineCost]:
         """One `LineCost` per line of `sale`, in the same order as `sale.lines`."""
         ...
+
+
+@dataclass(frozen=True)
+class LastPaidMethod:
+    """The method of the most recent Sale paid on the spot, as a fact: whether it is
+    archived is the use case's to judge, never the query's."""
+
+    payment_method_id: int
+    is_archived: bool
+
+
+class NewSaleSuggestions(Protocol):
+    """What New sale shortens (docs/product/sales.md, New sale suggestions): ids only,
+    for one business. Built for it; every statement filters on it."""
+
+    def recent_customer_ids(self, limit: int) -> list[int]:
+        """Each Customer once, ranked by their latest Sale (date, then number), highest
+        first; Sales without a Customer are left out."""
+        ...
+
+    def most_sold_product_ids(self, start: date, end: date, limit: int) -> list[int]:
+        """Products by quantity sold over `[start, end]` (both included), highest first,
+        ties by the stored name key then id. Gift lines, archived Products and a zero
+        sum are left out."""
+        ...
+
+    def last_paid_method(self) -> LastPaidMethod | None:
+        """The payment of the Sale paid on the spot with the highest Sale number, or
+        `None` when there is none. Archived methods are reported, never filtered."""
+        ...
