@@ -145,7 +145,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 
 La Decisión 3 del humano, Dibujo 9, dice que Week y Month de Analysis conservan cada cifra que hoy muestran Week y Month de Home. Esta parte lo entrega en `GET /analysis` y en estos docs. Ninguna pantalla cambia todavía: las tarjetas y las tablas siguen mostrando exactamente lo de "Semana por semana" y "Cabecera del mes", y la parte de pantalla de GH-497 decide cómo se ven las cifras nuevas.
 
-- **Dónde**: cada fila de semana, cada fila de mes y la cabecera del mes.
+- **Dónde**: cada fila de semana, cada fila de mes y la cabecera del mes, más una lista `stock` en la raíz de la respuesta. Las filas y la cabecera llevan `average_sale` (ausente como `null`), `quantity_sold`, `quantity_gifted` y `purchases`; la cabecera suma `cash`.
 - **Las cifras que sumó el Dibujo 9**:
   - **Average sale**: el total de Sales del período, envío incluido, dividido por la cantidad de Sales (no de líneas), redondeado con mitad hacia arriba, tal como lo calcula el Panel (CONTEXT.md, Average sale). No está cuando el período no tiene Sales; nunca es 0.
   - **Cantidad vendida** y **cantidad regalada**: dos cifras aparte, como en Home. La cifra única existente de gramos vendidos o regalados se conserva tal cual. Un período sin ninguna da un 0 real. La API las llama "quantity sold" y "quantity gifted", no "grams", en línea con Assume nothing y la Unit planificada (ADR-0056); los valores son los de hoy, sin cambios.
@@ -154,7 +154,7 @@ La Decisión 3 del humano, Dibujo 9, dice que Week y Month de Analysis conservan
 - **Mismo cálculo que Home**: cada cifra sale del mismo cálculo `totals_between` que el Panel, nunca de uno paralelo ni de una copia; el front nunca suma, cuenta ni ordena. Una semana pasada lleva lo que `totals_between` da para esa semana. Los días se cuentan exactamente como ya los cuenta Analysis.
 - **What you have left**: una sola lista por respuesta, la misma de Home.
   - Es el Stock de hoy, en el hoy del negocio, no el del final del mes que se está viendo: no cambia con el mes elegido, y ninguna fila de semana ni de mes lleva su propio Stock.
-  - Lleva cada Product sin archivar, en el orden de Products, con su nombre, Stock, Stock status y Days left. Incluye los Products sin movimientos, los Hidden products y los Products sin precio.
+  - Lleva cada Product sin archivar, por nombre, el mismo orden que Home (results.md), con su nombre, Stock, Stock status y Days left. Incluye los Products sin movimientos, los Hidden products y los Products sin precio.
   - Un Stock negativo se muestra, nunca se oculta.
   - Los Days left no están donde el glosario lo dice: Stock en cero o menos, o nada salido en los últimos 30 días.
   - Un Archived product nunca aparece.
