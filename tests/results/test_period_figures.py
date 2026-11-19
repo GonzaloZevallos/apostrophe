@@ -8,11 +8,14 @@ from typing import Literal, Protocol
 
 import pytest
 
+from app.results.domain.arithmetic import average_sale
 from app.results.domain.figures import (
     AmountWithPending,
     AnalysisFigures,
     CostFigure,
+    MonthRowFigures,
     ReasonCost,
+    WeekFigures,
 )
 from app.results.domain.ledger import (
     DrawRow,
@@ -982,3 +985,127 @@ def test_a_withdrawal_draw_needs_a_reason_and_no_other_draw_has_one() -> None:
             costed=100,
             pending=Quantity.of("0"),
         )
+
+
+# --- Analysis's weeks, months and month header carry Home's period figures: Average
+# sale, quantity sold and gifted, Purchases and the header's Cash, all read from the
+# window's `totals_between` (GH-878). ---
+
+
+def _week_and_month_row(figures: AnalysisFigures) -> tuple[WeekFigures, MonthRowFigures]:
+    [week] = [w for w in figures.weeks if w.first_day <= TODAY <= w.last_day]
+    [month_row] = [m for m in figures.months if m.month == MONTH]
+    return week, month_row
+
+
+def test_average_sale_is_absent_with_no_sales_and_rounds_half_up_otherwise() -> None:
+    empty = _figures(earliest_entry_day=TODAY)
+    empty_week, empty_month_row = _week_and_month_row(empty)
+    assert empty_week.average_sale is None
+    assert empty_month_row.average_sale is None
+    assert empty.month.average_sale is None
+
+    sales = [
+        SaleRecord(sale_id=1, day=TODAY, shipping=0, total=1_000),
+        SaleRecord(sale_id=2, day=TODAY, shipping=100, total=1_501),
+    ]
+    figures = _figures(sales=sales)
+    week, month_row = _week_and_month_row(figures)
+
+    # 2501 / 2 = 1250.5, rounded half up
+    assert week.average_sale == 1_251
+    assert month_row.average_sale == 1_251
+    assert figures.month.average_sale == 1_251
+
+
+def test_average_sale_of_a_past_week_is_that_week_s_own() -> None:
+    last_week = TODAY - timedelta(days=7)
+    sales = [
+        SaleRecord(sale_id=1, day=last_week, shipping=0, total=900),
+        SaleRecord(sale_id=2, day=TODAY, shipping=0, total=300),
+    ]
+    figures = _figures(sales=sales)
+    buckets, _ = _scan([], sales)
+
+    for week in figures.weeks:
+        totals = totals_between(buckets, week.first_day, week.last_day)
+        assert week.average_sale == average_sale(totals.sales, totals.sales_count)
+        assert week.purchases == totals.purchases
+        assert week.quantity_sold == totals.quantity_sold
+        assert week.quantity_gifted == totals.quantity_gifted
+    past = [w for w in figures.weeks if w.first_day <= last_week <= w.last_day][0]
+    assert past.average_sale == 900
+    assert figures.weeks[-1].average_sale == 300
+
+
+def test_quantity_sold_and_gifted_are_counted_separately_and_zero_when_none() -> None:
+    draws = [
+        _sold(
+            day=TODAY,
+            variety_id=1,
+            name="Tomato",
+            sale_id=1,
+            line_total=1_000,
+            quantity="3",
+            costed=300,
+            pending="0",
+        ),
+        _gifted(
+            day=TODAY, variety_id=1, name="Tomato", sale_id=2, quantity="2", costed=200, pending="0"
+        ),
+    ]
+    figures = _figures(draws=draws, earliest_entry_day=TODAY)
+    week, month_row = _week_and_month_row(figures)
+
+    for row in (week, month_row):
+        assert row.quantity_sold == Quantity.of("3")
+        assert row.quantity_gifted == Quantity.of("2")
+        assert row.quantity == row.quantity_sold + row.quantity_gifted
+
+    empty_week, empty_month_row = _week_and_month_row(_figures(earliest_entry_day=TODAY))
+    for row in (empty_week, empty_month_row):
+        assert row.quantity_sold == Quantity.of("0")
+        assert row.quantity_gifted == Quantity.of("0")
+
+
+def test_purchases_are_a_real_zero_when_none_and_never_inside_expenses() -> None:
+    empty_week, empty_month_row = _week_and_month_row(_figures(earliest_entry_day=TODAY))
+    assert empty_week.purchases == 0
+    assert empty_month_row.purchases == 0
+
+    figures = _figures(
+        purchases=[PurchaseRecord(day=TODAY, total_cost=700)],
+        expenses=[ExpenseRecord(day=TODAY, amount=50, category_id=1, name="Gas", name_key="gas")],
+        earliest_entry_day=TODAY,
+    )
+    week, month_row = _week_and_month_row(figures)
+    assert week.purchases == month_row.purchases == 700
+    assert week.expenses == month_row.expenses == 50
+    assert figures.month.purchases == figures.month_expenses.purchases == 700
+
+
+def test_the_month_header_cash_is_signed() -> None:
+    figures = _figures(
+        payments=[PaymentRecord(day=TODAY, amount=500)],
+        expenses=[ExpenseRecord(day=TODAY, amount=300, category_id=1, name="Gas", name_key="gas")],
+        purchases=[PurchaseRecord(day=TODAY, total_cost=400)],
+    )
+    assert figures.month.cash == -200
+    _, month_row = _week_and_month_row(figures)
+    assert figures.month.cash == month_row.cash
+
+    assert _figures(payments=[PaymentRecord(day=TODAY, amount=500)]).month.cash == 500
+    assert _figures().month.cash == 0
+
+
+def test_a_past_month_header_reads_that_month_s_own_totals() -> None:
+    september = Month.containing(date(2026, 9, 10))
+    sales = [SaleRecord(sale_id=1, day=date(2026, 9, 10), shipping=0, total=800)]
+    purchases = [PurchaseRecord(day=date(2026, 9, 12), total_cost=250)]
+    figures = _figures(month=september, sales=sales, purchases=purchases)
+    buckets, _ = _scan([], sales)
+    totals = totals_between(buckets, september.first_day, september.last_day)
+
+    assert figures.month.average_sale == totals.sales // totals.sales_count == 800
+    assert figures.month.purchases == 250
+    assert figures.month.cash == -250

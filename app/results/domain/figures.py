@@ -101,6 +101,9 @@ class MonthFigures:
     sales_without_shipping: int
     quantity_sold: Quantity
     quantity_gifted: Quantity
+    average_sale: int | None
+    purchases: int
+    cash: int
     average_margin: MarginFigure
     shortfall: RowCost | None
     withdrawals: tuple[ReasonCost, ...]
@@ -113,6 +116,10 @@ class WeekFigures:
     last_day: date
     sales: int
     quantity: Quantity
+    average_sale: int | None
+    quantity_sold: Quantity
+    quantity_gifted: Quantity
+    purchases: int
     expenses: int
     cost_of_goods: RowCost
     shortfall: RowCost | None
@@ -129,6 +136,10 @@ class MonthRowFigures:
     last_day: date
     sales: int
     quantity: Quantity
+    average_sale: int | None
+    quantity_sold: Quantity
+    quantity_gifted: Quantity
+    purchases: int
     expenses: int
     cost_of_goods: RowCost
     shortfall: RowCost | None

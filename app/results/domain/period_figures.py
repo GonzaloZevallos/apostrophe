@@ -16,6 +16,7 @@ from dataclasses import dataclass, field, replace
 from datetime import date, timedelta
 from typing import Literal, assert_never
 
+from app.results.domain.arithmetic import average_sale
 from app.results.domain.costed_sales import costed_sales
 from app.results.domain.figures import (
     AmountWithPending,
@@ -482,6 +483,7 @@ def _month_figures(
     for v in varieties:
         pending_sold_gifted = pending_sold_gifted + v.margin.pending_quantity
 
+    totals = totals_between(buckets, month.first_day, month.last_day)
     previous = (
         None if first_month is None else (month.previous if month.previous >= first_month else None)
     )
@@ -495,6 +497,9 @@ def _month_figures(
         sales_without_shipping=sum(v.sales_without_shipping for v in varieties),
         quantity_sold=sum((v.quantity_sold for v in varieties), ZERO),
         quantity_gifted=sum((v.quantity_gifted for v in varieties), ZERO),
+        average_sale=average_sale(totals.sales, totals.sales_count),
+        purchases=totals.purchases,
+        cash=totals.cash,
         average_margin=MarginFigure(
             amount=total_margin,
             percent=percent(total_margin, total_sales_costed),
@@ -528,6 +533,10 @@ def _weeks(buckets: Buckets, today: date, first_record: date | None) -> tuple[We
                 last_day=w.last_day,
                 sales=totals.sales,
                 quantity=totals.quantity_sold + totals.quantity_gifted,
+                average_sale=average_sale(totals.sales, totals.sales_count),
+                quantity_sold=totals.quantity_sold,
+                quantity_gifted=totals.quantity_gifted,
+                purchases=totals.purchases,
                 expenses=totals.expenses,
                 cost_of_goods=totals.cost_of_goods_row,
                 shortfall=totals.shortfall,
@@ -580,6 +589,10 @@ def _months(
                 last_day=m.last_day,
                 sales=totals.sales,
                 quantity=totals.quantity_sold + totals.quantity_gifted,
+                average_sale=average_sale(totals.sales, totals.sales_count),
+                quantity_sold=totals.quantity_sold,
+                quantity_gifted=totals.quantity_gifted,
+                purchases=totals.purchases,
                 expenses=totals.expenses,
                 cost_of_goods=totals.cost_of_goods_row,
                 shortfall=totals.shortfall,
