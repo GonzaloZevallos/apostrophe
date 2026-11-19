@@ -1,11 +1,12 @@
 """`Month` and `Week` with no infrastructure (CODING_STANDARDS §5): the one place a
 week or month boundary is computed (ADR-0020)."""
 
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 
 import pytest
 
-from app.shared.calendar import Month, Week
+from app.clock import BUSINESS_TIMEZONE, business_day
+from app.shared.calendar import Month, Week, local_day
 
 
 def test_a_well_formed_month_is_parsed() -> None:
@@ -49,3 +50,26 @@ def test_week_previous_steps_back_seven_days() -> None:
     week = Week.containing(date(2026, 10, 2))
 
     assert week.previous == Week(date(2026, 9, 21))
+
+
+@pytest.mark.parametrize(
+    "instant",
+    [
+        datetime(2026, 11, 19, 2, 59, 59, 999_999, tzinfo=UTC),
+        datetime(2026, 11, 19, 3, 0, 0, tzinfo=UTC),
+        datetime(2026, 11, 19, 3, 0, 1, tzinfo=UTC),
+        datetime(2026, 11, 19, 0, 0, 0, tzinfo=UTC),
+        datetime(2026, 11, 19, 23, 59, 59, tzinfo=UTC),
+        datetime(2026, 12, 31, 23, 0, 0, tzinfo=UTC),
+        datetime(2027, 1, 1, 2, 59, 59, tzinfo=UTC),
+    ],
+)
+def test_the_local_day_in_the_business_zone_is_the_business_day(instant: datetime) -> None:
+    assert local_day(instant, BUSINESS_TIMEZONE) == business_day(instant)
+
+
+def test_the_local_day_rolls_over_at_the_zone_midnight_not_the_utc_one() -> None:
+    before = datetime(2026, 11, 19, 2, 59, 59, tzinfo=UTC)
+
+    assert local_day(before, BUSINESS_TIMEZONE) == date(2026, 11, 18)
+    assert local_day(before + timedelta(seconds=1), BUSINESS_TIMEZONE) == date(2026, 11, 19)

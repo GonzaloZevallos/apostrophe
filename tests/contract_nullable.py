@@ -107,6 +107,7 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "periods.today.withdrawals[].amount": "integer",
         "periods.week.withdrawals[].amount": "integer",
         "periods.month.withdrawals[].amount": "integer",
+        "today.change_percent": "integer",
         "debts.oldest": "string",
         "stock[].sold_out_since": "string",
         "stock[].threshold": "number",

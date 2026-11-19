@@ -1,5 +1,5 @@
 """`GET /panel`: no path, query or body parameter (plan invariant; ADR-0013 amendment
-GH-70). It reads `get_today` once and builds `StockFigures`, the same `SalesLedger`,
+GH-70). It reads the clock once (`get_clock`) and builds `StockFigures`, the same `SalesLedger`,
 `PaymentsLedger`, `ExpensesLedger` and `Purchases` ports `GET /analysis` uses, and
 `DebtSummary`, each from its own `app.state` factory over the request's `Session` and
 business — the same shape `app/sales/adapters/router.py` already uses for
@@ -25,7 +25,7 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.deps import CurrentBusinessId
-from app.clock import get_today
+from app.clock import BUSINESS_TIMEZONE, Clock, get_clock, get_today
 from app.db import get_session
 from app.http_errors import TranslateErrors
 from app.results.adapters.assemble import assemble
@@ -47,6 +47,7 @@ router = APIRouter(tags=["results"])
 
 SessionDep = Annotated[Session, Depends(get_session)]
 TodayDep = Annotated[date, Depends(get_today)]
+ClockDep = Annotated[Clock, Depends(get_clock)]
 
 
 def get_stock_figures(
@@ -119,7 +120,7 @@ PurchasesDep = Annotated[Purchases, Depends(get_purchases)]
 
 @router.get("/panel")
 def get_panel(
-    today: TodayDep,
+    clock: ClockDep,
     stock: StockFiguresDep,
     sales: SalesLedgerDep,
     payments: PaymentsLedgerDep,
@@ -128,7 +129,9 @@ def get_panel(
     debts: DebtSummaryDep,
     reasons: WithdrawalReasonsDep,
 ) -> PanelOut:
-    panel = read_panel(today, stock, sales, payments, expenses, purchases, debts, reasons)
+    panel = read_panel(
+        clock(), BUSINESS_TIMEZONE, stock, sales, payments, expenses, purchases, debts, reasons
+    )
     return PanelOut.of(panel)
 
 
