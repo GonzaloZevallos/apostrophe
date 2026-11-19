@@ -674,7 +674,7 @@ describe.each([
     expect(main).toHaveClass('pantalla', 'variedades')
     const body = main.firstElementChild as HTMLElement
     expect(body).toHaveClass('cuerpo')
-    const [titleRow, summary, actions] = Array.from(body.children) as HTMLElement[]
+    const [titleRow, summary, actions] = Array.from(body.children) as [HTMLElement, HTMLElement, HTMLElement]
 
     expect(titleRow).toHaveClass('cabecera-fila', 'cabecera-fila--envoltura')
     const title = within(titleRow).getByRole('heading', { level: 1, name: 'Products' })
@@ -693,7 +693,7 @@ describe.each([
 
     expect(actions).toHaveClass('variedades__acciones')
     expect(Array.from(actions.children).map((child) => child.tagName)).toEqual(['A', 'A', 'A', 'SPAN'])
-    const [send, entry, withdrawal, fresh] = Array.from(actions.children) as HTMLElement[]
+    const [send, entry, withdrawal, fresh] = Array.from(actions.children) as [HTMLElement, HTMLElement, HTMLElement, HTMLElement]
     expect(send).toHaveAccessibleName('Send catalog')
     expect(send).toHaveAttribute('href', CATALOG)
     expect(entry).toHaveAttribute('href', STOCK_ENTRY_NEW)
