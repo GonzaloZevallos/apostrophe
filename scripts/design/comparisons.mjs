@@ -344,6 +344,13 @@ async function captureBuiltIn(context, s, census, probe) {
     // runs (proven against this build), so it waits for the parser to
     // create it before setting the attribute.
     await context.addInitScript((tema) => {
+      // theme.ts resets data-tema on load when no 'tema' is stored, so store it too; a context that
+      // refuses storage keeps the attribute alone.
+      try {
+        localStorage.setItem('tema', tema)
+      } catch {
+        // storage refused: the attribute below still applies
+      }
       const apply = () => {
         document.documentElement.dataset.tema = tema
       }
