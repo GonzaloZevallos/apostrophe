@@ -16,6 +16,7 @@ from itertools import accumulate
 
 from app.results.domain.ledger import SaleRecord
 from app.results.domain.rounding import percent
+from app.shared.calendar import local_day
 
 LAST_HOUR = 23
 
@@ -28,7 +29,7 @@ def _local_on(recorded_at: datetime, day: date, tz: tzinfo) -> datetime | None:
     """The local time a Sale dated `day` was recorded at, or `None` when it was recorded
     on another day: the one rule for "recorded on its own date"."""
     local = _recorded_local(recorded_at, tz)
-    return local if local.date() == day else None
+    return local if local_day(local, tz) == day else None
 
 
 def recorded_on_own_date(sale: SaleRecord, tz: tzinfo) -> bool:
