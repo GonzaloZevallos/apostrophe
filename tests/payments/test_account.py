@@ -13,14 +13,15 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from app.payments.domain.account import CreditRow, PaymentRow, SaleRow, account_of
-from app.payments.domain.settlement import LaterPaymentEntry, OwedSale
+from app.payments.domain.settlement import LaterPaymentEntry
 from app.shared.payment_method import PaymentMethodLabel
+from tests.payments.builders import owed_sale
 
 AT = datetime(2026, 9, 1, 10, 0)
 
 
 def test_a_sale_paid_on_the_spot_moves_the_running_balance_by_zero() -> None:
-    sale = OwedSale(1, date(2026, 9, 1), AT, 100, on_the_spot_method=TRANSFER)
+    sale = owed_sale(1, date(2026, 9, 1), 100, on_the_spot_method=TRANSFER)
 
     account = account_of([sale], [])
 
@@ -34,7 +35,7 @@ def test_a_sale_paid_on_the_spot_moves_the_running_balance_by_zero() -> None:
 
 
 def test_a_sale_left_owing_moves_the_running_balance_by_its_total() -> None:
-    sale = OwedSale(1, date(2026, 9, 1), AT, 100)
+    sale = owed_sale(1, date(2026, 9, 1), 100)
 
     account = account_of([sale], [])
 
@@ -46,7 +47,7 @@ def test_a_sale_left_owing_moves_the_running_balance_by_its_total() -> None:
 
 
 def test_a_zero_total_sale_shows_no_payment_label() -> None:
-    sale = OwedSale(1, date(2026, 9, 1), AT, 0)
+    sale = owed_sale(1, date(2026, 9, 1), 0)
 
     account = account_of([sale], [])
 
@@ -57,7 +58,7 @@ def test_a_zero_total_sale_shows_no_payment_label() -> None:
 
 
 def test_a_later_payment_fully_covering_a_sale_zeroes_the_running_balance() -> None:
-    sale = OwedSale(1, date(2026, 9, 1), AT, 100)
+    sale = owed_sale(1, date(2026, 9, 1), 100)
     payment = LaterPaymentEntry(10, date(2026, 9, 5), AT, 100, CASH)
 
     account = account_of([sale], [payment])
@@ -73,8 +74,8 @@ def test_a_later_payment_fully_covering_a_sale_zeroes_the_running_balance() -> N
 
 
 def test_a_payment_spanning_two_sales_gets_one_row_per_split_oldest_sale_first() -> None:
-    older = OwedSale(1, date(2026, 9, 1), AT, 60)
-    newer = OwedSale(2, date(2026, 9, 10), AT, 60)
+    older = owed_sale(1, date(2026, 9, 1), 60)
+    newer = owed_sale(2, date(2026, 9, 10), 60)
     payment = LaterPaymentEntry(10, date(2026, 9, 15), AT, 90, TRANSFER)
 
     account = account_of([older, newer], [payment])
@@ -94,7 +95,7 @@ def test_a_payment_spanning_two_sales_gets_one_row_per_split_oldest_sale_first()
 
 
 def test_a_payment_beyond_every_debt_gets_a_credit_row_right_after_its_splits() -> None:
-    sale = OwedSale(1, date(2026, 9, 1), AT, 100)
+    sale = owed_sale(1, date(2026, 9, 1), 100)
     payment = LaterPaymentEntry(10, date(2026, 9, 5), AT, 130, CASH)
 
     account = account_of([sale], [payment])
@@ -114,7 +115,7 @@ def test_a_backdated_payment_reads_a_favor_until_the_later_sale_it_settles_appea
     dated earlier, still settles it (PRD round-1, Q1). In date order the payment's
     own row comes first and its running balance goes negative there, reading "A
     favor", until the sale row that follows brings it back to zero."""
-    sale = OwedSale(1, date(2026, 9, 20), AT, 100)
+    sale = owed_sale(1, date(2026, 9, 20), 100)
     payment = LaterPaymentEntry(10, date(2026, 9, 1), AT, 100, CASH)
 
     account = account_of([sale], [payment])
@@ -130,7 +131,7 @@ def test_a_backdated_payment_reads_a_favor_until_the_later_sale_it_settles_appea
 
 
 def test_a_sale_and_a_payment_on_the_same_date_put_the_sale_row_first() -> None:
-    sale = OwedSale(1, date(2026, 9, 5), AT, 50)
+    sale = owed_sale(1, date(2026, 9, 5), 50)
     payment = LaterPaymentEntry(10, date(2026, 9, 5), AT, 50, CASH)
 
     account = account_of([sale], [payment])
@@ -141,8 +142,8 @@ def test_a_sale_and_a_payment_on_the_same_date_put_the_sale_row_first() -> None:
 def test_an_on_the_spot_sale_never_gets_a_payment_or_credit_row() -> None:
     """Only a later payment ever yields a `PaymentRow` or a `CreditRow`: the front
     offers "Borrar cobro" on those rows, and an on-the-spot payment has none."""
-    on_the_spot = OwedSale(1, date(2026, 9, 1), AT, 100, on_the_spot_method=CASH)
-    owed = OwedSale(2, date(2026, 9, 2), AT, 50)
+    on_the_spot = owed_sale(1, date(2026, 9, 1), 100, on_the_spot_method=CASH)
+    owed = owed_sale(2, date(2026, 9, 2), 50)
     later = LaterPaymentEntry(10, date(2026, 9, 5), AT, 80, TRANSFER)
 
     account = account_of([on_the_spot, owed], [later])
@@ -161,7 +162,7 @@ def test_an_on_the_spot_sale_never_gets_a_payment_or_credit_row() -> None:
 def test_a_payments_split_row_comes_immediately_before_its_credit_row() -> None:
     """The front puts "Borrar cobro" on the first row of each later payment; that
     is the payment row only while splits are laid before the credit row."""
-    sale = OwedSale(1, date(2026, 9, 1), AT, 5000)
+    sale = owed_sale(1, date(2026, 9, 1), 5000)
     payment = LaterPaymentEntry(10, date(2026, 9, 5), AT, 8000, CASH)
 
     account = account_of([sale], [payment])

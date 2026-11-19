@@ -19,6 +19,7 @@ from app.payments.domain.settlement import (
     standing_of,
 )
 from app.shared.payment_method import PaymentMethodLabel
+from tests.payments.builders import owed_sale
 
 AT = datetime(2026, 9, 1, 10, 0)
 
@@ -30,9 +31,7 @@ def _sale(
     recorded_at: datetime = AT,
     on_the_spot: PaymentMethodLabel | None = None,
 ) -> OwedSale:
-    return OwedSale(
-        id=id, date=day, recorded_at=recorded_at, total=total, on_the_spot_method=on_the_spot
-    )
+    return owed_sale(id, day, total, recorded_at=recorded_at, on_the_spot_method=on_the_spot)
 
 
 def _payment(
@@ -72,7 +71,7 @@ def test_one_sale_left_owing_with_no_payment_owes_its_whole_total() -> None:
     assert result.owing_since == date(2026, 9, 1)
     assert result.standing == "owes"
     assert result.still_owing == frozenset({1})
-    assert result.sales == (SaleSettlement(1, 100),)
+    assert result.sales == (SaleSettlement(1, date(2026, 9, 1), 1, 100),)
 
 
 def test_an_on_the_spot_sale_never_enters_the_walk() -> None:
