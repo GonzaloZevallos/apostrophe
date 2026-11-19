@@ -38,14 +38,16 @@ def standing_of(balance: int) -> Standing:
 
 @dataclass(frozen=True)
 class OwedSale:
-    """One sale of a customer's ledger. `on_the_spot_method` is the method it was
-    paid in on the spot, or `None` for a sale left owing; `paid_on_the_spot` is
-    derived from it, never stored twice."""
+    """One sale of a customer's ledger. `number` is the Sale number the business
+    sees (per Business, ADR-0073), never the row `id`. `on_the_spot_method` is the
+    method it was paid in on the spot, or `None` for a sale left owing;
+    `paid_on_the_spot` is derived from it, never stored twice."""
 
     id: int
     date: date
     recorded_at: datetime
     total: int
+    number: int
     on_the_spot_method: PaymentMethodLabel | None = None
 
     @property
@@ -97,9 +99,12 @@ class PaymentSettlement:
 @dataclass(frozen=True)
 class SaleSettlement:
     """One owed sale's own answer: what is still owed on it, `0` once it is fully
-    paid by later payments."""
+    paid by later payments, with the sale's own date and number so a reader never
+    walks the sales again. Only `settle()` builds one."""
 
     sale_id: int
+    sale_date: date
+    sale_number: int
     still_owed: int
 
 
@@ -129,6 +134,7 @@ def settle(ledger: Ledger) -> SettleResult:
     remaining: dict[int, int] = {sale.id: sale.total for sale in owed_sales}
     order = [sale.id for sale in owed_sales]
     date_by_id = {sale.id: sale.date for sale in owed_sales}
+    number_by_id = {sale.id: sale.number for sale in owed_sales}
 
     cursor = 0
     payment_settlements: list[PaymentSettlement] = []
@@ -157,7 +163,10 @@ def settle(ledger: Ledger) -> SettleResult:
 
     return SettleResult(
         payments=tuple(payment_settlements),
-        sales=tuple(SaleSettlement(sale_id, remaining[sale_id]) for sale_id in order),
+        sales=tuple(
+            SaleSettlement(sale_id, date_by_id[sale_id], number_by_id[sale_id], remaining[sale_id])
+            for sale_id in order
+        ),
         balance=balance,
         owing_since=owing_since,
         standing=standing_of(balance),

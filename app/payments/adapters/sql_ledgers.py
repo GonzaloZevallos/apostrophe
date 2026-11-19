@@ -114,6 +114,7 @@ class SqlLedgers:
                     date=sale.sold_on,
                     recorded_at=sale.recorded_at,
                     total=total,
+                    number=sale.number,
                     on_the_spot_method=on_the_spot_methods.get(sale.id),
                 )
             )
