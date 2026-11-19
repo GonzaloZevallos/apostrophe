@@ -35,6 +35,7 @@ from typing import Literal, Protocol
 from app.results.domain.ledger import (
     DrawRow,
     ExpenseRecord,
+    PaymentMethodRecord,
     PaymentRecord,
     PurchaseRecord,
     ReasonRecord,
@@ -104,6 +105,8 @@ __all__ = [
     "DrawRow",
     "ExpenseRecord",
     "ExpensesLedger",
+    "PaymentMethodRecord",
+    "PaymentMethods",
     "PaymentRecord",
     "PaymentsLedger",
     "PurchaseRecord",
@@ -120,6 +123,13 @@ class WithdrawalReasons(Protocol):
     order `period_figures` answers each reason's cost in. Built for one business."""
 
     def all(self) -> Sequence[ReasonRecord]: ...
+
+
+class PaymentMethods(Protocol):
+    """Every Payment method of one business, archived ones included, in no particular
+    order: `money_in` names and orders them. Built for one business."""
+
+    def all(self) -> Sequence[PaymentMethodRecord]: ...
 
 
 class DrawCosts(Protocol):
