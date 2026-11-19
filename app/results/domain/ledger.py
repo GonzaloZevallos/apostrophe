@@ -4,8 +4,8 @@ reads them, never SQLAlchemy or any adapter."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import date
+from dataclasses import dataclass, field
+from datetime import date, datetime, timedelta
 from typing import Literal, assert_never
 
 from app.shared.quantity import Quantity
@@ -61,12 +61,18 @@ class ReasonRecord:
 @dataclass(frozen=True)
 class SaleRecord:
     """One sale, as `period_figures` needs it: `total` is the sale's full total,
-    shipping included (CONTEXT.md: Sale)."""
+    shipping included (CONTEXT.md: Sale). `recorded_at` is the instant it was recorded, in
+    UTC; only the domain turns it into a local time, given the zone."""
 
     sale_id: int
     day: date
     shipping: int
     total: int
+    recorded_at: datetime = field(kw_only=True)
+
+    def __post_init__(self) -> None:
+        if self.recorded_at.tzinfo is None or self.recorded_at.utcoffset() != timedelta(0):
+            raise ValueError("a sale record's recorded_at is an aware UTC instant")
 
 
 @dataclass(frozen=True)

@@ -33,6 +33,7 @@ class SqlSalesLedger:
                 SaleRow.sold_on,
                 scaled(SaleRow.shipping_charged, factor),
                 func.coalesce(line_totals.c.lines_total, 0),
+                SaleRow.recorded_at,
             )
             .select_from(SaleRow)
             .outerjoin(line_totals, line_totals.c.sale_id == SaleRow.id)
@@ -44,6 +45,7 @@ class SqlSalesLedger:
                 day=day,
                 shipping=domain_amount(self._session, self._business_id, shipping),
                 total=domain_amount(self._session, self._business_id, shipping + lines_total),
+                recorded_at=recorded_at,
             )
-            for sale_id, day, shipping, lines_total in self._session.execute(statement).all()
+            for sale_id, day, shipping, lines_total, recorded_at in self._session.execute(statement).all()
         ]
