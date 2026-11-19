@@ -921,3 +921,200 @@ def test_an_archived_variety_leaves_the_panel_stock_rows_but_not_the_period_figu
     assert {key: value for key, value in after.items() if key != "stock"} == {
         key: value for key, value in before.items() if key != "stock"
     }
+
+
+# --- the `today` block (GH-497 part 1) --------------------------------------------------
+
+# Late enough that a week back is still after the session opened at the fixture's NOW.
+BLOCK_DAY = date(2026, 10, 10)
+
+
+def _art(day: date, hour: int, minute: int = 0, second: int = 0, micro: int = 0) -> datetime:
+    """The instant at that wall time in Buenos Aires (UTC-3, no daylight saving)."""
+    return datetime(day.year, day.month, day.day, hour, minute, second, micro, tzinfo=UTC) + (
+        timedelta(hours=3)
+    )
+
+
+def _stocked_variety(client: TestClient) -> int:
+    variety_id = _variety(client, "Criolla", price=1_000)
+    _entry(client, variety_id, quantity="1000", on="2020-01-01")
+    return variety_id
+
+
+def _sale_recorded_at(
+    client: TestClient,
+    clock: MovableClock,
+    variety_id: int,
+    *,
+    on: date,
+    at: datetime,
+    quantity: str = "1",
+    shipping: int = 0,
+    payment: str | None = "cash",
+    customer_id: int | None = None,
+) -> None:
+    clock.set(at)
+    body: dict[str, Any] = {
+        "customer_id": customer_id,
+        "date": on.isoformat(),
+        "payment": payment_body(payment, client),
+        "shipping_charged": shipping,
+        "lines": [{"product_id": variety_id, "quantity": quantity, "gift": False}],
+    }
+    response = client.post("/sales", json=body)
+    assert response.status_code == 201, response.text
+
+
+def _today_block(client: TestClient, clock: MovableClock, now: datetime) -> dict[str, Any]:
+    clock.set(now)
+    answer = client.get("/panel")
+    assert answer.status_code == 200, answer.text
+    block: dict[str, Any] = answer.json()["today"]
+    return block
+
+
+def test_today_sales_and_count_equal_the_periods_today_and_the_sales_list(
+    client: TestClient, clock: MovableClock
+) -> None:
+    variety_id = _stocked_variety(client)
+    day = BLOCK_DAY
+    _sale_recorded_at(client, clock, variety_id, on=day, at=_art(day, 9), quantity="2")
+    _sale_recorded_at(
+        client,
+        clock,
+        variety_id,
+        on=day,
+        at=_art(day, 10),
+        shipping=500,
+        payment="owing",
+        customer_id=_customer(client, "Ana"),
+    )
+    _sale_recorded_at(client, clock, variety_id, on=day - timedelta(days=1), at=_art(day, 11))
+
+    clock.set(_art(day, 12))
+    answer = client.get("/panel").json()
+    listed = client.get(
+        "/sales", params={"date_from": day.isoformat(), "date_to": day.isoformat()}
+    ).json()
+
+    today = answer["today"]
+    assert today["sales"] == answer["periods"]["today"]["sales"]
+    assert today["sales_count"] == answer["periods"]["today"]["sales_count"]
+    assert today["sales_count"] == len(listed) == 2
+    assert today["sales"] == sum(sale["total"] for sale in listed) == 2_000 + 1_000 + 500
+
+
+def test_a_sale_at_the_cut_is_in_so_far_on_both_days_only_from_that_second(
+    client: TestClient, clock: MovableClock
+) -> None:
+    variety_id = _stocked_variety(client)
+    today = BLOCK_DAY
+    last_week = today - timedelta(days=7)
+    _sale_recorded_at(client, clock, variety_id, on=last_week, at=_art(last_week, 14, 5))
+    _sale_recorded_at(client, clock, variety_id, on=today, at=_art(today, 14, 5), quantity="2")
+
+    before = _today_block(client, clock, _art(today, 14, 4, 59))
+    at_cut = _today_block(client, clock, _art(today, 14, 5, 0))
+    after = _today_block(client, clock, _art(today, 14, 5, 1))
+
+    assert (before["so_far"], before["last_week_so_far"]) == (0, 0)
+    assert (at_cut["so_far"], at_cut["last_week_so_far"]) == (2_000, 1_000)
+    assert (after["so_far"], after["last_week_so_far"]) == (2_000, 1_000)
+    assert before["change_percent"] is None
+    assert at_cut["change_percent"] == 100
+
+
+def test_a_last_week_sale_milliseconds_after_the_cut_is_still_in_last_week_so_far(
+    client: TestClient, clock: MovableClock
+) -> None:
+    variety_id = _stocked_variety(client)
+    today = BLOCK_DAY
+    last_week = today - timedelta(days=7)
+    _sale_recorded_at(
+        client, clock, variety_id, on=last_week, at=_art(last_week, 14, 5, 0, 700_000)
+    )
+
+    block = _today_block(client, clock, _art(today, 14, 5, 0, 200_000))
+
+    assert block["last_week_so_far"] == 1_000
+
+
+def test_a_sale_dated_last_week_but_recorded_today_is_late(
+    client: TestClient, clock: MovableClock
+) -> None:
+    variety_id = _stocked_variety(client)
+    today = BLOCK_DAY
+    last_week = today - timedelta(days=7)
+    _sale_recorded_at(client, clock, variety_id, on=last_week, at=_art(today, 9))
+
+    block = _today_block(client, clock, _art(today, 14, 5))
+
+    assert block["last_week_so_far"] == 0
+    assert block["change_percent"] is None
+    hourly = block["hourly_last_week"]
+    assert [point["hour"] for point in hourly] == list(range(24))
+    assert hourly[22]["total"] == 0
+    assert hourly[23]["total"] == 1_000
+
+
+def test_the_hourly_series_run_to_the_current_hour_and_to_hour_23(
+    client: TestClient, clock: MovableClock
+) -> None:
+    variety_id = _stocked_variety(client)
+    today = BLOCK_DAY
+    last_week = today - timedelta(days=7)
+    _sale_recorded_at(client, clock, variety_id, on=today, at=_art(today, 9, 30))
+    _sale_recorded_at(client, clock, variety_id, on=last_week, at=_art(last_week, 14, 55))
+
+    block = _today_block(client, clock, _art(today, 14, 5))
+
+    assert block["last_week_day"] == last_week.isoformat()
+    assert [point["hour"] for point in block["hourly_today"]] == list(range(15))
+    assert block["hourly_today"][8]["total"] == 0
+    assert block["hourly_today"][9]["total"] == 1_000
+    assert block["hourly_today"][14]["total"] == 1_000
+    assert block["hourly_last_week"][13]["total"] == 0
+    assert block["hourly_last_week"][14]["total"] == 1_000
+    assert block["last_week_so_far"] == 0
+
+
+def test_the_today_block_and_periods_agree_on_the_day_at_the_edges_of_midnight(
+    client: TestClient, clock: MovableClock
+) -> None:
+    variety_id = _stocked_variety(client)
+    today = BLOCK_DAY
+    _sale_recorded_at(client, clock, variety_id, on=today, at=_art(today, 0, 0, 0))
+
+    late = _today_block(client, clock, _art(today, 23, 59, 59))
+    late_periods = client.get("/panel").json()["periods"]["today"]
+    midnight = _today_block(client, clock, _art(today + timedelta(days=1), 0, 0, 0))
+    midnight_periods = client.get("/panel").json()["periods"]["today"]
+
+    assert late_periods["start"] == today.isoformat()
+    assert late["sales"] == late_periods["sales"] == 1_000
+    assert midnight_periods["start"] == (today + timedelta(days=1)).isoformat()
+    assert midnight["sales"] == midnight_periods["sales"] == 0
+    assert [point["hour"] for point in midnight["hourly_today"]] == [0]
+    assert midnight["last_week_day"] == (today - timedelta(days=6)).isoformat()
+
+
+def test_get_panel_statement_count_ignores_the_today_block_history(
+    client: TestClient, other_client: TestClient, engine: Engine, clock: MovableClock
+) -> None:
+    """`recorded_at` comes from the ledger's one existing SELECT, so Sales dated today
+    and a week ago add no statement."""
+    _seed_small_panel_history(client)
+    _seed_bigger_panel_history(other_client)
+    today = BLOCK_DAY
+    last_week = today - timedelta(days=7)
+    variety_id = _stocked_variety(other_client)
+    for on, at in [
+        (today, _art(today, 9)),
+        (last_week, _art(last_week, 9)),
+        (last_week, _art(today, 9)),
+    ]:
+        _sale_recorded_at(other_client, clock, variety_id, on=on, at=at)
+    clock.set(_art(today, 12))
+
+    assert _statement_count(engine, client) == _statement_count(engine, other_client)
