@@ -654,3 +654,128 @@ describe('"Send catalog" while /first-run answers checklist and nothing qualifie
     expect(screen.queryByText(REASON)).not.toBeInTheDocument()
   })
 })
+
+describe.each([
+  ['computer', true],
+  ['phone', false],
+])('the Products body pinned at %s width', (_width, computer) => {
+  const CHECKLIST_EMPTY: FirstRunAnswer = {
+    kind: 'checklist',
+    checklist: [{ step: 'priced_variety', required: true, done: false }],
+    import_notice: false,
+    nothing_qualifies: true,
+  }
+
+  test('the body holds the title row, the summary, the actions in order, the rows and the foot links', async () => {
+    renderApp(VARIETIES_PATH, { computer })
+
+    const main = await screen.findByRole('main')
+    await screen.findByText('24K Gold')
+    expect(main).toHaveClass('pantalla', 'variedades')
+    const body = main.firstElementChild as HTMLElement
+    expect(body).toHaveClass('cuerpo')
+    const [titleRow, summary, actions] = Array.from(body.children) as HTMLElement[]
+
+    expect(titleRow).toHaveClass('cabecera-fila', 'cabecera-fila--envoltura')
+    const title = within(titleRow).getByRole('heading', { level: 1, name: 'Products' })
+    expect(title).toHaveClass('encabezado__titulo')
+    expect(titleRow.firstElementChild).toBe(title)
+    // The Settings avatar is the phone's entry; the computer draws none.
+    if (computer) expect(titleRow.children).toHaveLength(1)
+    else {
+      expect(titleRow.children).toHaveLength(2)
+      expect(within(titleRow).getByRole('link', { name: 'Settings' })).toBeInTheDocument()
+    }
+
+    expect(summary.tagName).toBe('P')
+    expect(summary).toHaveClass('pie', 'variedades__resumen')
+    expect(summary).toHaveTextContent(/\S/)
+
+    expect(actions).toHaveClass('variedades__acciones')
+    expect(Array.from(actions.children).map((child) => child.tagName)).toEqual(['A', 'A', 'A', 'SPAN'])
+    const [send, entry, withdrawal, fresh] = Array.from(actions.children) as HTMLElement[]
+    expect(send).toHaveAccessibleName('Send catalog')
+    expect(send).toHaveAttribute('href', CATALOG)
+    expect(entry).toHaveAttribute('href', STOCK_ENTRY_NEW)
+    expect(entry).toHaveAccessibleName('+ Stock entry')
+    expect(withdrawal).toHaveAttribute('href', WITHDRAWAL_NEW)
+    expect(withdrawal).toHaveAccessibleName('Take from stock')
+    expect(fresh).toHaveClass('variedades__nueva')
+    expect(within(fresh).getByRole('link', { name: 'New product' })).toHaveAttribute('href', VARIETY_NEW)
+
+    const all = screen.getByRole('link', { name: /All entries/ })
+    expect(all).toHaveClass('variedades__todas')
+    expect(all).toHaveAttribute('href', STOCK_PATH)
+    expect(screen.queryByRole('link', { name: /Archived/ })).not.toBeInTheDocument()
+    expect(body.lastElementChild).toBe(all)
+  })
+
+  test('the rows sit in the list, after the actions, and open a variety with or without replace', async () => {
+    const { router } = renderApp(VARIETIES_PATH, { computer })
+
+    const row = await screen.findByRole('link', { name: /Sir Jack/ })
+    const list = row.parentElement as HTMLElement
+    expect(list).toHaveClass('lista-variedades')
+    expect(within(list).getAllByRole('link')).toHaveLength(4)
+    expect(row).toHaveClass('variedad-fila')
+    await userEvent.click(row)
+
+    expect(router.state.location.pathname).toBe(pathTo(VARIETY, { id: 4 }))
+    expect(router.state.historyAction).toBe(computer ? 'REPLACE' : 'PUSH')
+  })
+
+  test('Archived (N) shows at the foot only when there are archived varieties', async () => {
+    renderApp(VARIETIES_PATH, {
+      computer,
+      answers: { 'GET /api/products?archived=true': () => json(200, [{ ...VARIETIES[0], archived: true }]) },
+    })
+
+    const archived = await screen.findByRole('link', { name: /Archived/ })
+    expect(archived).toHaveClass('variedades__todas')
+    expect(archived).toHaveTextContent('Archived (1)')
+    expect(archived.previousElementSibling).toBe(screen.getByRole('link', { name: /All entries/ }))
+  })
+
+  test('with no rows, once ready and with no failure, the empty state shows its title and detail', async () => {
+    renderApp(VARIETIES_PATH, {
+      computer,
+      answers: {
+        'GET /api/products': () => json(200, []),
+        'GET /stock': () => json(200, { total: 0, products: [], entries: [] }),
+      },
+    })
+
+    const title = await screen.findByText(EMPTY_TITLE)
+    const empty = title.parentElement as HTMLElement
+    expect(empty).toHaveClass('estado-vacio')
+    expect(title).toHaveClass('estado-vacio__titulo')
+    expect(title).toHaveAttribute('data-copy', 'emptyTitle')
+    const detail = within(empty).getByText(EMPTY_DETAIL)
+    expect(detail).toHaveClass('estado-vacio__detalle')
+    expect(detail).toHaveAttribute('data-copy', 'emptyLine')
+    expect(screen.getByRole('main').querySelector('.variedades__resumen')).toBeNull()
+  })
+
+  test('the empty state is not shown after a failure', async () => {
+    renderApp(VARIETIES_PATH, { computer, answers: { 'GET /stock': () => json(500, { code: 'unknown' }) } })
+
+    await screen.findByText('Something went wrong. Try again.')
+    expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
+    expect(screen.queryByText(EMPTY_DETAIL)).not.toBeInTheDocument()
+  })
+
+  test('Send catalog is a disabled button with its reason when nothing qualifies', async () => {
+    renderApp(VARIETIES_PATH, { computer, answers: { 'GET /first-run': () => json(200, CHECKLIST_EMPTY) } })
+
+    const button = await screen.findByRole('button', { name: 'Send catalog' })
+    expect(button).toBeDisabled()
+    expect(button).toHaveAttribute('aria-describedby', 'mandar-catalogo-motivo')
+    const reason = document.getElementById('mandar-catalogo-motivo') as HTMLElement
+    expect(reason.tagName).toBe('P')
+    expect(reason).toHaveClass('variedades__motivo')
+    expect(reason).toHaveAttribute('data-copy', 'help')
+    expect(reason).toHaveTextContent('Add a product with a price and its stock')
+    expect(button.nextElementSibling).toBe(reason)
+    expect(reason.nextElementSibling).toBe(screen.getByRole('link', { name: '+ Stock entry' }))
+  })
+})
