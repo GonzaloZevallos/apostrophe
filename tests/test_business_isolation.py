@@ -1188,6 +1188,7 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
 
     assert a_analysis["first_record"] is not None
     assert a_analysis["month"]["sales"] > 0
+    assert a_analysis["month"]["average_sale"] is not None
     assert any(MARKER in variety["name"] for variety in a_analysis["month"]["products"])
 
     current_month = str(Month.containing(TODAY))
@@ -1202,6 +1203,9 @@ def test_another_business_s_analysis_is_exactly_the_empty_shape(
             "sales_without_shipping": 0,
             "quantity_sold": 0.0,
             "quantity_gifted": 0.0,
+            "average_sale": None,
+            "purchases": 0,
+            "cash": 0,
             "average_margin": {"amount": 0, "percent": None, "pending_quantity": 0.0},
             "shortfall": None,
             "withdrawals": [],
