@@ -322,3 +322,10 @@ def test_every_tests_path_a_check_names_exists() -> None:
     ]
     assert named
     assert [p for p in named if not (REPO_ROOT / p).exists()] == []
+
+
+@pytest.mark.parametrize("name", ["tests", "tests-fast"])
+def test_a_pytest_check_takes_its_worker_count_from_the_share(name: str) -> None:
+    words = shlex.split(CHECKS[name])
+    assert ("-n", "auto") in list(zip(words, words[1:], strict=False))
+    assert not any(word.startswith("{workers") for word in words)

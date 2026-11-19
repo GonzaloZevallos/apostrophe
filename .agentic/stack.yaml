@@ -13,8 +13,8 @@ setup:
   web-browsers: npx --prefix web playwright install chromium
   merge-driver: git config merge.regen.driver "cp %B %A"
 checks:
-  tests: uv run --no-project pytest -n 8
-  tests-fast: uv run --no-project pytest -n 4 -p no:cacheprovider tests/architecture tests/docs/test_parallel_branches.py tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py tests/test_stack_parallel_writers.py
+  tests: uv run --no-project pytest -n auto
+  tests-fast: uv run --no-project pytest -n auto -p no:cacheprovider tests/architecture tests/docs/test_parallel_branches.py tests/migrations tests/test_business_isolation.py tests/test_gated_routes.py tests/test_stack_affected.py tests/test_stack_ci.py tests/test_stack_parallel_writers.py
   lint: uv run --no-project ruff check .
   types: uv run --no-project mypy app tests scripts
   web-types: npm --prefix web run typecheck
@@ -39,7 +39,7 @@ checks:
 # docs/evidence/GH-543-e2e-flake.md. The 5-serial/5-parallel medians were not taken: the load
 # average was 33-148 from other worktrees the whole time, far over the 2.0 cut-off. Parallel runs
 # (checks in parallel, load 35-60): `tests` took 650 s under `-n auto`, over the 600 s check
-# timeout, so it is capped at `-n 8`: 501 s, the whole gate 501 s, counts equal to alone (pytest
+# timeout, so it was capped at `-n 8` then: 501 s, the whole gate 501 s, counts equal to alone (pytest
 # 3480 passed; vitest 208 files, 2952 tests). Three load-only reds were found and fixed in the
 # tests' own timing (two in tests/test_e2e_clock.py, one budget in
 # tests/results/test_period_figures.py); then 30 stress iterations of the load-sensitive tests,
@@ -57,7 +57,7 @@ parallel_checks: true
 # best (load 56.78 -> 72.30). So `tests` is replaced by `tests-fast`, the pytest subset that
 # guards the cheap whole-codebase rules (architecture, migrations, business isolation, gated
 # routes, and the two stack pins): 94.8 s alone with -n 4 (load 34.14 -> 31.72) against 110.5 s
-# with -n 2 (load 21.23 -> 16.62), so -n 4. The gate with it (C) took 229.3 s at best (load
+# with -n 2 (load 21.23 -> 16.62), so it ran with -n 4 then. The gate with it (C) took 229.3 s at best (load
 # 18.71 -> 46.32), median 290.2 s, worst 312.2 s (load 47.52 -> 53.11), with the `web-tests`
 # rerun included. What moved to the full tier: the rest of pytest (`tests` alone: 187.7 s,
 # load 29.82 -> 22.02). Its cost: a failure outside those paths is found at `full_checks`, after
@@ -66,6 +66,14 @@ parallel_checks: true
 # an app-only diff selects nothing, so it reruns in full (180.3 s alone, load 40.89 -> 41.12).
 # `web-e2e` is no longer a local check: GitHub CI judges e2e (GH-699). `web-build` leaves the
 # fast tier too (GH-476) and, after GH-543, the checks altogether; it still runs in CI's `web` job.
+# Worker counts (GH-819): `tests` and `tests-fast` run `-n auto`, and the count is no longer a
+# literal. The check scheduler hands each gate a core share in `PYTEST_XDIST_AUTO_NUM_WORKERS` and
+# `CHECK_WORKERS` (agentic-system ADR-0070), and the `pytest_xdist_auto_num_workers` hook in
+# tests/conftest.py turns it into the xdist count through `scripts/check_share.py`: the xdist
+# variable, else `CHECK_WORKERS`, else `min(8, cores)` for a run by hand. The `-n 8` and `-n 4`
+# measurements above stay as history. Vitest (web/vite.config.ts `maxWorkers`) and the docs
+# generator (`scripts/docs/tools.py` `worker_count`) read `CHECK_WORKERS` the same way. With no
+# share `tests-fast` can start up to 8 workers where it started 4.
 # The shared-state inventory above holds:
 # `tests-fast` carries `-p no:cacheprovider`, so `.pytest_cache` keeps one writer (`tests`).
 # Read at a task's base, like every key here.

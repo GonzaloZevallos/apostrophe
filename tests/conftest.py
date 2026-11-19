@@ -1,6 +1,7 @@
 """Fixtures for the whole suite: a fresh in-memory database per test, a clock the test
 can move, and clients signed in to two different businesses."""
 
+import os
 from collections.abc import Iterator
 from datetime import UTC, date, datetime
 
@@ -17,6 +18,7 @@ from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
 from app.shared.copy import OperatorText
+from scripts.check_share import auto_workers
 from tests.fakes.telegram import FakeTelegram
 
 # 2026-10-02 15:00 in Buenos Aires (UTC-3). Tests reason about "today" from here.
@@ -29,6 +31,12 @@ TEST_HASHER = PasswordHasher(ScryptParams(n=16, r=1, p=1))
 # The money scales the suite runs at: a business opened before the flip stores whole units
 # (0), a business opened now stores hundredths (2) (docs/adr/0058).
 SCALES: tuple[int, ...] = (0, 2)
+
+
+@pytest.hookimpl(optionalhook=True)
+def pytest_xdist_auto_num_workers(config: pytest.Config) -> int:
+    """`-n auto` starts the scheduler's share of workers (agentic-system ADR-0070)."""
+    return auto_workers(os.environ, os.process_cpu_count() or 1)
 
 
 class MovableClock:

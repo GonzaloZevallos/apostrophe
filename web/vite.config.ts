@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react'
 import { defineConfig, searchForWorkspaceRoot } from 'vite'
+import { checkWorkers } from './scripts/checkWorkers.ts'
 
 // In development, every API path proxies to the backend (`uvicorn`, localhost:8000);
 // everything else is the front's own router, served by Vite itself. The list is the
@@ -51,6 +52,9 @@ export default defineConfig({
     // measured under load. Both ceilings are set only here and there: a call site
     // never sets its own shorter one.
     testTimeout: 40_000,
+    // The scheduler's core share (`CHECK_WORKERS`) caps the workers; unset, vitest keeps its default.
+    // Set at the root so the `unit` and `census` projects inherit it.
+    maxWorkers: checkWorkers(process.env),
     // One retry per failed test in CI, none locally (GH-563). Set at the root so the `unit` and
     // `census` projects inherit it: a real drift fails twice and stays red.
     retry: process.env.CI ? 1 : 0,
