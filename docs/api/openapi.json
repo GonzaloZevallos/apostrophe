@@ -1897,6 +1897,31 @@
         "title": "HeaderFooterIn",
         "type": "object"
       },
+      "HourlyPointOut": {
+        "properties": {
+          "hour": {
+            "title": "Hour",
+            "type": "integer"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "hour",
+          "total"
+        ],
+        "title": "HourlyPointOut",
+        "type": "object"
+      },
       "InvitationKind": {
         "enum": [
           "new_business",
@@ -2477,10 +2502,14 @@
             },
             "title": "Stock",
             "type": "array"
+          },
+          "today": {
+            "$ref": "#/components/schemas/TodayOut"
           }
         },
         "required": [
           "periods",
+          "today",
           "debts",
           "stock"
         ],
@@ -4831,6 +4860,90 @@
           "quantity"
         ],
         "title": "ThresholdIn",
+        "type": "object"
+      },
+      "TodayOut": {
+        "description": "Today's Sales and the so-far comparison against the same weekday last week.\n`change_percent` is `null` when last week's so-far is 0, never 0 or infinite.\n`hourly_today` ends at the current hour and can end below `sales` (a Sale recorded\non another day than its date counts at hour 23); `hourly_last_week` runs 0..23.",
+        "properties": {
+          "change_percent": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Change Percent"
+          },
+          "hourly_last_week": {
+            "items": {
+              "$ref": "#/components/schemas/HourlyPointOut"
+            },
+            "title": "Hourly Last Week",
+            "type": "array"
+          },
+          "hourly_today": {
+            "items": {
+              "$ref": "#/components/schemas/HourlyPointOut"
+            },
+            "title": "Hourly Today",
+            "type": "array"
+          },
+          "last_week_day": {
+            "format": "date",
+            "title": "Last Week Day",
+            "type": "string"
+          },
+          "last_week_so_far": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Last Week So Far"
+          },
+          "sales": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Sales"
+          },
+          "sales_count": {
+            "title": "Sales Count",
+            "type": "integer"
+          },
+          "so_far": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "So Far"
+          }
+        },
+        "required": [
+          "sales",
+          "sales_count",
+          "so_far",
+          "last_week_so_far",
+          "last_week_day",
+          "change_percent",
+          "hourly_today",
+          "hourly_last_week"
+        ],
+        "title": "TodayOut",
         "type": "object"
       },
       "TypePriceOut": {
