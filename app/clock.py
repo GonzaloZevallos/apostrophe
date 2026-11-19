@@ -11,6 +11,8 @@ from zoneinfo import ZoneInfo
 
 from fastapi import Request
 
+from app.shared.calendar import local_day
+
 BUSINESS_TIMEZONE = ZoneInfo("America/Argentina/Buenos_Aires")
 
 Clock = Callable[[], datetime]
@@ -21,7 +23,7 @@ def system_clock() -> datetime:
 
 
 def business_day(instant: datetime) -> date:
-    return instant.astimezone(BUSINESS_TIMEZONE).date()
+    return local_day(instant, BUSINESS_TIMEZONE)
 
 
 def get_clock(request: Request) -> Clock:

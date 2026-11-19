@@ -47,5 +47,7 @@ class SqlSalesLedger:
                 total=domain_amount(self._session, self._business_id, shipping + lines_total),
                 recorded_at=recorded_at,
             )
-            for sale_id, day, shipping, lines_total, recorded_at in self._session.execute(statement).all()
+            for sale_id, day, shipping, lines_total, recorded_at in self._session.execute(
+                statement
+            ).all()
         ]

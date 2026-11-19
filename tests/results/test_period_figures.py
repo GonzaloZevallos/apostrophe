@@ -240,7 +240,9 @@ def test_a_variety_only_gifted_has_a_negative_margin_and_no_percentage() -> None
             pending="0",
         )
     ]
-    figures = _figures(draws=draws, sales=[sale_record(1, TODAY, total=0)], earliest_entry_day=TODAY)
+    figures = _figures(
+        draws=draws, sales=[sale_record(1, TODAY, total=0)], earliest_entry_day=TODAY
+    )
 
     [row] = figures.month.varieties
     assert row.sales_without_shipping == 0
@@ -322,7 +324,9 @@ def test_a_negative_adjustment_is_kept_out_of_the_variety_table_and_counted_as_s
     )
     shortfall = _shortfall(day=TODAY, costed=1_000, pending="0")
     figures = _figures(
-        draws=[sold, shortfall], sales=[sale_record(1, TODAY, total=10_000)], earliest_entry_day=TODAY
+        draws=[sold, shortfall],
+        sales=[sale_record(1, TODAY, total=10_000)],
+        earliest_entry_day=TODAY,
     )
 
     assert len(figures.month.varieties) == 1
@@ -336,7 +340,9 @@ def test_a_month_with_only_gifts_has_no_share_and_no_average_percentage() -> Non
             day=TODAY, variety_id=1, name="Flor", sale_id=1, quantity="5", costed=2_000, pending="0"
         )
     ]
-    figures = _figures(draws=draws, sales=[sale_record(1, TODAY, total=0)], earliest_entry_day=TODAY)
+    figures = _figures(
+        draws=draws, sales=[sale_record(1, TODAY, total=0)], earliest_entry_day=TODAY
+    )
 
     assert figures.month.average_margin.percent is None
     assert figures.month.varieties[0].share_percent is None
@@ -381,7 +387,9 @@ def test_profit_s_pending_n_counts_sold_gifted_and_shortfall_grams_in_its_own_we
     )
     shortfall = _shortfall(day=TODAY, costed=None, pending="2")
     figures = _figures(
-        draws=[sold, shortfall], sales=[sale_record(1, TODAY, total=4_000)], earliest_entry_day=TODAY
+        draws=[sold, shortfall],
+        sales=[sale_record(1, TODAY, total=4_000)],
+        earliest_entry_day=TODAY,
     )
 
     [week] = [w for w in figures.weeks if w.first_day <= TODAY <= w.last_day]
