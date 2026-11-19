@@ -9,6 +9,9 @@
     "sales_without_shipping": 0,
     "quantity_sold": 0.0,
     "quantity_gifted": 0.0,
+    "average_sale": null,
+    "purchases": 0,
+    "cash": 0,
     "average_margin": { "amount": 0, "percent": null, "pending_quantity": 0.0 },
     "shortfall": null,
     "withdrawals": [],
@@ -19,5 +22,6 @@
   "weekdays": [],
   "since_first_record": null,
   "month_expenses": { "categories": [], "total": 0, "purchases": 0 },
-  "since_first_record_expenses": { "categories": [], "total": 0, "purchases": 0 }
+  "since_first_record_expenses": { "categories": [], "total": 0, "purchases": 0 },
+  "stock": []
 }

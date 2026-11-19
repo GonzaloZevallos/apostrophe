@@ -200,6 +200,31 @@
           "average_margin": {
             "$ref": "#/components/schemas/MarginOut"
           },
+          "average_sale": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Sale"
+          },
+          "cash": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Cash"
+          },
           "month": {
             "title": "Month",
             "type": "string"
@@ -232,6 +257,17 @@
             },
             "title": "Products",
             "type": "array"
+          },
+          "purchases": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Purchases"
           },
           "quantity_gifted": {
             "title": "Quantity Gifted",
@@ -289,6 +325,9 @@
           "sales_without_shipping",
           "quantity_sold",
           "quantity_gifted",
+          "average_sale",
+          "purchases",
+          "cash",
           "average_margin",
           "shortfall",
           "withdrawals",
@@ -337,6 +376,13 @@
           "since_first_record_expenses": {
             "$ref": "#/components/schemas/ExpenseBreakdownOut"
           },
+          "stock": {
+            "items": {
+              "$ref": "#/components/schemas/PanelProductOut"
+            },
+            "title": "Stock",
+            "type": "array"
+          },
           "today": {
             "format": "date",
             "title": "Today",
@@ -366,7 +412,8 @@
           "weekdays",
           "since_first_record",
           "month_expenses",
-          "since_first_record_expenses"
+          "since_first_record_expenses",
+          "stock"
         ],
         "title": "AnalysisOut",
         "type": "object"
@@ -2245,6 +2292,20 @@
       },
       "MonthRowOut": {
         "properties": {
+          "average_sale": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Sale"
+          },
           "cash": {
             "anyOf": [
               {
@@ -2287,8 +2348,27 @@
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
           },
+          "purchases": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Purchases"
+          },
           "quantity": {
             "title": "Quantity",
+            "type": "number"
+          },
+          "quantity_gifted": {
+            "title": "Quantity Gifted",
+            "type": "number"
+          },
+          "quantity_sold": {
+            "title": "Quantity Sold",
             "type": "number"
           },
           "sales": {
@@ -2326,6 +2406,10 @@
           "last_day",
           "sales",
           "quantity",
+          "average_sale",
+          "quantity_sold",
+          "quantity_gifted",
+          "purchases",
           "cost_of_goods",
           "shortfall",
           "withdrawals",
@@ -4913,6 +4997,20 @@
       },
       "WeekOut": {
         "properties": {
+          "average_sale": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Sale"
+          },
           "best": {
             "title": "Best",
             "type": "boolean"
@@ -4955,8 +5053,27 @@
           "profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
           },
+          "purchases": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Purchases"
+          },
           "quantity": {
             "title": "Quantity",
+            "type": "number"
+          },
+          "quantity_gifted": {
+            "title": "Quantity Gifted",
+            "type": "number"
+          },
+          "quantity_sold": {
+            "title": "Quantity Sold",
             "type": "number"
           },
           "sales": {
@@ -4993,6 +5110,10 @@
           "last_day",
           "sales",
           "quantity",
+          "average_sale",
+          "quantity_sold",
+          "quantity_gifted",
+          "purchases",
           "cost_of_goods",
           "shortfall",
           "withdrawals",

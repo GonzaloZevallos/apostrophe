@@ -142,8 +142,13 @@ def _books(client: TestClient, seed: Seed) -> dict[str, Any]:
     a variety is archived."""
     panel = _ok(client.get("/panel"))
     stock = _ok(client.get("/stock"))
+    analysis = {m: _ok(client.get("/analysis", params={"month": m})) for m in MONTHS}
+    # `stock` is What you have left: a live list that rightly drops an archived Product
+    # (it is asserted apart, below); every other Analysis figure is a past record.
+    for answer in analysis.values():
+        del answer["stock"]
     return {
-        "analysis": {m: _ok(client.get("/analysis", params={"month": m})) for m in MONTHS},
+        "analysis": analysis,
         "panel_periods": panel["periods"],
         "sales": {i: _ok(client.get(f"/sales/{i}")) for i in seed.sale_ids},
         "sales_list": _ok(client.get("/sales")),
@@ -190,8 +195,13 @@ def test_no_figure_of_the_books_moves_when_a_variety_is_archived_and_restored(
     listed_stock = _ok(client.get("/stock"))
     assert seed.archived_id not in [r["product_id"] for r in listed_stock["products"]]
 
+    stock_while_archived = _ok(client.get("/analysis"))["stock"]
+    assert seed.archived_id not in [r["product_id"] for r in stock_while_archived]
+
     _restore(client, seed.archived_id)
     after = _books(client, seed)
+    stock_after = _ok(client.get("/analysis"))["stock"]
+    assert seed.archived_id in [r["product_id"] for r in stock_after]
     row_after = _variety_row(_ok(client.get("/stock")), seed.archived_id)
 
     assert while_archived == before

@@ -693,11 +693,15 @@ def test_the_analysis_rows_carry_cost_of_goods_and_shortfall_that_agree_with_the
         "all_pending": False,
     }
     # The row order is the PRD's.
-    assert list(week_row)[:9] == [
+    assert list(week_row)[:13] == [
         "first_day",
         "last_day",
         "sales",
         "quantity",
+        "average_sale",
+        "quantity_sold",
+        "quantity_gifted",
+        "purchases",
         "cost_of_goods",
         "shortfall",
         "withdrawals",
