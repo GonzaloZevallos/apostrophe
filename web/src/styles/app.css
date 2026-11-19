@@ -737,37 +737,36 @@ body {
   font-weight: 600;
 }
 
-/* The business row at the rail's foot (`InicioCompu.dc.html`): the avatar and the name,
- * one link to Configuración. The rail is hidden on the phone, so this is computer only. */
-.riel-lateral__negocio {
+/* The Settings gear at the rail's foot (`InicioCompu.dc.html`): a gear and the word, one link to
+ * Configuración, pushed to the bottom of the rail. The drawn row is 42 px; the link around it is
+ * a 44 px touch target, and the negative bottom margin gives back the pixel the box adds, so the
+ * rail's spacing is the drawn one. The 4 px gap above keeps the box clear of Análisis. The rail is
+ * hidden on the phone, so this is computer only. */
+.riel-lateral__ajustes {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 46px;
-  margin-top: 14px;
-  padding: 0 10px;
-  border-radius: 14px;
-  color: var(--tinta);
+  min-height: 44px;
+  margin-top: auto;
+  margin-bottom: -1px;
+  border-radius: 10px;
   text-decoration: none;
-  font-size: 14px;
-  font-weight: 600;
 }
 
-.riel-lateral__negocio--activo {
-  background: var(--superficie);
-  box-shadow: inset 2px 0 0 var(--acento);
-}
-
-.riel-lateral__avatar {
+.riel-lateral__ajustes-fila {
   display: flex;
+  flex: 1;
   align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radio-pildora);
-  background: var(--acento-suave);
-  color: var(--acento);
-  font-size: 13px;
+  gap: 12px;
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 10px;
+  color: var(--tinta);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.riel-lateral__ajustes--activo .riel-lateral__ajustes-fila {
+  background: var(--superficie);
   font-weight: 600;
 }
 
@@ -5292,7 +5291,7 @@ a.ajustes-tema__opcion {
  *   .cobrar, .interruptor, .boton-aviso;
  *   transparent, so --superficie is the fill cue: .boton--enlace,
  *   .boton--fila, .enlace-texto, .bar-inferior__item, .riel-lateral__item,
- *   .riel-lateral__negocio, .mas__item, .ajustes__item, .mas-info__boton, .fila-venta,
+ *   .riel-lateral__ajustes, .mas__item, .ajustes__item, .mas-info__boton, .fila-venta,
  *   .fila-gasto, .fila-entrada, .fila-entrada__enlace, .lista-clientes__fila,
  *   .bloque-deben__titulo, .bloque-deben__fila, .bloque-deben__datos, .fila-stock--enlace, .variedad-item,
  *   .variedad-fila, .variedades__todas, .catalogo__fila-nombre, .pestanas__opcion,
@@ -5300,7 +5299,7 @@ a.ajustes-tema__opcion {
  *   resting on --superficie or --papel itself, so --linea is the fill cue (these come after
  *   the --superficie group): .ajustes-tema__opcion and .inicio-segmento, plain and
  *   --activa (the Settings track is --superficie, its selected option --papel; the segment track is --acento-suave, its marked option is --superficie), and the selected variants
- *   .riel-lateral__item--activo, .riel-lateral__negocio--activo, .bar-inferior__item--activo,
+ *   .riel-lateral__item--activo, .riel-lateral__ajustes--activo, .bar-inferior__item--activo,
  *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa.
  * .opcion-interruptor is label-wrapped (its checkbox is stretched over it and must keep the
  * tap), so its cue is the fill only: its own rule below, with no `transform`.
@@ -5347,7 +5346,7 @@ a.ajustes-tema__opcion {
     .enlace-texto,
     .bar-inferior__item,
     .riel-lateral__item,
-    .riel-lateral__negocio,
+    .riel-lateral__ajustes,
     .mas__item,
     .ajustes__item,
     .mas-info__boton,
@@ -5411,7 +5410,7 @@ a.ajustes-tema__opcion {
 
 :is(
     .riel-lateral__item--activo,
-    .riel-lateral__negocio--activo,
+    .riel-lateral__ajustes--activo,
     .bar-inferior__item--activo,
     .pestanas__opcion--activa,
     .variedad-fila--activa,
@@ -5439,7 +5438,7 @@ a.ajustes-tema__opcion {
     .bloque-deben__titulo,
     .bar-inferior,
     .riel-lateral,
-    .riel-lateral__negocio,
+    .riel-lateral__ajustes,
     .mas__item,
     .ajustes__item,
     .ajustes-tema__opcion,

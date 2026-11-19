@@ -8,7 +8,7 @@
  * in the markup and reads the stylesheet. This one is the authority on what a person sees,
  * but it runs on an empty business, so it covers chrome and settings only: the bar, the
  * tabs, Análisis, Gastos, Configuración's list, Tu cuenta, Apariencia, the
- * computer sidebar with its business row, and Entrar signed out. List rows (sales, expenses,
+ * computer sidebar with its Settings gear, and Entrar signed out. List rows (sales, expenses,
  * customers, varieties) are covered by the static scan and by eye.
  */
 
@@ -35,6 +35,7 @@ import type { Page } from '@playwright/test'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { railSettingsLink } from './helpers/chrome.js'
 import { whilePressed, type Look } from './helpers/pressed.js'
 import { uniqueTag } from './helpers/unique.js'
 
@@ -44,6 +45,23 @@ const PER_CLASS_SET = 3
 const CONTROLS = 'button, a[href], [role=button], [role=tab], [role=radio], [role=switch]'
 const EXEMPT_CLASSES = EXEMPT.flatMap((entry) => entry.classes)
 const THEMES = ['claro', 'oscuro'] as const
+
+/** The sidebar's gear is a 44 px touch box that overlaps no other entry; its drawn 42 px row is its child. */
+async function expectGearBoxClear(page: Page): Promise<void> {
+  const gear = railSettingsLink(page)
+  const box = await gear.boundingBox()
+  const analysis = await page
+    .getByRole('navigation', { name: 'Navigation' })
+    .getByRole('link', { name: 'Analysis', exact: true })
+    .boundingBox()
+  expect(box, 'the Settings gear is drawn').not.toBeNull()
+  expect(analysis, 'Analysis is drawn').not.toBeNull()
+  expect(box?.width ?? 0).toBeGreaterThanOrEqual(44)
+  expect(box?.height ?? 0).toBeGreaterThanOrEqual(44)
+  expect(box?.y ?? 0).toBeGreaterThanOrEqual((analysis?.y ?? 0) + (analysis?.height ?? 0))
+  const row = await gear.locator('xpath=./*[1]').boundingBox()
+  expect(row?.height).toBe(42)
+}
 /** The instant the page's fake clock starts at: a literal, so the spec reads no real clock. */
 const PAGE_CLOCK_START = new Date('2030-01-01T12:00:00Z')
 
@@ -313,7 +331,7 @@ test.describe('on a computer', () => {
   test.use({ viewport: COMPUTER })
 
   for (const theme of THEMES) {
-    test(`the sidebar, with its business row, shows a press at once (${theme})`, async ({ page }) => {
+    test(`the sidebar, with its Settings gear, shows a press at once (${theme}) and the gear's box is 44 px clear of Analysis`, async ({ page }) => {
       const messages: string[] = []
       watchConsole(page, messages)
       await signUpNewBusiness(page, {
@@ -322,13 +340,14 @@ test.describe('on a computer', () => {
       })
 
       await openIn(page, HOME, theme)
-      expectPressed('the business row', await whilePressed(page, '.riel-lateral__negocio'))
+      expectPressed('the Settings gear', await whilePressed(page, railSettingsLink(page)))
+      await expectGearBoxClear(page)
       await expectEveryControlPressed(page, HOME)
 
       await openIn(page, SETTINGS, theme)
       expectPressed(
-        'the marked business row',
-        await whilePressed(page, '.riel-lateral__negocio--activo'),
+        'the marked Settings gear',
+        await whilePressed(page, railSettingsLink(page)),
       )
       await expectEveryControlPressed(page, SETTINGS)
 

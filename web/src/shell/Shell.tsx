@@ -2,8 +2,8 @@
  * The bottom bar on the phone, the side rail on a computer (`componentes.ts`'s `Destino`);
  * CSS alone switches between them (`styles/app.css`). Only destinations that exist show.
  * The bar is Inicio, Ventas, Clientes and Variedades; the rail is "+ Nueva venta", the
- * same first four, a divider, Gastos and Análisis, and the business row (avatar and name) at
- * the bottom, which opens Configuración (on the phone a header avatar opens it).
+ * same first four, a divider, Gastos and Análisis, and a gear link to Configuración at the
+ * bottom (on the phone a header avatar opens it).
  *
  * Everything the shell decides comes from the leaf route's registry entry (`routes.ts`),
  * found through the route's `handle.screen`: `chromeOf` (`chrome.ts`) turns it into the
@@ -49,7 +49,6 @@ import { NO_PRICE_HINT } from '../copy/sales'
 import { describeNewSale } from '../copy/readers/newSaleDescription'
 import { OTHER_RECORDS } from '../sales/otherRecords'
 import { chromeOf } from './chrome'
-import { initialsOf } from '../format/initials'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
 import { useLeafScreen } from './useLeafScreen'
 import { useViewport } from './useViewport'
@@ -97,6 +96,16 @@ const NAV_ITEMS: Item[] = [
   { to: EXPENSES, labelKey: 'common:expenses', icono: 'gastos', placement: 'rail', group: 'secondary', place: 'expenses' },
   { to: ANALYSIS, labelKey: 'common:analysis', icono: 'analisis', placement: 'rail', group: 'secondary', place: 'analysis' },
 ]
+
+/** The rail's gear: Configuración, below the rail's items and not one of them. */
+const SETTINGS_ITEM: Item = {
+  to: SETTINGS,
+  labelKey: 'common:settings',
+  icono: 'ajustes',
+  placement: 'rail',
+  group: 'secondary',
+  place: 'settings',
+}
 
 const BAR_ITEMS = NAV_ITEMS.filter((item) => item.placement !== 'rail')
 const RAIL_ITEMS = NAV_ITEMS.filter((item) => item.placement !== 'bar')
@@ -261,19 +270,18 @@ export default function Shell() {
             )
           })}
           <InAppLink
-            to={SETTINGS}
-            aria-label={t('common:settingsFor', { business: me.business_name })}
-            aria-current={railPlace === 'business' ? 'page' : undefined}
+            to={SETTINGS_ITEM.to}
+            aria-current={railPlace === SETTINGS_ITEM.place ? 'page' : undefined}
             className={
-              railPlace === 'business'
-                ? 'riel-lateral__negocio riel-lateral__negocio--activo'
-                : 'riel-lateral__negocio'
+              railPlace === SETTINGS_ITEM.place
+                ? 'riel-lateral__ajustes riel-lateral__ajustes--activo'
+                : 'riel-lateral__ajustes'
             }
           >
-            <span className="riel-lateral__avatar" aria-hidden="true">
-              {initialsOf(me.business_name)}
+            <span className="riel-lateral__ajustes-fila">
+              {SETTINGS_ITEM.icono !== undefined && <Icono nombre={SETTINGS_ITEM.icono} />}
+              {t(SETTINGS_ITEM.labelKey)}
             </span>
-            <span className="riel-lateral__negocio-nombre">{me.business_name}</span>
           </InAppLink>
         </nav>
       )}

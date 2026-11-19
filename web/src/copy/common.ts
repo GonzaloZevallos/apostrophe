@@ -34,7 +34,6 @@ const { money: M, date: D } = FIXTURE
 
 /** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({
-  'COMMON_TEXT.settingsFor': [['Rosa Flowers']],
   'COMMON_TEXT.pricePerGram': [[M]],
   'COMMON_TEXT.collectFrom': [['Ana']],
   'COMMON_TEXT.todayWith': [[D]],
@@ -144,8 +143,6 @@ export const COMMON_TEXT = {
   noKeep: 'No, keep it',
   /** @deprecated read `common:noKeepEditing` */
   noKeepEditing: 'No, keep editing',
-  /** @deprecated read `common:settingsFor` */
-  settingsFor: (business: string | number) => `Settings for ${business}`,
   /** @deprecated read `common:businessName` */
   businessName: 'Business name',
   /** @deprecated read `common:date` */

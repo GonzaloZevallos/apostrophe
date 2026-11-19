@@ -32,7 +32,7 @@ import { expectToast } from './helpers/toast.js'
 import { choosePaymentMethod } from './helpers/paymentMethod.js'
 import { CUSTOMERS_TEXT } from '../src/copy/customers.js'
 import { CUSTOMERS, HOME } from '../src/routes.js'
-import { BOTTOM_BAR, BOTTOM_BAR_ITEM, BOTTOM_BAR_PLUS, bottomBar } from './helpers/chrome.js'
+import { BOTTOM_BAR, BOTTOM_BAR_ITEM, BOTTOM_BAR_PLUS, bottomBar, railSettingsLink } from './helpers/chrome.js'
 
 const PHONE = { width: 320, height: 700 }
 /** The narrowest phone the bar must fit (Step 1 of GH-727: measure before anything is built on it). */
@@ -446,17 +446,23 @@ test.describe.serial('bar and rail fit', () => {
     const items = (await measureItems(page, '.riel-lateral', '.riel-lateral__item')).filter((item) =>
       RAIL_LABELS.includes(item.text),
     )
-    const business = await measureItems(page, '.riel-lateral', '.riel-lateral__negocio')
+    const gear = await railSettingsLink(page).evaluate((link) => {
+      const label = link.firstElementChild ?? link
+      const range = document.createRange()
+      range.selectNodeContents(label)
+      const drawn = range.getBoundingClientRect()
+      const box = link.getBoundingClientRect()
+      return { text: (link.textContent ?? '').trim(), textLeft: drawn.left, textRight: drawn.right, left: box.left, right: box.right, clipped: label.scrollWidth > label.clientWidth, current: link.getAttribute('aria-current') }
+    })
 
     expect([
       ...violations(items, RAIL_LABELS, rail),
-      ...violations(business, [business[0]?.text ?? ''], rail),
+      ...violations([gear], ['Settings'], rail),
       // The rail's Gastos and Análisis have no design icon yet (GH-97 open finding), so a rail
       // item without one is not failed here; one that has an icon must show it whole.
       ...(await iconProblems(page, '.riel-lateral', '.riel-lateral__item', false)),
       ...(rail.overflows ? ['the rail scrolls sideways'] : []),
     ]).toEqual([])
-    expect(business).toHaveLength(1)
     expect(items.filter((item) => item.current === 'page').map((item) => item.text)).toEqual(['Home'])
     expect(consoleMessages).toEqual([])
   })

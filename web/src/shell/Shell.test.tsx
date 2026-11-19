@@ -4,7 +4,7 @@
  * for that screen's kind and place, and nothing else (no pathname, no history decides it).
  *
  * The bar is Inicio, Ventas, Clientes and Variedades; the rail is the first four, a
- * divider, Gastos and Análisis, and the business row. "+ Nueva venta" is fixed,
+ * divider, Gastos and Análisis, and the Settings gear. "+ Nueva venta" is fixed,
  * apart from the tabs, and only a root shows it. A card shows the bar and a "‹ parent" arrow,
  * a form neither. jsdom lays nothing out, so each surface is checked through its markup and
  * `useViewport` is mocked per case for the viewport (its own test owns `matchMedia`).
@@ -58,14 +58,14 @@ const viewport = vi.hoisted(() => ({ current: 'phone' as 'phone' | 'computer' })
 
 vi.mock('./useViewport', () => ({ useViewport: () => viewport.current }))
 
-/** The tabs only, in the order they render: drops "New sale", the + (it has no text) and the business row. */
+/** The tabs only, in the order they render: drops "New sale", the + (it has no text) and the Settings gear. */
 function tabNames(nav: HTMLElement): string[] {
   return within(nav)
     .getAllByRole('link')
     .map((link) => link.textContent)
     .filter(
       (name): name is string =>
-        name !== null && name !== '' && !name.startsWith('New sale') && !name.startsWith('LH'),
+        name !== null && name !== '' && !name.startsWith('New sale') && name !== 'Settings',
     )
 }
 
@@ -177,7 +177,7 @@ test('the bar has five slots in order: Home, Sales, the +, Customers, Products',
   expect(names).toEqual(['Home', 'Sales', PLUS_NAME, 'Customers', 'Products'])
 })
 
-test('the rail is "New sale", four tabs, a divider, Gastos and Análisis, then the business row', () => {
+test('the rail is "New sale", four tabs, a divider, Gastos and Análisis, then the Settings gear', () => {
   const { container } = renderShell([HOME], { computer: true })
 
   const entries = [...rail(container).children].map((child) =>
@@ -193,7 +193,7 @@ test('the rail is "New sale", four tabs, a divider, Gastos and Análisis, then t
     '---',
     'Expenses',
     'Analysis',
-    'LHLa Huerta',
+    'Settings',
   ])
   expect(tabNames(rail(container))).toEqual(RAIL)
 })
@@ -349,14 +349,27 @@ test.each([
   expect(current(rail(container))).toEqual([railEntry])
 })
 
-test('Configuración marks Home on the phone bar and the business row on a computer', () => {
+test.each([SETTINGS, SETTINGS_USERS])('%s marks the Settings gear on a computer', (path) => {
+  const { container } = renderShell([path], { computer: true })
+
+  const gear = within(rail(container)).getByRole('link', { name: 'Settings' })
+  expect(gear).toHaveAttribute('aria-current', 'page')
+  expect(gear.className).toMatch(/--activo/)
+  expect(current(rail(container))).toEqual(['Settings'])
+})
+
+test('Configuración marks Home on the phone bar', () => {
   const { container } = renderShell([SETTINGS])
 
   expect(current(bar(container))).toEqual(['Home'])
-  const row = within(rail(container)).getByRole('link', { name: 'Settings for La Huerta' })
-  expect(row).toHaveAttribute('aria-current', 'page')
-  expect(row.className).toMatch(/--activo/)
-  expect(current(rail(container))).toEqual(['LHLa Huerta'])
+})
+
+test('the Settings gear is marked on no other screen', () => {
+  const { container } = renderShell([HOME], { computer: true })
+
+  const gear = within(rail(container)).getByRole('link', { name: 'Settings' })
+  expect(gear).not.toHaveAttribute('aria-current')
+  expect(gear.className).not.toMatch(/--activo/)
 })
 
 test('a customer card marks Clientes however it was reached: from Inicio, after a reload, from a saved link', async () => {
@@ -392,32 +405,45 @@ test('the active mark is more than color: aria-current, a distinct class and not
   }
 })
 
-test('the business row leads to Configuración, carrying inApp, one tap from Inicio', async () => {
+test('the Settings gear is the one link named Settings, in the sidebar, and opens Configuración carrying inApp, one tap from Inicio', async () => {
   const { container } = renderShell([HOME], { computer: true })
-  const row = within(rail(container)).getByRole('link', { name: 'Settings for La Huerta' })
 
-  expect(row).toHaveAttribute('href', SETTINGS)
-  expect(row).toHaveTextContent('LH')
-  expect(row).toHaveTextContent('La Huerta')
-  expect(rail(container).lastElementChild).toBe(row)
-  await userEvent.click(row)
+  const gears = screen.getAllByRole('link', { name: 'Settings' })
+  expect(gears).toHaveLength(1)
+  const gear = within(rail(container)).getByRole('link', { name: 'Settings' })
+  expect(gears[0]).toBe(gear)
+  expect(gear).toHaveAttribute('href', SETTINGS)
+  expect(gear).toHaveTextContent('Settings')
+  expect(gear.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(rail(container).lastElementChild).toBe(gear)
+  await userEvent.click(gear)
 
   expect(screen.getByText(`en ${SETTINGS} inApp=true`)).toBeInTheDocument()
+})
+
+test('the sidebar draws neither the business name nor its initials', () => {
+  const { container } = renderShell([HOME], { computer: true })
+
+  expect(within(rail(container)).queryByText('La Huerta')).not.toBeInTheDocument()
+  expect(within(rail(container)).queryByText('LH')).not.toBeInTheDocument()
 })
 
 test('the phone reaches Configuración in one tap: the Settings avatar in the header', async () => {
   renderShell([HOME])
 
-  await userEvent.click(screen.getByRole('link', { name: 'Settings' }))
+  // jsdom draws no CSS, so the sidebar's gear is in the DOM too (the stylesheet hides it on a phone).
+  const avatar = screen.getAllByRole('link', { name: 'Settings' }).find((link) => link.closest('nav') === null)
+  await userEvent.click(avatar as HTMLElement)
 
   expect(screen.getByText(`en ${SETTINGS} inApp=true`)).toBeInTheDocument()
 })
 
-test('a computer draws no Settings avatar: its way to Configuración is the business row', () => {
+test('a computer draws no Settings avatar: its way to Configuración is the sidebar gear', () => {
   const { container } = renderShell([HOME], { computer: true })
 
-  expect(screen.queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument()
-  expect(within(rail(container)).getByRole('link', { name: 'Settings for La Huerta' })).toBeInTheDocument()
+  expect(screen.getAllByRole('link', { name: 'Settings' })).toEqual([
+    within(rail(container)).getByRole('link', { name: 'Settings' }),
+  ])
 })
 
 test('Inicio\'s teaser opens the card with inApp state; the card reads "‹ Customers" and Back lands on Inicio', async () => {
@@ -500,11 +526,8 @@ test('the rail is a menu too, and no two of its entries share an icon', () => {
   const { container } = renderShell([HOME], { computer: true })
 
   expect(rail(container)).toHaveAttribute('data-menu')
-  // Every entry draws its icon, Gastos and Análisis included; only the business row draws an
-  // avatar, not an icon, so it is the one thing that may be left over.
-  expect(iconAndTextProblems(rail(container))).toEqual([
-    expect.stringContaining('"Settings for La Huerta" is text only'),
-  ])
+  // Every entry draws its icon, Gastos, Análisis and the Settings gear included.
+  expect(iconAndTextProblems(rail(container))).toEqual([])
 })
 
 test('a bar that repeats an icon is rejected by the rule', () => {

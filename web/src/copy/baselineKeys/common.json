@@ -86,7 +86,6 @@
   "common.ts:COMMON_TEXT.save": { "key": "common:save" },
   "common.ts:COMMON_TEXT.saveTheName": { "key": "common:saveTheName" },
   "common.ts:COMMON_TEXT.settings": { "key": "common:settings" },
-  "common.ts:COMMON_TEXT.settingsFor": { "key": "common:settingsFor", "params": ["business"] },
   "common.ts:COMMON_TEXT.share": { "key": "common:share" },
   "common.ts:COMMON_TEXT.show": { "key": "common:show" },
   "common.ts:COMMON_TEXT.soldSuffix": { "key": "common:gramsSold", "fill": { "grams": "" } },

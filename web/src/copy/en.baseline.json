@@ -173,7 +173,6 @@
   {"source":"common.ts:COMMON_TEXT.save","args":null,"text":"Save"},
   {"source":"common.ts:COMMON_TEXT.saveTheName","args":null,"text":"Save the name"},
   {"source":"common.ts:COMMON_TEXT.settings","args":null,"text":"Settings"},
-  {"source":"common.ts:COMMON_TEXT.settingsFor","args":["Rosa Flowers"],"text":"Settings for Rosa Flowers"},
   {"source":"common.ts:COMMON_TEXT.share","args":null,"text":"Share"},
   {"source":"common.ts:COMMON_TEXT.show","args":null,"text":"Show"},
   {"source":"common.ts:COMMON_TEXT.soldSuffix","args":null,"text":" sold"},

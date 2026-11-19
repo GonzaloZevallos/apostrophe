@@ -12,6 +12,7 @@ import type { Locator } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, SETTINGS_CUSTOMER_TYPES, SETTINGS_PRICES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
+import { settingsEntry } from './helpers/chrome.js'
 import { expectPath } from './helpers/url.js'
 
 test.use({ viewport: { width: 390, height: 844 } })
@@ -32,7 +33,7 @@ test('a seller creates a customer type in Settings and assigns it from the Custo
   await signUpNewBusiness(page)
   const counter: Counter = { taps: 0 }
 
-  await tap(counter, page.getByRole('link', { name: /^Settings for / }).or(page.getByRole('link', { name: 'Settings', exact: true })))
+  await tap(counter, settingsEntry(page))
   await tap(counter, page.getByRole('link', { name: /^Prices/ }))
   await expectPath(page, SETTINGS_PRICES)
   expect(counter.taps).toBeLessThanOrEqual(TAP_BUDGET_TO_PRICES)

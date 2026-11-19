@@ -20,7 +20,7 @@ export const PRESSED_BLOCK_AT_BDC2945 = `/* pressed */
  *   .venta-guardada__deshacer, .cobrar, .interruptor;
  *   transparent, so --superficie is the fill cue: .boton-enlace, .boton--enlace,
  *   .boton--fila, .enlace-texto, .bar-inferior__item, .riel-lateral__item,
- *   .riel-lateral__negocio, .mas__item, .ajustes__item, .opcion-interruptor, .fila-venta,
+ *   .riel-lateral__ajustes, .mas__item, .ajustes__item, .opcion-interruptor, .fila-venta,
  *   .fila-gasto, .fila-entrada, .fila-entrada__enlace, .lista-clientes__fila,
  *   .bloque-deben__titulo, .bloque-deben__fila, .bloque-deben__datos, .variedad-item,
  *   .variedad-fila, .variedades__todas, .catalogo__fila-nombre, .pestanas__opcion,
@@ -28,7 +28,7 @@ export const PRESSED_BLOCK_AT_BDC2945 = `/* pressed */
  *   resting on --superficie or --papel itself, so --linea is the fill cue (these come after
  *   the --superficie group): .inicio__avatar and .ajustes-tema__opcion, plain and --activa (the track is
  *   --superficie, the selected option --papel), and the selected variants
- *   .riel-lateral__item--activo, .riel-lateral__negocio--activo, .bar-inferior__item--activo,
+ *   .riel-lateral__item--activo, .riel-lateral__ajustes--activo, .bar-inferior__item--activo,
  *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa.
  * Display-only rows (.encabezado-fila, .historial-fila and its other children, the
  * children of .fila-gasto) are left out: nothing happens when they are touched. */
@@ -55,7 +55,7 @@ export const PRESSED_BLOCK_AT_BDC2945 = `/* pressed */
     .enlace-texto,
     .bar-inferior__item,
     .riel-lateral__item,
-    .riel-lateral__negocio,
+    .riel-lateral__ajustes,
     .mas__item,
     .ajustes__item,
     .opcion-interruptor,
@@ -93,7 +93,7 @@ export const PRESSED_BLOCK_AT_BDC2945 = `/* pressed */
 
 :is(
     .riel-lateral__item--activo,
-    .riel-lateral__negocio--activo,
+    .riel-lateral__ajustes--activo,
     .bar-inferior__item--activo,
     .pestanas__opcion--activa,
     .variedad-fila--activa,
@@ -122,7 +122,7 @@ export const PRESSED_BLOCK_AT_BDC2945 = `/* pressed */
     .bloque-deben__titulo,
     .bar-inferior,
     .riel-lateral,
-    .riel-lateral__negocio,
+    .riel-lateral__ajustes,
     .mas__item,
     .ajustes__item,
     .ajustes-tema__opcion,

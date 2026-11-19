@@ -50,13 +50,17 @@ async function openAt(path: string, viewport: Viewport, me: typeof ME = ME, othe
   return await screen.findByRole('main')
 }
 
+/** The links named Settings outside any nav: the header avatar. jsdom draws no CSS, so the sidebar's gear is in the DOM on a phone too (the stylesheet hides it there). */
+function settingsAvatars(): HTMLElement[] {
+  return screen.getAllByRole('link', { name: 'Settings' }).filter((link) => link.closest('nav') === null)
+}
+
 describe('on the phone', () => {
   test.each(TAB_ROOTS)('%s has exactly one link named Settings, and one tap reaches /settings', async (_name, path) => {
     await openAt(path, 'phone')
 
-    const links = screen.getAllByRole('link', { name: 'Settings' })
+    const links = settingsAvatars()
     expect(links).toHaveLength(1)
-    expect(screen.getAllByRole('link', { name: 'Settings' })).toHaveLength(1)
     // The glyph is the business's initials; the name is the fixed word, never the business.
     expect(links[0]).toHaveTextContent('LH')
     expect(links[0]).toHaveAttribute('href', SETTINGS)
@@ -96,7 +100,8 @@ describe('Expenses on the phone', () => {
     await openAt(EXPENSES, 'phone', ME, other)
     await arrived()
 
-    expect(screen.queryByRole('link', { name: /^(Settings|Ajustes y cuenta)$/ })).not.toBeInTheDocument()
+    // The sidebar's gear (in the DOM here, hidden by CSS on a phone) is no avatar: only links outside a nav count.
+    expect(screen.queryAllByRole('link', { name: /^(Settings|Ajustes y cuenta)$/ }).filter((link) => link.closest('nav') === null)).toEqual([])
     expect(screen.queryByRole('button', { name: /^(Settings|Ajustes y cuenta)$/ })).not.toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Add expense' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '‹ Analysis' })).toBeInTheDocument()
@@ -110,7 +115,7 @@ describe('while the Business has no name to take initials from', () => {
   ] as const)('%s still has one link named Settings, with an empty disc: no letters, no placeholder', async (_name, path) => {
     await openAt(path, 'phone', { ...ME, business_name: '' })
 
-    const links = screen.getAllByRole('link', { name: 'Settings' })
+    const links = settingsAvatars()
     expect(links).toHaveLength(1)
     expect(links[0]).toHaveAttribute('href', SETTINGS)
     expect(links[0]?.firstElementChild).toHaveClass('inicio__avatar-disc')
@@ -121,10 +126,12 @@ describe('while the Business has no name to take initials from', () => {
 })
 
 describe('on the computer', () => {
-  test.each([...TAB_ROOTS, ['Expenses', EXPENSES]] as const)('%s draws no Settings avatar: the side rail has the Business row', async (_name, path) => {
+  test.each([...TAB_ROOTS, ['Expenses', EXPENSES]] as const)('%s draws no Settings avatar: the side rail has the Settings gear', async (_name, path) => {
     await openAt(path, 'computer')
 
-    expect(screen.queryByRole('link', { name: 'Settings' })).not.toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Settings for La Huerta' })).toBeInTheDocument()
+    const links = screen.getAllByRole('link', { name: 'Settings' })
+    expect(links).toHaveLength(1)
+    expect(links[0]?.closest('nav')).toHaveAccessibleName('Navigation')
+    expect(settingsAvatars()).toEqual([])
   })
 })
