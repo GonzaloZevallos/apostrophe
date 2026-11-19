@@ -256,7 +256,21 @@ def seed_payments(client: TestClient) -> dict[str, int]:
         json={"paid_on": "2026-09-20", "amount": 1_000, "payment_method_id": 1},
     )
     assert payment.status_code == 201, payment.text
-    return {"customer_id": customer_id, "payment_id": payment.json()["payment"]["id"]}
+    money_in_method = client.post(
+        "/api/payment-methods", json={"name": f"{MARKER} money-in method"}
+    )
+    assert money_in_method.status_code == 201, money_in_method.text
+    method_id = money_in_method.json()["id"]
+    paid_today = client.post(
+        f"/customers/{customer_id}/payments",
+        json={"paid_on": TODAY.isoformat(), "amount": 1_000, "payment_method_id": method_id},
+    )
+    assert paid_today.status_code == 201, paid_today.text
+    return {
+        "customer_id": customer_id,
+        "payment_id": payment.json()["payment"]["id"],
+        "money_in_method_id": method_id,
+    }
 
 
 def seed_pricing_settings(client: TestClient) -> dict[str, int]:
@@ -994,6 +1008,24 @@ def test_another_business_reads_debtors_as_zero_while_a_has_debt(
 
     b_debtors = business_b.get("/payments/debtors").json()
     assert b_debtors == {"total_owed": 0, "sales_owing_count": 0, "debtors": []}
+
+
+def test_the_panel_money_in_shows_no_payment_method_of_another_business(
+    business_a: TestClient,
+    business_b: TestClient,
+    seeded: dict[str, int],
+) -> None:
+    assert seeded["money_in_method_id"] > 0
+    owner_money_in = business_a.get("/panel").json()["today"]["money_in"]
+    other = business_b.get("/panel")
+
+    by_name = {m["name"]: m for m in owner_money_in["methods"]}
+    assert by_name[f"{MARKER} money-in method"]["amount"] == 1_000
+    assert by_name[f"{MARKER} money-in method"]["payment_method_id"] == seeded["money_in_method_id"]
+    assert owner_money_in["total"] == sum(m["amount"] for m in owner_money_in["methods"])
+    assert other.status_code == 200, other.text
+    assert other.json()["today"]["money_in"] == {"total": 0, "methods": []}
+    assert MARKER not in other.text
 
 
 def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(

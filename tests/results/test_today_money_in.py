@@ -54,9 +54,7 @@ def _sale(sale_id: int, day: date, total: int, *, shipping: int = 0, recorded: d
 
 
 def test_money_in_lists_methods_by_position_and_sums_the_total() -> None:
-    buckets = _buckets(
-        [_payment(TODAY, 300, 2), _payment(TODAY, 100, 1), _payment(TODAY, 50, 2)]
-    )
+    buckets = _buckets([_payment(TODAY, 300, 2), _payment(TODAY, 100, 1), _payment(TODAY, 50, 2)])
 
     assert money_in(buckets, METHODS, TODAY) == MoneyIn(
         total=450,
