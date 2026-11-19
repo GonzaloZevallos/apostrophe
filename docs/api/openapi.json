@@ -4790,43 +4790,6 @@
         "title": "StockOut",
         "type": "object"
       },
-      "SuggestionsOut": {
-        "description": "Ids only (docs/product/sales.md, New sale suggestions): never a name, a price or\nan amount.",
-        "properties": {
-          "last_payment_method_id": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Last Payment Method Id"
-          },
-          "most_sold_product_ids": {
-            "items": {
-              "type": "integer"
-            },
-            "title": "Most Sold Product Ids",
-            "type": "array"
-          },
-          "recent_customer_ids": {
-            "items": {
-              "type": "integer"
-            },
-            "title": "Recent Customer Ids",
-            "type": "array"
-          }
-        },
-        "required": [
-          "recent_customer_ids",
-          "most_sold_product_ids",
-          "last_payment_method_id"
-        ],
-        "title": "SuggestionsOut",
-        "type": "object"
-      },
       "TargetOut": {
         "properties": {
           "id": {
@@ -8815,54 +8778,6 @@
           }
         ],
         "summary": "Record Sale",
-        "tags": [
-          "sales"
-        ]
-      }
-    },
-    "/sales/suggestions": {
-      "get": {
-        "operationId": "new_sale_suggestions_sales_suggestions_get",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "on",
-            "required": true,
-            "schema": {
-              "format": "date",
-              "title": "On",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/SuggestionsOut"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "New Sale Suggestions",
         "tags": [
           "sales"
         ]
