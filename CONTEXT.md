@@ -383,7 +383,7 @@ Un link que el Operator imprime con scripts/reset-password.sh y que permite a un
 _Avoid_: recovery code, reset token, magic link, forgot-password email
 
 **Navigation**:
-La estructura fija de la app para un Business: la barra del celular (Home · Sales · + · Customers · Products, con el + redondo como tercer lugar de su propio `<nav>`), la barra lateral de la computadora con su "+ New sale", el avatar "Settings" del encabezado del celular, Settings, y la única regla que le da a cada pantalla su marco y su camino de vuelta. Decide desde dónde se llega a cada capacidad, nunca qué hace; desde GH-651 no hay pantalla More, y desde la parte 3 de GH-727 no hay "+ New sale" flotante en el celular. En la app: no tiene palabra propia.
+La estructura fija de la app para un Business: la barra del celular (Home · Sales · + · Customers · Products, con el + redondo como tercer lugar de su propio `<nav>`), la barra lateral de la computadora con su "+ New sale" y su link "Settings" de engranaje, el avatar "Settings" del encabezado del celular, Settings, y la única regla que le da a cada pantalla su marco y su camino de vuelta. Decide desde dónde se llega a cada capacidad, nunca qué hace; desde GH-651 no hay pantalla More, desde la parte 3 de GH-727 no hay "+ New sale" flotante en el celular, y desde la parte 7 de GH-495 la barra lateral no tiene fila del Business. En la app: no tiene palabra propia.
 _Avoid_: menu, sitemap, routing, shell, More, floating button
 
 **Tab root**:
