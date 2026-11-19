@@ -7,6 +7,10 @@
  * price; a type-bulk tie is stored as the type, a tie with list cannot arise), so a rule change there is caught here too, through the one matrix both sides run
  * (`pricing-matrix.json`, read by this module's tests and by `tests/sales/test_pricing_matrix.py`).
  *
+ * The matrix's `repricing` pairs (before/after `totals` entries) pin `priceSale` and
+ * `linesRepriced` on both sides. The matrix has no date key, so a date change is a different
+ * quote on the same lines; it still spells the type rule `vip`, which the runners map to `type`.
+ *
  * What the API answers after a save, an assign or a delete always wins (plan,
  * invariants): nothing here runs again once a sale is saved.
  */
