@@ -215,8 +215,8 @@ test('the real sources scan with no errors and find the controls the issue names
     'ajustes__item',
     'ajustes-tema__opcion',
     'ajustes-tema__opcion--activa',
-    'riel-lateral__negocio',
-    'riel-lateral__negocio--activo',
+    'riel-lateral__ajustes',
+    'riel-lateral__ajustes--activo',
   ]) {
     expect(classes.has(name), name).toBe(true)
   }

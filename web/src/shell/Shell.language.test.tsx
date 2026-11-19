@@ -128,18 +128,18 @@ test("on the phone a card re-renders its back arrow's registry parent word in th
   noMissesFor(['common:backArrow', 'common:varieties'])
 })
 
-test('on a computer the rail re-renders a label and the business row name in the same nodes', async () => {
+test('on a computer the rail re-renders a label and the Settings gear name in the same nodes', async () => {
   const { container } = renderShell(HOME, true)
   const rail = container.querySelector('.riel-lateral') as HTMLElement
   const railLabel = within(rail).getByRole('link', { name: 'Expenses' })
-  const business = within(rail).getByRole('link', { name: 'Settings for La Huerta' })
+  const gear = within(rail).getByRole('link', { name: 'Settings' })
   installGerman()
 
   await switchToGerman()
 
   expect(railLabel).toHaveTextContent('de:expenses')
   expect(rail).toHaveAttribute('aria-label', 'de:navigation')
-  expect(business).toHaveAttribute('aria-label', 'de:settingsFor La Huerta')
-  expect(business).toHaveTextContent('La Huerta')
-  noMissesFor(['common:expenses', 'shell:navigation', 'common:settingsFor'])
+  expect(gear).toHaveTextContent('de:settings')
+  expect(gear).not.toHaveAttribute('aria-label')
+  noMissesFor(['common:expenses', 'shell:navigation', 'common:settings'])
 })

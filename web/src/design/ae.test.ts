@@ -5,6 +5,7 @@ import { join, resolve } from 'node:path'
 import { PNG } from 'pngjs'
 import { afterEach, describe, expect, it } from 'vitest'
 import { ae, box, compareIndexes, decode, type IndexEntry } from '../../../scripts/design/ae.mjs'
+import { sidebarProblems } from '../../../scripts/design/sidebarBox.mjs'
 
 type Image = { width: number; height: number; data: Uint8Array }
 
@@ -356,5 +357,55 @@ describe('ae.mjs as a command', () => {
     expect(result.status).toBe(2)
     expect(result.stdout).toBe('')
     expect(result.stderr).toBe('usage: ae.mjs <before-dir> <after-dir> [--only A,B]\n')
+  })
+})
+
+describe('the computer sidebar before/after check', () => {
+  const unchangedDesign = ['InicioHoyCompu design: AE 0', 'InicioHoyCompuOscuro design: AE 0']
+
+  it('passes when the differing pixels lie inside the sidebar column, light and dark', () => {
+    expect(
+      sidebarProblems([
+        'InicioHoyCompu built: AE 812 box x=0 y=700 w=248 h=64',
+        'InicioHoyCompuOscuro built: AE 790 box x=16 y=704 w=232 h=58',
+        ...unchangedDesign,
+      ]),
+    ).toEqual([])
+  })
+
+  it('passes when nothing changed', () => {
+    expect(sidebarProblems(['InicioHoyCompu built: AE 0', 'InicioHoyCompuOscuro built: AE 0', ...unchangedDesign])).toEqual([])
+  })
+
+  it('refuses a box that reaches the content, and says where', () => {
+    expect(
+      sidebarProblems([
+        'InicioHoyCompu built: AE 9000 box x=0 y=0 w=600 h=64',
+        'InicioHoyCompuOscuro built: AE 0',
+        ...unchangedDesign,
+      ]),
+    ).toEqual(['InicioHoyCompu built: the differing pixels reach x=600 CSS px, past the sidebar column (248); escalate, never tolerate'])
+  })
+
+  it('reads the box in CSS pixels: a 2x capture whose box ends at 261 px is inside the column, one ending at 600 is not', () => {
+    const lines = (box: string) => [`InicioHoyCompu built: AE 6457 box ${box}`, 'InicioHoyCompuOscuro built: AE 0', ...unchangedDesign]
+    expect(sidebarProblems(lines('x=52 y=998 w=209 h=770'), 2)).toEqual([])
+    expect(sidebarProblems(lines('x=52 y=998 w=548 h=770'), 2)).toEqual([
+      'InicioHoyCompu built: the differing pixels reach x=300 CSS px, past the sidebar column (248); escalate, never tolerate',
+    ])
+  })
+
+  it('refuses a screen that was not compared, a failed comparison and a drawing that moved', () => {
+    expect(
+      sidebarProblems([
+        'InicioHoyCompu built: FAIL different dimensions before 1280x800 after 1280x812',
+        'InicioHoyCompuOscuro design: AE 5 box x=0 y=0 w=1 h=1',
+        'InicioHoyCompu design: AE 0',
+      ]),
+    ).toEqual([
+      'InicioHoyCompu built: FAIL different dimensions before 1280x800 after 1280x812',
+      'InicioHoyCompuOscuro built: no line, so nothing was compared',
+      'InicioHoyCompuOscuro design: the drawing differs between runs (InicioHoyCompuOscuro design: AE 5 box x=0 y=0 w=1 h=1)',
+    ])
   })
 })

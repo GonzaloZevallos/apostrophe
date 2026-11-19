@@ -11,7 +11,6 @@ describe('textsOf', () => {
       LONG_REFUSALS: ['common:long'],
       NAMESPACE: 'common',
       MOVED_TO_KEYS: ['COMMON_TEXT'],
-      BASELINE_ARGS: { 'COMMON_TEXT.settingsFor': [['Rosa']] },
     }
 
     expect([...textsOf('a.ts', registries, '?').keys()]).toEqual([])

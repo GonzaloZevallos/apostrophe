@@ -26,6 +26,23 @@ export const NEW_SALE_NAME = 'Vender'
 /** The computer rail's own New sale button. */
 export const NEW_SALE_BUTTON_COMPUTER = '.boton-nueva-venta--escritorio'
 
+/** The computer sidebar's name, the one `Shell` gives both of its navs; the bottom bar has no Settings link. */
+const SIDEBAR_NAME = 'Navigation'
+
+/** The computer sidebar's gear: role link named Settings inside the sidebar nav, never a class or the business name. */
+export function railSettingsLink(page: Page): Locator {
+  return page.getByRole('navigation', { name: SIDEBAR_NAME }).getByRole('link', { name: 'Settings', exact: true })
+}
+
+/**
+ * The one way to Settings on whichever viewport the spec runs: the sidebar's gear on a computer, the
+ * header's Settings avatar on a phone. Only one of the two is ever visible, so it never matches twice
+ * (and where both match, the one element counts once).
+ */
+export function settingsEntry(page: Page): Locator {
+  return railSettingsLink(page).or(page.getByRole('link', { name: 'Settings', exact: true }))
+}
+
 /** The phone bar only, never the rail. */
 export function bottomBar(page: Page): Locator {
   return page.locator(BOTTOM_BAR)

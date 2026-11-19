@@ -30,8 +30,8 @@ export type Kind = 'root' | 'card' | 'form'
 /** What the bottom bar can mark. */
 export type BarPlace = 'home' | 'sales' | 'customers' | 'varieties'
 
-/** What the side rail can mark: the bar's places, Gastos, Análisis and the business row. */
-export type RailPlace = BarPlace | 'expenses' | 'analysis' | 'business'
+/** What the side rail can mark: the bar's places, Gastos, Análisis and the Settings gear. */
+export type RailPlace = BarPlace | 'expenses' | 'analysis' | 'settings'
 
 /** The two options of the phone's Home | Analysis segment (`HomeViewSwitch`). */
 export type Segment = 'home' | 'analysis'
@@ -356,7 +356,7 @@ export const SCREENS = [
     declaredKind: 'card',
     titleKey: 'common:settings',
     parent: 'home',
-    place: { bar: 'home', rail: 'business' },
+    place: { bar: 'home', rail: 'settings' },
   }),
   screen({ id: 'settings-business', path: SETTINGS_BUSINESS, declaredKind: 'form', titleKey: 'common:business', parent: 'settings' }),
   screen({ id: 'settings-users', path: SETTINGS_USERS, declaredKind: 'form', titleKey: 'common:users', parent: 'settings' }),

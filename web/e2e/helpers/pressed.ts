@@ -4,7 +4,7 @@
  * outside the control, so a press never turns into a click (it would flip a switch).
  */
 
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 
 export interface Look {
   transform: string
@@ -25,8 +25,9 @@ export interface Probe {
  * view, with its transform, ring and effective resting fill, where a press on it would land,
  * and whether something else covers that point.
  */
-export async function probe(page: Page, selector: string, scroll: boolean): Promise<Probe> {
-  return page.locator(selector).first().evaluate((element, scrollFirst) => {
+export async function probe(page: Page, selector: string | Locator, scroll: boolean): Promise<Probe> {
+  const target = typeof selector === 'string' ? page.locator(selector) : selector
+  return target.first().evaluate((element, scrollFirst) => {
     if (scrollFirst) element.scrollIntoView({ block: 'center', inline: 'center' })
     const { transform, boxShadow } = getComputedStyle(element)
     let fill = 'rgba(0, 0, 0, 0)'
@@ -48,9 +49,9 @@ export async function probe(page: Page, selector: string, scroll: boolean): Prom
  * The look of `selector` at rest and with the pointer down on it (moved away before the
  * release, so no click fires). A press on something that covers it is an error.
  */
-export async function whilePressed(page: Page, selector: string): Promise<{ resting: Look; pressed: Look }> {
+export async function whilePressed(page: Page, selector: string | Locator): Promise<{ resting: Look; pressed: Look }> {
   const resting = await probe(page, selector, true)
-  if (resting.covered) throw new Error(`${selector} is covered at its centre, so a press would land on something else`)
+  if (resting.covered) throw new Error(`${String(selector)} is covered at its centre, so a press would land on something else`)
   await page.mouse.move(resting.x, resting.y)
   await page.mouse.down()
   const pressed = await probe(page, selector, false)

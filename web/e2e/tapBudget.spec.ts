@@ -38,7 +38,7 @@ import { watchConsole } from './console.js'
 import { seedRecords, signUp } from './helpers/seed.js'
 import { uniqueTag } from './helpers/unique.js'
 import { servedCountry } from './helpers/phoneCountries.js'
-import { bottomBar, newSaleEntry } from './helpers/chrome.js'
+import { bottomBar, newSaleEntry, railSettingsLink } from './helpers/chrome.js'
 
 
 const PHONE = { width: 390, height: 844 }
@@ -246,7 +246,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       await expectPath(page, STOCK_ENTRY_NEW)
       measure(`stock entry ${root}`, device, counter.taps)
 
-      // Settings: the avatar on the phone, the rail's business row on a computer. One tap.
+      // Settings: the avatar on the phone, the sidebar's gear on a computer. One tap.
       await page.goto(root)
       counter = { taps: 0 }
       await settled(page, computer && root === VARIETIES)
@@ -257,7 +257,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
         await tap(
           counter,
           computer
-            ? page.locator('.riel-lateral').getByRole('link', { name: /^Settings for / })
+            ? railSettingsLink(page)
             : page.getByRole('link', { name: 'Settings', exact: true }),
         )
         await expectPath(page, SETTINGS)

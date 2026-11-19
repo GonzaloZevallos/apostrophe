@@ -462,9 +462,9 @@ export const KEPT: readonly string[] = [
   `flow.spec.ts:184 — ${NO_TIMER}`,
   `panel.spec.ts:210 — ${NO_TIMER}`,
   `payments.spec.ts:76 — ${ONE_MATCH}`,
-  `settings.spec.ts:95 — ${CATEGORY_TOAST}`,
-  `settings.spec.ts:108 — ${CATEGORY_TOAST}`,
-  `toastRecorder.spec.ts:163 — ${NO_TIMER}`,
+  `settings.spec.ts:96 — ${CATEGORY_TOAST}`,
+  `settings.spec.ts:109 — ${CATEGORY_TOAST}`,
+  `toastRecorder.spec.ts:164 — ${NO_TIMER}`,
 ]
 
 /**

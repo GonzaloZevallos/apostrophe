@@ -15,6 +15,7 @@ import { expect, test } from './fixtures.js'
 import { DOCUMENT_CHANGED, DOCUMENT_CHANGED_AT_MARK, NO_RECORDER, expectToast } from './helpers/toast.js'
 import { expectPath } from './helpers/url.js'
 import { signUpNewBusiness } from './helpers/signup.js'
+import { railSettingsLink } from './helpers/chrome.js'
 import { uniqueTag } from './helpers/unique.js'
 
 async function addToast(page: Page, text: string, options: { remove: boolean }): Promise<void> {
@@ -148,7 +149,7 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
 
   // IntegrationsGroup: its own 3 s timer.
   await page.goto(HOME)
-  await page.getByRole('link', { name: /^Settings for / }).click()
+  await railSettingsLink(page).click()
   await page.getByRole('link', { name: 'Integrations', exact: true }).click()
   await page.getByLabel('Bot token', { exact: true }).fill('123456:fake-token-for-e2e')
   await page.getByLabel('Your chat', { exact: true }).fill('111111')
