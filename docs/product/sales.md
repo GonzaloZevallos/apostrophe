@@ -36,6 +36,8 @@
 
 **Cuando** estoy registrando una venta en New sale y le cambio la fecha, **quiero** que el formulario se quede donde está mientras se vuelven a cargar los productos, **para** seguir tocando sin que los campos se me muevan bajo el pulgar. (Parte 2 de GH-793: afina la primera historia y la anterior bajo **Phone first**; es solo de disposición y no cambia qué se vende, a qué precio ni qué se le dice a la vendedora).
 
+**Cuando** entrego un pedido y empiezo a registrarlo en el teléfono, **quiero** tener adelante los Customers a los que les vendí más recientemente, los Products que más se vendieron en los últimos 30 días y el Payment method de mi última venta pagada en el momento, **para** completar la venta en pocos toques en lugar de buscar o desplazarme, y registrarla en menos de un minuto. (Parte 1 de GH-496: acá lo sirve la lectura de las **New sale suggestions**, que solo devuelve ids; la pantalla que las muestra llega en partes posteriores de GH-496. Las sugerencias solo acortan elecciones: nunca fijan ni cambian un precio, un monto ni una cantidad).
+
 # Ventas
 
 Lo que un cliente se lleva de una vez, con cada línea cotizada con los precios del día y las **Pricing settings** del negocio, y ese precio guardado en la línea (ADR-0003). Las ventas las ve solo su negocio (ADR-0004). Esta capacidad lee:
@@ -64,6 +66,8 @@ Antes de la parte 4 de GH-725, lo que la parte 3 entregó (la fila "Other things
 Antes de la parte 1 de GH-727, en el teléfono el campo de producto de New sale no decía por qué no había nada para elegir o para cotizar: la línea "Add a price to a product so you can sell" existía solo en la barra lateral de la computadora. La vendedora tenía que salir de New sale y averiguar sola, en Products, si le faltaba un producto o un precio. Esta definición no afirma adónde va a buscar: alcanza con que el teléfono no le daba ningún motivo.
 
 Antes de la parte 2 de GH-793, la pista de nada para vender desaparecía mientras se volvían a pedir los productos después de un cambio de fecha y volvía cuando llegaban, empujando el formulario hacia abajo; en el teléfono, eso arriesga un toque errado.
+
+Antes de la parte 1 de GH-496, para registrar una venta la vendedora busca al cliente en la lista de Customers, recorre los productos para agregar cada línea y elige el medio de la lista completa cada vez, sea cual sea el de la última venta. La app no tiene ningún atajo de "repetir la última venta" ni de "copiar una venta", y este trabajo no lo agrega. La parte 1 entrega solo la lectura de las New sale suggestions, sin pantalla; New sale todavía no las muestra.
 
 Criterios de éxito, registro (API):
 
@@ -126,7 +130,7 @@ Sin objetivo de tiempo nuevo: la venta en menos de un minuto del criterio 1 sigu
 Criterios de éxito, cómo se pagó (Selector, parte 5 de GH-581; la lista propia del negocio desde la parte 24 de GH-318):
 
 33. **Un paso más como máximo.** La venta se sigue registrando desde el teléfono en menos de un minuto (criterio 1); el medio suma como máximo un paso: abrir el campo y tocar la opción. Con más de 8 medios ofrecidos, la lista tiene búsqueda.
-34. **Nunca sin medio, nunca por defecto.** Una venta pagada con total por encima de $0 no se guarda sin medio; Owing nunca muestra ni pide uno. El medio nunca viene puesto: arranca vacío al abrir y cada vez que se vuelve a Paid. Lo que se manda a la API es la unión por `kind`: `{kind: 'paid', payment_method_id}` (el id del medio del negocio) u `{kind: 'owing'}`; nunca un nombre de medio.
+34. **Nunca sin medio, nunca por defecto.** Una venta pagada con total por encima de $0 no se guarda sin medio; Owing nunca muestra ni pide uno. El medio nunca viene puesto: arranca vacío al abrir y cada vez que se vuelve a Paid. Lo que se manda a la API es la unión por `kind`: `{kind: 'paid', payment_method_id}` (el id del medio del negocio) u `{kind: 'owing'}`; nunca un nombre de medio. (Sigue vigente: la parte de GH-496 que preselecciona el medio en pantalla con la lectura de las New sale suggestions es la que reescribe este criterio).
 35. **Volver y Escape predecibles.** Con la lista de medios abierta, volver o "Close" cierran solo la lista y la venta queda intacta; en la computadora, Escape cierra solo el desplegable.
 36. **Nada se pierde.** Owing sigue deshabilitado con "To leave it owing, pick a customer" sin cliente; Paid · Owing conservan su aspecto y su comportamiento; una venta de $0 sigue sin necesitar medio; el Mobile check no gana ningún infractor.
 
@@ -149,6 +153,13 @@ Criterios de éxito, el lugar de la pista al cambiar la fecha (parte 2 de GH-793
 48. **El formulario no salta.** Después de un cambio de fecha que siguió a la pista de nada para vender, el formulario no se mueve mientras se vuelven a cargar los productos.
 49. **Nada nuevo se lee ni se anuncia.** La tecnología de asistencia no recibe ningún texto extra, y el Selector de producto no recibe ninguna descripción nueva mientras se vuelven a cargar los productos. Cuando la respuesta llega sin nada para vender, hay exactamente una pista, y describe al Selector.
 50. **Sin hueco cuando hay qué vender.** Un día con algo para vender nunca deja un espacio en blanco. El lugar guardado nunca se ve como una segunda copia de la pista y nunca aparece mientras la página se abre por primera vez.
+
+Criterios de éxito, New sale suggestions (parte 1 de GH-496; los criterios 51 y 52 se juzgan en la pantalla de New sale de una parte posterior, y esta parte se juzga porque la lectura devuelve exactamente los ids correctos, en el orden correcto):
+
+51. **Un cliente que vuelve, en un toque.** Un Customer entre los 8 a los que se les vendió más recientemente se elige con un toque y sin buscar.
+52. **Un producto que se vende, en un toque.** Un Product entre los 8 más vendidos en los últimos 30 días se agrega con un toque y sin buscar.
+53. **El medio listo, nunca adivinado.** El medio de la última venta pagada en el momento se preselecciona por id cuando todavía se ofrece. Si está archivado, no se preselecciona nada y nunca se usa uno más viejo.
+54. **Nada cruza de negocio.** Cada sugerencia sale solo del negocio de la vendedora.
 
 Criterios de éxito, Sale bill:
 
@@ -244,6 +255,27 @@ Criterios de éxito, Sale number:
   - Cada venta dice si sigue debiendo, calculado en vivo por pagos.
   - No muestra el Sale number.
 - **Ver una**: el Sale number, fecha, cliente o ninguno, envío, nota, cómo se pagó, total, y de cada línea el producto, los gramos, el precio por gramo guardado, la Pricing rule (con la copia del nombre del tipo cuando la regla es la de un Customer type), el total de la línea y el Cost of goods sold (monto costeado y gramos pendientes). Trae también el Sale bill (abajo), o ninguno.
+- **New sale suggestions** (parte 1 de GH-496; `GET /api/sales/suggestions?on=YYYY-MM-DD`, en el router de ventas con sesión, declarada antes de `/{sale_id}`; puerto `NewSaleSuggestions`, caso de uso `suggest_for_new_sale`, adaptador `app/sales/adapters/sql_suggestions.py`):
+  - **Para qué**: la usa solo la pantalla de New sale (en una parte posterior de GH-496). Collect y la ficha del cliente no la usan. `on` es la fecha de la venta que se está registrando, que puede ser una carga tardía de otro día.
+  - **Qué devuelve**: solo ids: `recent_customer_ids`, `most_sold_product_ids` y `last_payment_method_id`. Nunca nombres, precios ni montos. Cada lista tiene como máximo `SUGGESTIONS_PER_LIST = 8` ids, y no hay parámetro de límite.
+  - **Clientes recientes**:
+    - Cuenta toda venta del negocio, sea cual sea su fecha; `on` no participa, así que una carga tardía recibe la misma lista que una normal.
+    - Cada cliente aparece una sola vez, ordenado por su propia venta más reciente: la fecha más nueva primero, después el Sale number más alto.
+    - Las ventas sin cliente quedan afuera; una a la que después se le asignó un cliente cuenta para ese cliente.
+  - **Más vendidos**:
+    - Suma la cantidad de las líneas (en centésimos, en la medida propia del producto, nunca "gramos" como supuesto) en la ventana [on − 29 días, on], los dos extremos incluidos: la misma ventana que Days left (`DAYS_LEFT_WINDOW`).
+    - Las líneas de regalo quedan afuera. Los Archived products quedan afuera; los Hidden products siguen adentro, porque se pueden vender.
+    - Un producto sin nada vendido en la ventana queda afuera.
+    - Orden: la mayor cantidad vendida primero; un empate se resuelve por el nombre sin distinguir mayúsculas, y después por el id del producto.
+    - Un producto sin Current price en `on` igual se sugiere: lo cotiza la pantalla con `priceSale`/`priceLine`, igual que si se eligiera de la lista completa. La lectura no tiene ninguna regla de precio.
+  - **Último medio**:
+    - Una venta pagada en el momento es una con On-the-spot payment (un pago con `sale_id`); las ventas que quedan debiendo y las de $0 no tienen, así que no cuentan.
+    - Se toma la venta pagada en el momento con el Sale number más alto, sea cual sea su fecha.
+    - Recién después de elegirla, si su Payment method está archivado, la respuesta es `null`. Nunca se usa una venta ni un medio más viejo, y la consulta nunca filtra los medios archivados.
+    - La respuesta es el id del medio, nunca su nombre ni una marca de efectivo.
+  - **Sin historial**: un negocio sin nada que coincida recibe un 200 normal con `recent_customer_ids: []`, `most_sold_product_ids: []` y `last_payment_method_id: null`. Una lista más corta es solo una lista más corta.
+  - **Rechazos**: solo un `on` que falta o está mal formado, con 422 `RequestInvalid`. Cualquier fecha bien formada (pasada, hoy o posterior) responde 200.
+  - **Costo (§8)**: Más vendidos crece con la ventana, y Clientes recientes es una sola pasada lineal con GROUP BY. Sin índice nuevo. Lo decide el ADR de la parte 1 de GH-496, nombrado por fecha y slug.
 - **Sale bill** (los hechos detrás del texto compartido):
   - El nombre del negocio, el Sale number, la fecha, de cada línea el producto, la cantidad, el monto y la regla (bulk, gift o ninguna: lista, VIP, Customer type y Special price se leen todas como ninguna), con el precio unitario en las líneas con Bulk price; el Shipping charged; el total; el estado de pago (paid, owed, none) con lo que todavía se debe de esta venta; y el Balance del cliente, o ninguno cuando la venta no tiene cliente.
   - El nombre del negocio y los nombres de los productos son datos de la vendedora, y viajan exactamente como están guardados: nunca se escapan, se recortan ni se reescriben.
@@ -279,7 +311,8 @@ Criterios de éxito, Sale number:
   - La venta de otro negocio responde 404 al leer, asignar y borrar.
   - Las listas no muestran ninguna venta de otro negocio.
   - Un Customer-type price de otro negocio nunca cotiza una línea.
-  - Las rutas están en `tests/test_business_isolation.py`.
+  - Las New sale suggestions se arman para un solo negocio y filtran cada sentencia por su `business_id`: la venta más nueva, el cliente más reciente o el medio archivado de otro negocio nunca cambian la respuesta ni se revelan, y una respuesta vacía se ve igual tenga o no ventas el negocio.
+  - Las rutas están en `tests/test_business_isolation.py`, la de las New sale suggestions incluida en su sembrador.
 
 ### En pantalla: New sale (`NuevaVenta`, `NuevaVentaCompu`)
 
@@ -296,6 +329,7 @@ Criterios de éxito, Sale number:
   - la nota;
   - cómo se pagó: Paid · Owing y, bajo Paid, el medio en el campo "Payment method" (los medios del negocio).
 - **No hay campo de Sale number**: el número lo asigna la app al guardar, nunca lo tipea la vendedora.
+- **Todavía sin sugerencias**: la pantalla de hoy no lee las New sale suggestions; las muestran partes posteriores de GH-496.
 - **El total de la venta** se muestra con los gramos vendidos y los gramos regalados.
 - **Vista previa en vivo**:
   - Cada línea muestra su precio por gramo, su insignia de regla (lista, Bulk price, el nombre del Customer type, regalo, especial) y su total. El total de la venta se actualiza mientras la vendedora escribe.
@@ -633,6 +667,9 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **Lugar guardado, sin pista que salte (criterios 48, 49, 50)**: 100 % pasando. Tests del front escritos antes del código, en `NuevaVenta.nothingSellable.test.tsx`, a través de la pantalla con `fetch` simulado: (a) un día con precio y un cambio de fecha a otro día con precio, retenido: la frase no está; (b) un día sin precio y un cambio de fecha, retenido: como máximo una copia, no visible, sin `id`, con `aria-hidden="true"`, y el Selector sin descripción accesible; (c) liberado con una respuesta sin precio: una pista visible que describe al Selector; (d) sin productos, un cambio de fecha retenido y la lista de productos de la línea abierta: la frase está como máximo una vez, y al cerrar la lista, todavía retenido, vuelve la copia oculta; (e) un día sin precio y un cambio de fecha respondido con un error: después de la respuesta la frase no está, ni visible ni oculta, y el Selector no tiene descripción. En cada paso, `queryAllByText(frase, {ignore:false}).length <= 1`. Los tests existentes de los criterios 44 a 47 pasan sin editarlos, con una sola excepción nombrada: en el test existente del cambio de fecha de un día sin precio a uno con precio, la aserción que, mientras se espera la respuesta, exigía que la frase no estuviera en el marcado pasa a exigir que no haya ninguna copia visible y que el Selector no esté descripto por ella (una línea). Su intención, que nunca quede a la vista una pista vieja (criterio 45), no cambia; el resto de ese test, incluido que la pista no vuelve con la respuesta del día con precio, queda igual.
 - **Lugar guardado, el formulario no se mueve (criterio 48)**: el test (b) muestra que la copia oculta es el mismo elemento (`p.pie.nueva-venta__sin-vendible`) con el mismo ícono y la misma frase que la pista, así que ocupa su mismo alto. El movimiento en sí lo mide en el teléfono el `content-shift` del chequeo `mobile` sobre el estado "date change refetching" cuando se recorra (#793): 0 desplazamientos en ese estado.
 - **Lugar guardado, sin ruido (criterio 49)**: 0 textos nuevos en el Copy module, 0 roles o regiones nuevas, y ningún `aria-describedby` que apunte a la copia oculta; el chequeo `mobile` no gana ningún infractor ni lista agrandada por ella.
+- **New sale suggestions, la lectura (criterios 51 a 53)**: 100 % pasando. Un test del adaptador cubre los cinco casos del último medio: (1) el medio de la última venta pagada está archivado y uno más viejo sigue ofrecido: `null`; (2) la última venta queda debiendo: se saltea; (3) la última venta es de $0: se saltea; (4) otro negocio tiene una venta pagada más nueva: nunca se ve; (5) ninguna venta pagada: `null`. Tests HTTP cubren el orden de los clientes recientes (uno por cliente, fecha y después Sale number) y la exclusión de las ventas sin cliente; el orden de los más vendidos y el desempate por nombre sin mayúsculas; los regalos excluidos; los archivados excluidos y los ocultos incluidos; los productos sin nada vendido excluidos; los dos bordes de la ventana (on − 29 días adentro, on − 30 afuera, `on` adentro); el tope de 8 en cada lista; un negocio vacío con 200, listas vacías y `null`; y 422 `RequestInvalid` para un `on` que falta y uno mal formado.
+- **New sale suggestions, aislamiento (criterio 54)**: la ruta está en el sembrador de `tests/test_business_isolation.py`; los datos sembrados de otro negocio nunca cambian la respuesta.
+- **New sale suggestions, uso (criterios 51 a 53; se lee cuando salga la pantalla de New sale de GH-496)**: entre las ventas nuevas, la proporción cuyo cliente, al menos uno de sus productos y su medio estaban entre las sugerencias al momento de guardar. La vara sigue siendo la venta en menos de un minuto del criterio 1.
 - **Juego de referencia del Sale bill (criterio 21)**: `saleBill.cases.json`, con los textos esperados escritos a mano contra esta definición, nunca generados; 0 diferencias. Casos: con y sin línea con Bulk price; una línea VIP, una cotizada por un Customer type y una con Special price que se leen como líneas de lista; un regalo; una venta de $0 solo de regalos con Balance distinto de cero; pagada en el momento con cualquier medio (siempre `paid`, sin nombrar el medio), pagada después, debiendo en parte, debiendo entera; un Balance, un Credit y un Balance de exactamente $0; sin cliente; con y sin envío; una línea y varias líneas; cantidades 0,01, 0,1, 1,05 y 1000; un producto cuyo nombre tiene `*`, `_` y una comilla invertida, mostrado sin cambios; Sale #1 y un Sale number de cuatro cifras sin separador de miles, en la línea `Sale #N · dd/mm`.
 - **Formato de cantidades (criterio 21)**: `formatQuantity` da 1 → "0,01", 10 → "0,1", 105 → "1,05", 350 → "3,5", 100000 → "1.000" a partir de centésimos enteros; los tests existentes de `formatGrams` pasan sin editarlos.
 - **Test de filtraciones del Sale bill (criterio 22)**: con nombres de negocio y de productos sin `*`, `_` ni comillas invertidas, ningún texto de los casos contiene la nota, el nombre del cliente, el nombre de su Customer type, "VIP", "special", "list", un id (el `sale.id` incluido), "http", `*`, `_` ni una comilla invertida; el esquema del Sale bill en la API es cerrado y no tiene ningún campo así.
@@ -665,10 +702,11 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - Para el Sale bill: un año en la fecha; un paso de vista previa; un estado de "ya compartido"; un recibo de pago; el nombre del medio de pago; elegir un canal o enviar desde la app; una factura; escapar o reescribir los nombres que tipeó la vendedora para el formato de alguna app de chat; hacer configurable la unidad (#318); cualquier otro idioma (#317).
 - Para el Sale number: buscar o filtrar ventas por número; mostrarlo en Sales, en la historia del cliente, en Home o en Analysis; el resto del rediseño del detalle de la venta (#530) y la línea "por Telegram" del dibujo (un hallazgo aparte, y un canal choca con Assume nothing); el `sale.id` global que ya lleva el camino del detalle (`/sales/{sale_id}`), un hallazgo aparte con su propio issue.
 - Para el producto de una línea: crear un producto desde la línea (se crea en la pestaña Products); cambiar el texto de "elegir un producto", el nombre accesible, el mensaje de conjunto vacío o el rechazo; abrir la lista sola al agregar una línea; saltar solo a los gramos después de elegir; dibujar la lista abierta en `pantallas/`.
-- Para el medio de pago: gestionar la lista (vive en payment-methods.md); informes por medio (Cash separado por medio, totales por medio); recordar el último medio o proponer uno por defecto; el ícono del medio dentro del Selector; cambiar el estado Paid · Owing más allá de cómo está construido; dibujar la lista abierta en `pantallas/`; un descuento por medio de pago como el "10 % pagando en efectivo" del dibujo del paso de cobro, que no tiene regla escrita.
+- Para el medio de pago: gestionar la lista (vive en payment-methods.md); informes por medio (Cash separado por medio, totales por medio); recordar el último medio o proponer uno por defecto en pantalla (la lectura que lo va a sostener existe desde la parte 1 de GH-496; la preselección en New sale y el cambio del criterio 34 son de una parte posterior de GH-496); el ícono del medio dentro del Selector; cambiar el estado Paid · Owing más allá de cómo está construido; dibujar la lista abierta en `pantallas/`; un descuento por medio de pago como el "10 % pagando en efectivo" del dibujo del paso de cobro, que no tiene regla escrita.
 - Para una Expense desde New sale (parte 4 de GH-725): cambiar las filas `*Compu` del registro, el diseño de computadora o `NuevaVentaCompu`; rediseñar el toast o cualquier comportamiento de la parte 3; recorrer el estado sin monto de la franja; un conteo de toques por cada Tab root dentro del recorrido.
 - Para la pista de nada para vender (parte 1 de GH-727): un link o un botón que arregle el producto o el precio que falta; explicar de a uno los productos sin precio cuando otros tienen; otra redacción para el caso del Special price; cualquier cambio en lo que New sale acepta o bloquea; pulido o tests propios de la computadora; un mensaje de error propio de New sale para la consulta de productos fallida (hoy el campo queda en carga). Pasaron a otras partes por decisión del dueño: la lista `OTHER_RECORDS` de la fila "Other things to record" y `describeNewSale` con la descripción del + (#792); mover la frase "Add a price to a product so you can sell" a la copia de ventas con el cambio de import de la barra lateral y `en.baseline.json`, y los dos estados recorridos del chequeo `mobile` (#793).
 - Para el lugar guardado de la pista (parte 2 de GH-793): el ascenso del formulario cuando un cambio de fecha pasa de un día sin precio a uno con precio y llega la respuesta (es el contenido que cambia, no un salto); el ascenso cuando la consulta del día nuevo falla (el lugar cae con la falla); guardar lugar al abrir la página por primera vez (usa el estado de carga compartido y no hay pista previa cuyo lugar guardar); cualquier texto, rol, anuncio o descripción nuevos; los estados recorridos del chequeo `mobile` (#793).
+- Para las New sale suggestions (parte 1 de GH-496): la pantalla de New sale que las muestra y cualquier otra pantalla que las use (Collect y la ficha del cliente no las usan); nombres, precios, montos o un parámetro de límite en la respuesta; cualquier regla de precio dentro de la lectura; un atajo de "repetir la última venta" o "copiar una venta"; un índice nuevo.
 
 ## Planeado en GH-318
 

@@ -615,3 +615,7 @@ _Avoid_: legacy path, old path, alias, redirect, moved page, dirección vieja
 **Writing standards**:
 Las reglas de redacción del texto que la app muestra en pantalla: límites de largo por tipo de texto, voz en inglés, palabras a evitar, regla neutral para cualquier Business y patrones con ejemplos reales. Apunta a la Icon and text rule, al Product language y al glosario sin copiarlos. Su regla completa vive en `WRITING_STANDARDS.md`. En la app: no tiene palabra propia.
 _Avoid_: style guide, copy guide, UI guidelines
+
+**New sale suggestions**:
+Los ids que la lectura de ventas le ofrece a New sale para acortar elecciones: hasta 8 Customers a los que se les vendió más recientemente, hasta 8 Products más vendidos en los 30 días que terminan en la fecha de la venta (sin Gifts ni Archived products) y el Payment method de la última Sale pagada en el momento, o ninguno si ese medio está archivado. Solo acortan elecciones: nunca fijan un precio, un monto ni una cantidad, y salen solo del propio Business. En la app: todavía no tiene palabra propia.
+_Avoid_: recommendations, favorites, shortcuts, defaults, quick picks
