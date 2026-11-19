@@ -32,6 +32,7 @@ Cada capacidad tiene su página en [docs/product/](product/):
 - [Cantidad](product/quantity.md)
 - [Results](product/results.md)
 - [Sale bill](product/sale-bill.md)
+- [Sale in progress](product/sale-in-progress.md)
 - [Screen images](product/screen-images.md)
 - [Ventas](product/sales.md)
 - [Selector](product/selector.md)
