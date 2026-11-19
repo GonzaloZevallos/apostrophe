@@ -376,6 +376,13 @@
           "since_first_record_expenses": {
             "$ref": "#/components/schemas/ExpenseBreakdownOut"
           },
+          "stock": {
+            "items": {
+              "$ref": "#/components/schemas/PanelProductOut"
+            },
+            "title": "Stock",
+            "type": "array"
+          },
           "today": {
             "format": "date",
             "title": "Today",
@@ -405,7 +412,8 @@
           "weekdays",
           "since_first_record",
           "month_expenses",
-          "since_first_record_expenses"
+          "since_first_record_expenses",
+          "stock"
         ],
         "title": "AnalysisOut",
         "type": "object"

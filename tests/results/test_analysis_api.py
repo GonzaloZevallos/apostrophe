@@ -739,7 +739,7 @@ def test_what_you_have_left_lists_every_listed_product_by_name_whatever_the_mont
     assert shown.status_code == 200, shown.text
     archived = _variety_with_price(client, "Archivada", 1_000)
     assert client.post(f"/api/products/{archived}/archive").status_code == 200
-    # Negativa goes below zero: a gift of more than it holds.
+    # Negativa goes below zero: a Sale line of more than it holds.
     for variety_id, quantity in ((negative, "5"), (selling, "2")):
         sale = client.post(
             "/sales",
