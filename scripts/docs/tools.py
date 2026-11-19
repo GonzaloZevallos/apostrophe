@@ -21,6 +21,8 @@ from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Literal
 
+from scripts.check_share import positive_count
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ER_BASE = "scripts.docs.er_base:ErBase"
 OPENAPI_INPUT = "openapi.json"
@@ -203,13 +205,21 @@ def subprocess_runner(repo_root: Path = REPO_ROOT) -> RunTool:
     return run_tool
 
 
+def _share() -> int:
+    """The scheduler's share (`CHECK_WORKERS`), or a cap no count can reach when there is none."""
+    return positive_count(os.environ.get("CHECK_WORKERS")) or sys.maxsize
+
+
 def worker_count() -> int:
-    return min(8, os.cpu_count() or 1)
+    """The cap on concurrent tool calls in `run_all`: at most 8, the cores and the check
+    share. It limits calls in flight, not the processes a tool starts."""
+    return min(8, os.cpu_count() or 1, _share())
 
 
 def node_worker_count() -> int:
-    """The cap on concurrent node tools: each cruise is memory-hungry."""
-    return min(4, os.cpu_count() or 1)
+    """The cap on concurrent node tool calls, each cruise being memory-hungry: at most 4, the
+    cores and the check share. It limits calls in flight, not the processes a tool starts."""
+    return min(4, os.cpu_count() or 1, _share())
 
 
 def run_all(

@@ -5,6 +5,7 @@ Everything here fakes `subprocess.run` or the tool runner; no test spawns node.
 
 from __future__ import annotations
 
+import os
 import subprocess
 import threading
 import time
@@ -19,11 +20,13 @@ from scripts.docs.tools import (
     call_env,
     depcruise_call,
     node_tool_path,
+    node_worker_count,
     paracelsus_call,
     pyreverse_call,
     redocly_call,
     run_all,
     subprocess_runner,
+    worker_count,
 )
 
 ROOT = Path("/repo")
@@ -198,3 +201,30 @@ def test_run_all_respects_max_workers() -> None:
 def test_run_all_refuses_a_pool_without_workers() -> None:
     with pytest.raises(ValueError, match="max_workers must be at least 1"):
         run_all([depcruise_call("f/a", ["src/a"], "^src/a/")], lambda c: "", max_workers=0)
+
+
+@pytest.mark.parametrize(
+    ("share", "cpus", "worker", "node"),
+    [
+        (None, 16, 8, 4),
+        (None, 2, 2, 2),
+        ("2", 16, 2, 2),
+        ("3", 16, 3, 3),
+        ("abc", 16, 8, 4),
+        ("0", 16, 8, 4),
+        ("-1", 16, 8, 4),
+        ("", 16, 8, 4),
+        ("64", 16, 8, 4),
+        ("2", 1, 1, 1),
+    ],
+)
+def test_the_worker_caps_honour_the_check_share(
+    monkeypatch: pytest.MonkeyPatch, share: str | None, cpus: int, worker: int, node: int
+) -> None:
+    if share is None:
+        monkeypatch.delenv("CHECK_WORKERS", raising=False)
+    else:
+        monkeypatch.setenv("CHECK_WORKERS", share)
+    monkeypatch.setattr(os, "cpu_count", lambda: cpus)
+    assert worker_count() == worker
+    assert node_worker_count() == node
