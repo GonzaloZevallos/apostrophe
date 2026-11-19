@@ -106,10 +106,19 @@ KNOWN_KEYS = {"lines", "totals", "repricing"}
 PAIR_FIELDS = ("gramsHundredths", "gift", "specialPrice")
 
 
-def test_the_matrix_has_only_the_known_top_level_keys() -> None:
-    assert set(MATRIX) == KNOWN_KEYS, (
-        f"unknown top-level keys in pricing-matrix.json: {sorted(set(MATRIX) - KNOWN_KEYS)}"
+def _check_top_level_keys(matrix: dict[str, Any]) -> None:
+    assert set(matrix) == KNOWN_KEYS, (
+        f"unknown top-level keys in pricing-matrix.json: {sorted(set(matrix) - KNOWN_KEYS)}"
     )
+
+
+def test_the_matrix_has_only_the_known_top_level_keys() -> None:
+    _check_top_level_keys(MATRIX)
+
+
+def test_a_matrix_with_an_extra_top_level_key_is_refused() -> None:
+    with pytest.raises(AssertionError, match=r"unknown top-level keys.*\['extra'\]"):
+        _check_top_level_keys({**MATRIX, "extra": []})
 
 
 def _check_entry(
