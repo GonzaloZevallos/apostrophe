@@ -10,8 +10,8 @@ draws are each read exactly once per call, then grouped once. The draws are turn
 `DrawRow`s by
 `build_draw_rows` (`app/stock/adapters/draw_rows.py`) — cost of goods and purchases
 are not summed here at all; `read_panel` and `analyse` feed these draws into
-`period_figures.scan`/`totals_between` instead (ADR-0020's one computation). `today` is the one passed in; this adapter never reads
-the clock.
+`period_figures.scan`/`totals_between` instead (ADR-0020's one computation). `today` is the one passed in; this adapter
+never reads the clock.
 """
 
 from __future__ import annotations
