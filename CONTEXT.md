@@ -615,3 +615,7 @@ _Avoid_: legacy path, old path, alias, redirect, moved page, dirección vieja
 **Writing standards**:
 Las reglas de redacción del texto que la app muestra en pantalla: límites de largo por tipo de texto, voz en inglés, palabras a evitar, regla neutral para cualquier Business y patrones con ejemplos reales. Apunta a la Icon and text rule, al Product language y al glosario sin copiarlos. Su regla completa vive en `WRITING_STANDARDS.md`. En la app: no tiene palabra propia.
 _Avoid_: style guide, copy guide, UI guidelines
+
+**So far**:
+Las ventas de un día registradas en su propia fecha hasta la hora local del día de ahora, al segundo, envío incluido, pagadas o no. Se compara con la misma medida del mismo día de la semana anterior; una Sale registrada en un día distinto de su fecha no entra nunca, y sin nada en la base no hay porcentaje. En la app: todavía no tiene palabra propia (la muestran partes posteriores de GH-497).
+_Avoid_: to date, running total, pace, progress, hasta ahora

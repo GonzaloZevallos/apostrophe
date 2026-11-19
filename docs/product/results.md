@@ -8,6 +8,13 @@ El Profit y el Cash no existen en ningún otro lugar del producto, y son la raz�
 
 Este job afina el job del Panel de arriba y el job de navegación para Today (GH-45); no es un job nuevo. Su protagonista es el vendedor, en el teléfono y con poco tiempo. Week y Month son para la mirada semanal o mensual, y Analysis para todo lo más profundo. Antes, el vendedor entraba a Customers para cobrar y a Products Product por Product.
 
+**Cuando** abro la app a mitad del día, **quiero** ver lo que vendí hasta ahora al lado de lo que había vendido a esta misma hora el mismo día de la semana pasada, **para** darme cuenta de un vistazo si hoy va mejor o peor que de costumbre y actuar mientras el día sigue. (Parte 1 de GH-497: afina el job del Panel para Today. Acá lo sirve, por ahora solo en el servidor, el bloque `today` de la lectura del Panel con So far, su comparación y las series por hora; lo dibujan partes posteriores de GH-497. Antes, el vendedor comparaba de memoria o recorriendo Sales y Analysis; la planilla nunca comparó dentro del día.) Criterios de éxito propios:
+
+1. El bloque le da a la pantalla posterior todo lo que necesita para mostrar de un vistazo si hoy va arriba o abajo del mismo día de la semana pasada en lo que va del día, y por cuánto por ciento, sin que el vendedor ni el front hagan ninguna cuenta.
+2. La comparación es justa: las dos ventanas cortan a la misma hora local del día, al segundo, y una Sale registrada en un día distinto de su fecha no entra en ninguna.
+3. Las cifras cierran: las ventas y la cantidad de ventas de hoy son iguales a las de Sales y a los totales de Home, envío incluido, pagadas o no.
+4. Con base 0 no hay porcentaje: nunca 0% ni "infinito".
+
 **Cuando** abro Home en el celular para ver cómo viene el día, **quiero** ver solo lo que vendí, lo que me deben y mi Stock por Product, **para** llevar el negocio de un vistazo sin avisos de configuración en el medio.
 
 Afina el job del Panel: Home muestra el día, no configura el Business. Antes, Home mostraba arriba un elemento de primer uso (el aviso "Go on to the setup" del Onboarding, la lista de pasos de primer uso o "Start with your products") y el aviso posterior a la Spreadsheet import, hasta que la configuración se terminaba. El dueño los sacó (`docs/design/redesign/registro-unificado.md`, "Se sacan los avisos de primer uso"), y la parte 3 de GH-495 borra lo que quedaba de ellos en el código de Home. La configuración sigue en el Onboarding (al aceptar la Invitation o abriendo `/onboarding`), en Settings y en la página del Product. Criterios de éxito propios:
@@ -73,6 +80,7 @@ Criterios de éxito:
 16. **El encabezado del día** (parte 2 de GH-723): en el teléfono, Home muestra arriba la fecha de hoy como dd/mm, el avatar "Settings" y el segmento, en el mismo lugar que Analysis, sin el nombre del Business, sin la Yerba mark y con un solo h1, oculto a la vista. Nada más del encabezado se toca, y está en todos los estados de Home. En la computadora, el nombre del Business sigue arriba del h1 visible y la pantalla se ve igual que antes.
 17. **Settings a un toque, como el dibujo** (parte 3 de GH-495): en el teléfono, el avatar de Home abre Settings en 1 toque, muestra las iniciales del Business, un lector de pantalla dice "Settings" y se alcanza con el teclado; su caja táctil mide 44×44 y pasa `touch-target`; no aparece a 900 px y más. Los criterios propios están en navigation.md (38–41).
 18. **Ningún botón flotante descrito como actual** (parte 4 de GH-727): este archivo nombra la acción principal de Home en el teléfono como el + de la barra (navigation.md, "La barra del celular y su +"), y todo "+ New sale" que queda acá es el de la barra lateral de la computadora. Nada de lo que ve o hace quien vende cambia.
+19. **So far, justo y listo para mostrar** (parte 1 de GH-497): la lectura del Panel trae, en su bloque `today`, las ventas de hoy, So far de hoy y del mismo día de la semana pasada, su cambio en porcentaje y las dos series por hora, todo calculado en el servidor; las dos ventanas cortan a la misma hora local al segundo, una Sale registrada en un día distinto de su fecha no entra en ninguna, y con base 0 no hay porcentaje. Nada de lo que ve quien vende cambia en esta parte.
 
 # Resultados
 
@@ -120,9 +128,29 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
   - Lleva el tratamiento de acento del diseño cualquiera sea su signo: el acento marca la cifra principal, no si es buena o mala.
 - **Cash**: Payments recibidos − Expenses − Purchases. Los Payments recibidos son todos los Payments con fecha en el período, tanto los On-the-spot payments como los posteriores, cada uno en su propia fecha. El Cash se muestra al lado del Profit. Un Stock withdrawal nunca lo toca.
 
+### Lo que va del día: el bloque `today` (parte 1 de GH-497, solo servidor)
+
+La lectura del Panel (`GET` del Panel, `PanelOut.today`) trae un bloque para Today con la comparación de So far. En esta parte ninguna pantalla lo muestra: lo dibujan partes posteriores de GH-497. Week y Month no cambian.
+
+- **Campos**:
+  - `sales`: el total de ventas de hoy, envío incluido, pagadas o no; la misma cifra que "You sold today" y que Sales.
+  - `sales_count`: la cantidad de Sales de hoy, no de líneas.
+  - `so_far`: las ventas de hoy dentro de la ventana de So far.
+  - `last_week_so_far`: la misma medida para el mismo día de la semana, una semana atrás.
+  - `last_week_day`: esa fecha (hoy − 7 días).
+  - `change_percent`: el cambio de `so_far` contra `last_week_so_far`, en porcentaje entero con signo.
+  - `hourly_today` y `hourly_last_week`: el total acumulado por hora local de cada día.
+- **Hora de una Sale**: la que sale de su `recorded_at` (el momento en que se registró por primera vez, en UTC). Una Sale registrada en su propia fecha, en hora local del Business, cuenta en su hora local; una registrada en cualquier otro día, antes o después, cuenta al final de su propia fecha (hora 23).
+- **Ventana de So far**: una Sale entra solo si se registró en su propia fecha y su hora local del día es igual o anterior a la de ahora, al segundo (14:05:00 entra, 14:05:01 no). La regla es la misma para hoy y para la semana pasada. Una Sale registrada en un día distinto de su fecha no entra en ninguna ventana de So far, aunque sí cuenta en `sales`, en `sales_count` y en las series.
+- **Cambio en porcentaje**: entero, redondeado con mitad hacia arriba con el helper de redondeo que ya existe, y con signo. Es nulo cuando `last_week_so_far` es 0 (también cuando las dos son 0), nunca 0% ni "infinito"; es −100 cuando hoy no hay nada y la semana pasada sí; no tiene tope.
+- **Series por hora**: acumuladas, envío incluido, nunca bajan. `hourly_today` va de la hora 00 hasta la hora local actual; `hourly_last_week` cubre las 24 horas, así que su último punto coincide con las ventas de ese día en Sales. Su punto en la hora actual suma todo hasta el final de esa hora, así que es igual o mayor que `last_week_so_far`, nunca menor.
+- **Base**: las ventas tal como están, pagadas o no. El Cash, los Payments y el Profit no están en este bloque.
+- **Una Sale editada** conserva su `recorded_at` original: editarla nunca la mueve de hora ni la lleva a "ahora".
+- El dominio (`app/results/domain/today_series.py`) recibe `now` y la zona como argumentos y no importa `app.clock` ni `zoneinfo`; ningún adaptador pasa un `recorded_at` a hora local. La zona es la de Argentina hasta la parte de zona horaria de GH-318.
+
 ### Qué muestra cada pestaña
 
-- **Today** muestra lo que se puede resolver hoy, de arriba abajo: lo vendido hoy (ventas, cantidad de ventas, Average sale y gramos vendidos), después el bloque "Owed to you", después What you have left.
+- **Today** muestra lo que se puede resolver hoy, de arriba abajo: lo vendido hoy (ventas, cantidad de ventas, Average sale y gramos vendidos), después el bloque "Owed to you", después What you have left. La comparación de So far todavía no se muestra.
 - **Week y Month** muestran ventas, cantidad de ventas, Average sale, gramos vendidos, You gave away, Cost of goods sold, Stock shortfall (cuando el período lo tiene), una línea por cada Withdrawal reason con Stock withdrawals en el período, Expenses, la cifra de Purchases del período (Week y Month de Home y Analysis; su texto en `web/src/copy/common.ts`), Profit y Cash, y después el bloque "Owed to you" y What you have left. Las líneas de los Withdrawal reasons van justo después de Stock shortfall y antes de Expenses, en el orden de la lista del Business.
 - El Profit, el Cash, el Cost of goods sold, el Stock shortfall, las líneas de los Withdrawal reasons, las Expenses, You gave away y las Purchases nunca se muestran en Today.
 
@@ -208,19 +236,20 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 
 - El Business sale de la Session.
 - La ruta del Panel entra en el barrido de aislamiento y en la prueba de rutas protegidas.
-- Cada cifra se calcula en el servidor, y también si se muestra el aviso de desactualizado, qué líneas de Withdrawal reason se muestran y en qué orden, y si una línea de Withdrawal reason está toda pendiente. El navegador nunca ordena ni suma nada.
+- Cada cifra se calcula en el servidor, y también si se muestra el aviso de desactualizado, qué líneas de Withdrawal reason se muestran y en qué orden, y si una línea de Withdrawal reason está toda pendiente. El navegador nunca ordena ni suma nada. Lo mismo vale para So far, su cambio en porcentaje y las series por hora.
 - Home no lee `/first-run` ni `/onboarding-progress`. Esas rutas siguen en el backend: `/onboarding-progress` lo lee el Onboarding, y `/first-run` la línea de precio faltante del "+ New sale" de la barra lateral de la computadora y Products, para las reglas laterales de navigation.md. Ningún código del marco del celular lee `/first-run`.
-- Ninguna cifra ni nombre va a los logs, la consola ni el almacenamiento del navegador.
+- Ninguna cifra ni nombre va a los logs, la consola ni el almacenamiento del navegador. El Phone number de un deudor sale del servidor solo en el bloque de deudores de Today.
 - Las palabras del avatar y del segmento ("Settings", "Home", "Analysis", "Home view") salen del Copy module; la opción "Home" es `common:homeSegmentHome`. La línea de fecha usa el formateador de fechas que ya existe y no suma nada al Copy module. Las iniciales del avatar salen solo de `initialsOf`, y el avatar no agrega ninguna ruta de API.
 
 ## Métricas
 
-- **Velocidad (criterio 1)**: el Panel, y cada cambio de período, responden en menos de 300 ms con unos cientos de ventas y unas decenas de Products y Customers. Se cuida con el plan de consulta y la cantidad de sentencias, nunca con el tiempo transcurrido (ADR-0038): la misma cantidad de sentencias en un Business sembrado chico que en un año sembrado, sin importar cuántos Withdrawal reasons tenga.
+- **Velocidad (criterio 1)**: el Panel, y cada cambio de período, responden en menos de 300 ms con unos cientos de ventas y unas decenas de Products y Customers. Se cuida con el plan de consulta y la cantidad de sentencias, nunca con el tiempo transcurrido (ADR-0038): la misma cantidad de sentencias en un Business sembrado chico que en un año sembrado, sin importar cuántos Withdrawal reasons tenga. El bloque `today` no agrega ninguna sentencia.
 - **Acuerdo (criterio 2)**: 0 diferencias, por período:
   - el total y la cantidad de ventas contra Sales;
   - las cifras de Owed to you contra la sección "Owed to you" de Customers;
   - los gramos, el estado, los Days left y el detalle de cada Product contra Products;
   - el Profit, el Cost of goods sold, el Stock shortfall, el costo de cada Withdrawal reason, las Expenses y el Cash de Week y Month contra la fila de `GET /analysis` para la misma semana y el mismo mes, sobre una historia sembrada que incluye un Adjustment negativo con gramos con costo, uno con gramos pendientes, una Sale line con gramos pendientes, tres o más Withdrawal reasons (uno renombrado y uno reordenado), un Stock withdrawal con costo de cada Withdrawal reason y un Stock withdrawal con gramos pendientes.
+- **So far (criterio 19 y job de la parte 1 de GH-497)**: pruebas de dominio con 100% de aprobación que cubren la medianoche; una Sale registrada tarde y una registrada antes de su fecha, fuera de toda ventana de So far y en la hora 23 de su serie; ahora 14:05 contra una Sale de la semana pasada a las 14:55 (afuera de So far, adentro del punto de la hora 14); una Sale a las 14:05:00 exactas (adentro); base 0 (sin porcentaje), hoy 0 contra base mayor que 0 (−100) y el redondeo con mitad hacia arriba. Pruebas de comportamiento por TestClient con el reloj móvil: `sales` y `sales_count` del bloque `today` tienen 0 diferencias con Sales para hoy. Un chequeo de arquitectura falla si un adaptador que arma un `SaleRecord` llama a `astimezone` o si `app/results/domain/` importa `app.clock` o `zoneinfo`.
 - **Fórmulas (criterio 3)**: una matriz, 100% de aprobación, que cubre:
   - el Profit y el Cash;
   - los Payments contados en su propia fecha, no en la de la venta;
@@ -264,7 +293,9 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
 
 ## Fuera de alcance
 
-- Dates o cualquier rango a medida; comparar con períodos anteriores; gráficos.
+- Dates o cualquier rango a medida; gráficos; cualquier comparación con períodos anteriores fuera de So far del bloque `today`.
+- Mostrar en pantalla So far, su cambio en porcentaje o las series por hora: lo hacen partes posteriores de GH-497. Cómo se presenta un porcentaje muy grande también queda para esas partes.
+- Cash, Payments o Profit en el bloque `today`; cambios en Week y Month por GH-497.
 - Registrar cualquier cosa desde el Panel salvo abriendo una New sale desde el marco (el + de la barra del celular o el "+ New sale" de la barra lateral de la computadora) y con "Collect".
 - Actualizaciones en vivo entre socios.
 - Margin por Product (#8), Stock shortfall por Product, y el costo de cada Withdrawal reason por Product.
@@ -309,5 +340,5 @@ Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-an
 
 Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; lo entrega la parte de zona horaria.
 
-- Today, Week y Month van a seguir la zona horaria propia del Business.
+- Today, Week y Month van a seguir la zona horaria propia del Business, y también la hora local con la que el bloque `today` ubica cada Sale y corta So far (hoy la zona que se pasa al dominio es la de Argentina).
 - Va a reemplazar: "Today, Week y Month, en hora argentina, con las mismas definiciones que Sales. No hay Dates."
