@@ -7,15 +7,19 @@
 //   node scripts/design/sidebarBox.mjs <before-dir> <after-dir>
 
 import { readFileSync } from 'node:fs'
-import { join, resolve } from 'node:path'
-import { pathToFileURL } from 'node:url'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { compareIndexes, decode } from './ae.mjs'
+
+const SCREENS_FILE = join(dirname(fileURLToPath(import.meta.url)), 'screens.json')
 
 export const SIDEBAR_SCREENS = ['InicioHoyCompu', 'InicioHoyCompuOscuro']
 export const SIDEBAR_RIGHT_EDGE = 248
 
 // What is wrong with `ae.mjs --box`'s lines for the two sidebar screens; empty when the check passes.
-export function sidebarProblems(lines) {
+// The boxes are in capture pixels; `scale` is capture pixels per CSS pixel (the captures are 2x), so
+// the 248 px edge is compared in CSS pixels.
+export function sidebarProblems(lines, scale = 1) {
   const problems = []
   for (const screen of SIDEBAR_SCREENS) {
     const built = lines.find((line) => line.startsWith(`${screen} built: `))
@@ -30,9 +34,9 @@ export function sidebarProblems(lines) {
       problems.push(`${screen} built: ${built.slice(screen.length + 8)}`)
       continue
     }
-    const right = Number(match[2]) + Number(match[4])
+    const right = (Number(match[2]) + Number(match[4])) / scale
     if (right > SIDEBAR_RIGHT_EDGE) {
-      problems.push(`${screen} built: the differing pixels reach x=${right}, past the sidebar column (${SIDEBAR_RIGHT_EDGE}); escalate, never tolerate`)
+      problems.push(`${screen} built: the differing pixels reach x=${right} CSS px, past the sidebar column (${SIDEBAR_RIGHT_EDGE}); escalate, never tolerate`)
     }
   }
   return problems
@@ -54,7 +58,14 @@ function main() {
   }
   const { lines } = compareIndexes(indexes[0], indexes[1], new Set(SIDEBAR_SCREENS), load, true)
   for (const line of lines) console.log(line)
-  const problems = sidebarProblems(lines)
+  // Capture pixels per CSS pixel: the capture's width over the row's viewport width.
+  const rows = JSON.parse(readFileSync(SCREENS_FILE, 'utf-8')).screens
+  const row = rows.find((entry) => entry.screen === SIDEBAR_SCREENS[0])
+  const built = indexes[1].find((entry) => entry.screen === SIDEBAR_SCREENS[0])?.built
+  const decoded = built ? load(built) : { ok: false }
+  const scale = decoded.ok && row?.viewport ? decoded.image.width / row.viewport[0] : 1
+  console.log(`scale: ${scale} capture px per CSS px`)
+  const problems = sidebarProblems(lines, scale)
   for (const problem of problems) console.error(`sidebar: ${problem}`)
   if (problems.length > 0) process.exitCode = 1
 }

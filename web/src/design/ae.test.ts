@@ -384,7 +384,15 @@ describe('the computer sidebar before/after check', () => {
         'InicioHoyCompuOscuro built: AE 0',
         ...unchangedDesign,
       ]),
-    ).toEqual(['InicioHoyCompu built: the differing pixels reach x=600, past the sidebar column (248); escalate, never tolerate'])
+    ).toEqual(['InicioHoyCompu built: the differing pixels reach x=600 CSS px, past the sidebar column (248); escalate, never tolerate'])
+  })
+
+  it('reads the box in CSS pixels: a 2x capture whose box ends at 261 px is inside the column, one ending at 600 is not', () => {
+    const lines = (box: string) => [`InicioHoyCompu built: AE 6457 box ${box}`, 'InicioHoyCompuOscuro built: AE 0', ...unchangedDesign]
+    expect(sidebarProblems(lines('x=52 y=998 w=209 h=770'), 2)).toEqual([])
+    expect(sidebarProblems(lines('x=52 y=998 w=548 h=770'), 2)).toEqual([
+      'InicioHoyCompu built: the differing pixels reach x=300 CSS px, past the sidebar column (248); escalate, never tolerate',
+    ])
   })
 
   it('refuses a screen that was not compared, a failed comparison and a drawing that moved', () => {
