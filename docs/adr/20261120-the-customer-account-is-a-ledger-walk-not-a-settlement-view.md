@@ -35,3 +35,5 @@ armaba desde el resultado de `settle()`, con una fila por split y una fila `cred
   cambian.
 - El costo es una pasada sobre las Sales y Payments de un Customer, con un ordenamiento
   O(n log n).
+- La línea secundaria de una fila de Sale ("Left owing") no cambia cuando un Payment
+  posterior la salda: la fila es un punto del libro y no un estado actual.
