@@ -39,12 +39,18 @@ def test_an_answer_with_the_same_keys_and_types_matches_regardless_of_its_values
     answer = {
         "total_owed": 9000,
         "sales_owing_count": 1,
+        "customer_count": 3,
+        "debtor_count": 1,
+        "buckets": {"this_week": 0, "days_8_30": 0, "over_30": 9000},
         "debtors": [
             {
                 "customer": {"id": 7, "name": "Beto Gómez"},
                 "balance": 9000,
                 "owing_since": "2026-08-01",
                 "standing": "owes",
+                "age_days": 62,
+                "bucket": "over_30",
+                "customer_type_id": 4,
             }
         ],
     }

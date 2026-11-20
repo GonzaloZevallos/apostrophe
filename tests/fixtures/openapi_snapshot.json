@@ -474,6 +474,36 @@
         "title": "AssignCustomerIn",
         "type": "object"
       },
+      "BestSellerOut": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "sales": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Sales"
+          }
+        },
+        "required": [
+          "product_id",
+          "name",
+          "sales"
+        ],
+        "title": "BestSellerOut",
+        "type": "object"
+      },
       "BillPaymentOut": {
         "additionalProperties": false,
         "properties": {
@@ -1365,6 +1395,50 @@
         "title": "DaySalesOut",
         "type": "object"
       },
+      "DebtBucketsOut": {
+        "properties": {
+          "days_8_30": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Days 8 30"
+          },
+          "over_30": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Over 30"
+          },
+          "this_week": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "This Week"
+          }
+        },
+        "required": [
+          "this_week",
+          "days_8_30",
+          "over_30"
+        ],
+        "title": "DebtBucketsOut",
+        "type": "object"
+      },
       "DebtorCustomerOut": {
         "properties": {
           "id": {
@@ -1385,6 +1459,17 @@
       },
       "DebtorsOut": {
         "properties": {
+          "buckets": {
+            "$ref": "#/components/schemas/DebtBucketsOut"
+          },
+          "customer_count": {
+            "title": "Customer Count",
+            "type": "integer"
+          },
+          "debtor_count": {
+            "title": "Debtor Count",
+            "type": "integer"
+          },
           "debtors": {
             "items": {
               "$ref": "#/components/schemas/app__payments__adapters__schemas__DebtorOut"
@@ -1411,7 +1496,10 @@
         "required": [
           "total_owed",
           "sales_owing_count",
-          "debtors"
+          "debtors",
+          "customer_count",
+          "debtor_count",
+          "buckets"
         ],
         "title": "DebtorsOut",
         "type": "object"
@@ -2109,6 +2197,60 @@
           "password"
         ],
         "title": "LoginIn",
+        "type": "object"
+      },
+      "LowStockOut": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/LowStockRowOut"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "rows"
+        ],
+        "title": "LowStockOut",
+        "type": "object"
+      },
+      "LowStockRowOut": {
+        "description": "A Product to restock: Stock as stored (negatives included) and its status, the\nvalues `GET /stock` gives the same Product.",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          },
+          "status": {
+            "enum": [
+              "sold_out",
+              "low"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "name",
+          "quantity",
+          "status"
+        ],
+        "title": "LowStockRowOut",
         "type": "object"
       },
       "MarginOut": {
@@ -3883,7 +4025,7 @@
         "type": "object"
       },
       "ReasonCostOut": {
-        "description": "One withdrawal reason's cost line, in the list order `period_figures` answered\nit: Home's Week, Month and Today and every Análisis row serialise it through here\nand nowhere else. `amount` is `null` when every gram is pending, never 0.",
+        "description": "One withdrawal reason's cost line, in the list order `period_figures` answered\nit: Home's Week, Month and Today and every An\u00e1lisis row serialise it through here\nand nowhere else. `amount` is `null` when every gram is pending, never 0.",
         "properties": {
           "amount": {
             "anyOf": [
@@ -4030,7 +4172,7 @@
         "type": "object"
       },
       "RowCostOut": {
-        "description": "One Análisis cost line (cost of goods or stock shortfall): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
+        "description": "One An\u00e1lisis cost line (cost of goods or stock shortfall): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
         "properties": {
           "all_pending": {
             "title": "All Pending",
@@ -4269,7 +4411,7 @@
         "type": "object"
       },
       "SaleDetailOut": {
-        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` — used by the list and by every write — never\nallocates.",
+        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` \u2014 used by the list and by every write \u2014 never\nallocates.",
         "properties": {
           "bill": {
             "anyOf": [
@@ -5049,6 +5191,13 @@
       "TodayOut": {
         "description": "Today's Sales and the so-far comparison against the same weekday last week.\n`change_percent` is `null` when last week's so-far is 0, never 0 or infinite.\n`hourly_today` ends at the current hour and can end below `sales` (a Sale recorded\non another day than its date counts at hour 23); `hourly_last_week` runs 0..23.",
         "properties": {
+          "best_sellers": {
+            "items": {
+              "$ref": "#/components/schemas/BestSellerOut"
+            },
+            "title": "Best Sellers",
+            "type": "array"
+          },
           "change_percent": {
             "anyOf": [
               {
@@ -5097,8 +5246,14 @@
             ],
             "title": "Last Week So Far"
           },
+          "low_stock": {
+            "$ref": "#/components/schemas/LowStockOut"
+          },
           "money_in": {
             "$ref": "#/components/schemas/MoneyInOut"
+          },
+          "month_profit": {
+            "$ref": "#/components/schemas/AmountWithPendingOut"
           },
           "sales": {
             "anyOf": [
@@ -5137,7 +5292,10 @@
           "hourly_today",
           "hourly_last_week",
           "last_7_days",
-          "money_in"
+          "money_in",
+          "low_stock",
+          "best_sellers",
+          "month_profit"
         ],
         "title": "TodayOut",
         "type": "object"
@@ -5544,6 +5702,10 @@
       },
       "app__payments__adapters__schemas__DebtorOut": {
         "properties": {
+          "age_days": {
+            "title": "Age Days",
+            "type": "integer"
+          },
           "balance": {
             "anyOf": [
               {
@@ -5555,8 +5717,28 @@
             ],
             "title": "Balance"
           },
+          "bucket": {
+            "enum": [
+              "this_week",
+              "days_8_30",
+              "over_30"
+            ],
+            "title": "Bucket",
+            "type": "string"
+          },
           "customer": {
             "$ref": "#/components/schemas/DebtorCustomerOut"
+          },
+          "customer_type_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Type Id"
           },
           "owing_since": {
             "anyOf": [
@@ -5584,7 +5766,10 @@
           "customer",
           "balance",
           "owing_since",
-          "standing"
+          "standing",
+          "age_days",
+          "bucket",
+          "customer_type_id"
         ],
         "title": "DebtorOut",
         "type": "object"

@@ -20,6 +20,7 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -33,7 +34,8 @@ from app.results.application.read_panel import (
     PeriodFigures,
     TodayFigures,
 )
-from app.results.domain.figures import ReasonCost
+from app.results.domain.figures import AmountWithPending, ReasonCost
+from app.results.domain.today_ordering import BestSeller, LowStock
 from app.results.domain.today_series import MoneyIn
 from app.stock.adapters.schemas import Status
 
@@ -221,6 +223,60 @@ class MoneyInOut(BaseModel):
         )
 
 
+class AmountWithPendingOut(BaseModel):
+    """A money figure (profit) together with the pending grams behind it, for one
+    period."""
+
+    amount: MoneyOut
+    pending_quantity: QuantityOut
+
+    @classmethod
+    def of(cls, figure: AmountWithPending) -> AmountWithPendingOut:
+        return cls(
+            amount=Decimal(figure.amount), pending_quantity=figure.pending_quantity.as_decimal()
+        )
+
+
+class LowStockRowOut(BaseModel):
+    """A Product to restock: Stock as stored (negatives included) and its status, the
+    values `GET /stock` gives the same Product."""
+
+    product_id: int
+    name: str
+    quantity: QuantityOut
+    status: Literal["sold_out", "low"]
+
+    @classmethod
+    def of(cls, row: StockRow) -> LowStockRowOut:
+        if row.status not in ("sold_out", "low"):
+            raise ValueError("only a sold out or low row is listed")
+        return cls(
+            product_id=row.variety_id,
+            name=row.name,
+            quantity=row.quantity.as_decimal(),
+            status=row.status,
+        )
+
+
+class LowStockOut(BaseModel):
+    count: int
+    rows: list[LowStockRowOut]
+
+    @classmethod
+    def of(cls, low: LowStock[StockRow]) -> LowStockOut:
+        return cls(count=low.count, rows=[LowStockRowOut.of(row) for row in low.rows])
+
+
+class BestSellerOut(BaseModel):
+    product_id: int
+    name: str
+    sales: MoneyOut
+
+    @classmethod
+    def of(cls, seller: BestSeller) -> BestSellerOut:
+        return cls(product_id=seller.variety_id, name=seller.name, sales=Decimal(seller.sales))
+
+
 class TodayOut(BaseModel):
     """Today's Sales and the so-far comparison against the same weekday last week.
     `change_percent` is `null` when last week's so-far is 0, never 0 or infinite.
@@ -237,6 +293,9 @@ class TodayOut(BaseModel):
     hourly_last_week: list[HourlyPointOut]
     last_7_days: list[DaySalesOut]
     money_in: MoneyInOut
+    low_stock: LowStockOut
+    best_sellers: list[BestSellerOut]
+    month_profit: AmountWithPendingOut
 
     @classmethod
     def of(cls, figures: TodayFigures) -> TodayOut:
@@ -253,6 +312,9 @@ class TodayOut(BaseModel):
                 DaySalesOut(day=item.day, sales=Decimal(item.sales)) for item in figures.last_7_days
             ],
             money_in=MoneyInOut.of(figures.money_in),
+            low_stock=LowStockOut.of(figures.low_stock),
+            best_sellers=[BestSellerOut.of(seller) for seller in figures.best_sellers],
+            month_profit=AmountWithPendingOut.of(figures.month_profit),
         )
 
 
@@ -289,14 +351,6 @@ class MarginOut(BaseModel):
 
 class CostOut(BaseModel):
     costed: MoneyOut
-    pending_quantity: QuantityOut
-
-
-class AmountWithPendingOut(BaseModel):
-    """A money figure (profit) together with the pending grams behind it, for one
-    period."""
-
-    amount: MoneyOut
     pending_quantity: QuantityOut
 
 

@@ -28,7 +28,7 @@ answers is a domain type.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from typing import Literal, Protocol
 
@@ -81,13 +81,18 @@ class DebtorRow:
     name: str
     balance: int
     owing_since: date
+    phone: str | None = field(repr=False)
 
 
 @dataclass(frozen=True)
 class Debts:
     """`debtors` arrives in `debtors()` order (payments-domain): oldest debt first,
-    ties broken by `fold`ed name then id. The panel's own teaser re-sorts (by balance,
-    then owing since, then name) and cuts this; it never re-queries for it."""
+    then the larger balance, then `fold`ed name, then id. The panel's own teaser
+    re-sorts (by balance, then owing since, then name) and cuts this; it never
+    re-queries for it.
+
+    Each row's `phone` is carried only for the panel's `today.owed` block: no other
+    block or response serves it."""
 
     total_owed: int
     sales_owing_count: int
@@ -97,7 +102,7 @@ class Debts:
 class DebtSummary(Protocol):
     """Implemented in `app/payments/adapters/`, over `view_accounts.debtors()`."""
 
-    def read(self) -> Debts: ...
+    def read(self, today: date) -> Debts: ...
 
 
 __all__ = [

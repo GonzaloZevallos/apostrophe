@@ -77,6 +77,7 @@ classDiagram
   router --> sql_payments
   router --> view_accounts
   schemas --> account
+  schemas --> debt_age
   schemas --> record_payment
   schemas --> settlement
   schemas --> view_accounts
@@ -89,6 +90,7 @@ classDiagram
   sql_payments --> ports
   sql_payments --> tables
   view_accounts --> account
+  view_accounts --> debt_age
   view_accounts --> errors
   view_accounts --> ports
   view_accounts --> settlement
@@ -231,13 +233,20 @@ classDiagram
     code : ClassVar~str~
   }
   class Debtor {
+    age_days : int
     balance : int
+    bucket : Literal
     customer_id : int
+    customer_type_id : int #124; None
     name : str
     owing_since : date #124; None
+    phone : str #124; None
     standing : Literal
   }
   class Debtors {
+    buckets : DebtAgeBuckets
+    customer_count : int
+    debtor_count : int
     debtors : tuple~Debtor, ...~
     sales_owing_count : int
     total_owed : int
@@ -251,9 +260,11 @@ classDiagram
     current() MoneyFormat
   }
   class NamedLedger {
+    customer_type_id : int #124; None
     id : int
     ledger : Ledger
     name : str
+    phone : str #124; None
   }
   class OnTheSpot {
     code : ClassVar~str~
@@ -265,6 +276,9 @@ classDiagram
     delete_later(payment_id: int) int
     get(payment_id: int) StoredPayment #124; None
     insert_later(customer_id: int, paid_on: date, amount: int, method: PaymentMethodId, recorded_at: datetime) int
+  }
+  class PricingSettingsReader {
+    current() PricingSettings
   }
   class RecordedPayment {
     amount : int
@@ -317,18 +331,30 @@ classDiagram
     running_balance
     standing : Literal
   }
+  class DebtBucketsOut {
+    days_8_30
+    over_30
+    this_week
+    of(buckets: DebtAgeBuckets) DebtBucketsOut
+  }
   class DebtorCustomerOut {
     id : int
     name : str
   }
   class DebtorOut {
+    age_days : int
     balance
+    bucket : Literal
     customer
+    customer_type_id : int #124; None
     owing_since : PaymentDate #124; None
     standing : Literal
     of(debtor: Debtor) DebtorOut
   }
   class DebtorsOut {
+    buckets
+    customer_count : int
+    debtor_count : int
     debtors : list~DebtorOut~
     sales_owing_count : int
     total_owed
@@ -408,7 +434,7 @@ classDiagram
     for_customers(customer_ids: Collection~int~) Mapping~int, CustomerBalance~
   }
   class SqlDebtSummary {
-    read() Debts
+    read(today: date) Debts
   }
   class SqlLedgers {
     all() Sequence~NamedLedger~
@@ -430,6 +456,7 @@ classDiagram
   AccountPaymentRefOut --> PaymentMethodLabelOut : payment_method
   CreditAccountRowOut --> AccountPaymentRefOut : payment
   DebtorOut --> DebtorCustomerOut : customer
+  DebtorsOut --> DebtBucketsOut : buckets
   PaymentAccountRowOut --> AccountPaymentRefOut : payment
   PaymentAccountRowOut --> AppliedToOut : applied_to
   PaymentPreviewOut --> AfterOut : after

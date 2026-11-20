@@ -1048,7 +1048,62 @@ def test_another_business_reads_debtors_as_zero_while_a_has_debt(
     assert a_debtors["debtors"] != []
 
     b_debtors = business_b.get("/payments/debtors").json()
-    assert b_debtors == {"total_owed": 0, "sales_owing_count": 0, "debtors": []}
+    assert b_debtors == {
+        "total_owed": 0,
+        "sales_owing_count": 0,
+        "debtors": [],
+        "customer_count": 0,
+        "debtor_count": 0,
+        "buckets": {"this_week": 0, "days_8_30": 0, "over_30": 0},
+    }
+
+
+def test_another_business_sees_none_of_a_debtor_a_credit_or_a_customer_without_sales(
+    business_a: TestClient, business_b: TestClient, seeded: dict[str, int]
+) -> None:
+    """A holds a debtor (seeded), a customer with no sales (seeded) and, added here, a
+    Credit; B's counts and age groups stay at zero while A's own include all three."""
+    variety_id = seeded["suggested_product_id"]
+    before = business_a.get("/payments/debtors").json()
+    credit = business_a.post(
+        "/customers",
+        json={"name": f"{MARKER} credit customer", "phone": "11 7777-7777", "phone_country": "AR"},
+    ).json()["id"]
+    sales = [
+        business_a.post(
+            "/sales",
+            json={
+                "payment": {"kind": "owing"},
+                "customer_id": credit,
+                "lines": [{"product_id": variety_id, "quantity": quantity}],
+            },
+        )
+        for quantity in ("1", "2")
+    ]
+    kept, removed = (sale.json() for sale in sales)
+    paid = business_a.post(
+        f"/customers/{credit}/payments",
+        json={
+            "paid_on": SEEDED_ON,
+            "amount": kept["total"] + removed["total"],
+            "payment_method_id": 1,
+        },
+    )
+    assert paid.status_code == 201, paid.text
+    assert business_a.delete(f"/sales/{removed['id']}").status_code == 200
+    assert business_a.get(f"/customers/{credit}/account").json()["standing"] == "credit"
+
+    a_debtors = business_a.get("/payments/debtors").json()
+    assert a_debtors["debtor_count"] == before["debtor_count"] >= 1
+    assert a_debtors["customer_count"] == before["customer_count"] + 1
+    assert a_debtors["total_owed"] == before["total_owed"]
+    assert sum(a_debtors["buckets"].values()) == a_debtors["total_owed"] > 0
+
+    b_debtors = business_b.get("/payments/debtors").json()
+    assert b_debtors["customer_count"] == 0
+    assert b_debtors["debtor_count"] == 0
+    assert b_debtors["buckets"] == {"this_week": 0, "days_8_30": 0, "over_30": 0}
+    assert b_debtors["debtors"] == []
 
 
 def test_the_panel_money_in_shows_no_payment_method_of_another_business(
@@ -1195,6 +1250,59 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         "teaser": [],
     }
     assert b_panel["stock"] == []
+
+
+def test_another_business_reads_none_of_the_low_or_best_selling_products(
+    business_a: TestClient, business_b: TestClient, engine: Engine, clock: MovableClock
+) -> None:
+    """A seeds a low Product, a hidden low one, an archived one sold this week and one
+    sold with no entries: none of their ids or names reaches B's Today block, and B's
+    month Profit is its own Month row."""
+    today = clock().date().isoformat()
+    ids = {}
+    for key in ("low", "hidden", "archived", "negative"):
+        variety = business_a.post("/api/products", json={"name": f"{MARKER} {key}"}).json()
+        business_a.post(
+            f"/api/products/{variety['id']}/prices",
+            json={"effective_from": "2026-01-01", "list_price": 1_000},
+        )
+        ids[key] = variety["id"]
+    for key in ("low", "hidden", "archived"):
+        entry = business_a.post(
+            "/stock/entries",
+            json={"product_id": ids[key], "origin": "opening_stock", "quantity": "2"},
+        )
+        assert entry.status_code == 201, entry.text
+    for key in ("low", "hidden"):
+        threshold = business_a.put(f"/stock/products/{ids[key]}/threshold", json={"quantity": "10"})
+        assert threshold.status_code == 200, threshold.text
+    hidden = business_a.put(
+        f"/catalog/products/{ids['hidden']}",
+        json={"shown": False, "emoji": None, "indica_share": None, "aroma": None},
+    )
+    assert hidden.status_code == 200, hidden.text
+    for key in ("archived", "negative"):
+        sale = business_a.post(
+            "/sales",
+            json={
+                "date": today,
+                "payment": {"kind": "paid", "payment_method_id": 1},
+                "lines": [{"product_id": ids[key], "quantity": "1"}],
+            },
+        )
+        assert sale.status_code == 201, sale.text
+    archive_by_hand(engine, ids["archived"])
+    a_block = business_a.get("/panel").json()["today"]
+    assert a_block["low_stock"]["count"] == 3
+    assert [row["name"] for row in a_block["best_sellers"]] != []
+
+    b_response = business_b.get("/panel")
+    b_block = b_response.json()["today"]
+
+    assert b_block["low_stock"] == {"count": 0, "rows": []}
+    assert b_block["best_sellers"] == []
+    assert b_block["month_profit"] == {"amount": 0, "pending_quantity": 0}
+    assert MARKER not in b_response.text
 
 
 def test_another_business_gets_404_deleting_an_on_the_spot_payment(

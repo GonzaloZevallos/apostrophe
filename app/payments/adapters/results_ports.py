@@ -13,6 +13,8 @@ payments reaches `app.results`' own types; `app/payments/domain/` and
 
 from __future__ import annotations
 
+from datetime import date
+
 from sqlalchemy.orm import Session
 
 from app.payments.adapters.sql_ledgers import SqlLedgers
@@ -28,8 +30,8 @@ class SqlDebtSummary:
     def __init__(self, session: Session, business_id: int) -> None:
         self._ledgers = SqlLedgers(session, business_id)
 
-    def read(self) -> Debts:
-        answer = debtors_use_case(self._ledgers)
+    def read(self, today: date) -> Debts:
+        answer = debtors_use_case(self._ledgers, today, show_customer_type=False)
         rows: list[DebtorRow] = []
         for debtor in answer.debtors:
             # `debtors()` only ever includes a standing of "owes" (payments-domain),
@@ -43,6 +45,7 @@ class SqlDebtSummary:
                     name=debtor.name,
                     balance=debtor.balance,
                     owing_since=debtor.owing_since,
+                    phone=debtor.phone,
                 )
             )
         return Debts(

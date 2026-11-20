@@ -1,6 +1,5 @@
 [
   "web/src/copy/varieties.ts",
-  "web/src/screens/Variedades.tsx",
   "web/src/screens/varieties/ArchivedVarieties.tsx",
   "web/src/screens/varieties/CatalogAttributesForm.tsx",
   "web/src/screens/varieties/PriceFields.tsx",
@@ -8,7 +7,9 @@
   "web/src/screens/varieties/PriceHistory.tsx",
   "web/src/screens/varieties/PriceNew.tsx",
   "web/src/screens/varieties/PriceRows.tsx",
+  "web/src/screens/varieties/ProductsComputer.tsx",
   "web/src/screens/varieties/RenameForm.tsx",
+  "web/src/screens/varieties/StockActions.tsx",
   "web/src/screens/varieties/ThresholdForm.tsx",
   "web/src/screens/varieties/VarietiesBehind.tsx",
   "web/src/screens/varieties/VarietyNameForm.tsx",
@@ -18,6 +19,7 @@
   "web/src/screens/varieties/VarietyPricesSection.tsx",
   "web/src/screens/varieties/VarietyRemoval.tsx",
   "web/src/screens/varieties/VarietyRoute.tsx",
+  "web/src/screens/varieties/VarietyRows.tsx",
   "web/src/screens/varieties/VarietySheet.test.tsx",
   "web/src/screens/varieties/VarietyThresholdSection.tsx",
   "web/src/screens/varieties/renderVarieties.tsx"
