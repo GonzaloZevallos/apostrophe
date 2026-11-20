@@ -19,6 +19,7 @@ from app.payments.domain.account import AccountRow as DomainAccountRow
 from app.payments.domain.account import CreditRow as DomainCreditRow
 from app.payments.domain.account import PaymentRow as DomainPaymentRow
 from app.payments.domain.account import SaleRow as DomainSaleRow
+from app.payments.domain.debt_age import DebtAgeBucket, DebtAgeBuckets
 from app.payments.domain.settlement import Split, Standing
 from app.shared.payment_method import PaymentMethodLabel
 
@@ -224,6 +225,9 @@ class DebtorOut(BaseModel):
     balance: MoneyOut
     owing_since: PaymentDate | None
     standing: Standing
+    age_days: int
+    bucket: DebtAgeBucket
+    customer_type_id: int | None
 
     @classmethod
     def of(cls, debtor: Debtor) -> DebtorOut:
@@ -232,6 +236,23 @@ class DebtorOut(BaseModel):
             balance=Decimal(debtor.balance),
             owing_since=debtor.owing_since,
             standing=debtor.standing,
+            age_days=debtor.age_days,
+            bucket=debtor.bucket,
+            customer_type_id=debtor.customer_type_id,
+        )
+
+
+class DebtBucketsOut(BaseModel):
+    this_week: MoneyOut
+    days_8_30: MoneyOut
+    over_30: MoneyOut
+
+    @classmethod
+    def of(cls, buckets: DebtAgeBuckets) -> DebtBucketsOut:
+        return cls(
+            this_week=Decimal(buckets.this_week),
+            days_8_30=Decimal(buckets.days_8_30),
+            over_30=Decimal(buckets.over_30),
         )
 
 
@@ -239,6 +260,9 @@ class DebtorsOut(BaseModel):
     total_owed: MoneyOut
     sales_owing_count: int
     debtors: list[DebtorOut]
+    customer_count: int
+    debtor_count: int
+    buckets: DebtBucketsOut
 
     @classmethod
     def of(cls, debtors: Debtors) -> DebtorsOut:
@@ -246,4 +270,7 @@ class DebtorsOut(BaseModel):
             total_owed=Decimal(debtors.total_owed),
             sales_owing_count=debtors.sales_owing_count,
             debtors=[DebtorOut.of(debtor) for debtor in debtors.debtors],
+            customer_count=debtors.customer_count,
+            debtor_count=debtors.debtor_count,
+            buckets=DebtBucketsOut.of(debtors.buckets),
         )

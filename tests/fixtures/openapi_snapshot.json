@@ -1339,6 +1339,50 @@
         "title": "CustomerTypePatchIn",
         "type": "object"
       },
+      "DebtBucketsOut": {
+        "properties": {
+          "days_8_30": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Days 8 30"
+          },
+          "over_30": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Over 30"
+          },
+          "this_week": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "This Week"
+          }
+        },
+        "required": [
+          "this_week",
+          "days_8_30",
+          "over_30"
+        ],
+        "title": "DebtBucketsOut",
+        "type": "object"
+      },
       "DebtorCustomerOut": {
         "properties": {
           "id": {
@@ -1359,6 +1403,17 @@
       },
       "DebtorsOut": {
         "properties": {
+          "buckets": {
+            "$ref": "#/components/schemas/DebtBucketsOut"
+          },
+          "customer_count": {
+            "title": "Customer Count",
+            "type": "integer"
+          },
+          "debtor_count": {
+            "title": "Debtor Count",
+            "type": "integer"
+          },
           "debtors": {
             "items": {
               "$ref": "#/components/schemas/app__payments__adapters__schemas__DebtorOut"
@@ -1385,7 +1440,10 @@
         "required": [
           "total_owed",
           "sales_owing_count",
-          "debtors"
+          "debtors",
+          "customer_count",
+          "debtor_count",
+          "buckets"
         ],
         "title": "DebtorsOut",
         "type": "object"
@@ -3788,7 +3846,7 @@
         "type": "object"
       },
       "ReasonCostOut": {
-        "description": "One withdrawal reason's cost line, in the list order `period_figures` answered\nit: Home's Week, Month and Today and every Análisis row serialise it through here\nand nowhere else. `amount` is `null` when every gram is pending, never 0.",
+        "description": "One withdrawal reason's cost line, in the list order `period_figures` answered\nit: Home's Week, Month and Today and every An\u00e1lisis row serialise it through here\nand nowhere else. `amount` is `null` when every gram is pending, never 0.",
         "properties": {
           "amount": {
             "anyOf": [
@@ -3935,7 +3993,7 @@
         "type": "object"
       },
       "RowCostOut": {
-        "description": "One Análisis cost line (cost of goods or stock shortfall): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
+        "description": "One An\u00e1lisis cost line (cost of goods or stock shortfall): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
         "properties": {
           "all_pending": {
             "title": "All Pending",
@@ -4174,7 +4232,7 @@
         "type": "object"
       },
       "SaleDetailOut": {
-        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` — used by the list and by every write — never\nallocates.",
+        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` \u2014 used by the list and by every write \u2014 never\nallocates.",
         "properties": {
           "bill": {
             "anyOf": [
@@ -5385,6 +5443,10 @@
       },
       "app__payments__adapters__schemas__DebtorOut": {
         "properties": {
+          "age_days": {
+            "title": "Age Days",
+            "type": "integer"
+          },
           "balance": {
             "anyOf": [
               {
@@ -5396,8 +5458,28 @@
             ],
             "title": "Balance"
           },
+          "bucket": {
+            "enum": [
+              "this_week",
+              "days_8_30",
+              "over_30"
+            ],
+            "title": "Bucket",
+            "type": "string"
+          },
           "customer": {
             "$ref": "#/components/schemas/DebtorCustomerOut"
+          },
+          "customer_type_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Type Id"
           },
           "owing_since": {
             "anyOf": [
@@ -5425,7 +5507,10 @@
           "customer",
           "balance",
           "owing_since",
-          "standing"
+          "standing",
+          "age_days",
+          "bucket",
+          "customer_type_id"
         ],
         "title": "DebtorOut",
         "type": "object"

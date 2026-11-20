@@ -312,6 +312,9 @@ def create_app(
     app.state.sales_money_format = SqlMoneyFormat
     app.state.products_money_format = SqlMoneyFormat
     app.state.payments_money_format = SqlMoneyFormat
+    # Payments shows a debtor's Customer type only while the switch is on, read through
+    # its own `PricingSettingsReader` port, never `app.pricing_settings`.
+    app.state.payments_pricing_settings = SqlPricingSettings
     app.state.expenses_money_format = SqlMoneyFormat
     app.state.stock_money_format = SqlMoneyFormat
     # Another factory of the same shape: results reaches stock's rows and draws only

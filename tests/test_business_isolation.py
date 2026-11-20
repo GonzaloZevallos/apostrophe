@@ -1034,7 +1034,62 @@ def test_another_business_reads_debtors_as_zero_while_a_has_debt(
     assert a_debtors["debtors"] != []
 
     b_debtors = business_b.get("/payments/debtors").json()
-    assert b_debtors == {"total_owed": 0, "sales_owing_count": 0, "debtors": []}
+    assert b_debtors == {
+        "total_owed": 0,
+        "sales_owing_count": 0,
+        "debtors": [],
+        "customer_count": 0,
+        "debtor_count": 0,
+        "buckets": {"this_week": 0, "days_8_30": 0, "over_30": 0},
+    }
+
+
+def test_another_business_sees_none_of_a_debtor_a_credit_or_a_customer_without_sales(
+    business_a: TestClient, business_b: TestClient, seeded: dict[str, int]
+) -> None:
+    """A holds a debtor (seeded), a customer with no sales (seeded) and, added here, a
+    Credit; B's counts and age groups stay at zero while A's own include all three."""
+    variety_id = seeded["suggested_product_id"]
+    before = business_a.get("/payments/debtors").json()
+    credit = business_a.post(
+        "/customers",
+        json={"name": f"{MARKER} credit customer", "phone": "11 7777-7777", "phone_country": "AR"},
+    ).json()["id"]
+    sales = [
+        business_a.post(
+            "/sales",
+            json={
+                "payment": {"kind": "owing"},
+                "customer_id": credit,
+                "lines": [{"product_id": variety_id, "quantity": quantity}],
+            },
+        )
+        for quantity in ("1", "2")
+    ]
+    kept, removed = (sale.json() for sale in sales)
+    paid = business_a.post(
+        f"/customers/{credit}/payments",
+        json={
+            "paid_on": SEEDED_ON,
+            "amount": kept["total"] + removed["total"],
+            "payment_method_id": 1,
+        },
+    )
+    assert paid.status_code == 201, paid.text
+    assert business_a.delete(f"/sales/{removed['id']}").status_code == 200
+    assert business_a.get(f"/customers/{credit}/account").json()["standing"] == "credit"
+
+    a_debtors = business_a.get("/payments/debtors").json()
+    assert a_debtors["debtor_count"] == before["debtor_count"] >= 1
+    assert a_debtors["customer_count"] == before["customer_count"] + 1
+    assert a_debtors["total_owed"] == before["total_owed"]
+    assert sum(a_debtors["buckets"].values()) == a_debtors["total_owed"] > 0
+
+    b_debtors = business_b.get("/payments/debtors").json()
+    assert b_debtors["customer_count"] == 0
+    assert b_debtors["debtor_count"] == 0
+    assert b_debtors["buckets"] == {"this_week": 0, "days_8_30": 0, "over_30": 0}
+    assert b_debtors["debtors"] == []
 
 
 def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(

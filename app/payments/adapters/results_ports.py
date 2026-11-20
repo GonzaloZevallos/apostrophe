@@ -31,7 +31,7 @@ class SqlDebtSummary:
         self._ledgers = SqlLedgers(session, business_id)
 
     def read(self, today: date) -> Debts:
-        answer = debtors_use_case(self._ledgers, today)
+        answer = debtors_use_case(self._ledgers, today, show_customer_type=False)
         rows: list[DebtorRow] = []
         for debtor in answer.debtors:
             # `debtors()` only ever includes a standing of "owes" (payments-domain),

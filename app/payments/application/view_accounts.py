@@ -38,6 +38,7 @@ class Debtor:
     standing: Standing
     age_days: int
     bucket: DebtAgeBucket
+    customer_type_id: int | None
 
 
 @dataclass(frozen=True)
@@ -50,7 +51,7 @@ class Debtors:
     buckets: DebtAgeBuckets
 
 
-def debtors(ledgers: Ledgers, today: date) -> Debtors:
+def debtors(ledgers: Ledgers, today: date, show_customer_type: bool) -> Debtors:
     """Every customer with a standing of `owes`, oldest debt first, then the larger
     balance, then `fold`ed name, then id (the plan's invariant: every ordering of
     customers by name uses `fold`, in Python). `total_owed` sums only those balances;
@@ -62,7 +63,9 @@ def debtors(ledgers: Ledgers, today: date) -> Debtors:
     debtor's `age_days`/`bucket` are those of its Owing since, and `buckets` sums the
     `SaleSettlement`s of debtors only, so a Credit never enters and the three add up to
     `total_owed`. `customer_count` is every customer `Ledgers.all()` returned;
-    `debtor_count` only those who owe."""
+    `debtor_count` only those who owe. `customer_type_id` is the stored one only while
+    `show_customer_type` (the Customer types switch) is on, `None` otherwise: this is the
+    one place it is hidden."""
     total_owed = 0
     sales_owing: set[int] = set()
     rows: list[Debtor] = []
@@ -89,6 +92,7 @@ def debtors(ledgers: Ledgers, today: date) -> Debtors:
                 standing=result.standing,
                 age_days=age_days,
                 bucket=bucket_of(age_days),
+                customer_type_id=named.customer_type_id if show_customer_type else None,
             )
         )
 

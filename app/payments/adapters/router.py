@@ -30,7 +30,7 @@ from app.payments.adapters.sql_ledgers import SqlLedgers
 from app.payments.adapters.sql_payments import SqlPayments
 from app.payments.application.delete_payment import delete_payment as delete_payment_use_case
 from app.payments.application.errors import CustomerNotFound, OnTheSpot, PaymentNotFound
-from app.payments.application.ports import MoneyFormatReader
+from app.payments.application.ports import MoneyFormatReader, PricingSettingsReader
 from app.payments.application.record_payment import preview_payment as preview_payment_use_case
 from app.payments.application.record_payment import record_payment as record_payment_use_case
 from app.payments.application.view_accounts import account as account_use_case
@@ -75,7 +75,20 @@ def get_money_format(
     return factory(session, business_id)
 
 
+def get_pricing_settings(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> PricingSettingsReader:
+    # Payments never imports `app.pricing_settings` (docs/adr/0034): `app/main.py` hangs
+    # `SqlPricingSettings` on `app.state.payments_pricing_settings` as a factory.
+    factory = cast(
+        Callable[[Session, int], PricingSettingsReader],
+        request.app.state.payments_pricing_settings,
+    )
+    return factory(session, business_id)
+
+
 MoneyFormatDep = Annotated[MoneyFormatReader, Depends(get_money_format)]
+PricingSettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
 LedgersDep = Annotated[SqlLedgers, Depends(get_ledgers)]
 PaymentsDep = Annotated[SqlPayments, Depends(get_payments)]
 
@@ -152,5 +165,10 @@ def delete_payment(payment_id: int, payments: PaymentsDep, session: SessionDep) 
 
 
 @router.get("/debtors")
-def get_debtors(ledgers: LedgersDep, today: TodayDep) -> DebtorsOut:
-    return DebtorsOut.of(debtors_use_case(ledgers, today))
+def get_debtors(
+    ledgers: LedgersDep, today: TodayDep, pricing_settings: PricingSettingsDep
+) -> DebtorsOut:
+    # The Customer types switch decides whether a debtor's type is shown; the use case
+    # is the one place that hides it.
+    show_customer_type = pricing_settings.current().is_vip_customers
+    return DebtorsOut.of(debtors_use_case(ledgers, today, show_customer_type))
