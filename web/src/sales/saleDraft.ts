@@ -7,7 +7,7 @@
 
 import type { PaymentMethod } from '../api/payments'
 import { parseGrams } from '../format/parse'
-import { toHundredths, type PaymentChoice } from './pricing'
+import { LINE_STEP_HUNDREDTHS, toHundredths, type PaymentChoice, type SaleLineInput } from './pricing'
 
 export type DraftChoice = { kind: 'unset' } | PaymentChoice
 
@@ -30,9 +30,6 @@ export interface DraftState {
   proposedMethodId: PaymentMethod | null
   choice: DraftChoice
 }
-
-/** One whole unit, in hundredths. */
-const STEP = 100
 
 /** No quantity exceeds this: 13 whole digits and two decimals, so it is checked on the digit
  * string before any number is built. */
@@ -84,6 +81,18 @@ export function effectiveChoice(
     : null
 }
 
+/** The draft's own lines as `priceSale` takes them: the only lines it is called with. A line is
+ * unique by product, so the product id is the line's id. */
+export function saleLineInputsOf(lines: readonly DraftLine[]): SaleLineInput[] {
+  return lines.map((line) => ({
+    id: String(line.productId),
+    productId: line.productId,
+    gramsHundredths: line.quantityHundredths,
+    gift: false,
+    specialPrice: null,
+  }))
+}
+
 export function isDirty(state: DraftState): boolean {
   return state.lines.length > 0
 }
@@ -104,9 +113,9 @@ export type DraftAction =
 function raised(state: DraftState, productId: number): DraftState {
   const line = state.lines.find((candidate) => candidate.productId === productId)
   if (line === undefined) {
-    return { ...state, lines: [...state.lines, { productId, quantityHundredths: STEP }] }
+    return { ...state, lines: [...state.lines, { productId, quantityHundredths: LINE_STEP_HUNDREDTHS }] }
   }
-  const next = line.quantityHundredths + STEP
+  const next = line.quantityHundredths + LINE_STEP_HUNDREDTHS
   if (next > MAX_QUANTITY_HUNDREDTHS) return state
   return {
     ...state,
@@ -127,13 +136,13 @@ export function saleDraftReducer(state: DraftState, action: DraftAction): DraftS
     case 'stepDown': {
       const line = state.lines.find((candidate) => candidate.productId === action.productId)
       if (line === undefined) return state
-      if (line.quantityHundredths <= STEP) {
+      if (line.quantityHundredths <= LINE_STEP_HUNDREDTHS) {
         return { ...state, lines: state.lines.filter((candidate) => candidate !== line) }
       }
       return {
         ...state,
         lines: state.lines.map((candidate) =>
-          candidate === line ? { ...candidate, quantityHundredths: candidate.quantityHundredths - STEP } : candidate,
+          candidate === line ? { ...candidate, quantityHundredths: candidate.quantityHundredths - LINE_STEP_HUNDREDTHS } : candidate,
         ),
       }
     }
