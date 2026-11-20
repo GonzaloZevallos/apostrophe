@@ -154,4 +154,21 @@ El dueño decidió que la acción «New product» de la fila de título del tel�
 
 Una línea, objetivos de 44 px o más, huecos de 8 px o más, sin recorte, solape ni desplazamiento lateral. Con 8 px de `gap` (`--espacio-sm`) el hueco hasta el avatar sería de 4 px: por eso se usa `--espacio-md`. Las capturas de `Productos` y `ProductosOscuro` a 414×844 (`compare.sh --only Productos,ProductosOscuro`, ambas filas «ok») muestran el título, el botón redondo con el «+» y el avatar en una línea; el dibujo trae además el botón «···» (el hueco de Publicar catálogo, sin elemento en esta parte), la búsqueda y las pestañas Catálogo | Stock | Promos, que son de partes posteriores de GH-845. Las filas `Variedades`, `Productos` y `ProductosOscuro` recorren una misma pantalla viva (`/varieties`): un ofensor futuro se lista bajo cada nombre que lo reporta, y la captura de `Variedades` puede diferir del `Variedades.dc.html` antiguo (el dibujo es guía).
 
-No se corrió la medición sobre la pantalla viva con la semilla de `mobile_seed.py` ni el proyecto móvil de e2e por completo: queda a la puerta de entrega y a CI.
+### GH-903 parte 2: la pantalla viva a 320 y 246 px
+
+Mismo medidor sobre `/varieties` en la app de muestra (`scripts/design/sample-app.sh`, la misma siembra de La Huerta que `mobile_seed.py` pone en el proyecto móvil), con sesión iniciada, móvil táctil, claro (`tema=claro`) y oscuro (`tema=oscuro`). Cada celda coincide con el veredicto del Paso 0 (anchos dentro de ±1 px; aquí idénticos):
+
+| viewport | tema | fila | título | botón | avatar | hueco título-botón | hueco botón-avatar | una línea | desborde horizontal | fondo / texto del botón |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 320 | claro | 272 | 168 | 44×44 | 44×44 | 12 | 8 | sí | 0 | rgb(30, 107, 71) / blanco |
+| 246 | claro | 198 | 94 | 44×44 | 44×44 | 12 | 8 | sí | 0 | rgb(30, 107, 71) / blanco |
+| 320 | oscuro | 272 | 168 | 44×44 | 44×44 | 12 | 8 | sí | 0 | rgb(92, 197, 148) / rgb(14, 20, 17) |
+| 246 | oscuro | 198 | 94 | 44×44 | 44×44 | 12 | 8 | sí | 0 | rgb(92, 197, 148) / rgb(14, 20, 17) |
+
+El título no se recorta (`scrollWidth` igual a `clientWidth`) y el único enlace «New product» de la pantalla es el de la fila de título. El fondo y el texto del botón son `--boton` y `--boton-texto` de cada tema. La salida cruda es `products-phone-header-live.txt`.
+
+### GH-903 parte 2: 900 px, antes y después
+
+«Antes» es la construcción de `f3c05d24` (la base de la rama) y «después» la de esta cabeza; las dos se cargaron en la misma app viva, a 900 px de ancho, claro y oscuro, con la sesión de La Huerta. En ambos temas las capturas son idénticas byte a byte (`products-phone-header-900-before-*.png` y `products-phone-header-900-after-*.png`) y se ve el diseño de computadora de siempre: «Products» como título del panel central, «New product» como enlace en el cuerpo de la lista, sin bloque de título del teléfono. El `outerHTML` de `main` coincide en un tema y en el otro difiere solo en `aria-current="page"` de la primera fila, que cambia de una corrida a otra del mismo lado (el estado de la selección al asentarse), no entre «antes» y «después»; la salida está en `products-phone-header-900.txt`.
+
+No se corrió el proyecto móvil de e2e por completo: queda a CI al aterrizar.

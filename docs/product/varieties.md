@@ -664,7 +664,7 @@ Criterios de éxito:
 - Las demás palabras propias de un solo tipo de negocio (gramos, "g", Indica share, Aroma, 🌿): #420 y #390.
 - El copy en español "producto" / "productos": llega con #317.
 - Corregir los dibujos de `pantallas/` que todavía dicen "Variety": diseño lo hace en su propio trabajo.
-- **El encabezado propio del celular de Products** (GH-845, parte 2 de GH-903): entregado, ver "El bloque de título del celular" arriba. Falta el botón "Publish catalog" en ese encabezado, que trae la parte posterior de GH-845 (#898 / #848), y el segmento Catalog | Stock, la parte 2 de GH-845.
+- **El botón "Publish catalog" del encabezado del celular de Products** y el segmento Catalog | Stock: los trae la parte posterior de GH-845 (#898 / #848). El bloque de título del celular ya está entregado, ver "El bloque de título del celular" arriba.
 
 ## Planned in GH-318
 

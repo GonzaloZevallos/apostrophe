@@ -705,7 +705,11 @@ describe.each([
     expect(summary).toHaveTextContent(/\S/)
 
     expect(actions).toHaveClass('variedades__acciones')
-    expect(Array.from(actions.children).map((child) => child.tagName)).toEqual(computer ? ['A', 'A', 'A', 'SPAN'] : ['A', 'A', 'A'])
+    if (computer) {
+      expect(Array.from(actions.children).map((child) => child.tagName)).toEqual(['A', 'A', 'A', 'SPAN'])
+    } else {
+      expect(Array.from(actions.children).map((child) => child.tagName)).toEqual(['A', 'A', 'A'])
+    }
     const [send, entry, withdrawal, fresh] = Array.from(actions.children) as [HTMLElement, HTMLElement, HTMLElement, HTMLElement]
     expect(send).toHaveAccessibleName('Send catalog')
     expect(send).toHaveAttribute('href', CATALOG)
