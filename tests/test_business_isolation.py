@@ -70,6 +70,8 @@ from tests.fakes.telegram import FakeTelegram
 from tests.payment_body import payment_body
 
 MARKER = "zz-isolation-marker"
+# The day `seed_sales` records its Sales, and the `on` the suggestions route is swept with.
+SEEDED_ON = TODAY.isoformat()
 
 
 def seed_varieties(client: TestClient) -> dict[str, int]:
@@ -143,7 +145,27 @@ def seed_sales(client: TestClient) -> dict[str, int]:
             "lines": [{"product_id": variety["id"], "quantity": "10"}],
         },
     )
-    return {"sale_id": without_customer["id"]}
+    # A Sale paid on the spot, to the seeded customer, so the suggestions read has all
+    # three ids to hold: the customer, the variety and the method (never a marker string:
+    # the read answers ids only).
+    method = payment_body("cash", client)
+    assert method is not None
+    paid = client.post(
+        "/sales",
+        json={
+            "payment": method,
+            "date": SEEDED_ON,
+            "customer_id": customer["id"],
+            "lines": [{"product_id": variety["id"], "quantity": "1"}],
+        },
+    )
+    assert paid.status_code == 201, paid.text
+    return {
+        "sale_id": without_customer["id"],
+        "suggested_customer_id": customer["id"],
+        "suggested_product_id": variety["id"],
+        "suggested_method_id": method["payment_method_id"],
+    }
 
 
 def seed_catalog(client: TestClient) -> dict[str, int]:
@@ -434,9 +456,11 @@ def _operations() -> list[tuple[str, str, bool]]:
 
 OPERATIONS = _operations()
 BY_ID = [(m, p) for m, p, _ in OPERATIONS if "{" in p]
-LISTS = [p for m, p, _ in OPERATIONS if m == "GET" and "{" not in p]
+# The suggestions route has no answer without its `on`, so only its dated form is read.
+LISTS = [p for m, p, _ in OPERATIONS if m == "GET" and "{" not in p and p != "/sales/suggestions"]
 # The same route with a query that reads other rows: the archived varieties' stock.
 LISTS.append("/stock?archived=true")
+LISTS.append(f"/sales/suggestions?on={SEEDED_ON}")
 # A non-GET route with no `{` in its path never names a record: the business it acts on
 # can only come from the session. B calling one must never move anything A can see
 # through `LISTS` (a `GET /business` with no path parameter is itself one of `LISTS`,
@@ -802,6 +826,23 @@ def test_another_business_reads_none_of_the_archived_stock_rows(
     ]
 
     assert business_b.get("/stock?archived=true").json()["products"] == []
+
+
+def test_another_business_gets_the_empty_suggestions_and_never_a_ids(
+    business_a: TestClient, business_b: TestClient, seeded: dict[str, int]
+) -> None:
+    path = f"/sales/suggestions?on={SEEDED_ON}"
+
+    # Other seeders record Sales too, so A's answer holds these ids among others.
+    answer = business_a.get(path).json()
+    assert seeded["suggested_customer_id"] in answer["recent_customer_ids"]
+    assert seeded["suggested_product_id"] in answer["most_sold_product_ids"]
+    assert answer["last_payment_method_id"] == seeded["suggested_method_id"]
+    assert business_b.get(path).json() == {
+        "recent_customer_ids": [],
+        "most_sold_product_ids": [],
+        "last_payment_method_id": None,
+    }
 
 
 @pytest.mark.parametrize("path", LISTS)

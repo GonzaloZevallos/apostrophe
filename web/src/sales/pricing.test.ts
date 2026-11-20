@@ -1,3 +1,12 @@
+/**
+ * Re-pricing cases (`repricing` in `pricing-matrix.json`) run through the real `priceSale` and
+ * `linesRepriced`. The matrix keeps the type rule as `vip` and `storedRule` maps it to `type`;
+ * it has no date key, so a date change is a different quote on the same lines. A case fails
+ * hard, naming itself, when a referenced entry has a line with an empty or duplicate id, when
+ * its lines disagree on customerIsVip or settings, or when the pair differs in line ids or
+ * their order, gramsHundredths, gift, specialPrice or shippingCharged. Entries no case names
+ * keep their old shape (lines without ids).
+ */
 import { describe, expect, test } from 'vitest'
 import type { Variety } from '../screens/Variedades'
 import matrix from './pricing-matrix.json'
@@ -490,5 +499,158 @@ describe('linesRepriced', () => {
       })
     expect(linesRepriced(run(true), run(false))).toBe(true)
     expect(linesRepriced(run(true), run(true))).toBe(false)
+  })
+})
+
+type MatrixLine = (typeof matrix.totals)[number]['lines'][number]
+type MatrixEntry = (typeof matrix.totals)[number]
+type RepricingCase = (typeof matrix.repricing)[number]
+
+const entryNamed = (caseName: string, side: string, name: string): MatrixEntry => {
+  const found = matrix.totals.find((candidate) => candidate.name === name)
+  if (found === undefined) throw new Error(`${caseName}: ${side} ${JSON.stringify(name)} names no totals entry`)
+  return found
+}
+
+const idOf = (line: MatrixLine): unknown => (line as { id?: unknown }).id
+
+/** The structure rules, checked before any pricing: they fail naming the case. */
+function checkedEntry(caseName: string, side: string, entry: MatrixEntry): MatrixLine[] {
+  const lines: MatrixLine[] = entry.lines
+  const ids = lines.map(idOf)
+  if (!ids.every((id) => typeof id === 'string' && id !== '')) {
+    throw new Error(`${caseName}: ${side} has a line without a non-empty id`)
+  }
+  if (new Set(ids).size !== ids.length) throw new Error(`${caseName}: ${side} has duplicate line ids`)
+  if (new Set(lines.map((line) => line.customerIsVip)).size > 1) {
+    throw new Error(`${caseName}: ${side} lines disagree on customerIsVip`)
+  }
+  const settings = JSON.stringify(lines[0]?.settings)
+  if (lines.some((line) => JSON.stringify(line.settings) !== settings)) {
+    throw new Error(`${caseName}: ${side} lines disagree on settings`)
+  }
+  return lines
+}
+
+const PAIR_FIELDS = ['gramsHundredths', 'gift', 'specialPrice'] as const
+
+/** Both entries of a re-pricing case, once the pair is known to differ only in what may differ. */
+function checkedPair(repricing: RepricingCase, resolve: typeof entryNamed = entryNamed) {
+  const { name } = repricing
+  const before = resolve(name, 'before', repricing.before)
+  const after = resolve(name, 'after', repricing.after)
+  const beforeLines = checkedEntry(name, 'before', before)
+  const afterLines = checkedEntry(name, 'after', after)
+  if (JSON.stringify(beforeLines.map(idOf)) !== JSON.stringify(afterLines.map(idOf))) {
+    throw new Error(`${name}: before and after differ in line ids or their order`)
+  }
+  for (const field of PAIR_FIELDS) {
+    if (JSON.stringify(beforeLines.map((line) => line[field])) !== JSON.stringify(afterLines.map((line) => line[field]))) {
+      throw new Error(`${name}: before and after differ in ${field}`)
+    }
+  }
+  if (before.shippingCharged !== after.shippingCharged) {
+    throw new Error(`${name}: before and after differ in shippingCharged`)
+  }
+  return { before, after }
+}
+
+const CUSTOMER_TYPE_ID = 1
+
+/** An API-shaped Variety for one line: id index+1, the quote as the API would answer it. No
+ * arithmetic but the bulk minimum's /100 (hundredths of a gram to API grams). */
+function varietyOf(line: MatrixLine, index: number): Variety {
+  const { quote } = line
+  if (quote === null) return variety(index + 1, null)
+  return variety(
+    index + 1,
+    entry({
+      list_price: quote.listPrice,
+      bulk_price: quote.bulk === null ? null : quote.bulk.price,
+      bulk_minimum: quote.bulk === null ? null : quote.bulk.minimumHundredths / 100,
+      type_prices: quote.vipPrice === null ? [] : [{ customer_type_id: CUSTOMER_TYPE_ID, price: quote.vipPrice }],
+    }),
+  )
+}
+
+function pricedEntry(entryToPrice: MatrixEntry, lines: MatrixLine[]): PricedSale {
+  const first = lines[0]
+  if (first === undefined) throw new Error(`${entryToPrice.name}: has no lines`)
+  return priceSale({
+    lines: lines.map((line, index) => ({
+      id: idOf(line) as string,
+      productId: index + 1,
+      gramsHundredths: line.gramsHundredths,
+      gift: line.gift,
+      specialPrice: line.specialPrice,
+    })),
+    customerTypeId: first.customerIsVip ? CUSTOMER_TYPE_ID : null,
+    pricingSettings: first.settings,
+    products: lines.map(varietyOf),
+    shippingCharged: entryToPrice.shippingCharged,
+  })
+}
+
+function repriced(repricing: RepricingCase) {
+  const { before, after } = checkedPair(repricing)
+  const priced = (side: MatrixEntry) => pricedEntry(side, side.lines)
+  return { before, after, was: priced(before), now: priced(after) }
+}
+
+describe('priceSale and linesRepriced, against the shared re-pricing matrix', () => {
+  // The matrix has no date key: a date change is a different quote on the same lines. The type
+  // rule stays `vip` in the JSON; `storedRule` maps it to `type`.
+  for (const repricing of matrix.repricing) {
+    test(repricing.name, () => {
+      const { before, after, was, now } = repriced(repricing)
+      for (const [side, priced] of [[before, was], [after, now]] as const) {
+        expect(priced.lines.map((line) => line.pricing?.rule)).toEqual((side.expectRules ?? []).map(storedRule))
+        expect(priced.totals.total).toBe(side.expectTotal)
+      }
+      expect(linesRepriced(was, now)).toBe(repricing.expectChanged)
+    })
+  }
+
+  test('the comparison is load-bearing: a flipped expectChanged would fail', () => {
+    const repricing = matrix.repricing[0] as RepricingCase
+    const { was, now } = repriced(repricing)
+    expect(linesRepriced(was, now)).not.toBe(!repricing.expectChanged)
+  })
+})
+
+describe('the re-pricing structure rules', () => {
+  const base = matrix.repricing.find((candidate) => candidate.name === 'date change') as RepricingCase
+  /** `base` with its `after` entry replaced by an edited copy. */
+  const broken = (edit: (copy: MatrixEntry) => void): (() => unknown) => {
+    const copy = structuredClone(entryNamed(base.name, 'after', base.after))
+    edit(copy)
+    const resolve = (caseName: string, side: string, name: string) =>
+      name === base.after ? copy : entryNamed(caseName, side, name)
+    return () => checkedPair(base, resolve)
+  }
+  const lineOf = (copy: MatrixEntry, index: number) => copy.lines[index] as MatrixLine & { id?: string }
+
+  test('a well-formed pair is accepted', () => {
+    expect(broken(() => undefined)).not.toThrow()
+  })
+
+  test.each([
+    ['an empty id', (c: MatrixEntry) => { lineOf(c, 1).id = '' }, 'after has a line without a non-empty id'],
+    ['a missing id', (c: MatrixEntry) => { delete lineOf(c, 1).id }, 'after has a line without a non-empty id'],
+    ['a duplicate id', (c: MatrixEntry) => { lineOf(c, 1).id = 'a' }, 'after has duplicate line ids'],
+    ['another id', (c: MatrixEntry) => { lineOf(c, 0).id = 'z' }, 'before and after differ in line ids or their order'],
+    ['another order', (c: MatrixEntry) => { c.lines.reverse() }, 'before and after differ in line ids or their order'],
+    ['customerIsVip', (c: MatrixEntry) => { lineOf(c, 1).customerIsVip = true }, 'after lines disagree on customerIsVip'],
+    ['settings', (c: MatrixEntry) => { lineOf(c, 1).settings = { bulk: false, vip: true } }, 'after lines disagree on settings'],
+    ['grams', (c: MatrixEntry) => { lineOf(c, 0).gramsHundredths = 999 }, 'before and after differ in gramsHundredths'],
+    ['gift', (c: MatrixEntry) => { lineOf(c, 0).gift = true }, 'before and after differ in gift'],
+    ['specialPrice', (c: MatrixEntry) => { lineOf(c, 0).specialPrice = 5 }, 'before and after differ in specialPrice'],
+    ['shipping', (c: MatrixEntry) => { c.shippingCharged += 7 }, 'before and after differ in shippingCharged'],
+  ])('%s is refused, naming the case', (_label, edit, message) => {
+    expect(broken(edit)).toThrow(`date change: ${message}`)
+  })
+
+  test('a case naming no totals entry is refused', () => {
+    expect(() => checkedPair({ ...base, after: 'no such entry' })).toThrow('date change: after "no such entry" names no totals entry')
   })
 })

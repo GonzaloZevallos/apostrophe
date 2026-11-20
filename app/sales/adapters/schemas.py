@@ -2,16 +2,18 @@
 rule stays the domain's and its message is a fixed string (ADR-0005). Quantity are typed
 `Decimal` here and become `Quantity` only through `Quantity.of`, at the router."""
 
+import re
 from datetime import date
 from decimal import Decimal
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field
 
 from app.money_schema import MoneyAmount, MoneyOut
 from app.payments.adapters.schemas import PaymentMethodLabelOut
 from app.products.adapters.schemas import QuantityOut
 from app.sales.application.ports import LineCost, SaleView, SaleViewCustomer, SaleViewLine
+from app.sales.application.suggest_for_new_sale import NewSaleSuggestionIds
 from app.sales.application.view_sales import SaleDetail
 from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import Sale
@@ -304,3 +306,37 @@ class DeleteSaleOut(BaseModel):
     the sale's own lines and sorted by `product_id`."""
 
     returned: list[ReturnedQuantityOut]
+
+
+_ISO_DAY = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def _strict_day(raw: Any) -> date:
+    """`YYYY-MM-DD` and nothing else: `date` alone also takes `20261119`, `2026-W47-4`
+    and a timestamp. The message names the rule, never the value (ADR-0005)."""
+    if not isinstance(raw, str) or _ISO_DAY.match(raw) is None:
+        raise ValueError("a day is written YYYY-MM-DD")
+    try:
+        return date.fromisoformat(raw)
+    except ValueError:
+        raise ValueError("a day is written YYYY-MM-DD") from None
+
+
+StrictDay = Annotated[date, BeforeValidator(_strict_day)]
+
+
+class SuggestionsOut(BaseModel):
+    """Ids only (docs/product/sales.md, New sale suggestions): never a name, a price or
+    an amount."""
+
+    recent_customer_ids: list[int]
+    most_sold_product_ids: list[int]
+    last_payment_method_id: int | None
+
+    @classmethod
+    def of(cls, ids: NewSaleSuggestionIds) -> "SuggestionsOut":
+        return cls(
+            recent_customer_ids=ids.recent_customer_ids,
+            most_sold_product_ids=ids.most_sold_product_ids,
+            last_payment_method_id=ids.last_payment_method_id,
+        )

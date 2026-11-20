@@ -23,6 +23,18 @@ def local_day(instant: datetime, tz: tzinfo) -> date:
 
 _PATTERN = re.compile(r"^(\d{4})-(0[1-9]|1[0-2])$")
 
+DAYS_LEFT_WINDOW = 30
+"""Days in the trailing window behind Days left and Most sold, both ends included."""
+
+
+def trailing_window(on: date) -> tuple[date, date]:
+    """`(first day, on)` of the `DAYS_LEFT_WINDOW`-day window ending on `on`, both ends
+    included. The first day is clamped to `date.min`, so this never raises for a valid
+    date."""
+    span = DAYS_LEFT_WINDOW - 1
+    start = on - timedelta(days=span) if on.toordinal() > span else date.min
+    return start, on
+
 
 @dataclass(frozen=True, order=True)
 class Month:
