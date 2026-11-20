@@ -5275,6 +5275,87 @@ a.ajustes-tema__opcion {
   }
 }
 
+/* New sale's Product list (NuevaVentaProductos): sections of rows, each a name with its stock,
+ * a price and the steps. Tokens only; the step buttons are `.boton-icono` (44 px, pressed cue,
+ * no text selection, `touch-action: manipulation`). */
+.nv-productos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-lg);
+}
+
+.nv-productos__seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
+.nv-productos__titulo {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tinta2);
+}
+
+.nv-productos__lista {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nv-productos__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.nv-productos__datos {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.nv-productos__nombre {
+  overflow-wrap: anywhere;
+  color: var(--tinta);
+}
+
+.nv-productos__stock {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.nv-productos__precio {
+  color: var(--tinta2);
+}
+
+.nv-productos__pasos {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+}
+
+.nv-productos__cantidad {
+  min-width: var(--alto-tocable);
+  text-align: center;
+}
+
+.nv-productos__paso {
+  background: var(--acento-suave);
+  color: var(--acento-oscuro);
+}
+
+.nv-productos__paso-vacio {
+  width: var(--alto-tocable);
+  height: var(--alto-tocable);
+}
+
 /* pressed */
 /* The pressed state (GH-77, GH-102): of every control a finger can tap, from tokens only.
  * Two cues, neither colour alone: the control shrinks a little (`transform`), and its
