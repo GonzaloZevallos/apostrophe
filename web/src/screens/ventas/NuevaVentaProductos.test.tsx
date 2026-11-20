@@ -5,7 +5,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -37,6 +37,23 @@ let productsByDate: Map<string, unknown>
 let requests: string[]
 let stockRows: { product_id: number; quantity: number }[]
 let suggestionIds: number[]
+/** The reads the test holds back (`products`, `settings`, `suggestions`), and what releases each one. */
+let held: Set<string>
+let gates: Map<string, () => void>
+
+function readOf(path: string): string | null {
+  if (path === '/pricing-settings') return 'settings'
+  if (path.startsWith('/api/sales/suggestions')) return 'suggestions'
+  if (path.startsWith('/api/products')) return 'products'
+  return null
+}
+
+function release(read: string): void {
+  const open = gates.get(read)
+  if (open === undefined) throw new Error(`${read} was not asked for`)
+  gates.delete(read)
+  act(() => open())
+}
 
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -51,26 +68,36 @@ beforeEach(() => {
     { product_id: 4, quantity: 0 },
   ]
   suggestionIds = [1, 99, 2, 3, 4]
+  held = new Set()
+  gates = new Map()
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL) => {
       const path = String(input)
       requests.push(path)
-      if (path === '/pricing-settings') return Promise.resolve(json(200, { is_bulk_pricing: true, is_vip_customers: true }))
-      if (path === '/stock') {
-        return Promise.resolve(json(200, { total: 0, entries: [], products: stockRows.map((row) => ({ ...row, status: 'ok' })) }))
+      const read = readOf(path)
+      if (read !== null && held.has(read)) {
+        return new Promise<Response>((resolve) => {
+          gates.set(read, () => resolve(answerOf(path)))
+        })
       }
-      if (path.startsWith('/api/sales/suggestions')) {
-        return Promise.resolve(
-          json(200, { recent_customer_ids: [], most_sold_product_ids: suggestionIds, last_payment_method_id: null }),
-        )
-      }
-      const date = new URL(path, 'http://x').searchParams.get('on') ?? ''
-      const body = productsByDate.get(date)
-      return Promise.resolve(body === undefined ? json(500, {}) : json(200, body))
+      return Promise.resolve(answerOf(path))
     }),
   )
 })
+
+function answerOf(path: string): Response {
+  if (path === '/pricing-settings') return json(200, { is_bulk_pricing: true, is_vip_customers: true })
+  if (path === '/stock') {
+    return json(200, { total: 0, entries: [], products: stockRows.map((row) => ({ ...row, status: 'ok' })) })
+  }
+  if (path.startsWith('/api/sales/suggestions')) {
+    return json(200, { recent_customer_ids: [], most_sold_product_ids: suggestionIds, last_payment_method_id: null })
+  }
+  const date = new URL(path, 'http://x').searchParams.get('on') ?? ''
+  const body = productsByDate.get(date)
+  return body === undefined ? json(500, {}) : json(200, body)
+}
 
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -93,7 +120,9 @@ function Harness({ initialCustomer = null, format = { symbol: '$', decimals: 0 }
       <button type="button" onClick={() => setCustomer(null)}>customer arrives</button>
       <button type="button" onClick={() => setCustomer(7)}>customer typed</button>
       <output aria-label="totals">{JSON.stringify(draft.state.lines)}</output>
-      <NuevaVentaProductos {...reads} customerTypeId={customer} draft={draft} />
+      <div role="region" aria-label="list under test">
+        <NuevaVentaProductos {...reads} customerTypeId={customer} draft={draft} />
+      </div>
     </MoneyFormatProvider>
   )
 }
@@ -243,7 +272,70 @@ test('more visible rows leave the draft untouched', async () => {
   renderList()
   await click('Add Árbol')
   const totals = screen.getByLabelText('totals').textContent
-  suggestionIds = [1, 2, 3, 4]
-  await act(async () => undefined)
+  expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0)
+  cleanup()
+  // The same draft opens on a longer suggestion list: the rows change, the draft's lines do not.
+  productsByDate.set(TODAY, [...PRODUCTS, product(5, 'Lirio', price(250))])
+  suggestionIds = [1, 2, 3, 4, 5]
+  renderList()
+  await click('Add Árbol')
+  expect(screen.getAllByRole('listitem').filter((item) => (item.textContent ?? '').startsWith('Lirio'))).toHaveLength(1)
   expect(screen.getByLabelText('totals').textContent).toBe(totals)
+})
+
+test('nothing renders while the products, settings or suggestions read is held, then the list shows', async () => {
+  for (const read of ['products', 'settings', 'suggestions']) {
+    cleanup()
+    held = new Set([read])
+    gates = new Map()
+    renderList()
+    await waitFor(() => expect(gates.has(read)).toBe(true))
+    await waitFor(() => expect(requests).toContain('/stock'))
+    await act(async () => undefined)
+    expect(screen.queryByRole('heading')).toBeNull()
+    expect(screen.queryByRole('listitem')).toBeNull()
+    expect(screen.queryByRole('button', { name: /^Add / })).toBeNull()
+    expect(screen.getByRole('region', { name: 'list under test' }).textContent).toBe('')
+    expect(screen.getByRole('region', { name: 'list under test' }).textContent ?? '').not.toMatch(/\d|\$|No price|in stock|Add a price|No products yet/)
+    release(read)
+    expect(await screen.findByRole('heading', { name: 'Most sold' })).toBeInTheDocument()
+    expect(within(await row('Árbol')).getByText(/500/)).toBeInTheDocument()
+  }
+})
+
+test('a Customer going from pending to a type with its own price re-prices the row', async () => {
+  const typed = { ...price(500), type_prices: [{ customer_type_id: 7, price: 350 }] }
+  productsByDate.set(TODAY, [product(2, 'Árbol', typed)])
+  suggestionIds = [2]
+  renderList({ initialCustomer: 'pending' })
+  await waitFor(() => expect(requests).toContain('/stock'))
+  await act(async () => undefined)
+  expect(screen.queryByRole('heading')).toBeNull()
+  await userEvent.click(screen.getByRole('button', { name: 'customer typed' }))
+  const priced = await row('Árbol')
+  expect(within(priced).getByText(/350/)).toBeInTheDocument()
+  expect(within(priced).queryByText(/500/)).toBeNull()
+})
+
+test('no Sales gives an empty body: no row, no heading, no hint', async () => {
+  suggestionIds = []
+  renderList()
+  await waitFor(() => expect(requests.some((path) => path.startsWith('/api/sales/suggestions'))).toBe(true))
+  await waitFor(() => expect(requests).toContain('/stock'))
+  await act(async () => undefined)
+  expect(screen.queryByRole('heading')).toBeNull()
+  expect(screen.queryByRole('listitem')).toBeNull()
+  expect(screen.queryByText('Add a price to a product so you can sell')).toBeNull()
+})
+
+test('a line above its Stock leaves the stock text unchanged', async () => {
+  renderList()
+  await click('Add Rosa')
+  await userEvent.click(screen.getByRole('button', { name: 'type 2.5' }))
+  const line = within(screen.getByRole('group', { name: 'Rosa' }).closest('li') as HTMLElement)
+  expect(line.getByText('2,5')).toBeInTheDocument()
+  expect(line.getByText('1,5 in stock')).toBeInTheDocument()
+  await userEvent.click(line.getByRole('button', { name: 'Add one Rosa' }))
+  expect(line.getByText('3,5')).toBeInTheDocument()
+  expect(line.getByText('1,5 in stock')).toBeInTheDocument()
 })
