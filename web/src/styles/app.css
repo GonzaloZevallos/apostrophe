@@ -5361,7 +5361,7 @@ a.ajustes-tema__opcion {
   border: 0;
   border-radius: var(--radio-pildora);
   background: var(--acento-suave);
-  color: var(--acento-oscuro);
+  color: var(--acento);
   font-size: 20px;
 }
 
