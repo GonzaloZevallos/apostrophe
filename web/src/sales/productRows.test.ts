@@ -1,8 +1,35 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { VarietyStock } from '../api/stock'
 import type { Variety } from '../screens/Variedades'
 import { pricedRows, visibleRows } from './productRows'
 import { type DraftState, initialDraft, MAX_QUANTITY_HUNDREDTHS, saleDraftReducer } from './saleDraft'
+
+// Pass-through wrappers that a test switches to a broken collaborator, to reach the guards that
+// only fire when `saleDraftReducer` or `priceSale` break their contract.
+const broken = vi.hoisted(() => ({ reducer: false, priceSale: false }))
+
+vi.mock('./saleDraft', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./saleDraft')>()
+  return {
+    ...actual,
+    saleDraftReducer: (...args: Parameters<typeof actual.saleDraftReducer>) =>
+      broken.reducer ? args[0] : actual.saleDraftReducer(...args),
+  }
+})
+
+vi.mock('./pricing', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('./pricing')>()
+  return {
+    ...actual,
+    priceSale: (...args: Parameters<typeof actual.priceSale>) =>
+      broken.priceSale ? { lines: [], totals: actual.saleTotals([], 0) } : actual.priceSale(...args),
+  }
+})
+
+afterEach(() => {
+  broken.reducer = false
+  broken.priceSale = false
+})
 
 const SETTINGS_OFF = { bulk: false, vip: false }
 const SETTINGS_ON = { bulk: true, vip: true }
@@ -152,6 +179,18 @@ describe('pricedRows', () => {
   it('throws on a malformed bulk minimum instead of giving no price', () => {
     const broken = product(1, {}, { bulk_price: 80, bulk_minimum: 1.005 })
     expect(() => rowsOf([broken])).toThrow('toHundredths expects grams already validated by parse.ts')
+  })
+})
+
+describe('pricedRows guards', () => {
+  it('throws when productAdded leaves no line for the product', () => {
+    broken.reducer = true
+    expect(() => rowsOf([product(1)])).toThrow('productAdded left no line for the product')
+  })
+
+  it('throws when priceSale answers no line instead of giving No price', () => {
+    broken.priceSale = true
+    expect(() => rowsOf([product(1)])).toThrow('priceSale answered no line for the product')
   })
 })
 

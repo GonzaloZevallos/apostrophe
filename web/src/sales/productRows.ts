@@ -41,7 +41,7 @@ export function pricedRows(input: {
     const line = added.lines.find((candidate) => candidate.productId === productId)
     // `productAdded` always leaves the Product's line in the draft.
     if (line === undefined) throw new Error('productAdded left no line for the product')
-    const { lines } = priceSale({
+    const { lines: [priced] } = priceSale({
       // `DraftLine` carries neither `gift` nor `specialPrice`, so they are constants here.
       lines: [{ id: String(productId), productId, gramsHundredths: line.quantityHundredths, gift: false, specialPrice: null }],
       customerTypeId,
@@ -49,12 +49,14 @@ export function pricedRows(input: {
       products: [product],
       shippingCharged: 0,
     })
+    // `priceSale` answers one line per line given; a missing one is a fault, never No price.
+    if (priced === undefined) throw new Error('priceSale answered no line for the product')
     const stocked = stockByProduct.get(productId)
     rows.push({
       id: productId,
       name: product.name,
       stock: stocked === undefined ? null : { quantity: stocked.quantity, status: stocked.status },
-      pricing: lines[0]?.pricing ?? null,
+      pricing: priced.pricing,
     })
   }
   return rows
