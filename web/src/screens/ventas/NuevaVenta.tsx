@@ -63,7 +63,6 @@ import { parseGrams, parseMoneyInput } from '../../format/parse'
 import {
   type LineValidation,
   type PayState,
-  type PaymentChoice,
   paymentChoiceOf,
   type PricingSettings,
   fromHundredths,
@@ -74,6 +73,7 @@ import {
   validateSale,
 } from '../../sales/pricing'
 import { paymentMethodName } from '../../sales/paymentMethods'
+import { type SaleBody, saleBodyOf } from '../../sales/saleBody'
 import { nothingSellable } from '../../sales/nothingSellable'
 import { OWING_HINT, SALES_TEXT } from '../../copy/sales'
 import type { Variety } from '../Variedades'
@@ -122,22 +122,6 @@ function parseShipping(input: string, format: MoneyFormat): number | null {
 
 interface SavedSale {
   id: number
-}
-
-interface LineBody {
-  product_id: number
-  quantity: string
-  gift: boolean
-  special_price: number | null
-}
-
-interface SaleBody {
-  date: string
-  customer_id: number | null
-  shipping_charged: number
-  note: string | null
-  payment: PaymentChoice | null
-  lines: LineBody[]
 }
 
 type SubmitOverrides = Partial<
@@ -609,22 +593,22 @@ function NuevaVentaForm() {
       return
     }
 
-    const body: SaleBody = {
+    const body = saleBodyOf({
       date,
-      customer_id: customer?.id ?? null,
-      shipping_charged: shippingCharged,
-      note: note.trim() === '' ? null : note,
+      customerId: customer?.id ?? null,
+      shippingCharged,
+      note,
       payment: paymentChoiceOf(payState, method, totals.total),
       lines: filled.map((line) => {
         const grams = parseGrams(line.grams)
         return {
-          product_id: Number(line.varietyId),
+          productId: Number(line.varietyId),
           quantity: grams.ok ? grams.value : '0',
           gift: line.gift,
-          special_price: specialPriceOf(line),
+          specialPrice: specialPriceOf(line),
         }
       }),
-    }
+    })
 
     try {
       const saved = await save.mutateAsync(body)
