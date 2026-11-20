@@ -4460,6 +4460,33 @@ a.ajustes-tema__opcion {
   font-size: 15px;
 }
 
+/* The Products phone title block (`ProductsPhone`): a plain div that scrolls with the screen, one
+ * nowrap row. The heading takes what is left; the 44 px "New product" button and the avatar keep
+ * their size. 12 px between the targets leaves 8 px between the button and the avatar's 44 px
+ * box, whose -4 px margins eat 4 px of the gap. The button is `.boton-icono` (44 x 44, round) filled
+ * with --boton-texto on --boton; its own class sets no colour. */
+.productos-cabecera {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.productos-cabecera > .encabezado__titulo {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.boton-icono--lleno {
+  background: var(--boton);
+  color: var(--boton-texto);
+}
+
+.productos-cabecera__nueva {
+  user-select: none;
+  touch-action: manipulation;
+}
+
 .variedad-fila {
   display: flex;
   flex-direction: column;
@@ -6555,7 +6582,6 @@ a.ajustes-tema__opcion {
  * month arrows, and "Categories" are each at least 44 x 44 on the phone. The computer keeps
  * its sizes (the Expenses rules at 900 px and up set their own). */
 @media (max-width: 899.98px) {
-  .variedades__nueva .boton--enlace,
   .gastos__pie .boton--enlace {
     display: inline-flex;
     align-items: center;

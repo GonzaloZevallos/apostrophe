@@ -6,7 +6,8 @@
  * Above the list: the summary line, "Mandar catálogo" and "+ Entrada de stock" and
  * "Sacar del stock" (the withdrawal form, no variety chosen); "Nueva variedad" below them
  * and "Todas las entradas" and, when there are archived ones, "Archivadas (N)" at the foot.
- * This file reads and decides; `varieties/ProductsComputer` draws the body from what it passes.
+ * This file reads and decides; `varieties/ProductsComputer` and `varieties/ProductsPhone` draw the body
+ * from what it passes, the one `computer` value choosing between them.
  *
  * Nothing here decides anything: statuses and days left are `GET /stock`'s, prices are
  * `GET /api/products`', "Oculta" is `GET /catalog`'s own `shown`, and the summary line is counted
@@ -33,6 +34,7 @@ import { summaryLine } from '../stock/summaryLine'
 import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
 import ProductsComputer from './varieties/ProductsComputer'
+import ProductsPhone from './varieties/ProductsPhone'
 import { VARIETIES_TEXT } from '../copy/varieties'
 import { GENERIC_REFUSAL_MESSAGE as COPY_GENERIC_REFUSAL_MESSAGE } from '../copy/settings'
 
@@ -92,9 +94,6 @@ export default function Variedades() {
     : []
   const summary = ready ? summaryLine(rows.map(({ row }) => row.status)) : null
 
-  return (
-    <ProductsComputer
-      view={{ rows, hidden, summary, failure, ready, catalogDisabled, archivedCount, feedback, goneExited, today: me.today, computer }}
-    />
-  )
+  const view = { rows, hidden, summary, failure, ready, catalogDisabled, archivedCount, feedback, goneExited, today: me.today, computer }
+  return computer ? <ProductsComputer view={view} /> : <ProductsPhone view={view} />
 }
