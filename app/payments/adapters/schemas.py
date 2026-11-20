@@ -16,7 +16,6 @@ from app.payments.application.record_payment import CandidateOutcome, RecordedPa
 from app.payments.application.view_accounts import Debtor, Debtors, StillOwingLine
 from app.payments.domain.account import Account
 from app.payments.domain.account import AccountRow as DomainAccountRow
-from app.payments.domain.account import CreditRow as DomainCreditRow
 from app.payments.domain.account import PaymentRow as DomainPaymentRow
 from app.payments.domain.account import SaleRow as DomainSaleRow
 from app.payments.domain.debt_age import DebtAgeBucket, DebtAgeBuckets
@@ -132,6 +131,7 @@ class SaleAccountRowOut(BaseModel):
     date: PaymentDate
     running_balance: MoneyOut
     standing: Standing
+    number: int
     sale: SaleRefOut
 
 
@@ -140,20 +140,11 @@ class PaymentAccountRowOut(BaseModel):
     date: PaymentDate
     running_balance: MoneyOut
     standing: Standing
+    is_partial: bool
     payment: AccountPaymentRefOut
-    applied_to: AppliedToOut
 
 
-class CreditAccountRowOut(BaseModel):
-    kind: Literal["credit"] = "credit"
-    date: PaymentDate
-    running_balance: MoneyOut
-    standing: Standing
-    payment: AccountPaymentRefOut
-    amount: MoneyOut
-
-
-AccountRowOut = SaleAccountRowOut | PaymentAccountRowOut | CreditAccountRowOut
+AccountRowOut = SaleAccountRowOut | PaymentAccountRowOut
 
 
 def _row_out(row: DomainAccountRow) -> AccountRowOut:
@@ -162,6 +153,7 @@ def _row_out(row: DomainAccountRow) -> AccountRowOut:
             date=row.date,
             running_balance=Decimal(row.running_balance),
             standing=row.standing,
+            number=row.number,
             sale=SaleRefOut(
                 id=row.sale_id,
                 total=Decimal(row.total),
@@ -171,31 +163,18 @@ def _row_out(row: DomainAccountRow) -> AccountRowOut:
                 else PaymentMethodLabelOut.of(row.payment_method),
             ),
         )
-    if isinstance(row, DomainPaymentRow):
-        return PaymentAccountRowOut(
-            date=row.date,
-            running_balance=Decimal(row.running_balance),
-            standing=row.standing,
-            payment=AccountPaymentRefOut(
-                id=row.payment_id,
-                paid_on=row.paid_on,
-                amount=Decimal(row.amount),
-                payment_method=PaymentMethodLabelOut.of(row.method),
-            ),
-            applied_to=AppliedToOut.of(row.applied_to),
-        )
-    assert isinstance(row, DomainCreditRow), "AccountRow is exactly these three kinds"
-    return CreditAccountRowOut(
+    assert isinstance(row, DomainPaymentRow), "AccountRow is exactly a sale or a payment"
+    return PaymentAccountRowOut(
         date=row.date,
         running_balance=Decimal(row.running_balance),
         standing=row.standing,
+        is_partial=row.is_partial,
         payment=AccountPaymentRefOut(
             id=row.payment_id,
             paid_on=row.paid_on,
             amount=Decimal(row.amount),
             payment_method=PaymentMethodLabelOut.of(row.method),
         ),
-        amount=Decimal(row.credit_amount),
     )
 
 
