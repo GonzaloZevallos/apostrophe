@@ -378,6 +378,7 @@ classDiagram
     customer_id : int
     name : str
     owing_since : date
+    phone : str #124; None
   }
   class Debts {
     debtors : tuple~DebtorRow, ...~
