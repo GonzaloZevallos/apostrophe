@@ -1,6 +1,7 @@
 [
   "web/src/copy/sales.ts",
   "web/src/screens/Loading.screens.test.tsx",
+  "web/src/screens/ventas/CollectSheet.tsx",
   "web/src/screens/ventas/NuevaVenta.tsx",
   "web/src/screens/ventas/NuevaVentaCliente.tsx",
   "web/src/screens/ventas/NuevaVentaLinea.tsx",
