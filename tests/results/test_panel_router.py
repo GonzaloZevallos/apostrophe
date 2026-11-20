@@ -933,6 +933,16 @@ def test_get_panel_issues_the_same_number_of_statements_small_or_seeded(
 ) -> None:
     _seed_small_panel_history(client)
     _seed_bigger_panel_history(other_client)
+    # Today's new lists add no statement, whatever they hold: a low Product and an
+    # archived Product sold this week.
+    low = _variety(other_client, "Escasa")
+    _entry(other_client, low, quantity="1", on=TODAY.isoformat())
+    _threshold(other_client, low, "5")
+    gone = _variety(other_client, "Archivada")
+    _sale(other_client, gone, quantity="1", on=TODAY.isoformat())
+    archive_by_hand(engine, gone)
+    assert other_client.get("/panel").json()["today"]["low_stock"]["count"] >= 1
+    assert other_client.get("/panel").json()["today"]["best_sellers"] != []
 
     small_count = _statement_count(engine, client)
     big_count = _statement_count(engine, other_client)
@@ -1241,3 +1251,234 @@ def test_a_renamed_method_shows_its_new_name_in_money_in(
     block = _today_block(client, clock, _art(day, 12))
 
     assert [m["name"] for m in block["money_in"]["methods"]] == ["Mercado Pago"]
+
+
+# --- low stock, best sellers and month Profit (GH-497 part 4) ---------------------------
+
+
+def _threshold(client: TestClient, variety_id: int, quantity: str) -> None:
+    response = client.put(f"/stock/products/{variety_id}/threshold", json={"quantity": quantity})
+    assert response.status_code == 200, response.text
+
+
+def _hide(client: TestClient, variety_id: int) -> None:
+    response = client.put(
+        f"/catalog/products/{variety_id}",
+        json={"shown": False, "emoji": None, "indica_share": None, "aroma": None},
+    )
+    assert response.status_code == 200, response.text
+
+
+def _sale_with(
+    client: TestClient,
+    clock: MovableClock,
+    lines: list[dict[str, Any]],
+    *,
+    on: date,
+    shipping: int = 0,
+) -> None:
+    """A paid Sale dated `on`, recorded at noon of that day."""
+    clock.set(_art(on, 12))
+    response = client.post(
+        "/sales",
+        json={
+            "date": on.isoformat(),
+            "payment": payment_body("cash", client),
+            "shipping_charged": shipping,
+            "lines": lines,
+        },
+    )
+    assert response.status_code == 201, response.text
+
+
+def _panel_on(client: TestClient, clock: MovableClock, day: date) -> dict[str, Any]:
+    clock.set(_art(day, 12))
+    answer = client.get("/panel")
+    assert answer.status_code == 200, answer.text
+    body: dict[str, Any] = answer.json()
+    return body
+
+
+def test_low_stock_lists_the_sold_out_then_the_low_rows_the_stock_screen_answers(
+    client: TestClient, engine: Engine
+) -> None:
+    names = {}
+    for name in ("Anis", "Boldo", "Cedron", "Dulce", "Eneldo", "Fresia", "Gaucho"):
+        names[name] = _variety(client, name, price=1_000)
+    _entry(client, names["Anis"], quantity="10", on="2026-10-01")
+    _threshold(client, names["Anis"], "20")  # low
+    _entry(client, names["Boldo"], quantity="5", on="2026-10-01")
+    _sale(client, names["Boldo"], quantity="5", on="2026-10-02")  # sold out at exactly 0
+    _sale(client, names["Cedron"], quantity="3", on="2026-10-02")  # sold, never stocked: -3
+    _entry(client, names["Dulce"], quantity="3", on="2026-10-01")
+    _threshold(client, names["Dulce"], "10")
+    _hide(client, names["Dulce"])  # hidden and low: still listed
+    _entry(client, names["Eneldo"], quantity="3", on="2026-10-01")
+    _threshold(client, names["Eneldo"], "10")
+    archive_by_hand(engine, names["Eneldo"])  # archived and low: not listed
+    _entry(client, names["Gaucho"], quantity="100", on="2026-10-01")  # no threshold: ok
+    # "Fresia" has no entry at all: no_entries, not listed.
+
+    block = client.get("/panel").json()["today"]["low_stock"]
+    stock = {row["product_id"]: row for row in client.get("/stock").json()["products"]}
+
+    assert [row["product_id"] for row in block["rows"]] == [
+        names["Boldo"],
+        names["Cedron"],
+        names["Anis"],
+        names["Dulce"],
+    ]
+    assert block["count"] == 4
+    for row in block["rows"]:
+        shown = stock[row["product_id"]]
+        assert (row["quantity"], row["status"]) == (shown["quantity"], shown["status"])
+    assert {stock[names[n]]["status"] for n in ("Boldo", "Cedron")} == {"sold_out"}
+    assert stock[names["Cedron"]]["quantity"] < 0
+    assert stock[names["Fresia"]]["status"] == "no_entries"
+    assert stock[names["Gaucho"]]["status"] == "ok"
+    assert {row["name"] for row in block["rows"]} == {"Anis", "Boldo", "Cedron", "Dulce"}
+    assert set(block["rows"][0]) == {"product_id", "name", "quantity", "status"}
+
+
+def test_low_stock_is_an_empty_block_with_nothing_low(client: TestClient) -> None:
+    assert client.get("/panel").json()["today"]["low_stock"] == {"count": 0, "rows": []}
+
+
+def test_best_sellers_sum_this_weeks_stored_line_totals(
+    client: TestClient, clock: MovableClock, engine: Engine
+) -> None:
+    today = BLOCK_DAY  # a Saturday: the week runs Monday 5 to Sunday 11
+    monday, last_sunday, sunday = date(2026, 10, 5), date(2026, 10, 4), date(2026, 10, 11)
+    alfa = _variety(client, "Alfa", price=1_000)
+    beta = _variety(client, "Beta", price=500)
+    gamma = _variety(client, "Gamma", price=100)
+    delta = _variety(client, "Delta", price=9_000)
+    epsilon = _variety(client, "Epsilon", price=9_000)
+    for variety_id in (alfa, gamma, delta, epsilon):
+        _entry(client, variety_id, quantity="1000", on="2020-01-01")
+    # Shipping is not a Product's sales.
+    _sale_with(client, clock, [{"product_id": alfa, "quantity": "2"}], on=monday, shipping=700)
+    # One line over two lots (1 g, then 5 g) is one line: counted once, at its total.
+    _entry(client, beta, quantity="1", origin="adjustment", on="2026-10-01")
+    _entry(client, beta, quantity="5", origin="adjustment", on="2026-10-02")
+    _sale_with(client, clock, [{"product_id": beta, "quantity": "3"}], on=today)
+    # A Gift counts $0; a Special price counts as charged.
+    _sale_with(
+        client,
+        clock,
+        [
+            {"product_id": alfa, "quantity": "1", "gift": True},
+            {"product_id": alfa, "quantity": "1", "special_price": 250},
+        ],
+        on=today,
+    )
+    _sale_with(client, clock, [{"product_id": gamma, "quantity": "4", "gift": True}], on=today)
+    # Outside the window: the Sunday before, and a Sale dated after today.
+    _sale_with(client, clock, [{"product_id": epsilon, "quantity": "1"}], on=last_sunday)
+    _sale_with(client, clock, [{"product_id": delta, "quantity": "1"}], on=sunday)
+    _sale_with(client, clock, [{"product_id": gamma, "quantity": "1"}], on=monday)
+    archive_by_hand(engine, gamma)  # archived Products are still counted
+    renamed = client.patch(f"/api/products/{beta}", json={"name": "Beta Nueva"})
+    assert renamed.status_code == 200, renamed.text
+
+    block = _panel_on(client, clock, today)["today"]
+
+    assert block["best_sellers"] == [
+        {"product_id": alfa, "name": "Alfa", "sales": 2_250},
+        {"product_id": beta, "name": "Beta Nueva", "sales": 1_500},
+        {"product_id": gamma, "name": "Gamma", "sales": 100},
+    ]
+    # Delta's Sale is in the Week figures, but dated after today: not a best seller yet.
+    later = _panel_on(client, clock, sunday)["today"]["best_sellers"]
+    assert [row["name"] for row in later] == ["Delta", "Alfa", "Beta Nueva", "Gamma"]
+
+
+def test_a_fully_pending_line_counts_at_its_full_total(
+    client: TestClient, clock: MovableClock
+) -> None:
+    variety_id = _variety(client, "Pendiente", price=1_000)
+    # No stock behind the Sale: every gram is pending, the line still counts in full.
+    _sale_with(client, clock, [{"product_id": variety_id, "quantity": "3"}], on=BLOCK_DAY)
+
+    panel = _panel_on(client, clock, BLOCK_DAY)
+
+    assert panel["periods"]["today"]["profit_pending"] is True
+    assert panel["today"]["best_sellers"] == [
+        {"product_id": variety_id, "name": "Pendiente", "sales": 3_000}
+    ]
+
+
+def test_best_sellers_are_an_empty_list_when_nothing_sold_this_week(
+    client: TestClient, clock: MovableClock
+) -> None:
+    variety_id = _stocked_variety(client)
+    _sale_with(client, clock, [{"product_id": variety_id, "quantity": "1"}], on=date(2026, 10, 4))
+
+    assert _panel_on(client, clock, BLOCK_DAY)["today"]["best_sellers"] == []
+
+
+def _month_row(client: TestClient, month: str) -> dict[str, Any]:
+    months = client.get("/analysis").json()["months"]
+    return next(row for row in months if row["month"] == month)
+
+
+def _assert_month_profit_is_analysis_month_row(
+    client: TestClient, clock: MovableClock, month: str
+) -> dict[str, Any]:
+    clock.set(_art(BLOCK_DAY, 12))
+    profit: dict[str, Any] = client.get("/panel").json()["today"]["month_profit"]
+    row = _month_row(client, month)["profit"]
+    assert profit == row
+    assert set(profit) == {"amount", "pending_quantity"}
+    return profit
+
+
+def test_month_profit_equals_the_analysis_month_row_with_pending_grams_from_a_sale(
+    client: TestClient, clock: MovableClock
+) -> None:
+    variety_id = _variety(client, "Mezcla", price=1_000)
+    _entry(client, variety_id, quantity="2", total_cost=400, on="2026-10-01")
+    _sale_with(client, clock, [{"product_id": variety_id, "quantity": "5"}], on=BLOCK_DAY)
+
+    profit = _assert_month_profit_is_analysis_month_row(client, clock, "2026-10")
+
+    assert profit["pending_quantity"] == 3
+
+
+def test_month_profit_counts_the_grams_of_a_withdrawal_alone_as_pending(
+    client: TestClient, clock: MovableClock
+) -> None:
+    variety_id = _variety(client, "Retirada", price=1_000)
+    clock.set(_art(BLOCK_DAY, 12))
+    withdrawn = client.post(
+        "/stock/withdrawals",
+        json={
+            "reason_id": reason_id(client, "Own use"),
+            "date": BLOCK_DAY.isoformat(),
+            "lines": [{"product_id": variety_id, "quantity": "2"}],
+        },
+    )
+    assert withdrawn.status_code == 201, withdrawn.text
+
+    profit = _assert_month_profit_is_analysis_month_row(client, clock, "2026-10")
+
+    assert profit == {"amount": 0, "pending_quantity": 2}
+
+
+def test_month_profit_stays_negative(client: TestClient, clock: MovableClock) -> None:
+    clock.set(_art(BLOCK_DAY, 12))
+    _expense(client, amount=7_000, on=BLOCK_DAY.isoformat())
+    variety_id = _stocked_variety(client)
+    _sale_with(client, clock, [{"product_id": variety_id, "quantity": "2"}], on=BLOCK_DAY)
+
+    profit = _assert_month_profit_is_analysis_month_row(client, clock, "2026-10")
+
+    assert profit["amount"] == 2_000 - 7_000
+
+
+def test_month_profit_is_zero_with_nothing_recorded(client: TestClient) -> None:
+    body = client.get("/panel").json()
+
+    assert body["today"]["month_profit"] == {"amount": 0, "pending_quantity": 0}
+    assert body["today"]["month_profit"]["amount"] == body["periods"]["month"]["profit"]
+    assert client.get("/analysis").json()["months"] == []

@@ -66,9 +66,7 @@ def _ids(answer: LowStock[StockRow]) -> list[int]:
 
 
 def test_sold_out_comes_before_low() -> None:
-    answer = low_stock(
-        [_row(1, "Anis", "low", days_left=1), _row(2, "Zarzaparrilla", "sold_out")]
-    )
+    answer = low_stock([_row(1, "Anis", "low", days_left=1), _row(2, "Zarzaparrilla", "sold_out")])
 
     assert _ids(answer) == [2, 1]
 

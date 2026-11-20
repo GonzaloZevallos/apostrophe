@@ -259,7 +259,19 @@
         { "payment_method_id": 1, "name": "Efectivo", "amount": 10000 },
         { "payment_method_id": 2, "name": "Transferencia", "amount": 5000 }
       ]
-    }
+    },
+    "low_stock": {
+      "count": 2,
+      "rows": [
+        { "product_id": 2, "name": "Lavanda", "quantity": 0.0, "status": "sold_out" },
+        { "product_id": 1, "name": "Criolla", "quantity": 12.5, "status": "low" }
+      ]
+    },
+    "best_sellers": [
+      { "product_id": 1, "name": "Criolla", "sales": 15000 },
+      { "product_id": 2, "name": "Lavanda", "sales": 4500 }
+    ],
+    "month_profit": { "amount": 52000, "pending_quantity": 0.0 }
   },
   "debts": {
     "total_owed": 37000,
