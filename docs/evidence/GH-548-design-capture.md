@@ -140,3 +140,18 @@ Comparación de `Productos` y `ProductosOscuro` (`compare.sh --only Productos,Pr
 ### GH-903 parte 2: qué falta y quién decide
 
 Falta una decisión del dueño sobre el diseño de la fila; ningún rol puede tomarla porque el encargo prohíbe cada rescate (fila que envuelve, pastilla solo con icono, etiqueta más corta, letra o relleno menores). Hasta que exista, no se construye `ProductsPhone`, no se cambian las filas `Productos` y `ProductosOscuro` de `scripts/design/screens.json` y el cuerpo de la lista del teléfono sigue mostrando «New product». Al reanudar, los huecos de 8 px salen de `--espacio-sm` (`--espacio-md` es 12 px, no 8 px como decía el plan).
+
+### GH-903 parte 2: resolución (decisión del dueño: botón redondo solo ícono)
+
+El dueño decidió que la acción «New product» de la fila de título del teléfono es un botón redondo solo con el ícono `agregar`, de 44×44 px y nombre accesible «New product» (`common:newVariety`); el título y el avatar conservan tamaño y letra. Mismo medidor, misma página desechable, con `.productos-cabecera` (`gap: var(--espacio-md)`, 12 px, que deja 8 px hasta la caja de 44 px del avatar por su `margin: -4px`), el título flexible, `a.boton-icono.boton-icono--lleno.productos-cabecera__nueva` y el avatar. El bloque de CSS de la página y el de `app.css` son idénticos (`diff` vacío).
+
+| viewport | tema | ancho de la fila | título (real / natural) | botón | avatar | hueco título-botón | hueco botón-avatar | sobra | veredicto |
+|---|---|---|---|---|---|---|---|---|---|
+| 320 | claro | 272 | 168 / 85,1 | 44×44 | 44×44 | 12 | 8 | 82,9 | ok |
+| 320 | oscuro | 272 | 168 / 85,1 | 44×44 | 44×44 | 12 | 8 | 82,9 | ok |
+| 246 | claro | 198 | 94 / 85,1 | 44×44 | 44×44 | 12 | 8 | 8,9 | ok |
+| 246 | oscuro | 198 | 94 / 85,1 | 44×44 | 44×44 | 12 | 8 | 8,9 | ok |
+
+Una línea, objetivos de 44 px o más, huecos de 8 px o más, sin recorte, solape ni desplazamiento lateral. Con 8 px de `gap` (`--espacio-sm`) el hueco hasta el avatar sería de 4 px: por eso se usa `--espacio-md`. Las capturas de `Productos` y `ProductosOscuro` a 414×844 (`compare.sh --only Productos,ProductosOscuro`, ambas filas «ok») muestran el título, el botón redondo con el «+» y el avatar en una línea; el dibujo trae además el botón «···» (el hueco de Publicar catálogo, sin elemento en esta parte), la búsqueda y las pestañas Catálogo | Stock | Promos, que son de partes posteriores de GH-845. Las filas `Variedades`, `Productos` y `ProductosOscuro` recorren una misma pantalla viva (`/varieties`): un ofensor futuro se lista bajo cada nombre que lo reporta, y la captura de `Variedades` puede diferir del `Variedades.dc.html` antiguo (el dibujo es guía).
+
+No se corrió la medición sobre la pantalla viva con la semilla de `mobile_seed.py` ni el proyecto móvil de e2e por completo: queda a la puerta de entrega y a CI.
