@@ -18,6 +18,8 @@ Es el mismo job de "manejar mi negocio desde el celular" que el de cualquier otr
 
 **Cuando** estoy por cobrarle a un Customer que me debe, o por recordárselo, **quiero** ver qué Sales todavía me debe y cuánto de cada una, la más vieja primero, **para** decirle exactamente qué cubre la plata y desde cuándo. (#899: acá lo sirven las líneas por Sale `still_owing` de `GET /api/payments/debtors` con `with_lines`, que leerán las pantallas de partes posteriores. Antes, ningún llamador tenía ese detalle en la lista de deudores: hacía falta una lectura por deudor y rehacer el Settlement en el navegador.)
 
+**Cuando** un cliente me pregunta cuánto me debe o me dice que ya me pagó, y tengo el celular en la mano y poco tiempo, **quiero** ver su cuenta como una sola lista de Sales y Payments con el saldo después de cada una, **para poder** contestarle, y mostrarle, cómo se llegó a esa cifra sin hacer la cuenta yo. (Parte 1 de GH-829, dentro de la parte 2 de GH-498: acá lo sirve la cuenta de la ficha del Customer como libro corrido, con una fila por Payment. Antes, un mismo Payment aparecía partido en varias líneas "On account of the sale of dd/mm" y una fila Credit aparecía de la nada al eliminar una Sale, así que el vendedor no podía conciliar las filas con el Balance de la cabecera.)
+
 # Pagos
 
 El dinero que un **Customer** entrega, y lo que cada Customer debe por eso: su **Balance**, su **Owing since** y la cuenta de sus **Sales** y **Payments**. Lo ve solo su **Business** (ADR-0004). Lee las Sales y sus **On-the-spot payments** de sales (ADR-0007), los Customers de customers y los **Payment methods** de payment-methods (ADR-20261111-payment-methods-by-id). **Cash** (#7) cuenta los Payments en sus propias fechas, sea cual sea su medio. Qué Sale salda un Payment se calcula en el momento y nunca se guarda, igual que el **Cost of goods sold** (ADR-0009, ADR-0010), mientras que los precios de una Sale quedan congelados (ADR-0003). Quién debe se muestra como la sección Owed to you arriba de Customers y como el bloque "Owed to you" de Home; no hay una pantalla Owed to you aparte.
@@ -31,14 +33,17 @@ Criterios de éxito:
    - El Owing since es la fecha de la Sale más vieja que no está pagada por completo.
    - Los dos son correctos inmediatamente después de registrar o eliminar cualquier Sale o Payment, y nunca dependen del orden en que se cargaron las cosas.
 4. **Quién debe, de un vistazo**: todo Customer que debe, con la deuda más vieja primero, cada uno con su Balance y su Owing since, arriba de Customers. También el **Total owed** y la cantidad de **Sales still owing**, sin calcularlos a partir de las Sales. En Sales, una Sale que todavía se debe aparece marcada como tal.
-5. **Una cuenta que se puede seguir**:
-   - La cuenta de cada Customer muestra sus Sales y Payments en orden de fecha, con el Balance corrido.
-   - Cada Sale dice si se pagó y con qué medio, o si quedó debiendo.
-   - Cada Payment dice su fecha, su medio y a qué Sale fue.
-   - Un Payment equivocado se puede eliminar, y la cuenta y el Balance lo siguen al instante.
+5. **Una cuenta que se lee de una pasada** (parte 1 de GH-829):
+   - La cuenta de cada Customer es un libro corrido: sus Sales y Payments en orden de fecha, cada Sale sumando, cada Payment restando y el saldo después de cada fila.
+   - El saldo de la fila más nueva es siempre igual al Balance de la cabecera de la ficha, sin excepción: también con un Payment de fecha anterior a su Sale, una Sale y un Payment del mismo día, un Credit que quedó al eliminar una Sale y una Sale sin Customer a la que después se le asigna uno.
+   - Cada Sale dice su **Sale number**, si se pagó y con qué medio, o si quedó debiendo.
+   - Cada Payment posterior es una sola fila, "Payment · <medio>", con su monto completo y su fecha, cubra una Sale, varias o parte de una. La cuenta no dice a qué Sales fue: eso se ve solo en Record payment y su vista previa.
+   - Un saldo corrido por debajo de cero se lee "In your favor $ X", nunca como una deuda negativa.
+   - Un Payment equivocado se puede eliminar, una sola vez y desde su única fila, y la cuenta y el Balance lo siguen al instante.
+   - Prueba en el celular: el vendedor contesta "cuánto me debés y por qué" leyendo la ficha una vez, sin sumar nada de cabeza.
 6. **Las fechas de los Payments se conservan**: un Payment conserva su propia fecha y su medio, así que Cash (#7) cuenta el dinero el día en que entró, nunca en la fecha de la Sale.
 7. **Los Businesses nunca se mezclan, nada se filtra**: un Payment pertenece a un Customer de su propio Business y usa un Payment method de su propio Business (ADR-0004). El Customer, el Payment o el medio de otro Business no existe (404). Ningún monto ni nombre va a un error, un log, la consola ni el almacenamiento del navegador (ADR-0005).
-8. **Sin curl, y el navegador no calcula nada**: todo se hace desde el celular. Todo Balance, Owing since y **Settlement** que se muestra sale de la API.
+8. **Sin curl, y el navegador no calcula nada**: todo se hace desde el celular. Todo Balance, Owing since, **Settlement**, saldo corrido y marca de Payment parcial que se muestra o se lee sale de la API.
 9. **Nunca perder el lugar**: en el celular, Record payment se abre como una Sheet sobre la pantalla desde la que se abrió (la ficha del Customer, Customers o Home) y se cierra con "Close". Guardar o cerrar deja al vendedor de vuelta en esa pantalla, en la posición de scroll que tenía, con el Balance ya más bajo después de guardar. En la computadora es un modal. Los docs de producto, el dibujo y la app construida coinciden en esto.
 10. **El medio, siempre a propósito** (parte 5 de GH-581, que sigue valiendo con la lista propia de GH-318): un Payment nunca se guarda sin medio, y el medio nunca viene puesto: Record payment abre siempre con el campo vacío, sin recordar nada de un Payment anterior.
 11. **Volver, Close y Escape predecibles** (parte 5 de GH-581): con la lista de medios abierta, volver o "Close" cierran solo la lista; con el formulario sin tocar, volver lleva a la pantalla de la que vino; con algo escrito o elegido, volver pregunta primero (LeaveConfirm). En la computadora, Escape cierra solo el desplegable. Nada de lo que Record payment hacía se pierde, y el **Mobile check** no gana ningún infractor.
@@ -52,6 +57,7 @@ Criterios de éxito:
 15. **La antigüedad en días del Business** (GH-828): se cuenta en días de hora argentina y cambia solo a la medianoche local. Una deuda de 30 días sigue en 8-30; pasada la próxima medianoche argentina tiene 31 y está en over 30. Una Sale con fecha posterior a hoy tiene 0 días y está en this week.
 16. **"N de M clientes me deben"** (GH-828): la cantidad de Customers incluye a los que no tienen Sales y a los que tienen un Credit; la cantidad de deudores no incluye a ninguno de los dos.
 17. **Nada de otro Business** (GH-828, #899): ninguna cifra, cantidad, Sale ni **Sale number** de otro Business aparece en la lista de deudores ni en sus líneas, y nada revela que exista.
+18. **La marca de Payment parcial, solo en la API** (parte 1 de GH-829): cada fila de Payment de la cuenta lleva `is_partial`, verdadero solo cuando el saldo corrido después de ese Payment es mayor que 0, y falso en exactamente 0 y por debajo. La calcula solo `account_of()`. La ficha todavía no la muestra; una parte posterior la muestra como una palabra en la fila, nunca solo por color, con su propio chequeo contra el dibujo.
 
 ## Comportamiento
 
@@ -80,18 +86,20 @@ Criterios de éxito:
 - **Nada de un Settlement se guarda.** Qué Sale cubre un Payment, el Balance y el Owing since se calculan en el momento a partir de las Sales y los Payments del Customer tal como están ahora.
   - Una Sale o un Payment registrado tarde ocupa su lugar según su propia fecha.
   - Eliminar cualquiera de los dos hace que todo lo posterior se vuelva a calcular.
+- **Dónde se ve**: qué Sales salda un Payment se muestra solo en Record payment y su vista previa ("On account of the sale of dd/mm"), donde el vendedor decide qué cubre la plata. La cuenta del Customer no lo muestra (ver "La cuenta", más abajo).
 - **Eliminar una Sale**: los Payments posteriores que la habían saldado se aplican a la siguiente deuda más vieja del Customer, o pasan a ser un Credit.
 - **Eliminar un Payment**: lo que saldaba vuelve a deberse.
-- **Lo que nunca se mueve**: los precios, las reglas y los totales de línea guardados de una Sale (ADR-0003, ADR-0007), y la fecha, el monto y el medio de un Payment. Solo puede cambiar contra qué Sale se muestra un Payment, y el nombre con que se muestra su medio si la vendedora lo renombra.
+- **Lo que nunca se mueve**: los precios, las reglas y los totales de línea guardados de una Sale (ADR-0003, ADR-0007), y la fecha, el monto y el medio de un Payment. Solo puede cambiar qué Sale salda un Payment, y el nombre con que se muestra su medio si la vendedora lo renombra.
 
 ### Credit
 
 - Solo eliminar una Sale que unos Payments posteriores habían saldado puede dejar dinero de más. Sigue visible y nunca se lleva a $0:
-  - el Balance pasa a ser menor que cero y se muestra como "Credit $ X";
+  - el Balance pasa a ser menor que cero y la cabecera de la ficha lo muestra como "Credit $ X";
   - el Credit se aplica automáticamente a las próximas Sales del Customer que queden debiendo;
   - no cuenta en ninguna cifra de deuda;
   - un Credit que no debería existir se corrige eliminando el Payment equivocado;
   - la app no registra reintegros.
+- En la cuenta, un Credit no es una fila propia: se ve como el saldo corrido que queda por debajo de cero, con "In your favor $ X" (ver "La cuenta").
 
 ### Quién debe y los totales
 
@@ -127,6 +135,20 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
 - **Dinero**: los montos viajan en unidades de moneda como decimal (ADR-0058).
 - **El resumen de deuda de Home** (results.md) usa la misma lectura con el mismo orden, sin Customer type y sin líneas. Su lista corta no cambia.
 
+### La cuenta (`GET /api/customers/{id}/account`)
+
+La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `account_of()` en `app/payments/domain/account.py` (parte 1 de GH-829).
+
+- **Un libro corrido**: un recorrido simple de las Sales y los Payments posteriores del Customer, ordenado por fecha, después por `recorded_at`, después Sale antes que Payment, después id. No es el orden del Settlement: un Payment de fecha anterior a su Sale va antes que ella.
+- **Fila de Sale**: suma su total al saldo corrido, o 0 cuando la Sale se pagó en el momento. Lleva su `number` (el Sale number), `how_paid` (`paid`, `owing` o `none`) y, para una Sale pagada en el momento, su `payment_method` (`{id, name, icon}`).
+- **Fila de Payment**: una por cada Payment posterior, que resta su monto completo. Lleva su `payment_method` e `is_partial`: verdadero solo cuando el saldo corrido después de él es mayor que 0; falso en exactamente 0 y por debajo.
+- **Cada fila** lleva el saldo corrido después de ella. El de la fila más nueva es siempre igual a `settle().balance`.
+- **Por debajo de cero**: un saldo corrido puede quedar menor que cero en un punto del libro (por ejemplo, un Payment de fecha anterior a su Sale, hasta que llega la fila de la Sale) o al final (un Credit después de eliminar una Sale). Es solo una cifra corrida, no crea un Credit.
+- **Sin `applied_to` y sin fila de crédito**: la cuenta no dice qué Sales salda cada Payment, y no hay un tipo de fila aparte para un Credit. `AppliedToOut`, `Split` y las respuestas de registrar y de vista previa de Record payment no cambian.
+- `settle()` se usa en la cuenta solo para el Balance, el Owing since y el estado; nunca para armar filas.
+- **Una Sale sin Customer** a la que después se le asigna uno (`PUT /api/sales/{id}/customer`) ocupa su lugar en la cuenta por su propia fecha y orden de registro.
+- **Aislamiento**: la cuenta de un Customer de otro Business responde 404.
+
 ### En pantalla: la sección "Owed to you" de Customers
 
 - **Dónde**: la sección de arriba de Customers (customers.md), sobre todos de la A a la Z. Reemplaza a la antigua pantalla Owed to you, que ya no existe; su ruta vieja responde como una dirección desconocida (navigation.md, Direcciones retiradas). El título Owed to you de Home abre Customers en esta sección (results.md).
@@ -143,24 +165,27 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
 
 ### En pantalla: la ficha del cliente (`ClienteFicha`)
 
+![La ficha del cliente en el teléfono](../assets/screens/ClienteFicha.webp)
+
 - Muestra "Owes you $ X since dd/mm" como una etiqueta chica sobre una cifra grande. Para un Credit muestra "Credit $ X", de la misma manera, sin "since". Con un Balance de $0 no muestra ninguno de los dos.
 - "Record payment" se muestra solo cuando el Balance es mayor que $0. Si no, está oculto.
-- **La cuenta** abre con la etiqueta "Account · running balance" y lista las Sales y los Payments en orden de fecha, con el Balance corrido. La API trae por cada Sale `how_paid` (`paid`, `owing` o `none`) y, para una Sale pagada en el momento, su `payment_method` (`{id, name, icon}`); por cada Payment, su `payment_method`. El front lleva `payment_method` en su tipo de fila de Sale y lo usa.
-  - Cada fila muestra su fecha, un título con una sublínea debajo, y a la derecha su monto sobre "balance $ X". Un monto nunca se parte entre "$" y su cifra.
-  - **Una Sale**: el título "Sale". Su sublínea es una de estas:
-    - "Paid · <medio>" para una Sale pagada en el momento, que no tiene fila de Payment propia (reemplaza a "Paid in cash" / "Paid by transfer"); solo una fila pagada que no trae medio dice "Paid" a secas;
+- **La cuenta** abre con la etiqueta "Account · running balance" y lista las filas de la API ("La cuenta", arriba) en su orden, sin reordenarlas. El front no calcula ningún saldo ni ninguna marca: lee el saldo corrido de cada fila.
+  - Cada fila muestra su fecha, un título (con una sublínea debajo solo en las filas de Sale), y a la derecha su monto sobre "balance $ X", en Tabular figures. Un monto nunca se parte entre "$" y su cifra.
+  - **Una Sale**: el título "Sale #N", con su Sale number. Su sublínea es una de estas:
+    - "Paid · <medio>" para una Sale pagada en el momento, que no tiene fila de Payment propia; solo una fila pagada que no trae medio dice "Paid" a secas;
     - "Left owing" para una Sale que quedó debiendo;
     - "Nothing to pay" para una Sale cuyo total es $0, saldada sin medio y sin nada debido (sales.md).
 
-    La fila no nombra ningún **Product** ni gramos: el detalle de la Sale los tiene (sales.md).
-  - **Un Payment posterior**: una fila por cada Sale que alcanza, cada una titulada "Payment · <medio>" con la sublínea "On account of the sale of dd/mm" y el monto aplicado a esa Sale.
-  - **Cualquier parte de un Payment más allá de todas las deudas**: titulada "Payment · <medio>" con la sublínea "Credit".
+    Una Sale pagada en el momento deja el saldo donde estaba. La fila no nombra ningún **Product** ni gramos: el detalle de la Sale los tiene (sales.md).
+  - **Un Payment posterior**: una sola fila, titulada "Payment · <medio>", con su monto completo y sin sublínea, cubra una Sale, varias o parte de una. No dice a qué Sales fue.
+  - **La marca de Payment parcial** (`is_partial`) no se muestra en esta parte.
   - El nombre del medio es siempre el actual, también para un medio archivado, en las filas de Sales y de Payments. Ninguna fila lee un valor cash o transfer.
-  - Lo que se debe se lee en ámbar. Un "Credit $ X" corrido se lee con el tratamiento neutro/azul, nunca ámbar ni verde.
-- **Balance corrido por debajo de cero**: entre un Payment y una Sale de fecha posterior que ese Payment salda, el Balance corrido pasa a ser menor que cero y esa fila dice "Credit $ X".
-  - Es solo la cifra corrida, no un Credit, y no cuenta en ninguna cifra.
+  - Lo que se debe se lee en ámbar.
+- **Saldo corrido por debajo de cero**: la fila dice "In your favor $ X" (`creditAmount`) con el tratamiento neutro/azul del crédito (`.monto-credito`), nunca ámbar ni verde, y nunca como una deuda negativa.
+  - Pasa, por ejemplo, entre un Payment y una Sale de fecha posterior que ese Payment salda, o después de eliminar una Sale ya saldada.
+  - Marca solo un punto del libro, no un Credit guardado, y no cuenta en ninguna cifra.
   - El Balance propio de la ficha dice "Credit" solo cuando el Balance de hoy es menor que cero.
-- **"Delete payment"** existe solo en los Payments posteriores.
+- **"Delete payment"** existe solo en los Payments posteriores, una sola vez por Payment, en su única fila.
   - Se confirma con "Delete the payment of $ 15.000 (<medio>) from 20/09?", "No, keep it / Yes, delete it". La confirmación nombra el Payment y su medio, nunca las Sales que cubría.
   - Después, el toast "Payment deleted", sin datos, y la cuenta y el Balance se refrescan desde la API.
   - Un Payment que ya no existe sigue la regla "That is gone." de accounts.md.
@@ -200,7 +225,7 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
   - **En el celular**: tocar el campo abre la lista en una Sheet, su propia entrada del historial en el nivel de arriba de Record payment. Hay un `SheetStackProvider` en la raíz de `CobroRoute`. Volver o "Close" con la lista abierta cierran solo la lista, nunca Record payment, desde cualquiera de sus tres accesos, y nunca abren la confirmación de cambios sin guardar.
   - **En la computadora**: el desplegable del Selector con teclado. El primer Escape cierra solo el desplegable y no cierra el modal. El segundo sale si el formulario está sin tocar, o pide confirmación si tiene algo escrito o elegido.
   - **Sin medio al guardar**: la acción principal sigue habilitada. Este control corre después del control del monto. Tocar la acción sin medio no guarda nada y no entra en el estado de guardado en curso. Muestra "Choose how they paid." junto al campo, con el **Attention icon** al lado (`FieldRefusal`, que el campo nombra con su `aria-describedby`), y lleva el foco del vendedor al campo. La frase sale del Copy module y desaparece apenas se elige un medio. Si el monto también es inválido, primero se muestra solo el rechazo del monto.
-- **Antes de guardar**, la vista previa de la API muestra qué Sales salda el Payment ("Taken from the oldest debt") y "They still owe $ X" cuando queda algo.
+- **Antes de guardar**, la vista previa de la API muestra qué Sales salda el Payment ("Taken from the oldest debt", con "On account of the sale of dd/mm") y "They still owe $ X" cuando queda algo. Es el único lugar de la app que muestra a qué Sales va un Payment.
 - **Después de guardar**:
   - "Payment saved · still owing $ X" cuando queda algo;
   - "Payment saved" cuando no queda nada.
@@ -218,6 +243,7 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
 
 - Las 21 entradas `radio:Cash`, `radio:Transfer` y `radio:Owing` de `touch-action.json` eran todas de estados recorridos de New sale. Record payment no tenía ninguna, así que su cambio al Selector no borró ni agregó ningún infractor.
 - Record payment no tiene un estado de WalkState con la lista de medios abierta (`record-payment/method-selector-open` no se agregó). La lista abierta la cubren los tests del front (`CobroHistory.test.tsx`). El estado `CobroDesdeClientes` elige el medio abriendo el campo y tocando la opción. Los estados de carga, error del servidor, sin conexión y "no longer available" del campo están registrados en WalkState.
+- La cuenta como libro corrido (parte 1 de GH-829) no cambia WalkState ni `screens.json`.
 
 ### Restricciones
 
@@ -225,6 +251,8 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
 - `payment.payment_method_id` apunta a `payment_method` con una FK compuesta `(business_id, payment_method_id)` ON DELETE RESTRICT; `payment.method` queda congelada, ahora admite nulo y las filas nuevas la dejan vacía (ADR-20261111-payment-methods-by-id). Solo el adaptador de tablas y las migraciones la nombran, y un test de arquitectura lo controla. La migración solo agregó y llenó la columna nueva, y el comparador M3 lo prueba.
 - El medio de un Payment nuevo se controla dentro del mismo `INSERT … SELECT` que lo escribe: si no es un medio ofrecido del Business, no se escribe nada y se responde 404 `payment_method.unavailable`.
 - La API de Payments lleva `payment_method_id` en lugar de `method`; es un quiebre declarado con una línea `Breaking-API:` en el PR (ADR-0066). Agregar `still_owing` y `with_lines` (#899) solo suma un campo y un parámetro opcional, así que no es un quiebre.
+- La cuenta como libro corrido (parte 1 de GH-829) es un quiebre declarado: "Breaking-API: GET /api/customers/{id}/account drops applied_to from payment rows and the credit row kind" (ADR-0066). Su único consumidor, la ficha del Customer, cambia en la misma parte, y el snapshot de OpenAPI se regenera.
+- Los saldos corridos y `is_partial` salen solo de `account_of()`; ningún adaptador, router, esquema ni código del navegador los calcula. `applied_to` sale solo de las filas de la cuenta, nunca de las respuestas de registrar ni de vista previa.
 - Las rutas de Payment se suman al barrido de aislamiento, al test de rutas con acceso restringido y al test de migración de pertenencia.
 - Los códigos de rechazo van en `contract.json` (ADR-0008):
   - por encima del Balance;
@@ -236,12 +264,13 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
   - Customer inexistente;
   - Payment inexistente.
 - Ningún monto ni nombre en los rechazos, los logs, la consola ni el almacenamiento del navegador (ADR-0005).
-- Todo Balance, Owing since, reparto del Settlement, total y cantidad en pantalla se lee de la API.
+- Todo Balance, Owing since, reparto del Settlement, saldo corrido, marca de Payment parcial, total y cantidad en pantalla se lee de la API.
 - La antigüedad de cada deuda y lo que queda de cada Sale salen solo de `settle()` y de `app/payments/domain/debt_age.py`. Los tres tramos, la antigüedad de cada deudor y sus líneas `still_owing` (`StillOwingLine(sale_number, sale_date, remaining)`, armadas desde `SettleResult.sales` con `still_owed > 0` en `app/payments/application/view_accounts.py`) se arman con los mismos valores del Settlement, nunca con una segunda consulta ni un segundo recorrido; ningún adaptador, router ni esquema recorre Sales contra Payments, asigna un tramo a una fecha ni reordena las líneas. El esquema (`DebtorsOut.of(debtors, with_lines)`) solo decide si `still_owing` sale como lista o como null.
 - Payments lee el interruptor Customer types por su propio puerto (`PricingSettingsReader`) y nunca importa `app.pricing_settings`.
 - El registro de pantallas no tiene clave para "modal en la computadora"; ningún chequeo del registro distingue una Sheet de una página. La **Design capture** y la corrida e2e son la evidencia.
 - La rama de computadora de `CobroFrame` no la edita el layout de celular; solo su rama de celular la dibuja `Sheet`.
 - Los Payment methods nunca se declaran en `fixedSets.ts`, ni siquiera de forma temporal (ADR-0074).
+- Cuando un cambio saca o mueve un elemento que la suite e2e usa como referencia, la misma tarea migra cada uso e2e; el elemento nunca se vuelve a poner, visible u oculto, para un locator (D-69509906).
 
 ## Métricas
 
@@ -255,12 +284,15 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
   - independencia del orden de registro;
   - recalcular después de un registro tardío o de la eliminación de una Sale o de un Payment.
 - **Identidad del Balance (criterio 3)**: Balance = comprado e impago − Payments, al peso, después de cada alta y eliminación de Sales y Payments.
-- **Credit**: después de eliminar una Sale saldada, el Credit se muestra como "Credit", queda fuera de la sección Owed to you, del Total owed y de la cantidad, y se aplica a la próxima Sale que quede debiendo.
+- **Credit**: después de eliminar una Sale saldada, la cabecera muestra el Credit como "Credit", queda fuera de la sección Owed to you, del Total owed y de la cantidad, se aplica a la próxima Sale que quede debiendo, y en la cuenta se ve como un saldo corrido "In your favor $ X", nunca como una fila propia.
 - **Totales de quién debe (criterio 4)**: el Total owed, la cantidad de Sales still owing, la sección "Owed to you" de Customers, el bloque de Home y la marca de Sales son iguales a un cálculo directo sobre las Sales y los Payments. 0 diferencias. La línea de cantidad dice "1 sale owing" para una Sale y "N sales owing" para dos o más, las dos cubiertas por los tests del front.
-- **Cuenta (criterio 5)**: las filas y el Balance corrido coinciden con el Settlement en cada caso de la matriz. Los tests del front (`accountRows.test.ts`) muestran la etiqueta "Account · running balance", el título y la sublínea de cada fila ("Sale" sobre "Paid · <medio>", "Left owing" o, para una Sale de $0, "Nothing to pay"; "Payment · <medio>" sobre "On account of the sale of dd/mm" o "Credit"), con el nombre actual del medio después de renombrarlo (por ejemplo "Paid · Cash" y después "Paid · Mercado Pago"), "Paid" a secas solo para una fila sin medio y nunca una palabra cash o transfer, el monto sobre "balance $ X" sin corte dentro de un monto, y ningún Product ni gramos en la fila de una Sale.
+- **La cuenta cierra con el Balance (criterio 5)**: en cada caso de la matriz de dominio (`tests/payments/test_account.py`) el saldo de la última fila es igual a `settle().balance`, 0 diferencias. La matriz cubre: un Payment del mismo día registrado antes de una Sale y otro registrado después; un Payment con fecha anterior a su Sale (una fila negativa, no parcial); un empate de fecha y `recorded_at` (la Sale va primero, sin fila negativa); un Credit después de una Sale eliminada; marcas parciales, exactamente 0 incluido. Un test de propiedad con semilla fija (`random.Random`) sobre libros mezclados afirma la misma igualdad e `is_partial == (running_balance > 0)` en cada fila de Payment.
+- **La cuenta por la API (criterio 5)**: tests por TestClient con el reloj movible: un Payment de una deuda vieja registrado antes de una Sale del mismo día va primero; el orden inverso pone la Sale primero; una Sale sin Customer a la que después se le asigna uno conserva su lugar. En cada uno la fila más nueva es igual al Balance.
+- **La cuenta en pantalla (criterio 5)**: los tests del front (`accountRows.test.ts`, `ClienteFicha.test.tsx`) muestran la etiqueta "Account · running balance"; "Sale #N" sobre "Paid · <medio>", "Left owing" o, para una Sale de $0, "Nothing to pay"; una sola fila "Payment · <medio>" por Payment, con su monto completo y sin sublínea, eliminable una sola vez; "In your favor $ X" sin sublínea cuando el saldo corrido es menor que cero; el nombre actual del medio después de renombrarlo (por ejemplo "Paid · Cash" y después "Paid · Mercado Pago"); "Paid" a secas solo para una fila sin medio y nunca una palabra cash o transfer; el monto sobre "balance $ X" sin corte dentro de un monto; ningún Product ni gramos en la fila de una Sale; y las aserciones de "Credit" de la cabecera sin cambios. `ledgerRowView` es exhaustivo (`assertNever`, sin `default`).
+- **La cuenta de punta a punta (criterio 5)**: `web/e2e/payments.spec.ts` afirma "Payment · Cash", el monto completo y el saldo sin sublínea; "In your favor" con conteo 0 donde no hay saldo negativo, y con `toHaveCount(1)` donde hay uno.
 - **Fechas conservadas (criterio 6)**: después de cualquier recálculo, la fecha, el monto y el medio de cada Payment quedan sin cambios.
-- **Vista previa = guardado (criterios 2, 8)**: la vista previa de Record payment coincide con el Settlement después de guardar. 0 diferencias.
-- **Aislamiento (criterio 7)**: toda ruta de Payment está en el barrido y responde 404 o vacío desde otro Business; un Payment con el medio de otro Business responde 404 y no escribe nada.
+- **Vista previa = guardado (criterios 2, 8)**: la vista previa de Record payment coincide con el Settlement después de guardar. 0 diferencias. Sus tests (`Cobro*.test.tsx`) y su `applied_to` no cambian con la cuenta como libro corrido.
+- **Aislamiento (criterio 7)**: toda ruta de Payment está en el barrido y responde 404 o vacío desde otro Business; la cuenta de un Customer de otro Business responde 404 (`tests/test_business_isolation.py`); un Payment con el medio de otro Business responde 404 y no escribe nada.
 - **Sin eco (criterio 7)**: ningún rechazo ni línea de log contiene un monto ni un nombre. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen ninguno.
 - **Sin curl (criterio 8)**: una corrida end-to-end solo a través del front:
   - registra un Payment desde "Collect" en Customers y desde "Collect" en Home, eligiendo el medio con el campo "Payment method";
@@ -278,6 +310,7 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
 - **Foco y texto escrito (GH-319)**: un test del front muestra el foco en el primer campo cuando se abre la Sheet del celular; un test de cambio de viewport (de celular a computadora y de vuelta) conserva el monto escrito; los tests de cambios sin guardar de Record payment pasan sin editarse sus aserciones; la lista de infractores del **Mobile check** no nombra ningún estado de Sheet recorrido de Record payment.
 - **Lugar conservado (criterio 9)**: una corrida end-to-end desplaza Customers y Home de modo que la fila de deudor tocada quede debajo de la primera pantalla, después abre Record payment y lo cierra, una vez con "Close" y una vez con un guardado parcial. Cada vez el desplazamiento queda sin cambios y el foco está en el "Collect" tocado. Después de un guardado que salda todo el Balance, el desplazamiento queda sin cambios y el foco está en el título "Owed to you" (o "Nobody owes you").
 - **Acuerdo con el diseño (criterio 9)**: la Design capture de Record payment en el celular muestra que el dibujo y la app construida son los dos una Sheet, con el campo "Payment method" cerrado como el Selector dibujado en Registrar cobro (`Cobro`, `CobroOscuro` y `CobroCompu` en `docs/product/design-system/pantallas/`). La nota de evidencia no deja ninguna diferencia abierta; la manija y el asomo del dibujo son una diferencia conocida, descartada a propósito (ADR-0062).
+- **Acuerdo con el diseño de la cuenta (criterio 5)**: la Design capture de `ClienteFicha` compara con el dibujo la fila de Payment, la fila "In your favor" y el título "Sale #N". Toda diferencia con el dibujo aprobado va al dueño como desvío.
 - **El medio es un Selector con la lista propia (criterio 10)**: un test del front muestra en Record payment el campo "Payment method" con exactamente los medios ofrecidos del Business en su orden (con los valores por defecto, Cash y Transfer), ningún medio archivado, ningún grupo de radio ni botón `aria-pressed` con los medios, ninguna fila para borrar, y el estado `loading` mientras carga. Otros tests cubren el error del servidor con reintento, el aviso sin conexión y un 404 `payment_method.unavailable` que conserva lo escrito y marca el campo.
 - **Siempre vacío (criterio 10)**: un test del front abre Record payment dos veces seguidas (mismo Customer y otro Customer) después de guardar un Payment con el primer medio, y las dos veces el medio está vacío.
 - **Sin medio no se guarda (criterio 10)**: tocar guardar sin medio no hace ningún pedido a la API, no entra en el estado de guardado en curso y muestra "Choose how they paid." con el Attention icon junto al campo, que recibe el foco; elegir un medio saca la frase.
@@ -300,6 +333,7 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
 - **Cantidades (criterio 16)**: `customer_count` incluye un Customer sin Sales y uno con Credit, y `debtor_count` no incluye a ninguno de los dos.
 - **Customer type (GH-828)**: `customer_type_id` es null con el interruptor Customer types desactivado y es el id guardado con el interruptor activado.
 - **Aislamiento de deudores (criterio 17)**: con un deudor, un Credit y un Customer sin Sales sembrados en otro Business, ninguna de sus cifras ni cantidades aparece; con `with_lines=true` (`client` y `other_client`), las líneas de cada Business tienen solo sus propias Sales y Sale numbers, y nada de las del otro.
+- **Marca parcial (criterio 18)**: en la matriz de dominio y en el test de propiedad, `is_partial` es verdadero exactamente cuando el saldo corrido después del Payment es mayor que 0, y falso en 0 y por debajo; ningún archivo del front calcula un saldo ni una marca, y el Copy module no tiene clave de "Partial payment".
 
 ## Fuera de alcance
 
@@ -320,3 +354,5 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
 - Límites de antigüedad configurables por Business (supuesto conocido, #330).
 - Mostrar en pantalla los tramos, las cantidades de Customers y deudores, el Customer type o las líneas por Sale: partes posteriores.
 - Un tope de líneas por deudor, campos extra en una línea (el total de la Sale, su Note) o un endpoint aparte por Customer para las líneas.
+- Mostrar en la ficha a qué Sales fue un Payment: eso queda solo en Record payment y su vista previa.
+- Mostrar en pantalla la marca de Payment parcial: una parte posterior de GH-498 la muestra como palabra, con su propio chequeo contra el dibujo.

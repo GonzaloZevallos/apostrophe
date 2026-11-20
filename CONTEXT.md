@@ -273,11 +273,11 @@ El Payment registrado junto con una Sale pagada por completo con uno de los Paym
 _Avoid_: cash sale, immediate payment
 
 **Settlement**:
-Qué Sales cubre un Payment posterior: primero la deuda más antigua del Customer (las Sales por fecha y después por orden de registro; los Payments por fecha y después por orden de registro), sin importar la fecha del propio Payment. Se calcula en el momento a partir de las Sales y los Payments tal como están ahora, y nunca se guarda. _In the app_: On account of the sale of dd/mm.
+Qué Sales cubre un Payment posterior: primero la deuda más antigua del Customer (las Sales por fecha y después por orden de registro; los Payments por fecha y después por orden de registro), sin importar la fecha del propio Payment. Se calcula en el momento a partir de las Sales y los Payments tal como están ahora, y nunca se guarda. Se muestra solo en Record payment y su vista previa; la cuenta del Customer no lo muestra. _In the app_: On account of the sale of dd/mm (solo en Record payment y su vista previa).
 _Avoid_: allocation, application, imputación
 
 **Credit**:
-Un Balance menor que cero, que queda solo cuando se elimina una Sale que unos Payments habían saldado; registrar nunca crea uno. Se aplica automáticamente a las próximas Sales del Customer que queden con deuda y no cuenta en ninguna cifra de deuda. _In the app_: In your favor.
+Un Balance menor que cero, que queda solo cuando se elimina una Sale que unos Payments habían saldado; registrar nunca crea uno. Se aplica automáticamente a las próximas Sales del Customer que queden con deuda y no cuenta en ninguna cifra de deuda. En la cuenta del Customer no es una fila propia: "In your favor" en una fila solo marca que el saldo corrido después de esa fila es menor que cero, un punto del libro que no es por sí mismo un Credit. _In the app_: Credit (cabecera de la ficha y Customers); In your favor (saldo corrido de una fila de la cuenta).
 _Avoid_: refund, saldo a favor, overpayment
 
 **Sales still owing**:
