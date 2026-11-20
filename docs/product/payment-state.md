@@ -26,13 +26,15 @@ Hasta que #928 lo ponga en una pantalla, el chip no lo ve nadie. El módulo pued
 - **Nunca un estado adivinado**:
   - Pagada en parte significa que todavía se debe algo. Un `part_paid` con `still_owed` null, 0 o negativo muestra "Payment can't be shown", nunca $0 ni un monto inventado.
   - El `switch` es exhaustivo con `assertNever`, y su rama por defecto muestra la misma línea.
-- **Nunca solo por color**: cada estado se lee por su palabra, y pagada en parte también por su círculo. Cada clase de color figura en `colorCensus.ts` con la palabra o la forma que lleva su significado, citando `SalePaymentChip.test.tsx`.
+- **Nunca solo por color**: cada estado se lee por su palabra, y pagada en parte también por su círculo.
 - **Nombre accesible**: el círculo y el Attention icon (un `Icono` sin etiqueta) son decorativos, con `aria-hidden`. El texto del chip es su nombre accesible, según la **Icon and text rule**. El chip no se toca.
 - **Teléfono angosto**: el chip pasa a una segunda línea cuando hace falta. El monto nunca se corta, se acorta ni se oculta (**Phone first**).
 - **Colores**:
-  - Las reglas `.payment-chip*` de `app.css` usan solo tokens.
+  - Las reglas `.payment-chip*` de `app.css` usan solo tokens, y solo pares que ya están en la tabla de contraste del README. El verde (`--positivo`) no se usa.
   - Pagada en parte va en `--deuda2` sobre `--deuda-fondo`, con el círculo en `--deuda`.
-  - Paid, Unpaid y la línea desconocida toman los colores del dibujo aprobado de la tarjeta de Sales de GH-855, solo con pares que ya están en la tabla de contraste del README. Si el dibujo pide un par que no está o no da color para un estado, el trabajo se frena y se informa: ningún rol elige un color.
+  - La línea desconocida sigue la regla del Attention icon (Icon and text rule y regla Attention del README): `--critico` sobre `--superficie`. La definición escrita gana sobre el dibujo (**Drawing as guide**).
+  - Paid y Unpaid: su color lo decide el dueño, porque el dibujo aprobado de la tarjeta de Sales de GH-855 no está disponible y ningún rol elige un color. Hasta que decida, esas dos clases usan solo los tokens base del chip, sin color de estado.
+- **Censo de colores** (`colorCensus.ts`): lleva una entrada por cada clase `.payment-chip--*` cuya regla usa un color de estado, con la palabra o la forma que lleva su significado y citando `SalePaymentChip.test.tsx`. Siempre `--part-paid` (círculo y palabra) y `--unknown` (Attention icon y oración). Una clase dibujada solo con tokens neutros no declara ningún color y no entra al censo.
 - **Textos**: viven solo en el **Copy module** (`web/src/copy/sales.ts` y `en.baseline.json`), en inglés: `sales:card.payment.paid` "Paid", `sales:card.payment.unpaid` "Unpaid", `sales:card.payment.partPaid` "Part-paid · {{amount}} owed" y `sales:card.payment.unknown` "Payment can't be shown". Ninguno nombra una unidad, una moneda ni un tipo de producto (**Assume nothing**). "Paid · <método>" es del **On-the-spot payment**, no de este chip.
 - **Ayuda de tests**: `saleWith(state, overrides?)` (`web/src/screens/ventas/saleWith.ts`, solo para tests) devuelve una `Sale` tipada con `payment_state` y `still_owed` puestos como par.
 
@@ -44,4 +46,4 @@ Hasta que #928 lo ponga en una pantalla, el chip no lo ve nadie. El módulo pued
 4. **Assume nothing**: ningún texto del chip nombra una unidad, una moneda ni un tipo de producto, y los cuatro viven solo en `web/src/copy/`.
 5. **Nada se corta**: el chip pasa a una segunda línea y el monto nunca queda cortado ni oculto. El Mobile check y la **Design capture** lo juzgan en el teléfono cuando #928 lo pone en la tarjeta de Sales.
 
-Pendiente: los colores, el círculo, el nombre accesible y el corte de línea todavía no se compararon con el dibujo de GH-855. Se comparan antes de que #928 conecte el chip.
+Pendiente: el color de Paid y Unpaid lo decide el dueño. El círculo, el nombre accesible y el corte de línea todavía no se compararon con el dibujo de GH-855; se comparan antes de que #928 conecte el chip.
