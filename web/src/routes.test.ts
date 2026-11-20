@@ -15,6 +15,8 @@ import { englishBundle } from "./i18n/resources";
 import { resolveKey } from "./i18n/resolve";
 import * as routes from "./routes";
 import {
+  ENTRY_PARENTS,
+  entryParentOf,
   isPublicPath,
   OUTSIDE,
   parentOf,
@@ -1009,6 +1011,60 @@ describe("the screens whose back names the record", () => {
     );
     expect(marked.sort()).toEqual(["variety", "variety-entries", "variety-prices"]);
     for (const id of marked) expect(kindOf(screenOf(id), "phone")).toBe("card");
+  });
+});
+
+describe("entryParentOf", () => {
+  test("answers the table's screen when the entry came from it", () => {
+    expect(entryParentOf("settings-payment-methods", "settings")).toBe("settings");
+  });
+
+  test("answers nothing for another origin", () => {
+    expect(entryParentOf("settings-payment-methods", "sales")).toBeUndefined();
+  });
+
+  test.each([42, {}, null, undefined])("answers nothing for the non-string origin %j", (value) => {
+    expect(entryParentOf("settings-payment-methods", value)).toBeUndefined();
+  });
+
+  test("answers nothing for a screen that is not in the table", () => {
+    expect(entryParentOf("settings-payments", "settings")).toBeUndefined();
+  });
+});
+
+describe("the entry parents", () => {
+  const entries = Object.entries(ENTRY_PARENTS) as [ScreenId, ScreenId][];
+
+  test("every key and value is a declared screen", () => {
+    for (const [key, value] of entries) {
+      expect(screenOf(key).id).toBe(key);
+      expect(screenOf(value).id).toBe(value);
+    }
+  });
+
+  test("no key is its own entry parent", () => {
+    for (const [key, value] of entries) expect(value).not.toBe(key);
+  });
+
+  test("no entry parent is a descendant of its key", () => {
+    for (const [key, value] of entries) {
+      const seen = new Set<ScreenId>();
+      let up: ScreenId | undefined = value;
+      while (up !== undefined) {
+        expect(up).not.toBe(key);
+        expect(seen.has(up)).toBe(false);
+        seen.add(up);
+        up = parentOf(up, "phone")?.id;
+      }
+    }
+  });
+
+  test("each entry parent is a root or a card on the phone", () => {
+    for (const [, value] of entries) expect(["root", "card"]).toContain(kindOf(screenOf(value), "phone"));
+  });
+
+  test("no key is a record-labelled screen, so the record override and the entry parent never meet", () => {
+    for (const [key] of entries) expect(screenOf(key).backLabel).not.toBe("record");
   });
 });
 
