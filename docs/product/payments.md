@@ -16,6 +16,8 @@ Es el mismo job de "manejar mi negocio desde el celular" que el de cualquier otr
 
 **Cuando** me siento a cobrar lo que me deben, **quiero** ver la deuda de cada cliente con su antigüedad, cómo se reparte toda la deuda entre reciente y vieja, y, al abrir un cliente, qué Sales siguen formando lo que me debe, **para** decidir a quién le pido primero y decirle exactamente qué tiene impago. (Parte 2 de GH-828: acá lo sirven los datos nuevos de `GET /api/payments/debtors`, que leen las pantallas de partes posteriores. Antes, el vendedor veía solo nombre, Balance y Owing since, y abría cada Customer para encontrar sus Sales impagas; no había reparto por antigüedad en ningún lado.)
 
+**Cuando** estoy por cobrarle a un Customer que me debe, o por recordárselo, **quiero** ver qué Sales todavía me debe y cuánto de cada una, la más vieja primero, **para** decirle exactamente qué cubre la plata y desde cuándo. (#899: acá lo sirven las líneas por Sale `still_owing` de `GET /api/payments/debtors` con `with_lines`, que leerán las pantallas de partes posteriores. Antes, ningún llamador tenía ese detalle en la lista de deudores: hacía falta una lectura por deudor y rehacer el Settlement en el navegador.)
+
 # Pagos
 
 El dinero que un **Customer** entrega, y lo que cada Customer debe por eso: su **Balance**, su **Owing since** y la cuenta de sus **Sales** y **Payments**. Lo ve solo su **Business** (ADR-0004). Lee las Sales y sus **On-the-spot payments** de sales (ADR-0007), los Customers de customers y los **Payment methods** de payment-methods (ADR-20261111-payment-methods-by-id). **Cash** (#7) cuenta los Payments en sus propias fechas, sea cual sea su medio. Qué Sale salda un Payment se calcula en el momento y nunca se guarda, igual que el **Cost of goods sold** (ADR-0009, ADR-0010), mientras que los precios de una Sale quedan congelados (ADR-0003). Quién debe se muestra como la sección Owed to you arriba de Customers y como el bloque "Owed to you" de Home; no hay una pantalla Owed to you aparte.
@@ -41,11 +43,15 @@ Criterios de éxito:
 10. **El medio, siempre a propósito** (parte 5 de GH-581, que sigue valiendo con la lista propia de GH-318): un Payment nunca se guarda sin medio, y el medio nunca viene puesto: Record payment abre siempre con el campo vacío, sin recordar nada de un Payment anterior.
 11. **Volver, Close y Escape predecibles** (parte 5 de GH-581): con la lista de medios abierta, volver o "Close" cierran solo la lista; con el formulario sin tocar, volver lleva a la pantalla de la que vino; con algo escrito o elegido, volver pregunta primero (LeaveConfirm). En la computadora, Escape cierra solo el desplegable. Nada de lo que Record payment hacía se pierde, y el **Mobile check** no gana ningún infractor.
 12. **La deuda por antigüedad suma el Total owed** (GH-828): los tres tramos (this week, 0 a 7 días; 8 a 30 días; over 30, 31 días o más) suman el Total owed, y un **Credit** nunca entra en ellos.
-13. **Las líneas por Sale que se deben** no forman parte de este cambio: pasan a #899 (GH-828, Decisión 1).
+13. **Las líneas por Sale que se deben** (#899, con `with_lines`):
+    - Para cada deudor, los `remaining` de sus líneas suman su Balance. Un Credit nunca aparece como línea ni baja una línea más allá de lo que ya hace el Settlement.
+    - Las líneas van primero la más vieja, en el orden del Settlement: las Sales por fecha y después por orden de registro.
+    - La fecha de la primera línea es igual al Owing since ("Since") del deudor; nunca se contradicen.
+    - Sin el flag, la respuesta conserva su contenido de antes y `still_owing` está presente con valor null, así que ningún llamador existente se ve afectado.
 14. **Un orden estable de deudores** (GH-828): el Owing since más viejo primero, después el Balance mayor, después el nombre sin distinguir mayúsculas ni acentos, después el orden de registro. Los mismos datos dan siempre el mismo orden.
 15. **La antigüedad en días del Business** (GH-828): se cuenta en días de hora argentina y cambia solo a la medianoche local. Una deuda de 30 días sigue en 8-30; pasada la próxima medianoche argentina tiene 31 y está en over 30. Una Sale con fecha posterior a hoy tiene 0 días y está en this week.
 16. **"N de M clientes me deben"** (GH-828): la cantidad de Customers incluye a los que no tienen Sales y a los que tienen un Credit; la cantidad de deudores no incluye a ninguno de los dos.
-17. **Nada de otro Business** (GH-828): ninguna cifra ni cantidad de otro Business aparece en la lista de deudores, y nada revela que exista.
+17. **Nada de otro Business** (GH-828, #899): ninguna cifra, cantidad, Sale ni **Sale number** de otro Business aparece en la lista de deudores ni en sus líneas, y nada revela que exista.
 
 ## Comportamiento
 
@@ -107,9 +113,19 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
 - **Por deudor**, además del nombre, el Balance y el Owing since:
   - `age_days` y `bucket`: la antigüedad de su Owing since, es decir de su deuda más vieja, y su tramo. Como `buckets` suma por Sale, las Sales de un deudor pueden caer en más de un tramo mientras el deudor lleva un solo `bucket`.
   - `customer_type_id`: el **Customer type** guardado del Customer, o null. Es null siempre que el interruptor Customer types de las **Pricing settings** está desactivado; el valor guardado nunca cambia. Solo el caso de uso lo oculta.
-- **Orden de los deudores**: el Owing since más viejo primero, después el Balance mayor, después el nombre sin distinguir mayúsculas ni acentos, después el orden de registro (el id del Customer). Reemplaza al desempate solo por nombre. Lo define únicamente el caso de uso `debtors()`; ningún router, esquema ni adaptador lo vuelve a ordenar.
+  - `still_owing` (#899): siempre presente. Vale `null` salvo que el pedido lleve `with_lines=true`; entonces es la lista de las Sales still owing de ese Customer, una línea por Sale.
+- **El parámetro `with_lines`** (#899): opcional, booleano y desactivado por defecto. Un valor que no es booleano recibe la misma respuesta 422 de validación que cualquier otro parámetro inválido, sin código de rechazo propio. La sección "Owed to you" de Customers y el bloque de Home no lo mandan en esta parte, así que su respuesta no cambia.
+- **Cada línea de `still_owing`**: `{sale_number, date, remaining}`.
+  - `sale_number` es el **Sale number** propio de la Sale en su Business (Sale #N en pantalla), nunca un id.
+  - `date` es la fecha de la Sale.
+  - `remaining` es lo que todavía se debe de esa Sale después del Settlement, nunca su total. Siempre es mayor que 0 y viaja en unidades de moneda como decimal (ADR-0058).
+  - Entran todas las Sales con algo todavía debido, las pagadas en parte incluidas, cada una una sola vez. Una Sale cubierta por un Credit está pagada y no entra.
+  - Van en el orden del Settlement: por fecha, después por orden de registro. La fecha de la primera es el Owing since del deudor, y los `remaining` suman su Balance.
+  - Un deudor siempre tiene al menos una línea, porque su Balance es mayor que $0. Un Customer con Credit o con Balance de $0 no es deudor y no tiene líneas.
+  - No hay tope de líneas por deudor ni campos extra (total de la Sale, Note). No hay un endpoint aparte por Customer.
+- **Orden de los deudores**: el Owing since más viejo primero, después el Balance mayor, después el nombre sin distinguir mayúsculas ni acentos, después el orden de registro (el id del Customer). Reemplaza al desempate solo por nombre. Lo define únicamente el caso de uso `debtors()`; ningún router, esquema ni adaptador lo vuelve a ordenar. `with_lines` no lo cambia.
 - **Dinero**: los montos viajan en unidades de moneda como decimal (ADR-0058).
-- **El resumen de deuda de Home** (results.md) usa la misma lectura con el mismo orden y sin Customer type. Su lista corta no cambia.
+- **El resumen de deuda de Home** (results.md) usa la misma lectura con el mismo orden, sin Customer type y sin líneas. Su lista corta no cambia.
 
 ### En pantalla: la sección "Owed to you" de Customers
 
@@ -123,7 +139,7 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
 - **La cabecera de Customers** no lleva ninguna cifra de deuda tocable: la sección misma está en pantalla.
 - **Búsqueda**: mientras se escribe una consulta, Customers se colapsa en una sola lista plana por nombre (customers.md); un Customer que debe conserva ahí su Balance, "owes you since dd/mm" y "Collect".
 - **Los Customers con Credit** nunca aparecen en la sección y no cuentan en ninguna cifra. En todos de la A a la Z muestran "Credit $ X" con el tratamiento neutro/azul, nunca verde ni ámbar.
-- Los tramos de antigüedad, las cantidades de Customers y deudores y el Customer type todavía no se muestran: los mostrarán partes posteriores.
+- Los tramos de antigüedad, las cantidades de Customers y deudores, el Customer type y las líneas por Sale todavía no se muestran: los mostrarán partes posteriores.
 
 ### En pantalla: la ficha del cliente (`ClienteFicha`)
 
@@ -208,7 +224,7 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
 - `payment` es la tabla de ADR-0007 y lleva `business_id`. El Business sale de la **Session**.
 - `payment.payment_method_id` apunta a `payment_method` con una FK compuesta `(business_id, payment_method_id)` ON DELETE RESTRICT; `payment.method` queda congelada, ahora admite nulo y las filas nuevas la dejan vacía (ADR-20261111-payment-methods-by-id). Solo el adaptador de tablas y las migraciones la nombran, y un test de arquitectura lo controla. La migración solo agregó y llenó la columna nueva, y el comparador M3 lo prueba.
 - El medio de un Payment nuevo se controla dentro del mismo `INSERT … SELECT` que lo escribe: si no es un medio ofrecido del Business, no se escribe nada y se responde 404 `payment_method.unavailable`.
-- La API de Payments lleva `payment_method_id` en lugar de `method`; es un quiebre declarado con una línea `Breaking-API:` en el PR (ADR-0066).
+- La API de Payments lleva `payment_method_id` en lugar de `method`; es un quiebre declarado con una línea `Breaking-API:` en el PR (ADR-0066). Agregar `still_owing` y `with_lines` (#899) solo suma un campo y un parámetro opcional, así que no es un quiebre.
 - Las rutas de Payment se suman al barrido de aislamiento, al test de rutas con acceso restringido y al test de migración de pertenencia.
 - Los códigos de rechazo van en `contract.json` (ADR-0008):
   - por encima del Balance;
@@ -221,7 +237,7 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
   - Payment inexistente.
 - Ningún monto ni nombre en los rechazos, los logs, la consola ni el almacenamiento del navegador (ADR-0005).
 - Todo Balance, Owing since, reparto del Settlement, total y cantidad en pantalla se lee de la API.
-- La antigüedad de cada deuda y lo que queda de cada Sale salen solo de `settle()` y de `app/payments/domain/debt_age.py`. Los tres tramos y la antigüedad de cada deudor se arman con los mismos valores del Settlement, nunca con una segunda consulta ni un segundo recorrido; ningún adaptador, router ni esquema recorre Sales contra Payments ni asigna un tramo a una fecha.
+- La antigüedad de cada deuda y lo que queda de cada Sale salen solo de `settle()` y de `app/payments/domain/debt_age.py`. Los tres tramos, la antigüedad de cada deudor y sus líneas `still_owing` (`StillOwingLine(sale_number, date, remaining)`, armadas desde `SettleResult.sales` con `still_owed > 0` en `app/payments/application/view_accounts.py`) se arman con los mismos valores del Settlement, nunca con una segunda consulta ni un segundo recorrido; ningún adaptador, router ni esquema recorre Sales contra Payments, asigna un tramo a una fecha ni reordena las líneas. El esquema (`DebtorsOut.of(debtors, with_lines)`) solo decide si `still_owing` sale como lista o como null.
 - Payments lee el interruptor Customer types por su propio puerto (`PricingSettingsReader`) y nunca importa `app.pricing_settings`.
 - El registro de pantallas no tiene clave para "modal en la computadora"; ningún chequeo del registro distingue una Sheet de una página. La **Design capture** y la corrida e2e son la evidencia.
 - La rama de computadora de `CobroFrame` no la edita el layout de celular; solo su rama de celular la dibuja `Sheet`.
@@ -272,12 +288,18 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
   - en la computadora, el primer Escape cierra solo el desplegable y el segundo sale o pregunta.
 - **Mobile check (criterio 11)**: no queda ninguna entrada `radio:Cash`, `radio:Transfer` ni `radio:Owing` en `touch-action.json`, y el chequeo pasa sin ningún infractor nuevo.
 - **Tramos = Total owed (criterio 12)**: un test por la API HTTP, con un Customer con Credit presente, muestra que `this_week + days_8_30 + over_30` es igual a `total_owed`. 0 diferencias.
-- **Líneas por Sale (criterio 13)**: no se construyen aquí; pasan a #899.
+- **Líneas por Sale (criterio 13, #899)**: tests por la API HTTP (TestClient, `app.state.clock`):
+  - sin `with_lines`, y con `with_lines=false`, cada deudor trae `still_owing` presente y null, y el resto de la respuesta es igual a la de antes;
+  - con `with_lines=true`, para cada deudor la suma de los `remaining` es igual a su Balance (0 diferencias), la fecha de la primera línea es igual a su Owing since, y una Sale pagada en parte aparece una sola vez con lo que le queda, nunca con su total;
+  - con Sales registradas fuera de orden de fecha y dos Sales de la misma fecha, las líneas siguen el orden del Settlement;
+  - un Customer con Credit no aparece y no aporta ninguna línea, y una Sale cubierta por un Credit no es una línea;
+  - un valor no booleano de `with_lines` recibe 422;
+  - el orden de los deudores, los totales, las cantidades y los tramos son iguales con el flag activado y desactivado.
 - **Orden (criterio 14)**: tres tests de empate pasan: mismo Owing since con distinto Balance; mismo Balance con distinto nombre plegado; mismo nombre plegado, que cae al orden de registro. Ninguna spec e2e ni vitest afirma ya un empate ordenado por nombre (D-69509906).
 - **Días del Business (criterio 15)**: una Sale con fecha posterior a hoy tiene `age_days` 0 y está en `this_week`; mover el reloj de 30 días a pasada la próxima medianoche argentina pasa de `days_8_30` / 30 a `over_30` / 31.
 - **Cantidades (criterio 16)**: `customer_count` incluye un Customer sin Sales y uno con Credit, y `debtor_count` no incluye a ninguno de los dos.
 - **Customer type (GH-828)**: `customer_type_id` es null con el interruptor Customer types desactivado y es el id guardado con el interruptor activado.
-- **Aislamiento de deudores (criterio 17)**: con un deudor, un Credit y un Customer sin Sales sembrados en otro Business, ninguna de sus cifras ni cantidades aparece.
+- **Aislamiento de deudores (criterio 17)**: con un deudor, un Credit y un Customer sin Sales sembrados en otro Business, ninguna de sus cifras ni cantidades aparece; con `with_lines=true` (`client` y `other_client`), las líneas de cada Business tienen solo sus propias Sales y Sale numbers, y nada de las del otro.
 
 ## Fuera de alcance
 
@@ -296,4 +318,5 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
 - Administrar la lista de Payment methods: payment-methods.md.
 - Recordar el último medio usado, o proponer uno por defecto.
 - Límites de antigüedad configurables por Business (supuesto conocido, #330).
-- Mostrar en pantalla los tramos, las cantidades de Customers y deudores, o el Customer type: partes posteriores.
+- Mostrar en pantalla los tramos, las cantidades de Customers y deudores, el Customer type o las líneas por Sale: partes posteriores.
+- Un tope de líneas por deudor, campos extra en una línea (el total de la Sale, su Note) o un endpoint aparte por Customer para las líneas.
