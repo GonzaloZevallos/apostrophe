@@ -47,6 +47,11 @@ export interface Sale {
   total: number
   lines: SaleLine[]
   still_owing: boolean
+  /** Where the sale stands on being paid, worked out live from the Settlement; `null`
+   * only when its payment facts cannot be reconciled. */
+  payment_state: 'paid' | 'unpaid' | 'part_paid' | null
+  /** The amount still owed on the sale, `0` when paid; `null` with `payment_state`. */
+  still_owed: number | null
 }
 
 export function listSales(dateFrom: string, dateTo: string): Promise<Sale[]> {
