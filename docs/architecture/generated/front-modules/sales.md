@@ -14,8 +14,10 @@ subgraph src["src"]
     src_sales_paymentMethods_ts["paymentMethods.ts"]
     src_sales_pricing_ts["pricing.ts"]
     src_sales_saleBill_ts["saleBill.ts"]
+    src_sales_saleBody_ts["saleBody.ts"]
   end
 end
 src_sales_grams_ts-->src_sales_pricing_ts
 src_sales_saleBill_ts-->src_sales_pricing_ts
+src_sales_saleBody_ts-->src_sales_pricing_ts
 ```
