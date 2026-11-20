@@ -88,6 +88,7 @@ El componente `web/src/screens/ventas/NuevaVentaProductos.tsx`, con sus lecturas
 - Una línea tiene, en un grupo nombrado por el Product: "−" ("Remove one {name}"), la cantidad de solo lectura y "+" ("Add one {name}").
 - La lista no fija ningún paso ni hace cuentas de cantidad: lo decide la Sale in progress (ver Líneas), y "−" desde 1 o menos saca la línea.
 - Una línea sin precio muestra "No price", "−" y la cantidad, sin "+". Una línea que pierde su precio por un cambio de fecha se queda en la venta hasta que la vendedora la saca con "−"; ninguna acción de la lista pierde una línea.
+- Una línea cuyo Product la lectura de Products ya no devuelve (archivado o eliminado en otro lado después de agregarlo) también se queda: muestra, en lugar del nombre, el texto compartido "no longer available" (el mismo que usa el Selector para una elección que ya no se ofrece), "No price", su cantidad y "−", que la saca como a cualquier línea. Nunca muestra un id interno ni un nombre adivinado. Su grupo y su "−" usan ese mismo texto como nombre, sin clave de copy nueva. Queda en "In the sale" en el orden en que se agregó y cuenta en su número, nunca aparece en "Most sold" ni en los resultados de búsqueda, y no tiene "+". Qué pasa al guardar con una línea así es de la parte del guardado.
 - Los botones miden al menos 44x44 px y sus glifos están ocultos para la accesibilidad.
 
 ### Secciones y búsqueda
@@ -108,11 +109,12 @@ El componente `web/src/screens/ventas/NuevaVentaProductos.tsx`, con sus lecturas
 - Con un cambio posterior de fecha o de Customer: los nombres y los pasos de las líneas se quedan, las celdas que dependen de la fecha muestran la marca compacta de carga, la lista queda ocupada y el aviso se oculta. Mientras el Customer está pendiente no se recotiza nada ni parpadea nada.
 - Mientras algo está pendiente no se muestra ningún precio, "No price", cifra de Stock, "+" de una fila fuera de la venta, aviso ni encabezado de sección.
 - Un fallo de red en Products o Pricing settings muestra el estado sin conexión; cualquier otro error, el error genérico. Cualquiera de los dos reemplaza la lista y le saca la marca de ocupada.
+- Si después de un fallo la vendedora pasa a una fecha que carga, la lista muestra las mismas filas esqueleto de la primera carga (ocupada, sin encabezado, dígito, símbolo de moneda, aviso ni botón) hasta que llega la respuesta, porque no queda ningún dato correcto que mostrar. La venta no pierde nada mientras tanto: al llegar la respuesta, "In the sale" vuelve con las mismas líneas, en el mismo orden y con las mismas cantidades, cotizadas para la fecha nueva (con "No price" o "no longer available" donde corresponda). Si la fecha nueva también falla, el error vuelve a reemplazar la lista.
 - Un fallo de las sugerencias no muestra ningún error y solo deja sin "Most sold".
 
 ### Textos
 
-En el Copy module (`web/src/copy/sales.ts`, grupo `newSale`), en inglés y sin palabras de Unit ni de tipo de producto: `productsInSale` "In the sale · {n}", `productsMostSold` "Most sold", `productsResults` "Results · {n}", `productStock` "{stock} in stock", `productNoPrice` "No price", `productAdd` "Add {name}", `productIncrease` "Add one {name}", `productDecrease` "Remove one {name}", `productSearchLabel` "Search products", `productSearchPlaceholder` "Search by name". El baseline se regenera, nunca se edita a mano.
+En el Copy module (`web/src/copy/sales.ts`, grupo `newSale`), en inglés y sin palabras de Unit ni de tipo de producto: `productsInSale` "In the sale · {n}", `productsMostSold` "Most sold", `productsResults` "Results · {n}", `productStock` "{stock} in stock", `productNoPrice` "No price", `productAdd` "Add {name}", `productIncrease` "Add one {name}", `productDecrease` "Remove one {name}", `productSearchLabel` "Search products", `productSearchPlaceholder` "Search by name". El texto "no longer available" se reutiliza del existente, no se agrega. El baseline se regenera, nunca se edita a mano.
 
 ### Diseño
 
@@ -122,7 +124,7 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale`), en inglés y sin p
 ## Fuera de esta capacidad (por ahora)
 
 - Cualquier ruta, entrada de navegación, pantalla o Sheet que monte la Sale in progress o la lista de Products, y el flip que las monta.
-- Los pasos de cliente, pago y guardado de New sale.
+- Los pasos de cliente, pago y guardado de New sale, incluido qué pasa al guardar una línea cuyo Product ya no está disponible.
 - Código de barras y categoría en la lista de Products.
 - Reescribir el criterio 34 de sales.md ("el medio nunca viene puesto"), que le corresponde a la parte que preselecciona el medio en pantalla.
 - Gift, Special price y la Sheet del detalle de línea.
@@ -133,7 +135,8 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale`), en inglés y sin p
 
 - Cada regla de Líneas, Sin guardar, Cómo se paga, Cliente y owing, y Apertura tiene su test unitario de la Sale in progress, y pasa.
 - Cliente de sugerencias, a nivel de fetch: exactamente 1 pedido por apertura, con `on` igual a la fecha de apertura; 0 pedidos nuevos después de editar la fecha o volver a dibujar; 1 pedido nuevo en una apertura de otro día; una lectura fallida da ninguna sugerencia y 0 errores lanzados.
-- Lista de Products, en tests de componente a nivel de fetch: cada caso de la lista (pasos, cantidades tipeadas, una línea por Product, "No price", línea que pierde su precio, carga, sugerencias filtradas y con tope, búsqueda, Stock, bulk a 10, recotización por Customer y por fecha, aviso, fallos) tiene su test y pasa; 0 pedidos nuevos de sugerencias tras cambiar la fecha; 0 cambios en los totales de la venta al mostrar más filas o buscar.
+- Lista de Products, en tests de componente a nivel de fetch: cada caso de la lista (pasos, cantidades tipeadas, una línea por Product, "No price", línea que pierde su precio, línea cuyo Product ya no vuelve, carga, recuperación tras un fallo con cambio de fecha, sugerencias filtradas y con tope, búsqueda, Stock, bulk a 10, recotización por Customer y por fecha, aviso, fallos) tiene su test y pasa; 0 pedidos nuevos de sugerencias tras cambiar la fecha; 0 cambios en los totales de la venta al mostrar más filas o buscar.
+- Líneas perdidas por una acción de la lista, una recarga de Products o una recuperación tras un fallo: 0. Ids internos mostrados en pantalla: 0.
 - Cifras mostradas antes de que lleguen todas las lecturas (dígitos, símbolo de moneda, "No price", aviso, encabezados): 0.
 - Operaciones de dinero en `useSaleDraft`, en el cliente de sugerencias y en la lista de Products: 0 (todo pasa por `pricing.ts`).
 - Rutas, constantes, parámetros, banderas, props, exports o hooks `data-*` solo para tests: 0.
