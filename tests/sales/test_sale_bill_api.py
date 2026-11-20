@@ -336,7 +336,11 @@ def _spy(app: FastAPI, bend: Callable[[CustomerSettlement], dict[int, int]]) -> 
 
 
 def _without_bill_and_owing(detail: dict[str, Any]) -> dict[str, Any]:
-    return {k: v for k, v in detail.items() if k not in ("bill", "still_owing")}
+    return {
+        k: v
+        for k, v in detail.items()
+        if k not in ("bill", "still_owing", "payment_state", "still_owed")
+    }
 
 
 def test_a_sale_dropped_from_settlement_answers_200_with_no_bill_and_the_rest_unchanged(
