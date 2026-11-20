@@ -6966,6 +6966,51 @@ a.ajustes-tema__opcion {
   text-overflow: ellipsis;
 }
 
+/* Settings → Payments and expenses, restyled (`ConfiguracionCobros.dc.html` and its dark twin):
+ * a line under the title, then each row in its own card under a small heading. Scoped to the
+ * page, so no other Settings group changes. */
+.ajustes-cobros .ajustes__lista {
+  gap: var(--espacio-md);
+  margin-top: var(--espacio-md);
+}
+
+.ajustes-cobros__intro {
+  margin: 0;
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.ajustes-cobros__seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
+.ajustes-cobros__encabezado {
+  margin: var(--espacio-xs) var(--espacio-xs) 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tinta2);
+}
+
+.ajustes-cobros__tarjeta {
+  display: flex;
+  flex-direction: column;
+  background: var(--superficie);
+  border-radius: var(--radio-campo);
+  box-shadow: 0 0 0 1px var(--linea);
+}
+
+.ajustes-cobros .ajustes__item {
+  min-height: 60px;
+  padding: 0 14px;
+  border-bottom: 0;
+}
+
+.ajustes-cobros .ajustes__item-rotulo {
+  font-size: 16px;
+}
+
 /* Payment methods list: icon beside the name, 44 px move buttons, the row's action last. */
 .medio-pago-fila {
   display: flex;
