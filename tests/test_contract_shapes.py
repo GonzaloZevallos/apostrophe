@@ -586,3 +586,41 @@ def test_a_path_behind_a_deref_d_ref_declared_the_wrong_json_type_fails() -> Non
     wrong: dict[str, JsonType] = {"x": "string", "x.nested": "string"}
     with pytest.raises(AssertionError):
         _assert_declared_matches_schema(_REF_BEHIND_NULLABLE_ANY_OF, wrong, components=COMPONENTS)
+
+
+# -- a ShapeOf is declared an array or an object by the fixture's own target ---------
+
+_LIST_TARGET = ShapeOf("debtors", "debtors[].still_owing")
+_OBJECT_TARGET = ShapeOf("analysis", "month.shortfall")
+_NULLABLE_ARRAY_FIELD = {
+    "type": "object",
+    "properties": {
+        "foo": {"anyOf": [{"type": "array", "items": {"type": "string"}}, {"type": "null"}]}
+    },
+}
+_NULLABLE_OBJECT_FIELD = {
+    "type": "object",
+    "properties": {"foo": {"anyOf": [{"type": "object", "properties": {}}, {"type": "null"}]}},
+}
+
+
+def test_a_shape_of_is_declared_an_array_when_its_fixture_target_is_a_list_else_an_object() -> None:
+    assert _declared_json_type(_LIST_TARGET) == "array"
+    assert _declared_json_type(_OBJECT_TARGET) == "object"
+    assert _declared_json_type("string") == "string"
+
+
+def test_a_list_target_declared_against_an_object_schema_is_rejected() -> None:
+    declared = {"foo": _declared_json_type(_LIST_TARGET)}
+
+    _assert_declared_matches_schema(_NULLABLE_ARRAY_FIELD, declared)
+    with pytest.raises(AssertionError):
+        _assert_declared_matches_schema(_NULLABLE_OBJECT_FIELD, declared)
+
+
+def test_an_object_target_declared_against_an_array_schema_is_rejected() -> None:
+    declared = {"foo": _declared_json_type(_OBJECT_TARGET)}
+
+    _assert_declared_matches_schema(_NULLABLE_OBJECT_FIELD, declared)
+    with pytest.raises(AssertionError):
+        _assert_declared_matches_schema(_NULLABLE_ARRAY_FIELD, declared)
