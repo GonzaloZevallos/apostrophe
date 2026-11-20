@@ -3044,6 +3044,16 @@
         "title": "PaymentRefOut",
         "type": "object"
       },
+      "PaymentState": {
+        "description": "Where a sale stands on being paid (CONTEXT.md: Payment state). The values are the\nwire strings.",
+        "enum": [
+          "paid",
+          "unpaid",
+          "part_paid"
+        ],
+        "title": "PaymentState",
+        "type": "string"
+      },
       "PeriodOut": {
         "properties": {
           "average_sale": {
@@ -4473,6 +4483,16 @@
               }
             ]
           },
+          "payment_state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "shipping_charged": {
             "anyOf": [
               {
@@ -4483,6 +4503,20 @@
               }
             ],
             "title": "Shipping Charged"
+          },
+          "still_owed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Still Owed"
           },
           "still_owing": {
             "title": "Still Owing",
@@ -4517,6 +4551,8 @@
           "lines",
           "total_quantity",
           "still_owing",
+          "payment_state",
+          "still_owed",
           "bill"
         ],
         "title": "SaleDetailOut",
@@ -4803,6 +4839,16 @@
               }
             ]
           },
+          "payment_state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "shipping_charged": {
             "anyOf": [
               {
@@ -4813,6 +4859,20 @@
               }
             ],
             "title": "Shipping Charged"
+          },
+          "still_owed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Still Owed"
           },
           "still_owing": {
             "title": "Still Owing",
@@ -4841,7 +4901,9 @@
           "payment_method",
           "total",
           "lines",
-          "still_owing"
+          "still_owing",
+          "payment_state",
+          "still_owed"
         ],
         "title": "SaleOut",
         "type": "object"
