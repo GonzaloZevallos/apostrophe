@@ -474,6 +474,36 @@
         "title": "AssignCustomerIn",
         "type": "object"
       },
+      "BestSellerOut": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "sales": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Sales"
+          }
+        },
+        "required": [
+          "product_id",
+          "name",
+          "sales"
+        ],
+        "title": "BestSellerOut",
+        "type": "object"
+      },
       "BillPaymentOut": {
         "additionalProperties": false,
         "properties": {
@@ -2109,6 +2139,60 @@
           "password"
         ],
         "title": "LoginIn",
+        "type": "object"
+      },
+      "LowStockOut": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/LowStockRowOut"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "rows"
+        ],
+        "title": "LowStockOut",
+        "type": "object"
+      },
+      "LowStockRowOut": {
+        "description": "A Product to restock: Stock as stored (negatives included) and its status, the\nvalues `GET /stock` gives the same Product.",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          },
+          "status": {
+            "enum": [
+              "sold_out",
+              "low"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "name",
+          "quantity",
+          "status"
+        ],
+        "title": "LowStockRowOut",
         "type": "object"
       },
       "MarginOut": {
@@ -4987,6 +5071,13 @@
       "TodayOut": {
         "description": "Today's Sales and the so-far comparison against the same weekday last week.\n`change_percent` is `null` when last week's so-far is 0, never 0 or infinite.\n`hourly_today` ends at the current hour and can end below `sales` (a Sale recorded\non another day than its date counts at hour 23); `hourly_last_week` runs 0..23.",
         "properties": {
+          "best_sellers": {
+            "items": {
+              "$ref": "#/components/schemas/BestSellerOut"
+            },
+            "title": "Best Sellers",
+            "type": "array"
+          },
           "change_percent": {
             "anyOf": [
               {
@@ -5035,8 +5126,14 @@
             ],
             "title": "Last Week So Far"
           },
+          "low_stock": {
+            "$ref": "#/components/schemas/LowStockOut"
+          },
           "money_in": {
             "$ref": "#/components/schemas/MoneyInOut"
+          },
+          "month_profit": {
+            "$ref": "#/components/schemas/AmountWithPendingOut"
           },
           "sales": {
             "anyOf": [
@@ -5075,7 +5172,10 @@
           "hourly_today",
           "hourly_last_week",
           "last_7_days",
-          "money_in"
+          "money_in",
+          "low_stock",
+          "best_sellers",
+          "month_profit"
         ],
         "title": "TodayOut",
         "type": "object"

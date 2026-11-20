@@ -1197,6 +1197,59 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
     assert b_panel["stock"] == []
 
 
+def test_another_business_reads_none_of_the_low_or_best_selling_products(
+    business_a: TestClient, business_b: TestClient, engine: Engine, clock: MovableClock
+) -> None:
+    """A seeds a low Product, a hidden low one, an archived one sold this week and one
+    sold with no entries: none of their ids or names reaches B's Today block, and B's
+    month Profit is its own Month row."""
+    today = clock().date().isoformat()
+    ids = {}
+    for key in ("low", "hidden", "archived", "negative"):
+        variety = business_a.post("/api/products", json={"name": f"{MARKER} {key}"}).json()
+        business_a.post(
+            f"/api/products/{variety['id']}/prices",
+            json={"effective_from": "2026-01-01", "list_price": 1_000},
+        )
+        ids[key] = variety["id"]
+    for key in ("low", "hidden", "archived"):
+        entry = business_a.post(
+            "/stock/entries",
+            json={"product_id": ids[key], "origin": "opening_stock", "quantity": "2"},
+        )
+        assert entry.status_code == 201, entry.text
+    for key in ("low", "hidden"):
+        threshold = business_a.put(f"/stock/products/{ids[key]}/threshold", json={"quantity": "10"})
+        assert threshold.status_code == 200, threshold.text
+    hidden = business_a.put(
+        f"/catalog/products/{ids['hidden']}",
+        json={"shown": False, "emoji": None, "indica_share": None, "aroma": None},
+    )
+    assert hidden.status_code == 200, hidden.text
+    for key in ("archived", "negative"):
+        sale = business_a.post(
+            "/sales",
+            json={
+                "date": today,
+                "payment": {"kind": "paid", "payment_method_id": 1},
+                "lines": [{"product_id": ids[key], "quantity": "1"}],
+            },
+        )
+        assert sale.status_code == 201, sale.text
+    archive_by_hand(engine, ids["archived"])
+    a_block = business_a.get("/panel").json()["today"]
+    assert a_block["low_stock"]["count"] == 3
+    assert [row["name"] for row in a_block["best_sellers"]] != []
+
+    b_response = business_b.get("/panel")
+    b_block = b_response.json()["today"]
+
+    assert b_block["low_stock"] == {"count": 0, "rows": []}
+    assert b_block["best_sellers"] == []
+    assert b_block["month_profit"] == {"amount": 0, "pending_quantity": 0}
+    assert MARKER not in b_response.text
+
+
 def test_another_business_gets_404_deleting_an_on_the_spot_payment(
     business_a: TestClient, business_b: TestClient, engine: Engine, seeded: dict[str, int]
 ) -> None:
