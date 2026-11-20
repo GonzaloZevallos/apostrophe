@@ -753,7 +753,7 @@ describe('rowPrices', () => {
     variety(5, entry({ list_price: 1000, bulk_price: 900, bulk_minimum: 1e-7 })),
     variety(6, entry({ list_price: 1000, bulk_price: 900, bulk_minimum: 1 })),
   ]
-  const rows =(over: Partial<Parameters<typeof rowPrices>[0]> = {}) =>
+  const rows = (over: Partial<Parameters<typeof rowPrices>[0]> = {}) =>
     rowPrices({
       productIds: [1, 2, 3, 4, 99],
       products: PRODUCTS,
