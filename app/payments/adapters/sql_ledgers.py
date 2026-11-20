@@ -42,13 +42,18 @@ class SqlLedgers:
 
     def all(self) -> Sequence[NamedLedger]:
         names = self._session.execute(
-            select(CustomerRow.id, CustomerRow.name).where(
+            select(CustomerRow.id, CustomerRow.name, CustomerRow.phone).where(
                 CustomerRow.business_id == self._business_id
             )
         ).all()
         ledgers = self._ledgers([row.id for row in names])
         return [
-            NamedLedger(id=row.id, name=row.name, ledger=ledgers.get(row.id, Ledger((), ())))
+            NamedLedger(
+                id=row.id,
+                name=row.name,
+                ledger=ledgers.get(row.id, Ledger((), ())),
+                phone=row.phone,
+            )
             for row in names
         ]
 

@@ -120,3 +120,17 @@ def test_panel_and_debtors_agree_with_a_direct_computation_and_a_credit_customer
     assert panel["oldest"] == debtors["debtors"][0]["owing_since"]
     assert [row["customer_id"] for row in panel["teaser"]] == [first, second]
     assert [row["balance"] for row in panel["teaser"]] == owed
+
+
+def test_debtors_and_the_panel_teaser_rows_carry_no_phone(client: TestClient) -> None:
+    variety_id = _priced_variety(client)
+    customer = _customer(client, 1)
+    assert client.get(f"/customers/{customer}").json()["phone"] is not None
+    _owing_sale(client, customer, variety_id, 2)
+
+    [row] = client.get("/payments/debtors").json()["debtors"]
+    [teaser] = client.get("/panel").json()["debts"]["teaser"]
+
+    assert set(row) == {"customer", "balance", "owing_since", "standing"}
+    assert set(row["customer"]) == {"id", "name"}
+    assert set(teaser) == {"customer_id", "name", "balance", "owing_since"}

@@ -5,7 +5,7 @@ Balance, Owing since, Sales still owing). Both come only from `settle()`/`accoun
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 
 from app.payments.application.errors import CustomerNotFound
@@ -29,6 +29,7 @@ class Debtor:
     balance: int
     owing_since: date | None
     standing: Standing
+    phone: str | None = field(repr=False)
 
 
 @dataclass(frozen=True)
@@ -61,6 +62,7 @@ def debtors(ledgers: Ledgers) -> Debtors:
                 balance=result.balance,
                 owing_since=result.owing_since,
                 standing=result.standing,
+                phone=named.phone,
             )
         )
 

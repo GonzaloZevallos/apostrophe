@@ -116,3 +116,24 @@ def test_read_matches_get_payments_debtors(client: TestClient, engine: Engine) -
     # The order itself, oldest debt first: both debtors appear, the credit and settled
     # customers appear in neither.
     assert [row.customer_id for row in answer.debtors] == [older_debtor_id, newer_debtor_id]
+
+
+def test_debtor_row_phone_is_the_stored_value_or_none_and_is_not_in_its_repr(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _priced_variety(client)
+    with_phone = client.post(
+        "/customers", json={"name": "Con telefono", "phone": "11 3000-0001", "phone_country": "AR"}
+    ).json()
+    without_phone = client.post("/customers", json={"name": "Sin telefono"}).json()
+    assert with_phone["phone"] is not None
+    _owing_sale(client, with_phone["id"], variety_id, quantity="2", date="2026-09-01")
+    _owing_sale(client, without_phone["id"], variety_id, quantity="2", date="2026-09-02")
+
+    with Session(engine) as session:
+        answer = SqlDebtSummary(session, _business_id_of_customer(engine, with_phone["id"])).read()
+
+    phones = {row.customer_id: row.phone for row in answer.debtors}
+    assert phones == {with_phone["id"]: with_phone["phone"], without_phone["id"]: None}
+    [phoned] = [row for row in answer.debtors if row.customer_id == with_phone["id"]]
+    assert with_phone["phone"] not in repr(phoned)
