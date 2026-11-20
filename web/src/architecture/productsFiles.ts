@@ -1,6 +1,6 @@
 /**
- * The pieces `Variedades` hands the Products layouts (`screens/varieties/ProductsComputer` and the
- * blocks it renders) are leaves: they draw what `Variedades` read and decided.
+ * The pieces `Variedades` hands the Products layouts (`screens/varieties/ProductsComputer`,
+ * `ProductsBody` and the blocks they render) are leaves: they draw what `Variedades` read and decided.
  *
  *   1. They import no value from `screens/Variedades` (only `import type`): `Variedades` imports
  *      them, so a value coming back would be a runtime cycle;
@@ -17,6 +17,7 @@ export interface Source {
 
 /** The files this rule covers. A new piece of the Products layouts is listed here. */
 export const PRODUCTS_FILES = [
+  'src/screens/varieties/ProductsBody.tsx',
   'src/screens/varieties/ProductsComputer.tsx',
   'src/screens/varieties/VarietyRows.tsx',
   'src/screens/varieties/SendCatalog.tsx',

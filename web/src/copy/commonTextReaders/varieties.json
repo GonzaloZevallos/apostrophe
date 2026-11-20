@@ -7,7 +7,6 @@
   "web/src/screens/varieties/PriceHistory.tsx",
   "web/src/screens/varieties/PriceNew.tsx",
   "web/src/screens/varieties/PriceRows.tsx",
-  "web/src/screens/varieties/ProductsComputer.tsx",
   "web/src/screens/varieties/RenameForm.tsx",
   "web/src/screens/varieties/StockActions.tsx",
   "web/src/screens/varieties/ThresholdForm.tsx",
