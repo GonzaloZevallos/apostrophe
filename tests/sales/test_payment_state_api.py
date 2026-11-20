@@ -316,12 +316,10 @@ def test_an_inconsistent_sale_is_null_on_the_list_and_every_other_row_is_unchang
         )
     healthy = listed[broken["healthy"]]
     assert (healthy["payment_state"], healthy["still_owed"]) == ("unpaid", PRICE)
-    assert sorted(r.args or () for r in _unreconciled(caplog)) == sorted(
-        [
-            (business_id, broken["dropped"]["number"]),
-            (business_id, broken["spot"]["number"]),
-        ]
-    )
+    logged = [r.args for r in _unreconciled(caplog)]
+    assert len(logged) == 2
+    assert (business_id, broken["dropped"]["number"]) in logged
+    assert (business_id, broken["spot"]["number"]) in logged
 
 
 def test_the_detail_of_an_inconsistent_sale_is_null_with_no_bill_and_logs_once(
