@@ -30,6 +30,16 @@ def account(ledgers: Ledgers, customer_id: int) -> Account:
 
 
 @dataclass(frozen=True)
+class StillOwingLine:
+    """One Sale a debtor still owes after the Settlement: its own number and date, and
+    what is left on it (never its total, always above $0)."""
+
+    sale_number: int
+    sale_date: date
+    remaining: int
+
+
+@dataclass(frozen=True)
 class Debtor:
     customer_id: int
     name: str
@@ -40,6 +50,9 @@ class Debtor:
     bucket: DebtAgeBucket
     customer_type_id: int | None
     phone: str | None = field(repr=False)
+    # The Settlement's Sales still owing, oldest first, one line each: not
+    # `SettleResult.still_owing`, which is only the set of their ids.
+    still_owing: tuple[StillOwingLine, ...]
 
 
 @dataclass(frozen=True)
@@ -81,6 +94,15 @@ def debtors(ledgers: Ledgers, today: date, show_customer_type: bool) -> Debtors:
         # can never spend more of a payment than the business's sales owe in total),
         # so `owing_since` is never `None` here.
         assert result.owing_since is not None
+        lines = tuple(
+            StillOwingLine(
+                sale_number=sale.sale_number, sale_date=sale.sale_date, remaining=sale.still_owed
+            )
+            for sale in result.sales
+            if sale.still_owed > 0
+        )
+        # For the same reason as above: a balance above $0 leaves a sale still owing.
+        assert lines
         total_owed += result.balance
         owing_sales.extend(result.sales)
         age_days = age_in_days(result.owing_since, today)
@@ -95,6 +117,7 @@ def debtors(ledgers: Ledgers, today: date, show_customer_type: bool) -> Debtors:
                 bucket=bucket_of(age_days),
                 customer_type_id=named.customer_type_id if show_customer_type else None,
                 phone=named.phone,
+                still_owing=lines,
             )
         )
 

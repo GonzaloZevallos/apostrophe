@@ -95,6 +95,10 @@ def test_a_later_payment_is_stored_at_the_business_scale_and_the_account_reads_i
     debtors = client.get("/payments/debtors").json()
     assert (debtors["total_owed"], debtors["debtors"][0]["balance"]) == (6_500, 6_500)
     assert_money_is_int(debtors, "total_owed", "debtors[].balance")
+    with_lines = client.get("/payments/debtors?with_lines=true").json()
+    lines = with_lines["debtors"][0]["still_owing"]
+    assert sum(line["remaining"] for line in lines) == 6_500
+    assert all(type(line["remaining"]) is int for line in lines)
 
 
 def test_the_preview_is_the_same_at_both_scales(client: TestClient, money_scale: int) -> None:

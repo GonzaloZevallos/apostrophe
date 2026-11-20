@@ -1058,6 +1058,48 @@ def test_another_business_reads_debtors_as_zero_while_a_has_debt(
     }
 
 
+def _owes_one_sale(client: TestClient, *, name: str, on: str, quantity: str) -> dict[str, Any]:
+    """A business's own priced variety, customer and one owing Sale: its number is 1 in
+    whichever business, so two businesses collide on it."""
+    variety = client.post("/api/products", json={"name": f"{name} variety"}).json()
+    client.post(
+        f"/api/products/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 1_000},
+    )
+    customer = client.post(
+        "/customers", json={"name": name, "phone": "11 3000-0000", "phone_country": "AR"}
+    ).json()
+    sale = client.post(
+        "/sales",
+        json={
+            "payment": {"kind": "owing"},
+            "customer_id": customer["id"],
+            "date": on,
+            "lines": [{"product_id": variety["id"], "quantity": quantity}],
+        },
+    )
+    assert sale.status_code == 201, sale.text
+    return {"customer": customer["id"], "number": sale.json()["number"]}
+
+
+def test_each_business_reads_only_its_own_still_owing_lines_when_sale_numbers_collide(
+    business_a: TestClient, business_b: TestClient
+) -> None:
+    a = _owes_one_sale(business_a, name="Ana", on="2026-09-10", quantity="3")
+    b = _owes_one_sale(business_b, name="Beto", on="2026-09-14", quantity="5")
+    assert a["number"] == b["number"], "both businesses start numbering at 1"
+
+    a_debtors = business_a.get("/payments/debtors?with_lines=true").json()["debtors"]
+    b_debtors = business_b.get("/payments/debtors?with_lines=true").json()["debtors"]
+
+    assert [(row["customer"]["id"], row["still_owing"]) for row in a_debtors] == [
+        (a["customer"], [{"sale_number": a["number"], "date": "2026-09-10", "remaining": 3_000}])
+    ]
+    assert [(row["customer"]["id"], row["still_owing"]) for row in b_debtors] == [
+        (b["customer"], [{"sale_number": b["number"], "date": "2026-09-14", "remaining": 5_000}])
+    ]
+
+
 def test_another_business_sees_none_of_a_debtor_a_credit_or_a_customer_without_sales(
     business_a: TestClient, business_b: TestClient, seeded: dict[str, int]
 ) -> None:

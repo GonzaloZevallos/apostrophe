@@ -12,7 +12,8 @@
       "standing": "owes",
       "age_days": 18,
       "bucket": "days_8_30",
-      "customer_type_id": null
+      "customer_type_id": null,
+      "still_owing": [{ "sale_number": 3, "date": "2026-08-01", "remaining": 9000 }]
     }
   ]
 }
