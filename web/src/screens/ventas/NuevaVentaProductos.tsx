@@ -8,7 +8,7 @@
  * pricing is `null`. The component computes no money and no quantity, and reads `current_price`
  * nowhere (`nothingSellable` does, for the hint).
  *
- * Until the search (#940) and the loading and failure states (#941) land, one guard decides: while
+ * Until the search and the loading and failure states land in their own parts, one guard decides: while
  * any read is pending, a date's Products are not in, a read failed or the Customer is `'pending'`,
  * the list renders nothing (no stand-in UI). The draft keeps every line meanwhile.
  */
@@ -18,6 +18,7 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { keys } from '../../api/keys'
 import { readStock } from '../../api/stock'
+import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
 import { formatQuantity } from '../../format/money'
 import { useMoney } from '../../format/moneyContext'
@@ -150,26 +151,20 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
                   {datos(name, line.productId, product !== undefined)}
                   {priceCell(pricing)}
                   <div role="group" aria-label={name} className="nv-productos__pasos">
-                    <button
-                      type="button"
-                      className="boton-icono nv-productos__paso"
-                      aria-label={TEXT.productDecrease(name)}
-                      onClick={() => draft.stepDown(line.productId)}
-                    >
-                      <span aria-hidden="true">{MINUS}</span>
-                    </button>
+                    <span className="nv-productos__paso">
+                      <Boton variant="row" ariaLabel={TEXT.productDecrease(name)} onClick={() => draft.stepDown(line.productId)}>
+                        <span aria-hidden="true">{MINUS}</span>
+                      </Boton>
+                    </span>
                     <span className="nv-productos__cantidad cifra-n">{formatQuantity(line.quantityHundredths)}</span>
                     {pricing === null || pricing === undefined ? (
                       <span className="nv-productos__paso-vacio" aria-hidden="true" />
                     ) : (
-                      <button
-                        type="button"
-                        className="boton-icono nv-productos__paso"
-                        aria-label={TEXT.productIncrease(name)}
-                        onClick={() => draft.stepUp(line.productId)}
-                      >
-                        <span aria-hidden="true">+</span>
-                      </button>
+                      <span className="nv-productos__paso">
+                        <Boton variant="row" ariaLabel={TEXT.productIncrease(name)} onClick={() => draft.stepUp(line.productId)}>
+                          <span aria-hidden="true">+</span>
+                        </Boton>
+                      </span>
                     )}
                   </div>
                 </li>
@@ -191,14 +186,11 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
                   {datos(product.name, id, true)}
                   {priceCell(pricing)}
                   {pricing === null || pricing === undefined ? null : (
-                    <button
-                      type="button"
-                      className="boton-icono nv-productos__paso"
-                      aria-label={TEXT.productAdd(product.name)}
-                      onClick={() => draft.addProduct(id)}
-                    >
-                      <span aria-hidden="true">+</span>
-                    </button>
+                    <span className="nv-productos__paso">
+                      <Boton variant="row" ariaLabel={TEXT.productAdd(product.name)} onClick={() => draft.addProduct(id)}>
+                        <span aria-hidden="true">+</span>
+                      </Boton>
+                    </span>
                   )}
                 </li>,
               ]

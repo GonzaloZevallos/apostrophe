@@ -104,7 +104,7 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   ],
   'SALES_TEXT.saleNumber': [[1284]],
   'SALES_TEXT.deleteSaleConfirm': [[M, D, G]],
-  'SALES_TEXT.newSale.productsInSale': counted((n) => [n]),
+  'SALES_TEXT.newSale.productsInSale': [[2]],
   'SALES_TEXT.newSale.productStock': [['1,5']],
   'SALES_TEXT.newSale.productAdd': [['Rosa']],
   'SALES_TEXT.newSale.productIncrease': [['Rosa']],

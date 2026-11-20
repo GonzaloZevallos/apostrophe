@@ -5347,8 +5347,22 @@ a.ajustes-tema__opcion {
 }
 
 .nv-productos__paso {
+  display: flex;
+  flex-shrink: 0;
+}
+
+/* The step is a `Boton` row (the one button component): reshaped here into the round 44 px target. */
+.nv-productos__paso .boton--fila {
+  align-items: center;
+  justify-content: center;
+  width: var(--alto-tocable);
+  height: var(--alto-tocable);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radio-pildora);
   background: var(--acento-suave);
   color: var(--acento-oscuro);
+  font-size: 20px;
 }
 
 .nv-productos__paso-vacio {
