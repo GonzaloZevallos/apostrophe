@@ -474,6 +474,36 @@
         "title": "AssignCustomerIn",
         "type": "object"
       },
+      "BestSellerOut": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "sales": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Sales"
+          }
+        },
+        "required": [
+          "product_id",
+          "name",
+          "sales"
+        ],
+        "title": "BestSellerOut",
+        "type": "object"
+      },
       "BillPaymentOut": {
         "additionalProperties": false,
         "properties": {
@@ -1339,6 +1369,32 @@
         "title": "CustomerTypePatchIn",
         "type": "object"
       },
+      "DaySalesOut": {
+        "properties": {
+          "day": {
+            "format": "date",
+            "title": "Day",
+            "type": "string"
+          },
+          "sales": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Sales"
+          }
+        },
+        "required": [
+          "day",
+          "sales"
+        ],
+        "title": "DaySalesOut",
+        "type": "object"
+      },
       "DebtBucketsOut": {
         "properties": {
           "days_8_30": {
@@ -2143,6 +2199,60 @@
         "title": "LoginIn",
         "type": "object"
       },
+      "LowStockOut": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/LowStockRowOut"
+            },
+            "title": "Rows",
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "rows"
+        ],
+        "title": "LowStockOut",
+        "type": "object"
+      },
+      "LowStockRowOut": {
+        "description": "A Product to restock: Stock as stored (negatives included) and its status, the\nvalues `GET /stock` gives the same Product.",
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "product_id": {
+            "title": "Product Id",
+            "type": "integer"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          },
+          "status": {
+            "enum": [
+              "sold_out",
+              "low"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "name",
+          "quantity",
+          "status"
+        ],
+        "title": "LowStockRowOut",
+        "type": "object"
+      },
       "MarginOut": {
         "description": "A margin in pesos, worked out over costed grams only (ADR-0020): a product's own\nmargin, or the chosen month's average margin. `percent` is `null` when the sales it\nis taken over are $0; `pending_quantity` is the sold-or-gifted grams behind it that are\nnot costed yet.",
         "properties": {
@@ -2229,6 +2339,36 @@
           "name"
         ],
         "title": "MethodIn",
+        "type": "object"
+      },
+      "MethodMoneyOut": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Amount"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "payment_method_id": {
+            "title": "Payment Method Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "payment_method_id",
+          "name",
+          "amount"
+        ],
+        "title": "MethodMoneyOut",
         "type": "object"
       },
       "MethodOut": {
@@ -2324,6 +2464,35 @@
           "decimals"
         ],
         "title": "MoneyFormatOut",
+        "type": "object"
+      },
+      "MoneyInOut": {
+        "description": "Today's Payments by method, only methods with a Payment today, in list order.",
+        "properties": {
+          "methods": {
+            "items": {
+              "$ref": "#/components/schemas/MethodMoneyOut"
+            },
+            "title": "Methods",
+            "type": "array"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "total",
+          "methods"
+        ],
+        "title": "MoneyInOut",
         "type": "object"
       },
       "MonthRowOut": {
@@ -4960,6 +5129,13 @@
       "TodayOut": {
         "description": "Today's Sales and the so-far comparison against the same weekday last week.\n`change_percent` is `null` when last week's so-far is 0, never 0 or infinite.\n`hourly_today` ends at the current hour and can end below `sales` (a Sale recorded\non another day than its date counts at hour 23); `hourly_last_week` runs 0..23.",
         "properties": {
+          "best_sellers": {
+            "items": {
+              "$ref": "#/components/schemas/BestSellerOut"
+            },
+            "title": "Best Sellers",
+            "type": "array"
+          },
           "change_percent": {
             "anyOf": [
               {
@@ -4985,6 +5161,13 @@
             "title": "Hourly Today",
             "type": "array"
           },
+          "last_7_days": {
+            "items": {
+              "$ref": "#/components/schemas/DaySalesOut"
+            },
+            "title": "Last 7 Days",
+            "type": "array"
+          },
           "last_week_day": {
             "format": "date",
             "title": "Last Week Day",
@@ -5000,6 +5183,15 @@
               }
             ],
             "title": "Last Week So Far"
+          },
+          "low_stock": {
+            "$ref": "#/components/schemas/LowStockOut"
+          },
+          "money_in": {
+            "$ref": "#/components/schemas/MoneyInOut"
+          },
+          "month_profit": {
+            "$ref": "#/components/schemas/AmountWithPendingOut"
           },
           "sales": {
             "anyOf": [
@@ -5036,7 +5228,12 @@
           "last_week_day",
           "change_percent",
           "hourly_today",
-          "hourly_last_week"
+          "hourly_last_week",
+          "last_7_days",
+          "money_in",
+          "low_stock",
+          "best_sellers",
+          "month_profit"
         ],
         "title": "TodayOut",
         "type": "object"

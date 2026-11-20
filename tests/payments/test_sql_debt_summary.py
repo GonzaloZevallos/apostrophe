@@ -132,3 +132,25 @@ def test_read_keeps_debtors_order_on_an_owing_since_tie(client: TestClient, engi
         answer = SqlDebtSummary(session, business_id).read(date(2026, 9, 30))
 
     assert [row.customer_id for row in answer.debtors] == [large, small]
+
+
+def test_debtor_row_phone_is_the_stored_value_or_none_and_is_not_in_its_repr(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _priced_variety(client)
+    with_phone = client.post(
+        "/customers", json={"name": "Con telefono", "phone": "11 3000-0001", "phone_country": "AR"}
+    ).json()
+    without_phone = client.post("/customers", json={"name": "Sin telefono"}).json()
+    assert with_phone["phone"] is not None
+    _owing_sale(client, with_phone["id"], variety_id, quantity="2", date="2026-09-01")
+    _owing_sale(client, without_phone["id"], variety_id, quantity="2", date="2026-09-02")
+
+    with Session(engine) as session:
+        business_id = _business_id_of_customer(engine, with_phone["id"])
+        answer = SqlDebtSummary(session, business_id).read(date(2026, 9, 30))
+
+    phones = {row.customer_id: row.phone for row in answer.debtors}
+    assert phones == {with_phone["id"]: with_phone["phone"], without_phone["id"]: None}
+    [phoned] = [row for row in answer.debtors if row.customer_id == with_phone["id"]]
+    assert with_phone["phone"] not in repr(phoned)

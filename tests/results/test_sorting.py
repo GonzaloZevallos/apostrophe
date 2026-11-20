@@ -16,6 +16,7 @@ def _debtor(customer_id: int, name: str, balance: int, owing_since: str) -> Debt
         name=name,
         balance=balance,
         owing_since=date.fromisoformat(owing_since),
+        phone=None,
     )
 
 

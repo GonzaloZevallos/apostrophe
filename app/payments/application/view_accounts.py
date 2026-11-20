@@ -5,7 +5,7 @@ Balance, Owing since, Sales still owing). Both come only from `settle()`/`accoun
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 
 from app.payments.application.errors import CustomerNotFound
@@ -39,6 +39,7 @@ class Debtor:
     age_days: int
     bucket: DebtAgeBucket
     customer_type_id: int | None
+    phone: str | None = field(repr=False)
 
 
 @dataclass(frozen=True)
@@ -93,6 +94,7 @@ def debtors(ledgers: Ledgers, today: date, show_customer_type: bool) -> Debtors:
                 age_days=age_days,
                 bucket=bucket_of(age_days),
                 customer_type_id=named.customer_type_id if show_customer_type else None,
+                phone=named.phone,
             )
         )
 

@@ -59,6 +59,16 @@ class ReasonRecord:
 
 
 @dataclass(frozen=True)
+class PaymentMethodRecord:
+    """One Payment method of the business, archived ones included, in no particular
+    order: `money_in` orders by `position`, then `payment_method_id`."""
+
+    payment_method_id: int
+    name: str
+    position: int
+
+
+@dataclass(frozen=True)
 class SaleRecord:
     """One sale, as `period_figures` needs it: `total` is the sale's full total,
     shipping included (CONTEXT.md: Sale). `recorded_at` is the instant it was recorded, in
@@ -79,6 +89,7 @@ class SaleRecord:
 class PaymentRecord:
     day: date
     amount: int
+    payment_method_id: int = field(kw_only=True)
 
 
 @dataclass(frozen=True)

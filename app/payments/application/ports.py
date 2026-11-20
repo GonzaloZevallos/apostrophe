@@ -6,7 +6,7 @@ not exist.
 from __future__ import annotations
 
 from collections.abc import Collection, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Protocol
 
@@ -26,6 +26,7 @@ class NamedLedger:
     id: int
     name: str
     ledger: Ledger
+    phone: str | None = field(repr=False)
     customer_type_id: int | None = None
 
 

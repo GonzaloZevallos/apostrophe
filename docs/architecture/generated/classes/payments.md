@@ -235,6 +235,7 @@ classDiagram
     customer_id : int
     name : str
     owing_since : date #124; None
+    phone : str #124; None
     standing : Literal
   }
   class Debtors {
@@ -254,6 +255,7 @@ classDiagram
     id : int
     ledger : Ledger
     name : str
+    phone : str #124; None
   }
   class OnTheSpot {
     code : ClassVar~str~

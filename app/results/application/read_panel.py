@@ -16,6 +16,7 @@ from app.results.application.ports import (
     DebtorRow,
     DebtSummary,
     ExpensesLedger,
+    PaymentMethods,
     PaymentsLedger,
     Purchases,
     SalesLedger,
@@ -24,14 +25,19 @@ from app.results.application.ports import (
     WithdrawalReasons,
 )
 from app.results.domain.arithmetic import average_sale
-from app.results.domain.figures import ReasonCost, RowCost
+from app.results.domain.figures import AmountWithPending, PeriodTotals, ReasonCost, RowCost
 from app.results.domain.period_figures import scan, totals_between
 from app.results.domain.periods import Period, periods
 from app.results.domain.sorting import oldest, sorted_by_name, teaser
+from app.results.domain.today_ordering import BestSeller, LowStock, best_sellers, low_stock
 from app.results.domain.today_series import (
     LAST_HOUR,
+    DaySales,
+    MoneyIn,
     change_percent,
     hourly_running_total,
+    last_7_days,
+    money_in,
     so_far,
 )
 from app.shared.calendar import local_day
@@ -90,6 +96,11 @@ class TodayFigures:
     change_percent: int | None
     hourly_today: tuple[int, ...]
     hourly_last_week: tuple[int, ...]
+    last_7_days: tuple[DaySales, ...]
+    money_in: MoneyIn
+    low_stock: LowStock[StockRow]
+    best_sellers: tuple[BestSeller, ...]
+    month_profit: AmountWithPending
 
 
 @dataclass(frozen=True)
@@ -120,6 +131,7 @@ def read_panel(
     purchases: Purchases,
     debts: DebtSummary,
     reasons: WithdrawalReasons,
+    methods: PaymentMethods,
 ) -> Panel:
     now_local = now.astimezone(tz)
     today = local_day(now, tz)
@@ -139,8 +151,7 @@ def read_panel(
         reasons=reasons.all(),
     )
 
-    def figures_for(period: Period) -> PeriodFigures:
-        totals = totals_between(buckets, period.start, period.end)
+    def figures_of(period: Period, totals: PeriodTotals) -> PeriodFigures:
         return PeriodFigures(
             period=period,
             sales=totals.sales,
@@ -159,6 +170,9 @@ def read_panel(
             cash=totals.cash,
         )
 
+    def figures_for(period: Period) -> PeriodFigures:
+        return figures_of(period, totals_between(buckets, period.start, period.end))
+
     debts_answer = debts.read(today)
     debts_summary = DebtsSummary(
         total_owed=debts_answer.total_owed,
@@ -168,6 +182,8 @@ def read_panel(
     )
 
     today_figures = figures_for(the_periods.today)
+    # One `totals_between` for the month: its Profit and the Month figures are one result.
+    month_totals = totals_between(buckets, the_periods.month.start, the_periods.month.end)
     compared = [sale for sale in all_sales if sale.day in (today, last_week_day)]
     today_so_far = so_far(compared, today, cut, tz)
     last_week_so_far = so_far(compared, last_week_day, cut, tz)
@@ -180,12 +196,17 @@ def read_panel(
         change_percent=change_percent(today_so_far, last_week_so_far),
         hourly_today=hourly_running_total(compared, today, tz, through_hour=through_hour),
         hourly_last_week=hourly_running_total(compared, last_week_day, tz, through_hour=LAST_HOUR),
+        last_7_days=last_7_days(buckets, today),
+        money_in=money_in(buckets, methods.all(), today),
+        low_stock=low_stock(stock_answer.rows),
+        best_sellers=best_sellers(stock_answer.draws, the_periods.week.start, today),
+        month_profit=month_totals.profit,
     )
 
     return Panel(
         today=today_figures,
         week=figures_for(the_periods.week),
-        month=figures_for(the_periods.month),
+        month=figures_of(the_periods.month, month_totals),
         debts=debts_summary,
         stock=sorted_by_name(stock_answer.rows),
         today_block=today_block,

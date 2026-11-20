@@ -28,13 +28,14 @@ answers is a domain type.
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from typing import Literal, Protocol
 
 from app.results.domain.ledger import (
     DrawRow,
     ExpenseRecord,
+    PaymentMethodRecord,
     PaymentRecord,
     PurchaseRecord,
     ReasonRecord,
@@ -80,6 +81,7 @@ class DebtorRow:
     name: str
     balance: int
     owing_since: date
+    phone: str | None = field(repr=False)
 
 
 @dataclass(frozen=True)
@@ -87,7 +89,10 @@ class Debts:
     """`debtors` arrives in `debtors()` order (payments-domain): oldest debt first,
     then the larger balance, then `fold`ed name, then id. The panel's own teaser
     re-sorts (by balance, then owing since, then name) and cuts this; it never
-    re-queries for it."""
+    re-queries for it.
+
+    Each row's `phone` is carried only for the panel's `today.owed` block: no other
+    block or response serves it."""
 
     total_owed: int
     sales_owing_count: int
@@ -105,6 +110,8 @@ __all__ = [
     "DrawRow",
     "ExpenseRecord",
     "ExpensesLedger",
+    "PaymentMethodRecord",
+    "PaymentMethods",
     "PaymentRecord",
     "PaymentsLedger",
     "PurchaseRecord",
@@ -121,6 +128,13 @@ class WithdrawalReasons(Protocol):
     order `period_figures` answers each reason's cost in. Built for one business."""
 
     def all(self) -> Sequence[ReasonRecord]: ...
+
+
+class PaymentMethods(Protocol):
+    """Every Payment method of one business, archived ones included, in no particular
+    order: `money_in` names and orders them. Built for one business."""
+
+    def all(self) -> Sequence[PaymentMethodRecord]: ...
 
 
 class DrawCosts(Protocol):

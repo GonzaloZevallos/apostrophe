@@ -21,5 +21,8 @@
   "^src/components/SelectorTestHost\\.tsx$",
   "^src/components/Selector\\.tsx$",
   "^src/components/selectorSearch\\.ts$",
-  "^src/phone/served\\.fixture\\.ts$"
+  "^src/phone/served\\.fixture\\.ts$",
+  "^src/sales/useSaleDraft\\.ts$",
+  "^src/sales/saleDraft\\.ts$",
+  "^src/api/saleSuggestions\\.ts$"
 ]

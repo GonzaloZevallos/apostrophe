@@ -45,6 +45,7 @@ class SqlDebtSummary:
                     name=debtor.name,
                     balance=debtor.balance,
                     owing_since=debtor.owing_since,
+                    phone=debtor.phone,
                 )
             )
         return Debts(

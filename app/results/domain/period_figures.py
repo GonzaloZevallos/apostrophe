@@ -128,6 +128,8 @@ class Buckets:
     weekday_sales: dict[int, int] = field(default_factory=dict)
     weekday_counts: dict[int, int] = field(default_factory=dict)
     payments_by_day: dict[date, int] = field(default_factory=dict)
+    # Amount per Payment method, per day: built in the same pass as `payments_by_day`.
+    payments_by_day_method: dict[date, dict[int, int]] = field(default_factory=dict)
     expenses_by_day: dict[date, int] = field(default_factory=dict)
     # (name, name_key, amount) per category, per day: built in the one pass over
     # `expenses` below; both breakdowns read it by day range, never the raw list.
@@ -379,6 +381,10 @@ def scan(
     for payment in payments:
         previous_amount = buckets.payments_by_day.get(payment.day, 0)
         buckets.payments_by_day[payment.day] = previous_amount + payment.amount
+        day_methods = buckets.payments_by_day_method.setdefault(payment.day, {})
+        day_methods[payment.payment_method_id] = (
+            day_methods.get(payment.payment_method_id, 0) + payment.amount
+        )
         if first_record is None or payment.day < first_record:
             first_record = payment.day
 

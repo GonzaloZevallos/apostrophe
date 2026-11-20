@@ -73,6 +73,10 @@ export const keys = {
   // The switches Nueva venta prices with, loaded beside that day's prices and frozen the same way,
   // so a date change reloads both and a partner's change is picked up (`pricing-settings.md`).
   saleFormPricingSettings: (on: string) => ['sale-form', 'pricing-settings', on] as const,
+  // New sale's suggestions (`GET /api/sales/suggestions`, `api/saleSuggestions.ts`): fetched once per
+  // opening and keyed on the opening date, never on the sale's editable date. Frozen the same way
+  // (`gcTime: 0`, `staleTime: Infinity` at the call site) and outside the `Resource`/`PREFIX` system.
+  saleFormSuggestions: (on: string) => ['sale-form', 'suggestions', on] as const,
   saleFormCustomer: (id: string) => ['sale-form', 'customer', id] as const,
   // "Elegir cliente"'s own search (`NuevaVentaCliente.tsx`): its results are where
   // the preview's `vip` comes from once a customer is chosen, so it is frozen the

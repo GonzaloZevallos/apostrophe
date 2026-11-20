@@ -373,3 +373,25 @@ def test_a_sale_dated_after_today_has_age_zero_and_is_in_this_week(
     assert body["debtors"][0]["age_days"] == 0
     assert body["debtors"][0]["bucket"] == "this_week"
     assert body["buckets"] == {"this_week": 2_000, "days_8_30": 0, "over_30": 0}
+
+
+def test_debtors_and_the_panel_teaser_rows_carry_no_phone(client: TestClient) -> None:
+    variety_id = _priced_variety(client)
+    customer = _customer(client, 1)
+    assert client.get(f"/customers/{customer}").json()["phone"] is not None
+    _owing_sale(client, customer, variety_id, 2)
+
+    [row] = client.get("/payments/debtors").json()["debtors"]
+    [teaser] = client.get("/panel").json()["debts"]["teaser"]
+
+    assert set(row) == {
+        "customer",
+        "balance",
+        "owing_since",
+        "standing",
+        "age_days",
+        "bucket",
+        "customer_type_id",
+    }
+    assert set(row["customer"]) == {"id", "name"}
+    assert set(teaser) == {"customer_id", "name", "balance", "owing_since"}

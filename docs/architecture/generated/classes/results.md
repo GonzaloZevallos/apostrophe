@@ -42,6 +42,8 @@ classDiagram
   }
   class sorting {
   }
+  class today_ordering {
+  }
   class today_series {
   }
   analyse --> figures
@@ -60,6 +62,7 @@ classDiagram
   read_panel --> periods
   read_panel --> ports
   read_panel --> sorting
+  read_panel --> today_ordering
   read_panel --> today_series
   router --> analyse
   router --> assemble
@@ -69,7 +72,11 @@ classDiagram
   schemas --> figures
   schemas --> ports
   schemas --> read_panel
+  schemas --> today_ordering
+  schemas --> today_series
+  today_ordering --> ledger
   today_series --> ledger
+  today_series --> period_figures
   today_series --> rounding
 ```
 
@@ -91,11 +98,17 @@ classDiagram
     weekdays : tuple~WeekdayFigures, ...~
     weeks : tuple~WeekFigures, ...~
   }
+  class BestSeller {
+    name : str
+    sales : int
+    variety_id : int
+  }
   class Buckets {
     day_totals : dict~date, _DayTotals~
     expenses_by_day : dict~date, int~
     expenses_by_day_category : dict~date, dict~int, tuple~str, str, int~~~
     payments_by_day : dict~date, int~
+    payments_by_day_method : dict~date, dict~int, int~~
     purchases_by_day : dict~date, int~
     reasons : tuple~ReasonRecord, ...~
     sales_by_day : dict~date, int~
@@ -129,6 +142,10 @@ classDiagram
     costed : int
     pending_quantity : Quantity
   }
+  class DaySales {
+    day : date
+    sales : int
+  }
   class DrawRow {
     costed : int #124; None
     day : date
@@ -161,10 +178,24 @@ classDiagram
   class InvalidPeriod {
     code : ClassVar~str~
   }
+  class LowStock {
+    S
+    count : int
+    rows : tuple~S, ...~
+  }
   class MarginFigure {
     amount : int
     pending_quantity : Quantity
     percent : int #124; None
+  }
+  class MethodMoney {
+    amount : int
+    name : str
+    payment_method_id : int
+  }
+  class MoneyIn {
+    methods : tuple~MethodMoney, ...~
+    total : int
   }
   class MonthFigures {
     average_margin
@@ -192,9 +223,17 @@ classDiagram
     shortfall : RowCost #124; None
     withdrawals : tuple~ReasonCost, ...~
   }
+  class PaymentMethodMissing {
+  }
+  class PaymentMethodRecord {
+    name : str
+    payment_method_id : int
+    position : int
+  }
   class PaymentRecord {
     amount : int
     day : date
+    payment_method_id : int
   }
   class Period {
     end : date
@@ -298,6 +337,13 @@ classDiagram
     sales_of_costed : int
     sales_without_shipping : int
   }
+  class _LowStockRow {
+    days_left : int #124; None
+    name : str
+    quantity : Quantity
+    status : str
+    variety_id : int
+  }
   class _NamedDebt {
     balance : int
     customer_id : int
@@ -354,6 +400,7 @@ classDiagram
     customer_id : int
     name : str
     owing_since : date
+    phone : str #124; None
   }
   class Debts {
     debtors : tuple~DebtorRow, ...~
@@ -385,6 +432,9 @@ classDiagram
     today
     today_block
     week
+  }
+  class PaymentMethods {
+    all() Sequence~PaymentMethodRecord~
   }
   class PaymentsLedger {
     all() Sequence~PaymentRecord~
@@ -430,11 +480,16 @@ classDiagram
     variety_id : int
   }
   class TodayFigures {
+    best_sellers : tuple~BestSeller, ...~
     change_percent : int #124; None
     hourly_last_week : tuple~int, ...~
     hourly_today : tuple~int, ...~
+    last_7_days : tuple~DaySales, ...~
     last_week_day : date
     last_week_so_far : int
+    low_stock : LowStock~StockRow~
+    money_in : MoneyIn
+    month_profit : AmountWithPending
     sales : int
     sales_count : int
     so_far : int
@@ -458,6 +513,7 @@ classDiagram
   class AmountWithPendingOut {
     amount
     pending_quantity
+    of(figure: AmountWithPending) AmountWithPendingOut
   }
   class AnalysisMonthOut {
     average_margin
@@ -483,6 +539,12 @@ classDiagram
     weekdays : list~WeekdayOut~
     weeks : list~WeekOut~
   }
+  class BestSellerOut {
+    name : str
+    product_id : int
+    sales
+    of(seller: BestSeller) BestSellerOut
+  }
   class CostLineOut {
     amount
     pending : bool
@@ -491,6 +553,10 @@ classDiagram
   class CostOut {
     costed
     pending_quantity
+  }
+  class DaySalesOut {
+    day : date
+    sales
   }
   class DebtorOut {
     balance
@@ -520,10 +586,32 @@ classDiagram
     hour : int
     total
   }
+  class LowStockOut {
+    count : int
+    rows : list~LowStockRowOut~
+    of(low: LowStock~StockRow~) LowStockOut
+  }
+  class LowStockRowOut {
+    name : str
+    product_id : int
+    quantity
+    status : Literal~'sold_out', 'low'~
+    of(row: StockRow) LowStockRowOut
+  }
   class MarginOut {
     amount
     pending_quantity
     percent : int #124; None
+  }
+  class MethodMoneyOut {
+    amount
+    name : str
+    payment_method_id : int
+  }
+  class MoneyInOut {
+    methods : list~MethodMoneyOut~
+    total
+    of(figures: MoneyIn) MoneyInOut
   }
   class MonthRowOut {
     cash
@@ -611,11 +699,16 @@ classDiagram
     withdrawals : list~ReasonCostOut~
   }
   class TodayOut {
+    best_sellers : list~BestSellerOut~
     change_percent : int #124; None
     hourly_last_week : list~HourlyPointOut~
     hourly_today : list~HourlyPointOut~
+    last_7_days : list~DaySalesOut~
     last_week_day : date
     last_week_so_far
+    low_stock
+    money_in
+    month_profit
     sales
     sales_count : int
     so_far
@@ -655,6 +748,9 @@ classDiagram
   ProductRowOut --> CostOut : cost
   ProductRowOut --> MarginOut : margin
   SinceFirstRecordOut --> AmountWithPendingOut : profit
+  TodayOut --> AmountWithPendingOut : month_profit
+  TodayOut --> LowStockOut : low_stock
+  TodayOut --> MoneyInOut : money_in
   WeekOut --> AmountWithPendingOut : profit
   WeekOut --> RowCostOut : cost_of_goods
 ```

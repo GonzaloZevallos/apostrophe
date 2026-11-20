@@ -51,6 +51,7 @@ from app.onboarding.adapters.opening import OnboardingOpening
 from app.onboarding.adapters.router import router as onboarding_router
 from app.payment_methods.adapters.babel_defaults import BabelMethodDefaults
 from app.payment_methods.adapters.opening import PaymentMethodsOpening
+from app.payment_methods.adapters.results_methods import SqlResultsPaymentMethods
 from app.payment_methods.adapters.router import router as payment_methods_router
 from app.payments.adapters.method_usage import PaymentsUsingAMethod
 from app.payments.adapters.payments_ledger import SqlPaymentsLedger
@@ -337,6 +338,7 @@ def create_app(
     # computation, never a second sum of their own.
     app.state.draw_costs = SqlDrawCosts
     app.state.results_withdrawal_reasons = SqlResultsWithdrawalReasons
+    app.state.results_payment_methods = SqlResultsPaymentMethods
     app.state.sales_ledger = SqlSalesLedger
     app.state.payments_ledger = SqlPaymentsLedger
     app.state.expenses_ledger = SqlExpensesLedger

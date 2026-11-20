@@ -46,6 +46,7 @@ def _owing(customer_id: int, name: str, *sales: tuple[int, int]) -> NamedLedger:
             ),
             payments=(),
         ),
+        phone=None,
     )
 
 
@@ -106,6 +107,7 @@ def test_a_credit_customer_never_enters_the_buckets() -> None:
             sales=(owed_sale(201, _ago(40), 100),),
             payments=(LaterPaymentEntry(1, _ago(1), AT, 500),),
         ),
+        phone=None,
     )
     ledgers = FakeLedgers([_owing(1, "Ana", (40, 700), (2, 300)), credit])
 
@@ -123,7 +125,7 @@ def test_with_no_debtors_all_three_buckets_are_zero() -> None:
 
 
 def test_customer_count_includes_no_sales_and_credit_but_debtor_count_does_not() -> None:
-    nothing = NamedLedger(id=3, name="Nothing", ledger=Ledger(sales=(), payments=()))
+    nothing = NamedLedger(id=3, name="Nothing", ledger=Ledger(sales=(), payments=()), phone=None)
     credit = NamedLedger(
         id=2,
         name="Credit",
@@ -131,6 +133,7 @@ def test_customer_count_includes_no_sales_and_credit_but_debtor_count_does_not()
             sales=(owed_sale(201, _ago(5), 100),),
             payments=(LaterPaymentEntry(1, _ago(1), AT, 500),),
         ),
+        phone=None,
     )
     ledgers = FakeLedgers([_owing(1, "Ana", (5, 100)), credit, nothing])
 
@@ -166,7 +169,9 @@ def test_the_same_folded_name_falls_to_recording_order() -> None:
 
 def _typed(customer_id: int, type_id: int | None) -> NamedLedger:
     base = _owing(customer_id, f"Customer {customer_id}", (3, 100))
-    return NamedLedger(id=base.id, name=base.name, ledger=base.ledger, customer_type_id=type_id)
+    return NamedLedger(
+        id=base.id, name=base.name, ledger=base.ledger, phone=None, customer_type_id=type_id
+    )
 
 
 def test_customer_type_id_is_hidden_when_the_switch_is_off_and_stored_one_shown_when_on() -> None:
