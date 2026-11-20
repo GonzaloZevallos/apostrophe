@@ -1673,3 +1673,48 @@ def _owner(session: Session, type_id: int) -> int:
     row = session.get(CustomerTypeRow, type_id)
     assert row is not None
     return row.business_id
+
+
+def test_another_business_never_changes_still_owed(
+    business_a: TestClient, business_b: TestClient
+) -> None:
+    """The same customer name and phone, the same sale and a part-payment in business B
+    leave A's sale unpaid with its whole total, on the list and on the detail."""
+
+    def record(client: TestClient) -> dict[str, Any]:
+        variety = client.post("/api/products", json={"name": "Misma flor"}).json()
+        client.post(
+            f"/api/products/{variety['id']}/prices",
+            json={"effective_from": "2026-01-01", "list_price": 11_000},
+        )
+        customer = client.post(
+            "/customers",
+            json={"name": "Misma clienta", "phone": "11 4444-5555", "phone_country": "AR"},
+        ).json()
+        sale = client.post(
+            "/sales",
+            json=_sale_body(variety_id=variety["id"], customer_id=customer["id"]),
+        )
+        assert sale.status_code == 201, sale.text
+        sold: dict[str, Any] = sale.json()
+        sold["customer_id"] = customer["id"]
+        return sold
+
+    mine = record(business_a)
+    theirs = record(business_b)
+    method = business_b.get("/api/payment-methods").json()[0]["id"]
+    paid = business_b.post(
+        f"/customers/{theirs['customer_id']}/payments",
+        json={"paid_on": NOW.date().isoformat(), "amount": 4_000, "payment_method_id": method},
+    )
+    assert paid.status_code == 201, paid.text
+    assert business_b.get(f"/sales/{theirs['id']}").json()["payment_state"] == "part_paid"
+
+    listed = business_a.get("/sales").json()
+    detail = business_a.get(f"/sales/{mine['id']}").json()
+
+    assert theirs["id"] != mine["id"]
+    assert [sale["id"] for sale in listed] == [mine["id"]]
+    for read in (listed[0], detail):
+        assert (read["payment_state"], read["still_owed"]) == ("unpaid", mine["total"])
+    assert business_a.get(f"/sales/{theirs['id']}").status_code == 404
