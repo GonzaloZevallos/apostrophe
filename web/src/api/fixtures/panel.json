@@ -243,7 +243,23 @@
         "hour": 23,
         "total": 20000
       }
-    ]
+    ],
+    "last_7_days": [
+      { "day": "2026-09-27", "sales": 0 },
+      { "day": "2026-09-28", "sales": 9000 },
+      { "day": "2026-09-29", "sales": 0 },
+      { "day": "2026-09-30", "sales": 12000 },
+      { "day": "2026-10-01", "sales": 7000 },
+      { "day": "2026-10-02", "sales": 11000 },
+      { "day": "2026-10-03", "sales": 15000 }
+    ],
+    "money_in": {
+      "total": 15000,
+      "methods": [
+        { "payment_method_id": 1, "name": "Efectivo", "amount": 10000 },
+        { "payment_method_id": 2, "name": "Transferencia", "amount": 5000 }
+      ]
+    }
   },
   "debts": {
     "total_owed": 37000,

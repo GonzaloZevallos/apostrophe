@@ -34,6 +34,7 @@ from app.results.application.read_panel import (
     TodayFigures,
 )
 from app.results.domain.figures import ReasonCost
+from app.results.domain.today_series import MoneyIn
 from app.stock.adapters.schemas import Status
 
 
@@ -188,6 +189,38 @@ def hourly_points(totals: tuple[int, ...]) -> list[HourlyPointOut]:
     return [HourlyPointOut(hour=hour, total=Decimal(total)) for hour, total in enumerate(totals)]
 
 
+class DaySalesOut(BaseModel):
+    day: date
+    sales: MoneyOut
+
+
+class MethodMoneyOut(BaseModel):
+    payment_method_id: int
+    name: str
+    amount: MoneyOut
+
+
+class MoneyInOut(BaseModel):
+    """Today's Payments by method, only methods with a Payment today, in list order."""
+
+    total: MoneyOut
+    methods: list[MethodMoneyOut]
+
+    @classmethod
+    def of(cls, figures: MoneyIn) -> MoneyInOut:
+        return cls(
+            total=Decimal(figures.total),
+            methods=[
+                MethodMoneyOut(
+                    payment_method_id=line.payment_method_id,
+                    name=line.name,
+                    amount=Decimal(line.amount),
+                )
+                for line in figures.methods
+            ],
+        )
+
+
 class TodayOut(BaseModel):
     """Today's Sales and the so-far comparison against the same weekday last week.
     `change_percent` is `null` when last week's so-far is 0, never 0 or infinite.
@@ -202,6 +235,8 @@ class TodayOut(BaseModel):
     change_percent: int | None
     hourly_today: list[HourlyPointOut]
     hourly_last_week: list[HourlyPointOut]
+    last_7_days: list[DaySalesOut]
+    money_in: MoneyInOut
 
     @classmethod
     def of(cls, figures: TodayFigures) -> TodayOut:
@@ -214,6 +249,10 @@ class TodayOut(BaseModel):
             change_percent=figures.change_percent,
             hourly_today=hourly_points(figures.hourly_today),
             hourly_last_week=hourly_points(figures.hourly_last_week),
+            last_7_days=[
+                DaySalesOut(day=item.day, sales=Decimal(item.sales)) for item in figures.last_7_days
+            ],
+            money_in=MoneyInOut.of(figures.money_in),
         )
 
 

@@ -785,6 +785,43 @@ def test_a_current_week_and_month_without_a_negative_adjustment_read_shortfall_n
 # history). Both seeds below are non-empty instead, so both sides hit the same joins.
 
 
+def _later_payment(
+    client: TestClient, customer_id: int, *, amount: int, on: str, method_id: int
+) -> None:
+    paid = client.post(
+        f"/customers/{customer_id}/payments",
+        json={"paid_on": on, "amount": amount, "payment_method_id": method_id},
+    )
+    assert paid.status_code == 201, paid.text
+
+
+def _pay_today_through_many_methods(client: TestClient, customer_id: int, variety_id: int) -> None:
+    """6 more methods, 2 archived, with Payments dated today over 5 of them (an archived
+    one included), mixing On-the-spot and later: `money_in` must stay one statement."""
+    today = TODAY.isoformat()
+    method_ids = []
+    for i in range(6):
+        created = client.post("/api/payment-methods", json={"name": f"Metodo {i}"})
+        assert created.status_code == 201, created.text
+        method_ids.append(created.json()["id"])
+    for index, method_id in enumerate(method_ids[:5]):
+        if index % 2 == 0:
+            _later_payment(client, customer_id, amount=10 + index, on=today, method_id=method_id)
+        else:
+            sold = client.post(
+                "/sales",
+                json={
+                    "date": today,
+                    "payment": {"kind": "paid", "payment_method_id": method_id},
+                    "lines": [{"product_id": variety_id, "quantity": "1"}],
+                },
+            )
+            assert sold.status_code == 201, sold.text
+    for method_id in (method_ids[0], method_ids[5]):
+        archived = client.post(f"/api/payment-methods/{method_id}/archive")
+        assert archived.status_code == 204, archived.text
+
+
 def _seed_small_panel_history(client: TestClient) -> None:
     """The least a business can have while still exercising every join `GET /panel`
     makes: one priced variety, one entry, one cash sale, one customer with a debt, one
@@ -795,6 +832,7 @@ def _seed_small_panel_history(client: TestClient) -> None:
     _sale(client, variety_id, quantity="1", on=day)
     customer_id = _customer(client, "Deudora chica")
     _sale(client, variety_id, quantity="1", on=day, customer_id=customer_id, payment="owing")
+    _later_payment(client, customer_id, amount=100, on=day, method_id=1)
     _expense(client, amount=100, on=day)
     adjustment = client.post(
         "/stock/entries",
@@ -856,6 +894,7 @@ def _seed_bigger_panel_history(client: TestClient) -> None:
                 "detail": "gasto",
             },
         )
+    _pay_today_through_many_methods(client, customer_ids[0], variety_ids[0])
     adjustment = client.post(
         "/stock/entries",
         json={
@@ -877,6 +916,11 @@ def _seed_bigger_panel_history(client: TestClient) -> None:
     assert withdrawal.status_code == 201, withdrawal.text
 
 
+# The merge-base count (20) plus the one `PaymentMethods` read, constant in history size
+# and in the number of Payment methods.
+PANEL_STATEMENTS = 21
+
+
 def _statement_count(engine: Engine, client: TestClient) -> int:
     with captured_statements(engine) as statements:
         response = client.get("/panel")
@@ -893,7 +937,7 @@ def test_get_panel_issues_the_same_number_of_statements_small_or_seeded(
     small_count = _statement_count(engine, client)
     big_count = _statement_count(engine, other_client)
 
-    assert small_count == big_count, (small_count, big_count)
+    assert small_count == big_count == PANEL_STATEMENTS, (small_count, big_count)
 
 
 def test_an_archived_variety_leaves_the_panel_stock_rows_but_not_the_period_figures(
@@ -1118,3 +1162,82 @@ def test_get_panel_statement_count_ignores_the_today_block_history(
     clock.set(_art(today, 12))
 
     assert _statement_count(engine, client) == _statement_count(engine, other_client)
+
+
+# --- last 7 days and money in (GH-497 part 2) -------------------------------------------
+
+
+def _cash_payments_received(client: TestClient, clock: MovableClock, day: date) -> int:
+    clock.set(_art(day, 12))
+    answer = client.get("/panel").json()
+    # Cash is Payments received minus Expenses and Purchases: with neither, it is
+    # exactly the Payments received.
+    received: int = answer["periods"]["today"]["cash"]
+    return received
+
+
+def test_money_in_total_is_todays_payments_received_in_cash(
+    client: TestClient, clock: MovableClock
+) -> None:
+    variety_id = _stocked_variety(client)
+    day = BLOCK_DAY
+    customer_id = _customer(client, "Ana")
+    _sale_recorded_at(client, clock, variety_id, on=day, at=_art(day, 9))
+    _sale_recorded_at(
+        client,
+        clock,
+        variety_id,
+        on=day,
+        at=_art(day, 10),
+        payment="owing",
+        customer_id=customer_id,
+    )
+    _later_payment(client, customer_id, amount=400, on=day.isoformat(), method_id=2)
+    _later_payment(
+        client, customer_id, amount=50, on=(day - timedelta(days=1)).isoformat(), method_id=1
+    )
+
+    block = _today_block(client, clock, _art(day, 12))
+
+    assert block["money_in"]["total"] == 1_400
+    assert block["money_in"]["total"] == _cash_payments_received(client, clock, day)
+    assert [(m["payment_method_id"], m["amount"]) for m in block["money_in"]["methods"]] == [
+        (1, 1_000),
+        (2, 400),
+    ]
+
+
+def test_the_last_day_of_last_7_days_is_todays_sales(
+    client: TestClient, clock: MovableClock
+) -> None:
+    variety_id = _stocked_variety(client)
+    day = BLOCK_DAY
+    _sale_recorded_at(client, clock, variety_id, on=day, at=_art(day, 9), quantity="3")
+    _sale_recorded_at(
+        client, clock, variety_id, on=day - timedelta(days=2), at=_art(day, 9), shipping=250
+    )
+
+    block = _today_block(client, clock, _art(day, 12))
+
+    series = block["last_7_days"]
+    assert [item["day"] for item in series] == [
+        (day - timedelta(days=n)).isoformat() for n in range(6, -1, -1)
+    ]
+    assert series[-1] == {"day": day.isoformat(), "sales": 3_000}
+    assert series[-1]["sales"] == block["sales"]
+    assert series[4]["sales"] == 1_250
+    assert series[0]["sales"] == 0
+
+
+def test_a_renamed_method_shows_its_new_name_in_money_in(
+    client: TestClient, clock: MovableClock
+) -> None:
+    variety_id = _stocked_variety(client)
+    day = BLOCK_DAY
+    _sale_recorded_at(client, clock, variety_id, on=day, at=_art(day, 9), payment="transfer")
+    renamed = client.patch("/api/payment-methods/2", json={"name": "Mercado Pago"})
+    assert renamed.status_code == 200, renamed.text
+
+    block = _today_block(client, clock, _art(day, 12))
+
+    assert [m["name"] for m in block["money_in"]["methods"]] == ["Mercado Pago"]
