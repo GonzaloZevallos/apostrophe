@@ -751,8 +751,9 @@ describe('rowPrices', () => {
     variety(3, entry({ list_price: 1000, type_prices: [{ customer_type_id: 7, price: 800 }] })),
     variety(4, null),
     variety(5, entry({ list_price: 1000, bulk_price: 900, bulk_minimum: 1e-7 })),
+    variety(6, entry({ list_price: 1000, bulk_price: 900, bulk_minimum: 1 })),
   ]
-  const rows = (over: Partial<Parameters<typeof rowPrices>[0]> = {}) =>
+  const rows =(over: Partial<Parameters<typeof rowPrices>[0]> = {}) =>
     rowPrices({
       productIds: [1, 2, 3, 4, 99],
       products: PRODUCTS,
@@ -782,6 +783,15 @@ describe('rowPrices', () => {
     expect(rows({ customerTypeId: 7, pricingSettings: { bulk: true, vip: false } }).get(3)).toMatchObject({
       rule: 'list',
       pricePerGram: 1000,
+    })
+  })
+
+  test('with the bulk switch off a bulk price met at one step is not used', () => {
+    expect(rows({ productIds: [6] }).get(6)).toEqual({ rule: 'bulk', pricePerGram: 900, lineTotal: 900 })
+    expect(rows({ productIds: [6], pricingSettings: { bulk: false, vip: true } }).get(6)).toEqual({
+      rule: 'list',
+      pricePerGram: 1000,
+      lineTotal: 1000,
     })
   })
 
