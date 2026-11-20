@@ -10,22 +10,27 @@
 import { describe, expect, test } from 'vitest'
 import type { Variety } from '../screens/Variedades'
 import matrix from './pricing-matrix.json'
+import { MAX_QUANTITY_HUNDREDTHS } from './saleDraft'
 import {
   GiftWithSpecialPrice,
   InvalidSpecialPrice,
   NonPositiveGrams,
   NoPriceThatDay,
   type LineInput,
+  type PaymentChoice,
   type PricedSale,
   type PricedSaleLine,
   type PricingRule,
   type SaleLineInput,
+  changeFor,
   fromHundredths,
   hundredthsOfApiGrams,
   linesRepriced,
+  payStateOf,
   paymentChoiceOf,
   priceLine,
   priceSale,
+  quantityOfHundredths,
   quoteOf,
   saleTotals,
   toHundredths,
@@ -652,5 +657,85 @@ describe('the re-pricing structure rules', () => {
 
   test('a case naming no totals entry is refused', () => {
     expect(() => checkedPair({ ...base, after: 'no such entry' })).toThrow('date change: after "no such entry" names no totals entry')
+  })
+})
+
+describe('changeFor', () => {
+  const whole = { symbol: '$', decimals: 0 }
+  const cents = { symbol: '$', decimals: 2 }
+
+  test.each([
+    ['short', '10.000', 11000, null],
+    ['equal', '11.000', 11000, 0],
+    ['over', '12.000', 11000, 1000],
+    ['empty', '', 11000, null],
+    ['not a number', 'abc', 11000, null],
+    ['negative', '-5', 11000, null],
+    ['zero', '0', 0, null],
+    ['too many decimals', '10,5', 11000, null],
+  ])('0 decimals, %s', (_label, received, total, expected) => {
+    expect(changeFor(received, total, whole)).toBe(expected)
+  })
+
+  test.each([
+    ['10,10', 10.1, 0],
+    ['10,20', 10.1, 0.1],
+    ['0,07', 0.07, 0],
+    ['1.234,56', 1000, 234.56],
+    ['1,234', 1, null],
+    ['10,00', 10.1, null],
+  ])('2 decimals, %s against %s', (received, total, expected) => {
+    expect(changeFor(received, total, cents)).toBe(expected)
+  })
+
+  test('a Received near the safe-integer limit gives the exact difference', () => {
+    expect(changeFor('90071992547408,00', 90071992547407, cents)).toBe(1)
+  })
+})
+
+describe('payStateOf', () => {
+  test('an unset choice is no state and no method', () => {
+    expect(payStateOf(null)).toEqual({ payState: null, method: null })
+  })
+
+  test('owing has no method', () => {
+    expect(payStateOf({ kind: 'owing' })).toEqual({ payState: 'owing', method: null })
+  })
+
+  test('paid carries its method', () => {
+    expect(payStateOf({ kind: 'paid', payment_method_id: 7 })).toEqual({ payState: 'paid', method: 7 })
+  })
+
+  test('is the inverse of paymentChoiceOf', () => {
+    const choices: (PaymentChoice | null)[] = [null, { kind: 'owing' }, { kind: 'paid', payment_method_id: 7 }]
+    for (const choice of choices) {
+      const { payState, method } = payStateOf(choice)
+      expect(paymentChoiceOf(payState, method, 1000)).toEqual(choice)
+    }
+  })
+
+  test('validateSale does not refuse an unset choice above zero: the API does', () => {
+    expect(validateSale({ ...payStateOf(null), total: 1000, hasCustomer: false, lines: [] })).toEqual([])
+  })
+})
+
+describe('quantityOfHundredths', () => {
+  test.each([
+    [350, '3.5'],
+    [300, '3'],
+    [5, '0.05'],
+    [10, '0.1'],
+    [0, '0'],
+    [12345, '123.45'],
+  ])('%s is %s', (hundredths, expected) => {
+    expect(quantityOfHundredths(hundredths)).toBe(expected)
+  })
+
+  test.each([1, 5, 10, 300, 350, 12345, MAX_QUANTITY_HUNDREDTHS])('%s round-trips through toHundredths', (h) => {
+    expect(toHundredths(quantityOfHundredths(h))).toBe(h)
+  })
+
+  test.each([-1, 1.5, Number.NaN, Number.MAX_SAFE_INTEGER + 2])('%s is refused', (h) => {
+    expect(() => quantityOfHundredths(h)).toThrow('quantityOfHundredths expects a safe integer of hundredths, 0 or more')
   })
 })
