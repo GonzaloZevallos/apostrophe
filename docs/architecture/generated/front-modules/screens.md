@@ -110,7 +110,12 @@ subgraph src["src"]
       src_screens_varieties_PriceHistory_tsx["PriceHistory.tsx"]
       src_screens_varieties_PriceNew_tsx["PriceNew.tsx"]
       src_screens_varieties_PriceRows_tsx["PriceRows.tsx"]
+      src_screens_varieties_ProductsComputer_tsx["ProductsComputer.tsx"]
+      src_screens_varieties_ProductsEmpty_tsx["ProductsEmpty.tsx"]
+      src_screens_varieties_ProductsSummary_tsx["ProductsSummary.tsx"]
       src_screens_varieties_RenameForm_tsx["RenameForm.tsx"]
+      src_screens_varieties_SendCatalog_tsx["SendCatalog.tsx"]
+      src_screens_varieties_StockActions_tsx["StockActions.tsx"]
       src_screens_varieties_ThresholdForm_tsx["ThresholdForm.tsx"]
       src_screens_varieties_VarietiesBehind_tsx["VarietiesBehind.tsx"]
       src_screens_varieties_VarietiesIndex_tsx["VarietiesIndex.tsx"]
@@ -122,6 +127,7 @@ subgraph src["src"]
       src_screens_varieties_VarietyPricesSection_tsx["VarietyPricesSection.tsx"]
       src_screens_varieties_VarietyRemoval_tsx["VarietyRemoval.tsx"]
       src_screens_varieties_VarietyRoute_tsx["VarietyRoute.tsx"]
+      src_screens_varieties_VarietyRows_tsx["VarietyRows.tsx"]
       src_screens_varieties_VarietyStockSection_tsx["VarietyStockSection.tsx"]
       src_screens_varieties_VarietyThresholdSection_tsx["VarietyThresholdSection.tsx"]
       src_screens_varieties_archivedVarieties_ts["archivedVarieties.ts"]
@@ -213,6 +219,7 @@ src_screens_Gastos_tsx-->src_screens_expenses_MonthBody_tsx
 src_screens_Inicio_tsx-->src_screens_inicio_InicioPanel_tsx
 src_screens_StockEntryForm_tsx-->src_screens_Variedades_tsx
 src_screens_StockEntryForm_tsx-->src_screens_stockEntryChoice_ts
+src_screens_Variedades_tsx-->src_screens_varieties_ProductsComputer_tsx
 src_screens_Variedades_tsx-->src_screens_varieties_archivedVarieties_ts
 src_screens_Variedades_tsx-->src_screens_varieties_varietiesByName_ts
 src_screens_analisisCards_ts-->src_screens_analisisCost_ts
@@ -361,9 +368,16 @@ src_screens_varieties_PriceNew_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_PriceNew_tsx-->src_screens_varieties_PriceForm_tsx
 src_screens_varieties_PriceNew_tsx-->src_screens_varieties_PriceFrame_tsx
 src_screens_varieties_PriceRows_tsx-->src_screens_priceDeleteNotice_ts
+src_screens_varieties_ProductsComputer_tsx-->src_screens_Variedades_tsx
+src_screens_varieties_ProductsComputer_tsx-->src_screens_varieties_ProductsEmpty_tsx
+src_screens_varieties_ProductsComputer_tsx-->src_screens_varieties_ProductsSummary_tsx
+src_screens_varieties_ProductsComputer_tsx-->src_screens_varieties_SendCatalog_tsx
+src_screens_varieties_ProductsComputer_tsx-->src_screens_varieties_StockActions_tsx
+src_screens_varieties_ProductsComputer_tsx-->src_screens_varieties_VarietyRows_tsx
 src_screens_varieties_RenameForm_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_ThresholdForm_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_VarietiesBehind_tsx-->src_screens_Variedades_tsx
+src_screens_varieties_VarietiesBehind_tsx-->src_screens_varieties_VarietyRows_tsx
 src_screens_varieties_VarietiesBehind_tsx-->src_screens_varieties_varietiesByName_ts
 src_screens_varieties_VarietiesIndex_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_VarietiesIndex_tsx-->src_screens_varieties_isStillCurrent_ts
@@ -393,6 +407,7 @@ src_screens_varieties_VarietyPage_tsx-->src_screens_varieties_varietyForms_ts
 src_screens_varieties_VarietyPricesSection_tsx-->src_screens_varieties_PriceRows_tsx
 src_screens_varieties_VarietyRemoval_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_VarietyRemoval_tsx-->src_screens_varieties_varietiesByName_ts
+src_screens_varieties_VarietyRows_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_VarietyStockSection_tsx-->src_screens_originLabel_ts
 src_screens_varieties_VarietyThresholdSection_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_VarietyThresholdSection_tsx-->src_screens_varieties_varietyForms_ts
