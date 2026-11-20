@@ -17,6 +17,8 @@
 
 import type { PaymentMethod } from '../api/payments'
 import { noPriceMessage, OWING_HINT } from '../copy/sales'
+import type { MoneyFormat } from '../format/money'
+import { parseMoneyInput } from '../format/parse'
 import type { Variety } from '../screens/Variedades'
 
 /** `'vip'` is only read, from lines saved before customer types; a new line priced by a type's
@@ -193,6 +195,21 @@ export function toHundredths(grams: string): number {
   return Number(whole) * 100 + Number(hundredths)
 }
 
+/** The wire quantity of an integer count of hundredths of a gram (`350` -> `'3.5'`, `300` -> `'3'`,
+ * `5` -> `'0.05'`), built from the number's digits: never `toFixed` and never a float division.
+ * Refuses anything that is not a safe integer of 0 or more, as `toHundredths` refuses unvalidated text.
+ * It does not check the largest quantity a line takes: that limit lives in `saleDraft.ts`, which
+ * imports this module. */
+export function quantityOfHundredths(hundredths: number): string {
+  if (!Number.isSafeInteger(hundredths) || hundredths < 0) {
+    throw new Error('quantityOfHundredths expects a safe integer of hundredths, 0 or more')
+  }
+  const digits = String(hundredths).padStart(3, '0')
+  const whole = digits.slice(0, -2)
+  const fraction = digits.slice(-2).replace(/0+$/, '')
+  return fraction === '' ? whole : `${whole}.${fraction}`
+}
+
 /** The inverse of `toHundredths`, for handing a sum of hundredths (`saleTotals`'s
  * grams sold/gifted) to `format/money.ts`'s `formatGrams`. Display only: this value
  * is never computed with again. */
@@ -360,6 +377,27 @@ export function paymentChoiceOf(
   if (payState === 'owing') return { kind: 'owing' }
   if (payState === 'paid') return method === null ? null : { kind: 'paid', payment_method_id: method }
   return null
+}
+
+/** The state and method that give back `choice`: the exact inverse of `paymentChoiceOf`. It lets
+ * `validateSale` judge the choice `effectiveChoice` (`saleDraft.ts`) gives. An unset choice above $0
+ * is not refused by `validateSale` but by the API's `sale.payment_required`, as New sale does today. */
+export function payStateOf(choice: PaymentChoice | null): { payState: PayState | null; method: PaymentMethod | null } {
+  if (choice === null) return { payState: null, method: null }
+  if (choice.kind === 'owing') return { payState: 'owing', method: null }
+  return { payState: 'paid', method: choice.payment_method_id }
+}
+
+/** The change owed for what the Customer handed over: `null` when `receivedText` is empty or refused
+ * by `parseMoneyInput`, or is below `total`; otherwise the difference in currency units (0 when equal).
+ * Both amounts become integers at the format's decimals and are subtracted as integers. For display
+ * only: it never goes into a request body. */
+export function changeFor(receivedText: string, total: number, format: MoneyFormat): number | null {
+  const parsed = parseMoneyInput(receivedText, format)
+  if (!parsed.ok) return null
+  const scale = 10 ** format.decimals
+  const difference = Math.round(parsed.value * scale) - Math.round(total * scale)
+  return difference < 0 ? null : difference / scale
 }
 
 /** The rules the sale screen checks before saving (sales.md): Owing needs a customer, Paid above
