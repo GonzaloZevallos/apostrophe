@@ -18,6 +18,7 @@ import {
   ENTRY_PARENTS,
   entryParentOf,
   isPublicPath,
+  isScreenId,
   OUTSIDE,
   parentOf,
   pathTo,
@@ -1032,39 +1033,71 @@ describe("entryParentOf", () => {
   });
 });
 
-describe("the entry parents", () => {
-  const entries = Object.entries(ENTRY_PARENTS) as [ScreenId, ScreenId][];
-
-  test("every key and value is a declared screen", () => {
-    for (const [key, value] of entries) {
-      expect(screenOf(key).id).toBe(key);
-      expect(screenOf(value).id).toBe(value);
+/** What is wrong with an entry-parent table: one line per violation, none when it is sound. */
+function entryParentViolations(table: Readonly<Record<string, string>>): string[] {
+  const found: string[] = [];
+  for (const [key, value] of Object.entries(table)) {
+    if (!isScreenId(key)) {
+      found.push(`${key} is not a declared screen`);
+      continue;
     }
-  });
-
-  test("no key is its own entry parent", () => {
-    for (const [key, value] of entries) expect(value).not.toBe(key);
-  });
-
-  test("no entry parent is a descendant of its key", () => {
-    for (const [key, value] of entries) {
-      const seen = new Set<ScreenId>();
-      let up: ScreenId | undefined = value;
-      while (up !== undefined) {
-        expect(up).not.toBe(key);
-        expect(seen.has(up)).toBe(false);
-        seen.add(up);
-        up = parentOf(up, "phone")?.id;
+    if (!isScreenId(value)) {
+      found.push(`${key}: ${value} is not a declared screen`);
+      continue;
+    }
+    if (key === value) found.push(`${key} is its own entry parent`);
+    const seen = new Set<ScreenId>();
+    let up: ScreenId | undefined = parentOf(value, "phone")?.id;
+    while (up !== undefined && !seen.has(up)) {
+      if (up === key) {
+        found.push(`${key}: ${value} is a descendant of ${key}`);
+        break;
       }
+      seen.add(up);
+      up = parentOf(up, "phone")?.id;
     }
+    const kind = kindOf(screenOf(value), "phone");
+    if (kind !== "root" && kind !== "card") found.push(`${key}: ${value} is a ${kind} on the phone, not a root or a card`);
+    if (screenOf(key).backLabel === "record") found.push(`${key} is record-labelled`);
+  }
+  return found;
+}
+
+describe("the entry parents", () => {
+  test("the real table has no violation", () => {
+    expect(entryParentViolations(ENTRY_PARENTS)).toEqual([]);
   });
 
-  test("each entry parent is a root or a card on the phone", () => {
-    for (const [, value] of entries) expect(["root", "card"]).toContain(kindOf(screenOf(value), "phone"));
+  test("a key that is not a declared screen is reported", () => {
+    expect(entryParentViolations({ nowhere: "settings" })).toEqual(["nowhere is not a declared screen"]);
   });
 
-  test("no key is a record-labelled screen, so the record override and the entry parent never meet", () => {
-    for (const [key] of entries) expect(screenOf(key).backLabel).not.toBe("record");
+  test("a value that is not a declared screen is reported", () => {
+    expect(entryParentViolations({ "settings-payment-methods": "nowhere" })).toEqual([
+      "settings-payment-methods: nowhere is not a declared screen",
+    ]);
+  });
+
+  test("a key that is its own entry parent is reported", () => {
+    expect(entryParentViolations({ "settings-payments": "settings-payments" })).toContain(
+      "settings-payments is its own entry parent",
+    );
+  });
+
+  test("a value that descends from its key is reported", () => {
+    expect(entryParentViolations({ settings: "settings-payment-methods" })).toEqual([
+      "settings: settings-payment-methods is a descendant of settings",
+    ]);
+  });
+
+  test("a value that is not a root or a card on the phone is reported", () => {
+    expect(entryParentViolations({ "settings-payment-methods": "settings-payments" })).toEqual([
+      "settings-payment-methods: settings-payments is a form on the phone, not a root or a card",
+    ]);
+  });
+
+  test("a record-labelled key is reported, so the record override and the entry parent never meet", () => {
+    expect(entryParentViolations({ variety: "settings" })).toEqual(["variety is record-labelled"]);
   });
 });
 
