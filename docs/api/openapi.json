@@ -5016,6 +5016,37 @@
         "title": "StepState",
         "type": "string"
       },
+      "StillOwingLineOut": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "remaining": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Remaining"
+          },
+          "sale_number": {
+            "title": "Sale Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sale_number",
+          "date",
+          "remaining"
+        ],
+        "title": "StillOwingLineOut",
+        "type": "object"
+      },
       "StockOut": {
         "description": "`GET /stock`'s own shape: the business's total grams, every product's own row,\nand its entries, newest date first then most recently recorded first.",
         "properties": {
@@ -5698,6 +5729,20 @@
             ],
             "title": "Standing",
             "type": "string"
+          },
+          "still_owing": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/StillOwingLineOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Still Owing"
           }
         },
         "required": [
@@ -5707,7 +5752,8 @@
           "standing",
           "age_days",
           "bucket",
-          "customer_type_id"
+          "customer_type_id",
+          "still_owing"
         ],
         "title": "DebtorOut",
         "type": "object"
@@ -8677,6 +8723,18 @@
     "/payments/debtors": {
       "get": {
         "operationId": "get_debtors_payments_debtors_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "with_lines",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "With Lines",
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -8687,6 +8745,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "security": [

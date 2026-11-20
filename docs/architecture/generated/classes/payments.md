@@ -242,6 +242,7 @@ classDiagram
     owing_since : date #124; None
     phone : str #124; None
     standing : Literal
+    still_owing : tuple~StillOwingLine, ...~
   }
   class Debtors {
     buckets : DebtAgeBuckets
@@ -286,6 +287,11 @@ classDiagram
     method : PaymentMethodId
     outcome
     paid_on : date
+  }
+  class StillOwingLine {
+    remaining : int
+    sale_date : date
+    sale_number : int
   }
   class StoredPayment {
     id : int
@@ -349,7 +355,8 @@ classDiagram
     customer_type_id : int #124; None
     owing_since : PaymentDate #124; None
     standing : Literal
-    of(debtor: Debtor) DebtorOut
+    still_owing : list~StillOwingLineOut~ #124; None
+    of(debtor: Debtor, with_lines: bool) DebtorOut
   }
   class DebtorsOut {
     buckets
@@ -358,7 +365,7 @@ classDiagram
     debtors : list~DebtorOut~
     sales_owing_count : int
     total_owed
-    of(debtors: Debtors) DebtorsOut
+    of(debtors: Debtors, with_lines: bool) DebtorsOut
   }
   class PaymentAccountRowOut {
     applied_to
@@ -452,6 +459,12 @@ classDiagram
   }
   class SqlPaymentsLedger {
     all() list~PaymentRecord~
+  }
+  class StillOwingLineOut {
+    date : date
+    remaining
+    sale_number : int
+    of(line: StillOwingLine) StillOwingLineOut
   }
   AccountPaymentRefOut --> PaymentMethodLabelOut : payment_method
   CreditAccountRowOut --> AccountPaymentRefOut : payment
