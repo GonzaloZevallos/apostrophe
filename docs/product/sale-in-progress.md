@@ -41,7 +41,7 @@ Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clien
 
 ### Cliente y owing
 
-- Sacar el cliente con `choice` en owing lo vuelve a unset, porque una venta sin cliente no puede quedar debiendo. Es el único cambio automático.
+- Sacar el cliente con `choice` en owing lo vuelve a unset, porque una venta sin cliente no puede quedar debiendo. Es el único cambio automático y el único camino de vuelta a unset desde owing.
 - Cambiar a otro cliente conserva owing.
 - Sacar el cliente conserva paid(id), porque una **Sale without a customer** se permite pagada por completo.
 - Elegir owing sin cliente se conserva tal cual; rechazar el guardado es de la API y de la pantalla.
@@ -63,13 +63,14 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 - `draft` (`SaleDraftApi`), `priced` (`PricedSale`, la única fuente de precios de la pantalla anfitriona, que nunca se vuelve a calcular: ninguna llamada a `priceSale` ni `priceLine` ni consulta de precios), `customerName` (`string | null`), `onClose()`, `onSaved(sale)` y `onSavingChange(saving)`.
 - La pantalla anfitriona maneja Escape y el volver del sistema; la Sheet no agrega ningún listener de Escape ni de popstate.
+- La pantalla anfitriona no abre la Collect Sheet mientras alguna línea no tenga precio para la fecha de la venta (sin Current price, y que no sea Gift ni Special price); lo señala en la propia línea. Esa regla es del flip de GH-496.
 
 ### Lo que ve la vendedora
 
-- Título "The sale · {n} items", con n = `priced.lines.length` (forma singular para una línea si el Copy module tiene plurales).
+- Título "The sale · {n} items", con n = `priced.lines.length` (forma singular para una línea si el Copy module tiene plurales; si no, "items" para cualquier n).
 - Una fila de Customer de solo lectura con `customerName`, o el "No customer" existente.
-- Un **Selector** "How they pay" alimentado por `usePaymentMethodOptions`, cuyo valor es `effectiveChoice(choice, proposedMethodId, ids ofrecidos, o null mientras la lista está pendiente)`. Una propuesta no ofrecida da el campo vacío ("Choose a method").
-- "Owes it" es una opción solo cuando la venta tiene Customer; elegirla pone owing. Elegir un medio pone paid(id). Volver de "Owes it" a pagar pone unset, que muestra la propuesta o el campo vacío: la venta no recuerda una elección anterior.
+- Un **Selector** "How they pay", una sola lista con los Payment methods ofrecidos por `usePaymentMethodOptions` más "Owes it", cuyo valor es `effectiveChoice(choice, proposedMethodId, ids ofrecidos, o null mientras la lista está pendiente)`. Una propuesta no ofrecida da el campo vacío ("Choose a method").
+- "Owes it" es una opción solo cuando la venta tiene Customer; elegirla pone owing. Elegir un medio pone paid(id), también después de "Owes it": el campo nunca vuelve solo a una elección anterior. Desde owing se vuelve a unset (la propuesta o el campo vacío) solo cuando se saca el Customer, por la regla de Cliente y owing.
 - Un botón "Collect {total}" con `priced.totals.total` en el **Money format** del Business, con la misma etiqueta para cualquier elección, "Owes it" incluido (el campo de arriba ya dice que se debe).
 
 ### Estados de la lista de medios
@@ -83,6 +84,7 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 - Al tocar, llama a `validateSale({...payStateOf(efectivo), total: priced.totals.total, hasCustomer, lines: []})`; es el único lugar que rechaza el pago.
 - Sin medio por encima de $0, o con un medio marcado "no longer available" (que cuenta como ningún medio, resuelto dentro de `effectiveChoice` con los ids realmente ofrecidos), no se manda nada: se muestra "Choose how they pay to collect." con el **Attention icon** y se enfoca el campo.
 - Una venta de $0 sin medio se guarda con `payment: null`; una de $0 con un medio elegido lo manda.
+- Si `priced` trae una línea sin precio para la fecha de la venta, el toque no manda nada (0 pedidos), no muestra "Saving…" ni ningún texto nuevo y no llama a `onSavingChange`. Es solo una guarda: se lee lo que `priced` ya dice de la línea, nunca se calcula un precio, y la vendedora no llega a ese estado porque la pantalla anfitriona no abre la Sheet.
 - Si no, el botón muestra "Saving…" de inmediato, los toques siguientes no mandan nada, llama a `onSavingChange(true)` y hace `POST /api/sales` con el cuerpo armado solo por `saleBodyOf`: líneas desde la Sale in progress con `quantityOfHundredths`, emparejadas con `priced.lines` por id; fecha, envío y nota desde la Sale in progress.
 - Mientras guarda, el Close propio de la Sheet no hace nada y nada más lo señala: "Saving…" es la única señal. El campo y Collect no toman cambios.
 
@@ -110,9 +112,11 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 ## Fuera de esta capacidad (por ahora)
 
-- La pantalla anfitriona de New sale que monta la Collect Sheet, y el flip que la monta.
+- La pantalla anfitriona de New sale que monta la Collect Sheet, el flip que la monta y su regla de no abrirla con una línea sin precio.
 - Reescribir el criterio 34 de sales.md ("el medio nunca viene puesto"), que le corresponde al flip, cuando la preselección llegue a la vendedora.
 - Received y Change en la Collect Sheet.
+- Una opción extra para volver a la propuesta desde "Owes it".
+- Un texto propio de la Collect Sheet para una línea sin precio.
 - Gift, Special price y la Sheet del detalle de línea.
 - Conservar la venta en curso tras una recarga.
 - Cualquier cambio en el servidor, incluida la protección contra el doble registro.
@@ -121,7 +125,7 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 - Cada regla de Líneas, Sin guardar, Cómo se paga, Cliente y owing, y Apertura tiene su test unitario de la Sale in progress, y pasa.
 - Cliente de sugerencias, a nivel de fetch: exactamente 1 pedido por apertura, con `on` igual a la fecha de apertura; 0 pedidos nuevos después de editar la fecha o volver a dibujar; 1 pedido nuevo en una apertura de otro día; una lectura fallida da ninguna sugerencia y 0 errores lanzados.
-- Collect Sheet, con Testing Library a nivel de fetch: sin medio por encima de $0, o con un medio marcado "no longer available", 0 pedidos y el campo enfocado; mientras guarda, toques extra y Close dan 0 pedidos adicionales; tras un fallo, un reintento da exactamente 1 pedido más y conserva medio y líneas; una venta sin Customer nunca se manda como owing; la etiqueta de Collect es igual a `priced.totals.total` formateado y `onSaved` recibe la respuesta sin tocar.
+- Collect Sheet, con Testing Library a nivel de fetch: sin medio por encima de $0, o con un medio marcado "no longer available", 0 pedidos y el campo enfocado; con una línea sin precio en `priced`, 0 pedidos, ningún texto nuevo y ninguna llamada a `onSavingChange`; mientras guarda, toques extra y Close dan 0 pedidos adicionales; tras un fallo, un reintento da exactamente 1 pedido más y conserva medio y líneas; una venta sin Customer nunca se manda como owing; tras "Owes it", elegir un medio manda ese medio, y sacar el Customer vuelve a mostrar la propuesta; la etiqueta de Collect es igual a `priced.totals.total` formateado y `onSaved` recibe la respuesta sin tocar.
 - Operaciones de dinero en `useSaleDraft`, el cliente de sugerencias y la Collect Sheet: 0 (todo pasa por `pricing.ts`), y llamadas a `priceSale`/`priceLine` desde la Collect Sheet: 0.
 - Rutas, constantes, parámetros, banderas o hooks `data-*` solo para tests: 0.
 - Textos de la Collect Sheet fuera de `web/src/copy/`: 0.
