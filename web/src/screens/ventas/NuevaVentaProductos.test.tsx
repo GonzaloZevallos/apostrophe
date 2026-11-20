@@ -274,7 +274,7 @@ test('more visible rows leave the draft untouched', async () => {
   const totals = screen.getByLabelText('totals').textContent
   expect(screen.getAllByRole('listitem').length).toBeGreaterThan(0)
   cleanup()
-  // The same draft opens on a longer suggestion list: the rows change, the draft's lines do not.
+  // A second, independent draft over a longer suggestion list: the rows change, a line added the same way is the same.
   productsByDate.set(TODAY, [...PRODUCTS, product(5, 'Lirio', price(250))])
   suggestionIds = [1, 2, 3, 4, 5]
   renderList()
