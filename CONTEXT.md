@@ -627,3 +627,7 @@ _Avoid_: to date, running total, pace, progress, hasta ahora
 **Money in**:
 Los Payments con fecha de hoy de un Business, On-the-spot payments y posteriores, en total y por cada Payment method con Payments hoy (los archivados incluidos, con su nombre actual y en el orden de la lista). Su total es siempre igual a los Payments recibidos del Cash de hoy. En la app: todavía no tiene palabra propia (la muestran partes posteriores de GH-497).
 _Avoid_: income, revenue, collections, takings, cobrado, Cash, cash in hand
+
+**Best sellers**:
+Hasta 4 Products de un Business con más plata cobrada en las Sales con fecha desde el lunes de la semana en curso hasta hoy: la suma de los totales guardados de sus Sale lines, sin envío y con los Gifts en $0. Se dejan afuera los de $0, los empates van por nombre, entran los Archived y los Hidden products, y nunca se completa con otra semana. En la app: todavía no tiene palabra propia (la muestran partes posteriores de GH-497).
+_Avoid_: top products, top sellers, ranking, most sold, más vendidos, favorites
