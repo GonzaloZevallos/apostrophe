@@ -85,7 +85,7 @@
   {"file":"src/screens/varieties/PriceHistory.tsx","imports":["varieties.ts"],"issue":352},
   {"file":"src/screens/varieties/PriceNew.tsx","imports":["varieties.ts"],"issue":352},
   {"file":"src/screens/varieties/PriceRows.tsx","imports":["pinnedCatalog.ts","varieties.ts"],"issue":352},
-  {"file":"src/screens/varieties/ProductsComputer.tsx","imports":["varieties.ts"],"issue":352},
+  {"file":"src/screens/varieties/ProductsBody.tsx","imports":["varieties.ts"],"issue":352},
   {"file":"src/screens/varieties/ProductsEmpty.tsx","imports":["varieties.ts"],"issue":352},
   {"file":"src/screens/varieties/RenameForm.tsx","imports":["varieties.ts"],"issue":352},
   {"file":"src/screens/varieties/SendCatalog.tsx","imports":["varieties.ts"],"issue":352},
