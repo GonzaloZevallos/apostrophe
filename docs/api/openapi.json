@@ -1395,6 +1395,50 @@
         "title": "DaySalesOut",
         "type": "object"
       },
+      "DebtBucketsOut": {
+        "properties": {
+          "days_8_30": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Days 8 30"
+          },
+          "over_30": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Over 30"
+          },
+          "this_week": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "This Week"
+          }
+        },
+        "required": [
+          "this_week",
+          "days_8_30",
+          "over_30"
+        ],
+        "title": "DebtBucketsOut",
+        "type": "object"
+      },
       "DebtorCustomerOut": {
         "properties": {
           "id": {
@@ -1415,6 +1459,17 @@
       },
       "DebtorsOut": {
         "properties": {
+          "buckets": {
+            "$ref": "#/components/schemas/DebtBucketsOut"
+          },
+          "customer_count": {
+            "title": "Customer Count",
+            "type": "integer"
+          },
+          "debtor_count": {
+            "title": "Debtor Count",
+            "type": "integer"
+          },
           "debtors": {
             "items": {
               "$ref": "#/components/schemas/app__payments__adapters__schemas__DebtorOut"
@@ -1441,7 +1496,10 @@
         "required": [
           "total_owed",
           "sales_owing_count",
-          "debtors"
+          "debtors",
+          "customer_count",
+          "debtor_count",
+          "buckets"
         ],
         "title": "DebtorsOut",
         "type": "object"
@@ -5582,6 +5640,10 @@
       },
       "app__payments__adapters__schemas__DebtorOut": {
         "properties": {
+          "age_days": {
+            "title": "Age Days",
+            "type": "integer"
+          },
           "balance": {
             "anyOf": [
               {
@@ -5593,8 +5655,28 @@
             ],
             "title": "Balance"
           },
+          "bucket": {
+            "enum": [
+              "this_week",
+              "days_8_30",
+              "over_30"
+            ],
+            "title": "Bucket",
+            "type": "string"
+          },
           "customer": {
             "$ref": "#/components/schemas/DebtorCustomerOut"
+          },
+          "customer_type_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Type Id"
           },
           "owing_since": {
             "anyOf": [
@@ -5622,7 +5704,10 @@
           "customer",
           "balance",
           "owing_since",
-          "standing"
+          "standing",
+          "age_days",
+          "bucket",
+          "customer_type_id"
         ],
         "title": "DebtorOut",
         "type": "object"

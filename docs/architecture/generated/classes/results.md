@@ -393,7 +393,7 @@ classDiagram
     pending : bool
   }
   class DebtSummary {
-    read() Debts
+    read(today: date) Debts
   }
   class DebtorRow {
     balance : int
