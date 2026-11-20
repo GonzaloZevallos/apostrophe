@@ -119,3 +119,18 @@ Las seis filas `BarraInferior320|375|430` (clara y `Oscuro`) comparan la secció
 | BarraInferior430 (y Oscuro) | 1360 | 1360 | 56 | 1304 | 1360 | no |
 
 Dos corridas de las seis filas sobre la misma cabeza: AE 0 en los doce PNG (construido y diseño de cada fila). El recorte del diseño es la fila del título de la sección (el padre del texto de la etiqueta), no los marcos de abajo. Las filas `Oscuro` salen idénticas a las claras, igual que `VentasOscuro` e `InicioOscuro` en esta cabeza: el atributo `data-tema` que pone la captura no llega a pintar el tema oscuro.
+
+## GH-903 parte 2: Paso 0 del título de Productos en el teléfono (falla en las cuatro celdas)
+
+Medido con una página estática desechable (no se confirma) que carga el `tokens.css` y el `app.css` reales y Geist local, con este marcado: `div.productos-cabecera` > `h1.encabezado__titulo` «Products», `a.boton.productos-cabecera__nueva` (icono `agregar` de 22 px, `aria-hidden`, y «New product») y `a.inicio__avatar` con dos iniciales. Fila `display: flex`, sin envolver, `gap: var(--espacio-md)` (12 px; `--espacio-sm` es 8 px, y el avatar tiene `margin: -4px`, así que 12 px de `gap` dejan 8 px entre el borde de la pastilla y la caja de 44 px del avatar). Pastilla `flex: none`, `height: var(--alto-tocable)`, `padding: 0 var(--espacio-lg)`. El título es el elemento flexible.
+
+El ancho de la fila es el del viewport menos 2 × `--margen-pantalla` (24 px). El ancho que necesita es el natural del título (85,1) + el de la pastilla (172,2) + la caja de diseño del avatar (36) + 2 huecos de 12 = 317,3 px.
+
+| viewport | tema | ancho de la fila | necesita | falta | título (ancho real) | pastilla | hueco título-pastilla | hueco pastilla-avatar | líneas título / pastilla | veredicto |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 320 | claro | 272 | 317,3 | 45,3 | 39,8 | 172,2 | 12 | 8 | 1 / 1 | falla: recorte (el título pierde 45,3 px y su `scrollWidth` supera su `clientWidth`) |
+| 320 | oscuro | 272 | 317,3 | 45,3 | 39,8 | 172,2 | 12 | 8 | 1 / 1 | falla: recorte (igual) |
+| 246 | claro | 198 | 317,3 | 119,3 | 0 | 172,2 | 12 | 8 | 1 / 1 | falla: recorte, desborde lateral (`scrollWidth` del documento > `innerWidth`) y solape (el título queda en 0 px) |
+| 246 | oscuro | 198 | 317,3 | 119,3 | 0 | 172,2 | 12 | 8 | 1 / 1 | falla: recorte, desborde lateral y solape (igual) |
+
+Ninguna celda falla por tamaño (pastilla y avatar de 44 px o más) ni por hueco (12 y 8 px). Con 246 px ni siquiera caben la pastilla y el avatar solos (172,2 + 8 + 36 = 216,2 > 198). La fila no cabe en una línea sin recortar el título, y el encargo prohíbe todo rescate (encoger, elipsis, `min-width: 0` en la pastilla, letra o relleno menores, una etiqueta más corta, una pastilla solo con icono, una fila que envuelva). Se detiene en el Paso 0: no se construyó nada de la parte de producción y el dueño decide el diseño.
