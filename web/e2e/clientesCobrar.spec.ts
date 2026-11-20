@@ -1,7 +1,7 @@
 /**
  * Clientes as redesigned, phone and computer, against the real backend through the built front
  * (customers.md, "On screen (Clientes)"; payments.md, "Owed to you"): the screen opens on "Owed to you"
- * (count line, total, debtors oldest owing-since first with ties by name) above everyone A–Z;
+ * (count line, total, debtors oldest owing-since first, then the larger balance) above everyone A–Z;
  * "Collect from <name>" on a row opens Registrar cobro with that customer chosen, "All" fills the
  * whole balance in one tap, a payment is saved, and one move back returns to Clientes; the
  * customer's card offers "Nueva venta a <name>" with that customer already chosen.
@@ -87,7 +87,8 @@ for (const viewport of VIEWPORTS) {
     await expectToast(page, 'Price saved', () => page.getByRole('button', { name: 'Save the price' }).click())
 
     // Three debtors, none with a phone number, and one customer who owes nothing. Zoe is last
-    // by name but owes since the oldest date; Beto and Carla owe since today, so they tie.
+    // by name but owes since the oldest date; Beto and Carla owe since today, so they tie and the
+    // larger balance (Carla's) comes first.
     await registerCustomer(page, 'Ana AlDia')
     await registerCustomer(page, 'Beto Deudor')
     await sellOnCredit(page, 'Beto Deudor', '2')
@@ -96,12 +97,12 @@ for (const viewport of VIEWPORTS) {
     await registerCustomer(page, 'Zoe Vieja')
     await sellOnCredit(page, 'Zoe Vieja', '3', true)
 
-    // Te deben on top: the total, the count line and the debtors oldest first, ties by name.
+    // Te deben on top: the total, the count line and the debtors oldest first, ties by larger balance.
     await page.goto(CUSTOMERS)
     const owing = page.getByRole('region', { name: 'Owed to you' })
     await expect(owing.locator('.cifra-xl')).toHaveText('$ 10.000')
     await expect(owing.getByText('3 sales owing')).toBeVisible()
-    expect(await debtorOrder(page)).toEqual(['Collect from Zoe Vieja', 'Collect from Beto Deudor', 'Collect from Carla Deudora'])
+    expect(await debtorOrder(page)).toEqual(['Collect from Zoe Vieja', 'Collect from Carla Deudora', 'Collect from Beto Deudor'])
     // Whoever owes nothing is only in the A–Z list below, with no "Collect".
     await expect(owing.getByRole('link', { name: /Ana AlDia/ })).toHaveCount(0)
     await expect(page.getByRole('link', { name: 'Collect from Ana AlDia' })).toHaveCount(0)

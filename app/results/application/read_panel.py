@@ -173,7 +173,7 @@ def read_panel(
     def figures_for(period: Period) -> PeriodFigures:
         return figures_of(period, totals_between(buckets, period.start, period.end))
 
-    debts_answer = debts.read()
+    debts_answer = debts.read(today)
     debts_summary = DebtsSummary(
         total_owed=debts_answer.total_owed,
         sales_owing_count=debts_answer.sales_owing_count,

@@ -122,6 +122,9 @@ def test_a_named_ledger_and_a_debtor_do_not_show_the_phone_in_their_repr() -> No
         balance=1,
         owing_since=date(2026, 9, 14),
         standing="owes",
+        age_days=0,
+        bucket="this_week",
+        customer_type_id=None,
         phone=phone,
     )
 
