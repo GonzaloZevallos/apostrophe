@@ -97,11 +97,18 @@ export interface Account {
   rows: AccountRow[]
 }
 
+export interface StillOwingLine {
+  sale_number: number
+  date: string
+  remaining: number
+}
+
 export interface Debtor {
   customer: { id: number; name: string }
   balance: number
   owing_since: string | null
   standing: Standing
+  still_owing: StillOwingLine[] | null
 }
 
 export interface Debtors {

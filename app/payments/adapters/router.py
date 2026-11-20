@@ -166,9 +166,12 @@ def delete_payment(payment_id: int, payments: PaymentsDep, session: SessionDep) 
 
 @router.get("/debtors")
 def get_debtors(
-    ledgers: LedgersDep, today: TodayDep, pricing_settings: PricingSettingsDep
+    ledgers: LedgersDep,
+    today: TodayDep,
+    pricing_settings: PricingSettingsDep,
+    with_lines: bool = False,
 ) -> DebtorsOut:
     # The Customer types switch decides whether a debtor's type is shown; the use case
     # is the one place that hides it.
     show_customer_type = pricing_settings.current().is_vip_customers
-    return DebtorsOut.of(debtors_use_case(ledgers, today, show_customer_type))
+    return DebtorsOut.of(debtors_use_case(ledgers, today, show_customer_type), with_lines)

@@ -90,6 +90,20 @@ def test_debtors_issues_the_same_number_of_statements_with_ten_and_with_fifty(
     assert ten == fifty, (ten, fifty)
 
 
+def test_the_lines_flag_does_not_change_the_number_of_statements(
+    client: TestClient, engine: Engine
+) -> None:
+    _seed_debtors(client, 10)
+
+    def count(query: str) -> int:
+        with captured_statements(engine) as statements:
+            response = client.get(f"/payments/debtors{query}")
+            assert response.status_code == 200, response.text
+        return len(statements)
+
+    assert count("?with_lines=true") == count("?with_lines=false")
+
+
 def test_panel_and_debtors_agree_with_a_direct_computation_and_a_credit_customer(
     client: TestClient,
 ) -> None:
@@ -392,6 +406,7 @@ def test_debtors_and_the_panel_teaser_rows_carry_no_phone(client: TestClient) ->
         "age_days",
         "bucket",
         "customer_type_id",
+        "still_owing",
     }
     assert set(row["customer"]) == {"id", "name"}
     assert set(teaser) == {"customer_id", "name", "balance", "owing_since"}

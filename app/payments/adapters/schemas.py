@@ -13,7 +13,7 @@ from pydantic import BaseModel
 
 from app.money_schema import MoneyAmount, MoneyOut
 from app.payments.application.record_payment import CandidateOutcome, RecordedPayment
-from app.payments.application.view_accounts import Debtor, Debtors
+from app.payments.application.view_accounts import Debtor, Debtors, StillOwingLine
 from app.payments.domain.account import Account
 from app.payments.domain.account import AccountRow as DomainAccountRow
 from app.payments.domain.account import CreditRow as DomainCreditRow
@@ -220,6 +220,18 @@ class DebtorCustomerOut(BaseModel):
     name: str
 
 
+class StillOwingLineOut(BaseModel):
+    sale_number: int
+    date: PaymentDate
+    remaining: MoneyOut
+
+    @classmethod
+    def of(cls, line: StillOwingLine) -> StillOwingLineOut:
+        return cls(
+            sale_number=line.sale_number, date=line.sale_date, remaining=Decimal(line.remaining)
+        )
+
+
 class DebtorOut(BaseModel):
     customer: DebtorCustomerOut
     balance: MoneyOut
@@ -228,9 +240,10 @@ class DebtorOut(BaseModel):
     age_days: int
     bucket: DebtAgeBucket
     customer_type_id: int | None
+    still_owing: list[StillOwingLineOut] | None
 
     @classmethod
-    def of(cls, debtor: Debtor) -> DebtorOut:
+    def of(cls, debtor: Debtor, with_lines: bool) -> DebtorOut:
         return cls(
             customer=DebtorCustomerOut(id=debtor.customer_id, name=debtor.name),
             balance=Decimal(debtor.balance),
@@ -239,6 +252,9 @@ class DebtorOut(BaseModel):
             age_days=debtor.age_days,
             bucket=debtor.bucket,
             customer_type_id=debtor.customer_type_id,
+            still_owing=(
+                [StillOwingLineOut.of(line) for line in debtor.still_owing] if with_lines else None
+            ),
         )
 
 
@@ -265,11 +281,11 @@ class DebtorsOut(BaseModel):
     buckets: DebtBucketsOut
 
     @classmethod
-    def of(cls, debtors: Debtors) -> DebtorsOut:
+    def of(cls, debtors: Debtors, with_lines: bool) -> DebtorsOut:
         return cls(
             total_owed=Decimal(debtors.total_owed),
             sales_owing_count=debtors.sales_owing_count,
-            debtors=[DebtorOut.of(debtor) for debtor in debtors.debtors],
+            debtors=[DebtorOut.of(debtor, with_lines) for debtor in debtors.debtors],
             customer_count=debtors.customer_count,
             debtor_count=debtors.debtor_count,
             buckets=DebtBucketsOut.of(debtors.buckets),
