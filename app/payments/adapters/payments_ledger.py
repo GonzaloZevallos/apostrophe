@@ -18,12 +18,14 @@ class SqlPaymentsLedger:
 
     def all(self) -> list[PaymentRecord]:
         factor = money_scale_factor(self._session, self._business_id)
-        statement = select(PaymentRow.paid_on, scaled(PaymentRow.amount, factor)).where(
-            PaymentRow.business_id == self._business_id
-        )
+        statement = select(
+            PaymentRow.paid_on, scaled(PaymentRow.amount, factor), PaymentRow.payment_method_id
+        ).where(PaymentRow.business_id == self._business_id)
         return [
             PaymentRecord(
-                day=paid_on, amount=domain_amount(self._session, self._business_id, amount)
+                day=paid_on,
+                amount=domain_amount(self._session, self._business_id, amount),
+                payment_method_id=payment_method_id,
             )
-            for paid_on, amount in self._session.execute(statement).all()
+            for paid_on, amount, payment_method_id in self._session.execute(statement).all()
         ]

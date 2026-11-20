@@ -69,7 +69,9 @@ classDiagram
   schemas --> figures
   schemas --> ports
   schemas --> read_panel
+  schemas --> today_series
   today_series --> ledger
+  today_series --> period_figures
   today_series --> rounding
 ```
 
@@ -96,6 +98,7 @@ classDiagram
     expenses_by_day : dict~date, int~
     expenses_by_day_category : dict~date, dict~int, tuple~str, str, int~~~
     payments_by_day : dict~date, int~
+    payments_by_day_method : dict~date, dict~int, int~~
     purchases_by_day : dict~date, int~
     reasons : tuple~ReasonRecord, ...~
     sales_by_day : dict~date, int~
@@ -128,6 +131,10 @@ classDiagram
   class CostFigure {
     costed : int
     pending_quantity : Quantity
+  }
+  class DaySales {
+    day : date
+    sales : int
   }
   class DrawRow {
     costed : int #124; None
@@ -166,6 +173,15 @@ classDiagram
     pending_quantity : Quantity
     percent : int #124; None
   }
+  class MethodMoney {
+    amount : int
+    name : str
+    payment_method_id : int
+  }
+  class MoneyIn {
+    methods : tuple~MethodMoney, ...~
+    total : int
+  }
   class MonthFigures {
     average_margin
     month : Month
@@ -192,9 +208,17 @@ classDiagram
     shortfall : RowCost #124; None
     withdrawals : tuple~ReasonCost, ...~
   }
+  class PaymentMethodMissing {
+  }
+  class PaymentMethodRecord {
+    name : str
+    payment_method_id : int
+    position : int
+  }
   class PaymentRecord {
     amount : int
     day : date
+    payment_method_id : int
   }
   class Period {
     end : date
@@ -386,6 +410,9 @@ classDiagram
     today_block
     week
   }
+  class PaymentMethods {
+    all() Sequence~PaymentMethodRecord~
+  }
   class PaymentsLedger {
     all() Sequence~PaymentRecord~
   }
@@ -433,8 +460,10 @@ classDiagram
     change_percent : int #124; None
     hourly_last_week : tuple~int, ...~
     hourly_today : tuple~int, ...~
+    last_7_days : tuple~DaySales, ...~
     last_week_day : date
     last_week_so_far : int
+    money_in : MoneyIn
     sales : int
     sales_count : int
     so_far : int
@@ -492,6 +521,10 @@ classDiagram
     costed
     pending_quantity
   }
+  class DaySalesOut {
+    day : date
+    sales
+  }
   class DebtorOut {
     balance
     customer_id : int
@@ -524,6 +557,16 @@ classDiagram
     amount
     pending_quantity
     percent : int #124; None
+  }
+  class MethodMoneyOut {
+    amount
+    name : str
+    payment_method_id : int
+  }
+  class MoneyInOut {
+    methods : list~MethodMoneyOut~
+    total
+    of(figures: MoneyIn) MoneyInOut
   }
   class MonthRowOut {
     cash
@@ -614,8 +657,10 @@ classDiagram
     change_percent : int #124; None
     hourly_last_week : list~HourlyPointOut~
     hourly_today : list~HourlyPointOut~
+    last_7_days : list~DaySalesOut~
     last_week_day : date
     last_week_so_far
+    money_in
     sales
     sales_count : int
     so_far
@@ -655,6 +700,7 @@ classDiagram
   ProductRowOut --> CostOut : cost
   ProductRowOut --> MarginOut : margin
   SinceFirstRecordOut --> AmountWithPendingOut : profit
+  TodayOut --> MoneyInOut : money_in
   WeekOut --> AmountWithPendingOut : profit
   WeekOut --> RowCostOut : cost_of_goods
 ```

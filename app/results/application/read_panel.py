@@ -16,6 +16,7 @@ from app.results.application.ports import (
     DebtorRow,
     DebtSummary,
     ExpensesLedger,
+    PaymentMethods,
     PaymentsLedger,
     Purchases,
     SalesLedger,
@@ -30,8 +31,12 @@ from app.results.domain.periods import Period, periods
 from app.results.domain.sorting import oldest, sorted_by_name, teaser
 from app.results.domain.today_series import (
     LAST_HOUR,
+    DaySales,
+    MoneyIn,
     change_percent,
     hourly_running_total,
+    last_7_days,
+    money_in,
     so_far,
 )
 from app.shared.calendar import local_day
@@ -90,6 +95,8 @@ class TodayFigures:
     change_percent: int | None
     hourly_today: tuple[int, ...]
     hourly_last_week: tuple[int, ...]
+    last_7_days: tuple[DaySales, ...]
+    money_in: MoneyIn
 
 
 @dataclass(frozen=True)
@@ -120,6 +127,7 @@ def read_panel(
     purchases: Purchases,
     debts: DebtSummary,
     reasons: WithdrawalReasons,
+    methods: PaymentMethods,
 ) -> Panel:
     now_local = now.astimezone(tz)
     today = local_day(now, tz)
@@ -180,6 +188,8 @@ def read_panel(
         change_percent=change_percent(today_so_far, last_week_so_far),
         hourly_today=hourly_running_total(compared, today, tz, through_hour=through_hour),
         hourly_last_week=hourly_running_total(compared, last_week_day, tz, through_hour=LAST_HOUR),
+        last_7_days=last_7_days(buckets, today),
+        money_in=money_in(buckets, methods.all(), today),
     )
 
     return Panel(

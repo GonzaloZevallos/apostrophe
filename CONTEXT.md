@@ -627,3 +627,7 @@ _Avoid_: to date, running total, pace, progress, hasta ahora
 **Sale in progress**:
 La Sale que se está armando en New sale antes de guardarla: cliente, líneas (a lo sumo una por Product), fecha, Shipping charged, Note y cómo se paga, con el Payment method propuesto por las New sale suggestions. Vive solo en memoria durante una apertura de New sale, nunca se guarda en el dispositivo y cuenta como sin guardar solo con al menos una línea; en el código es `useSaleDraft`. En la app: Sale in progress.
 _Avoid_: cart, basket, order, pending sale, borrador guardado
+
+**Money in**:
+Los Payments con fecha de hoy de un Business, On-the-spot payments y posteriores, en total y por cada Payment method con Payments hoy (los archivados incluidos, con su nombre actual y en el orden de la lista). Su total es siempre igual a los Payments recibidos del Cash de hoy. En la app: todavía no tiene palabra propia (la muestran partes posteriores de GH-497).
+_Avoid_: income, revenue, collections, takings, cobrado, Cash, cash in hand
