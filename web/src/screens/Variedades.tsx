@@ -33,6 +33,7 @@ import { useViewport } from '../shell/useViewport'
 import { summaryLine } from '../stock/summaryLine'
 import { archivedVarietiesQueryOptions } from './varieties/archivedVarieties'
 import { varietiesByName } from './varieties/varietiesByName'
+import type { ProductsView } from './varieties/ProductsBody'
 import ProductsComputer from './varieties/ProductsComputer'
 import ProductsPhone from './varieties/ProductsPhone'
 import { VARIETIES_TEXT } from '../copy/varieties'
@@ -94,6 +95,6 @@ export default function Variedades() {
     : []
   const summary = ready ? summaryLine(rows.map(({ row }) => row.status)) : null
 
-  const view = { rows, hidden, summary, failure, ready, catalogDisabled, archivedCount, feedback, goneExited, today: me.today, computer }
+  const view: ProductsView = { rows, hidden, summary, failure, ready, catalogDisabled, archivedCount, feedback, goneExited, today: me.today, computer }
   return computer ? <ProductsComputer view={view} /> : <ProductsPhone view={view} />
 }

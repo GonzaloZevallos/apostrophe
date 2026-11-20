@@ -41,6 +41,7 @@ Criterios de éxito:
 Las dos listas son cerradas. Agregar a cualquiera de las dos cambia este archivo y el README, nunca una sola pantalla.
 
 - **Solo ícono**: borrar ("Delete…"), buscar ("Search"), cerrar ("Close"), editar ("Edit") y compartir ("Share") solo donde no es la acción principal de la pantalla (p. ej. el Share debajo de un enlace de invitación recién creado en Users, cuya acción principal es "Invite a partner").
+  - **Agregar ("New product") en el título de Products del celular**: es la única excepción a "la acción principal lleva su texto", por decisión del dueño (GH-903): la palabra no cabe en la fila de título a 320 y 246 px, así que la acción es un botón redondo solo con el ícono `agregar`, de 44×44 px y nombre accesible "New product" (`action="add"`). Regla del dueño: cuando una acción con palabra no cabe en una fila de título del celular, pasa a ser un botón redondo solo ícono con nombre accesible, nunca se encoge ni envuelve la fila.
   - El nombre accesible es la palabra exacta actual; "Close", nunca "Back", sigue valiendo a través de él.
   - El objetivo mide al menos 44 px.
   - Estar en la lista permite el solo ícono; nunca lo exige. La acción principal de una pantalla siempre lleva su texto (el Share de la pantalla del Catalog conserva su palabra).
