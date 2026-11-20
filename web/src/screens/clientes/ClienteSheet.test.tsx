@@ -20,6 +20,7 @@ import { baselineText } from '../../i18n/testing'
 import { behindPane, expectBehindPane, expectBehindPaneEmpty } from '../../test/behindPane'
 import { flipViewport, renderWithViewport } from '../../test-viewport'
 import { withPaymentMethods } from '../../test-payment-methods'
+import { debtorsOf, NO_DEBTORS, owingSales } from '../../test/debtors'
 
 const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', money: { symbol: '$', decimals: 0 } }
@@ -31,7 +32,11 @@ const ACCOUNT = {
   standing: 'owes',
   rows: [{ kind: 'sale', date: '2026-09-14', running_balance: 11000, standing: 'owes', sale: { id: 10, total: 11000, how_paid: 'owing', payment_method: null } }],
 }
-const DEBTORS = { total_owed: 11000, sales_owing_count: 1, debtors: [{ customer: { id: 1, name: 'Ana Pérez' }, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }] }
+const DEBTORS = debtorsOf({
+  total_owed: 11000,
+  ...owingSales(1),
+  debtors: [{ customer: { id: 1, name: 'Ana Pérez' }, balance: 11000, owing_since: '2026-09-14', standing: 'owes', still_owing: null }],
+})
 const EDIT = pathTo(CUSTOMER_EDIT, { id: 1 })
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -163,7 +168,7 @@ describe('on a phone, a direct address', () => {
 
   test('with nobody owing the pane draws no "Nobody owes you" wording', async () => {
     renderApp([{ pathname: CUSTOMER_NEW }], 'phone', {
-      'GET /payments/debtors': () => jsonResponse(200, { total_owed: 0, sales_owing_count: 0, debtors: [] }),
+      'GET /payments/debtors': () => jsonResponse(200, NO_DEBTORS),
     })
 
     await screen.findByRole('dialog', { name: COMMON_TEXT.newCustomer })
