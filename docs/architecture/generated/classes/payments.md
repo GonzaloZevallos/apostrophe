@@ -449,6 +449,7 @@ classDiagram
     for_customers(customer_ids: Collection~int~) Mapping~int, Ledger~
   }
   class SqlOwingSales {
+    owed_of(customer_ids: Collection~int~) Mapping~int, int~
     settlement_of(customer_id: int) CustomerSettlement
     still_owing(customer_ids: Collection~int~) frozenset~int~
   }

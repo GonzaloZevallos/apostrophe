@@ -15,7 +15,10 @@ import { englishBundle } from "./i18n/resources";
 import { resolveKey } from "./i18n/resolve";
 import * as routes from "./routes";
 import {
+  ENTRY_PARENTS,
+  entryParentOf,
   isPublicPath,
+  isScreenId,
   OUTSIDE,
   parentOf,
   pathTo,
@@ -1007,6 +1010,92 @@ describe("the screens whose back names the record", () => {
     );
     expect(marked.sort()).toEqual(["variety", "variety-entries", "variety-prices"]);
     for (const id of marked) expect(kindOf(screenOf(id), "phone")).toBe("card");
+  });
+});
+
+describe("entryParentOf", () => {
+  test("answers the table's screen when the entry came from it", () => {
+    expect(entryParentOf("settings-payment-methods", "settings")).toBe("settings");
+  });
+
+  test("answers nothing for another origin", () => {
+    expect(entryParentOf("settings-payment-methods", "sales")).toBeUndefined();
+  });
+
+  test.each([42, {}, null, undefined])("answers nothing for the non-string origin %j", (value) => {
+    expect(entryParentOf("settings-payment-methods", value)).toBeUndefined();
+  });
+
+  test("answers nothing for a screen that is not in the table", () => {
+    expect(entryParentOf("settings-payments", "settings")).toBeUndefined();
+  });
+});
+
+/** What is wrong with an entry-parent table: one line per violation, none when it is sound. */
+function entryParentViolations(table: Readonly<Record<string, string>>): string[] {
+  const found: string[] = [];
+  for (const [key, value] of Object.entries(table)) {
+    if (!isScreenId(key)) {
+      found.push(`${key} is not a declared screen`);
+      continue;
+    }
+    if (!isScreenId(value)) {
+      found.push(`${key}: ${value} is not a declared screen`);
+      continue;
+    }
+    if (key === value) found.push(`${key} is its own entry parent`);
+    const seen = new Set<ScreenId>();
+    let up: ScreenId | undefined = parentOf(value, "phone")?.id;
+    while (up !== undefined && !seen.has(up)) {
+      if (up === key) {
+        found.push(`${key}: ${value} is a descendant of ${key}`);
+        break;
+      }
+      seen.add(up);
+      up = parentOf(up, "phone")?.id;
+    }
+    const kind = kindOf(screenOf(value), "phone");
+    if (kind !== "root" && kind !== "card") found.push(`${key}: ${value} is a ${kind} on the phone, not a root or a card`);
+    if (screenOf(key).backLabel === "record") found.push(`${key} is record-labelled`);
+  }
+  return found;
+}
+
+describe("the entry parents", () => {
+  test("the real table has no violation", () => {
+    expect(entryParentViolations(ENTRY_PARENTS)).toEqual([]);
+  });
+
+  test("a key that is not a declared screen is reported", () => {
+    expect(entryParentViolations({ nowhere: "settings" })).toEqual(["nowhere is not a declared screen"]);
+  });
+
+  test("a value that is not a declared screen is reported", () => {
+    expect(entryParentViolations({ "settings-payment-methods": "nowhere" })).toEqual([
+      "settings-payment-methods: nowhere is not a declared screen",
+    ]);
+  });
+
+  test("a key that is its own entry parent is reported", () => {
+    expect(entryParentViolations({ "settings-payments": "settings-payments" })).toContain(
+      "settings-payments is its own entry parent",
+    );
+  });
+
+  test("a value that descends from its key is reported", () => {
+    expect(entryParentViolations({ settings: "settings-payment-methods" })).toEqual([
+      "settings: settings-payment-methods is a descendant of settings",
+    ]);
+  });
+
+  test("a value that is not a root or a card on the phone is reported", () => {
+    expect(entryParentViolations({ "settings-payment-methods": "settings-payments" })).toEqual([
+      "settings-payment-methods: settings-payments is a form on the phone, not a root or a card",
+    ]);
+  });
+
+  test("a record-labelled key is reported, so the record override and the entry parent never meet", () => {
+    expect(entryParentViolations({ variety: "settings" })).toEqual(["variety is record-labelled"]);
   });
 });
 

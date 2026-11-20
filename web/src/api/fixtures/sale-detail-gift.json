@@ -41,6 +41,8 @@
     }
   ],
   "still_owing": false,
+  "payment_state": "paid",
+  "still_owed": 0,
   "total_quantity": 4.5,
   "bill": null
 }

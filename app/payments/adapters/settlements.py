@@ -42,12 +42,18 @@ class SqlOwingSales:
     def __init__(self, session: Session, business_id: int) -> None:
         self._ledgers = SqlLedgers(session, business_id)
 
-    def still_owing(self, customer_ids: Collection[int]) -> frozenset[int]:
+    def owed_of(self, customer_ids: Collection[int]) -> Mapping[int, int]:
         ledgers = self._ledgers.for_customers(customer_ids)
-        owing: set[int] = set()
+        owed: dict[int, int] = {}
         for ledger in ledgers.values():
-            owing |= settle(ledger).still_owing
-        return frozenset(owing)
+            for sale in settle(ledger).sales:
+                owed[sale.sale_id] = sale.still_owed
+        return owed
+
+    def still_owing(self, customer_ids: Collection[int]) -> frozenset[int]:
+        return frozenset(
+            sale_id for sale_id, still_owed in self.owed_of(customer_ids).items() if still_owed > 0
+        )
 
     def settlement_of(self, customer_id: int) -> CustomerSettlement:
         ledger = self._ledgers.for_customers([customer_id]).get(customer_id)

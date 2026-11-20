@@ -17,7 +17,15 @@ from app.sales.application.suggest_for_new_sale import NewSaleSuggestionIds
 from app.sales.application.view_sales import SaleDetail
 from app.sales.domain.pricing import PricingRule
 from app.sales.domain.sale import Sale
-from app.sales.domain.sale_bill import BillPayment, BillRule, BillState, SaleBill, SaleBillLine
+from app.sales.domain.sale_bill import (
+    BillPayment,
+    BillRule,
+    BillState,
+    PaymentState,
+    SaleBill,
+    SaleBillLine,
+    SalePayment,
+)
 
 
 class PaidIn(BaseModel):
@@ -111,9 +119,11 @@ class SaleOut(BaseModel):
     total: MoneyOut
     lines: list[SaleLineOut]
     still_owing: bool
+    payment_state: PaymentState | None
+    still_owed: MoneyOut | None
 
     @classmethod
-    def of(cls, view: SaleView, still_owing: bool = False) -> "SaleOut":
+    def of(cls, view: SaleView, still_owing: bool, payment: SalePayment | None) -> "SaleOut":
         sale = view.sale
         assert sale.id is not None, "only stored sales go out"
         return cls(
@@ -128,11 +138,21 @@ class SaleOut(BaseModel):
             total=Decimal(sale.total),
             lines=[SaleLineOut.of(line) for line in view.lines],
             still_owing=still_owing,
+            payment_state=_state_out(payment),
+            still_owed=_owed_out(payment),
         )
 
 
 def _money_or_none(units: int | None) -> Decimal | None:
     return None if units is None else Decimal(units)
+
+
+def _state_out(payment: SalePayment | None) -> PaymentState | None:
+    return None if payment is None else payment.state
+
+
+def _owed_out(payment: SalePayment | None) -> Decimal | None:
+    return None if payment is None else Decimal(payment.still_owed)
 
 
 def _method_out(sale: Sale) -> PaymentMethodLabelOut | None:
@@ -268,6 +288,8 @@ class SaleDetailOut(BaseModel):
     lines: list[SaleLineDetailOut]
     total_quantity: QuantityOut
     still_owing: bool
+    payment_state: PaymentState | None
+    still_owed: MoneyOut | None
     bill: SaleBillOut | None
 
     @classmethod
@@ -292,6 +314,8 @@ class SaleDetailOut(BaseModel):
             ],
             total_quantity=sale.total_quantity.as_decimal(),
             still_owing=detail.still_owing,
+            payment_state=_state_out(detail.payment),
+            still_owed=_owed_out(detail.payment),
             bill=None if detail.bill is None else SaleBillOut.of(detail.bill),
         )
 

@@ -48,6 +48,12 @@ LIST_TABLES = ("sale", "sale_line", "payment")
 # three reads (3), and the business's money scale (1), looked up once per unit of work.
 # Pinned so a constant increase fails too, not only one that grows with the data.
 PINNED_STATEMENTS = 9
+# A period of only customer-less sales: the same statements minus the customer-keyed ones,
+# measured once and pinned.
+PINNED_STATEMENTS_NO_CUSTOMER = 6
+
+# The $0 sale and the sale settled by a Credit `_seed_the_other_states` leaves in the period.
+EXTRA_SALES = 2
 
 PERIOD = {"date_from": "2026-09-01", "date_to": "2026-09-30"}
 
@@ -252,6 +258,55 @@ def _seed(client: TestClient, sales: int) -> None:
             json={"paid_on": "2026-10-01", "amount": 1, "payment_method_id": method},
         )
         assert paid.status_code == 201, paid.text
+    _seed_the_other_states(client, variety, method)
+
+
+def _seed_the_other_states(client: TestClient, variety: int, method: int) -> None:
+    """A $0 sale and a sale settled by a Credit, beside the paid, part-paid, unpaid and
+    customer-less sales `_seed` records: every Payment state is in the data."""
+    created = client.post(
+        "/customers",
+        json={"name": "Cliente credito", "phone": "11 9999-0000", "phone_country": "AR"},
+    )
+    assert created.status_code == 201, created.text
+    customer = int(created.json()["id"])
+    line = {"product_id": variety, "quantity": "1"}
+    gift = client.post(
+        "/sales",
+        json={
+            "date": "2026-09-10",
+            "customer_id": customer,
+            "lines": [{**line, "gift": True}],
+        },
+    )
+    assert gift.status_code == 201, gift.text
+    first = client.post(
+        "/sales",
+        json={
+            "date": "2026-09-11",
+            "customer_id": customer,
+            "payment": {"kind": "owing"},
+            "lines": [line],
+        },
+    )
+    assert first.status_code == 201, first.text
+    paid = client.post(
+        f"/customers/{customer}/payments",
+        json={"paid_on": "2026-10-01", "amount": 10_000, "payment_method_id": method},
+    )
+    assert paid.status_code == 201, paid.text
+    assert client.delete(f"/sales/{first.json()['id']}").status_code == 200
+    second = client.post(
+        "/sales",
+        json={
+            "date": "2026-09-12",
+            "customer_id": customer,
+            "payment": {"kind": "owing"},
+            "lines": [line],
+        },
+    )
+    assert second.status_code == 201, second.text
+    assert second.json()["payment_state"] == "paid"
 
 
 _Captured = tuple[str, tuple[object, ...]]
@@ -319,7 +374,7 @@ def test_the_list_statements_search_the_indexes_rather_than_scan(
     # does not depend on how many sales there are (the count test below uses 300).
     _seed(client, 30)
 
-    sales_plan, lines_plan = _plans(engine, client, 30)
+    sales_plan, lines_plan = _plans(engine, client, 30 + EXTRA_SALES)
 
     assert plan_problems(sales_plan, "sales") == [], sales_plan
     assert plan_problems(lines_plan, "lines") == [], lines_plan
@@ -329,13 +384,13 @@ def test_dropping_the_sale_index_makes_the_guard_name_it(
     client: TestClient, engine: Engine
 ) -> None:
     _seed(client, 30)
-    sales_plan, lines_plan = _plans(engine, client, 30)
+    sales_plan, lines_plan = _plans(engine, client, 30 + EXTRA_SALES)
     assert plan_problems(sales_plan, "sales") == [], sales_plan
     assert plan_problems(lines_plan, "lines") == [], lines_plan
 
     with engine.begin() as connection:
         connection.execute(text(f"DROP INDEX {SALES_INDEX}"))
-    sales_plan, lines_plan = _plans(engine, client, 30)
+    sales_plan, lines_plan = _plans(engine, client, 30 + EXTRA_SALES)
 
     problems = plan_problems(sales_plan, "sales")
     assert {name for problem in problems for name in re.findall(r"ix_\w+", problem)} == {
@@ -354,8 +409,42 @@ def test_the_list_issues_the_same_number_of_statements_with_30_sales_as_with_300
     small, small_answered = _list_period(client, engine)
     big, big_answered = _list_period(other_client, engine)
 
-    assert (small_answered, big_answered) == (30, 300)
+    assert (small_answered, big_answered) == (30 + EXTRA_SALES, 300 + EXTRA_SALES)
     # Equal, and equal to the measured value: pinned, so one statement more for every
     # request fails as well. `settle()` runs in Python, so what it does with the rows it
     # reads is outside what a count of statements sees.
     assert (len(small), len(big)) == (PINNED_STATEMENTS, PINNED_STATEMENTS)
+
+
+def _seed_without_customers(client: TestClient, sales: int) -> None:
+    variety = client.post("/api/products", json={"name": "Lavanda"}).json()["id"]
+    priced = client.post(
+        f"/api/products/{variety}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 10_000},
+    )
+    assert priced.status_code == 201, priced.text
+    method = client.get("/api/payment-methods").json()[0]["id"]
+    for number in range(sales):
+        sold = client.post(
+            "/sales",
+            json={
+                "date": (date(2026, 9, 1) + timedelta(days=number % 28)).isoformat(),
+                "payment": {"kind": "paid", "payment_method_id": method},
+                "lines": [{"product_id": variety, "quantity": "1"}],
+            },
+        )
+        assert sold.status_code == 201, sold.text
+
+
+@pytest.mark.parametrize("engine", ["sqlite"], indirect=True)
+def test_a_list_of_only_customerless_sales_issues_its_own_constant_number_of_statements(
+    client: TestClient, other_client: TestClient, engine: Engine
+) -> None:
+    _seed_without_customers(client, 30)
+    _seed_without_customers(other_client, 300)
+
+    small, small_answered = _list_period(client, engine)
+    big, big_answered = _list_period(other_client, engine)
+
+    assert (small_answered, big_answered) == (30, 300)
+    assert (len(small), len(big)) == (PINNED_STATEMENTS_NO_CUSTOMER, PINNED_STATEMENTS_NO_CUSTOMER)

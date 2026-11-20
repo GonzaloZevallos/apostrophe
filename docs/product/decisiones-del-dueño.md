@@ -9,3 +9,7 @@ Origen: https://github.com/GonzaloZevallos/apostrophe/issues/732#issuecomment-68
 ### D-8ecb8c1d · 2026-11-20
 when a labelled action does not fit a phone title row, it becomes an icon-only round button with an accessible name, rather than shrinking or wrapping the row.
 Origen: https://github.com/GonzaloZevallos/apostrophe/issues/910#issuecomment-7044106958
+
+### D-62e6dc23 · 2026-11-20
+a part that adds a module not yet wired into a screen may add it to web/scripts/docs/front-exclude.json; the part that wires it removes the entry. No permission needed.
+Origen: https://github.com/GonzaloZevallos/apostrophe/issues/923#issuecomment-7045837505

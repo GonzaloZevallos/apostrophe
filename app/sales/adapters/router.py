@@ -28,6 +28,7 @@ from app.sales.adapters.schemas import (
 )
 from app.sales.adapters.sql_sales import SqlSales
 from app.sales.adapters.sql_suggestions import SqlNewSaleSuggestions
+from app.sales.adapters.unreconciled import log_unreconciled
 from app.sales.application import view_sales
 from app.sales.application.assign_customer import assign_customer as assign_customer_use_case
 from app.sales.application.delete_sale import delete_sale as delete_sale_use_case
@@ -43,6 +44,7 @@ from app.sales.application.ports import (
 from app.sales.application.record_sale import LineInput
 from app.sales.application.record_sale import record_sale as record_sale_use_case
 from app.sales.application.suggest_for_new_sale import suggest_for_new_sale
+from app.sales.application.view_sales import ListedSale
 from app.sales.domain.pricing import SaleRuleBroken
 from app.sales.domain.sale import (
     CustomerAlreadyAssigned,
@@ -167,6 +169,7 @@ def record_sale(
     session: SessionDep,
     today: TodayDep,
     clock: ClockDep,
+    business_id: CurrentBusinessId,
 ) -> SaleOut:
     with as_http:
         method = (
@@ -191,20 +194,19 @@ def record_sale(
             left_owing=isinstance(body.payment, OwingIn),
             recorded_at=clock(),
         )
-        return _sale_out(sales, owing_sales, sale.id)
+        return _sale_out(sales, owing_sales, sale.id, business_id)
 
 
 @router.get("")
 def list_sales(
     sales: SalesDep,
     owing_sales: OwingSalesDep,
+    business_id: CurrentBusinessId,
     date_from: date | None = None,
     date_to: date | None = None,
 ) -> list[SaleOut]:
-    views = view_sales.list_sales(sales, date_from, date_to)
-    customer_ids = [view.customer.id for view in views if view.customer is not None]
-    owing = owing_sales.still_owing(customer_ids)
-    return [SaleOut.of(view, view.sale.id in owing) for view in views]
+    listed = view_sales.list_sales(sales, owing_sales, date_from, date_to)
+    return [_out(item, business_id) for item in listed]
 
 
 @router.get("/suggestions")
@@ -221,9 +223,12 @@ def get_sale(
     line_costs: LineCostsDep,
     owing_sales: OwingSalesDep,
     business_names: BusinessNamesDep,
+    business_id: CurrentBusinessId,
 ) -> SaleDetailOut:
     with as_http:
         detail = view_sales.get_sale_detail(sales, line_costs, owing_sales, business_names, sale_id)
+        if detail.payment is None:
+            log_unreconciled(business_id, detail.view.number)
         return SaleDetailOut.of(detail)
 
 
@@ -235,10 +240,11 @@ def assign_customer(
     customer_facts: CustomerFactsDep,
     owing_sales: OwingSalesDep,
     session: SessionDep,
+    business_id: CurrentBusinessId,
 ) -> SaleOut:
     with as_http:
         sale = assign_customer_use_case(sales, customer_facts, session, sale_id, body.customer_id)
-        return _sale_out(sales, owing_sales, sale.id)
+        return _sale_out(sales, owing_sales, sale.id, business_id)
 
 
 def _view_of(sales: SqlSales, sale_id: int | None) -> SaleView:
@@ -248,17 +254,19 @@ def _view_of(sales: SqlSales, sale_id: int | None) -> SaleView:
     return view
 
 
-def _still_owing(view: SaleView, owing_sales: OwingSales) -> bool:
-    # A sale with no customer never owes: settlement never sees one (the plan's
-    # invariant), so there is nothing to ask the port about.
-    if view.customer is None:
-        return False
-    return view.sale.id in owing_sales.still_owing([view.customer.id])
+def _out(listed: ListedSale, business_id: int) -> SaleOut:
+    # One log line per sale whose payment facts cannot be reconciled, on every response
+    # that carries it (docs/product/sales.md).
+    if listed.payment is None:
+        log_unreconciled(business_id, listed.view.number)
+    return SaleOut.of(listed.view, listed.still_owing, listed.payment)
 
 
-def _sale_out(sales: SqlSales, owing_sales: OwingSales, sale_id: int | None) -> SaleOut:
+def _sale_out(
+    sales: SqlSales, owing_sales: OwingSales, sale_id: int | None, business_id: int
+) -> SaleOut:
     view = _view_of(sales, sale_id)
-    return SaleOut.of(view, _still_owing(view, owing_sales))
+    return _out(view_sales.read_sale(view, owing_sales), business_id)
 
 
 @router.delete("/{sale_id}", status_code=200)
