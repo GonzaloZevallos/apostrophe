@@ -38,6 +38,8 @@
 
 **Cuando** entrego un pedido y empiezo a registrarlo en el teléfono, **quiero** tener adelante los Customers a los que les vendí más recientemente, los Products que más se vendieron en los últimos 30 días y el Payment method de mi última venta pagada en el momento, **para** completar la venta en pocos toques en lugar de buscar o desplazarme, y registrarla en menos de un minuto. (Parte 1 de GH-496: acá lo sirve la lectura de las **New sale suggestions**, que solo devuelve ids; la pantalla que las muestra llega en partes posteriores de GH-496. Las sugerencias solo acortan elecciones: nunca fijan ni cambian un precio, un monto ni una cantidad).
 
+**Cuando** reviso mi lista de Sales en el teléfono, **quiero** ver en cada venta si está pagada, pagada en parte o sin pagar, y cuánto se debe todavía de ella, **para** saber a quién reclamarle y cuánto sin abrir cada venta. (Parte 1 de GH-500: sirve al trabajo del Brief "saber quién me debe qué y desde cuándo". Acá lo sirven los campos `payment_state` y `still_owed` de la API de ventas, el **Payment state** de cada venta; la pantalla que los muestra llega en partes posteriores de GH-500. No reemplaza el Balance del cliente ni agrega ningún total nuevo).
+
 # Ventas
 
 Lo que un cliente se lleva de una vez, con cada línea cotizada con los precios del día y las **Pricing settings** del negocio, y ese precio guardado en la línea (ADR-0003). Las ventas las ve solo su negocio (ADR-0004). Esta capacidad lee:
@@ -47,7 +49,7 @@ Lo que un cliente se lleva de una vez, con cada línea cotizada con los precios 
 - qué Pricing rules usa el negocio, de las Pricing settings (pricing-settings.md);
 - los Payment methods ofrecidos del negocio, de payment-methods.md (ADR-20261111-payment-methods-by-id).
 
-Los pagos (`payments.md`) saldan lo que una venta deja debiendo y dicen si cada venta sigue debiendo. El stock (`stock.md`) saca los gramos de cada línea de los **Lot**s de su producto y le da a la línea su **Cost of goods sold**, que sigue a los Lots y nunca queda congelado (ADR-0009). Esta capacidad cubre también las pantallas de ventas: New sale, Sales y el detalle de una venta, en el teléfono y en la computadora, y el Sale bill que se comparte desde el detalle de una venta. Dónde se ubican es navigation.md.
+Los pagos (`payments.md`) saldan lo que una venta deja debiendo y dicen si cada venta sigue debiendo y cuánto se debe todavía de ella. El stock (`stock.md`) saca los gramos de cada línea de los **Lot**s de su producto y le da a la línea su **Cost of goods sold**, que sigue a los Lots y nunca queda congelado (ADR-0009). Esta capacidad cubre también las pantallas de ventas: New sale, Sales y el detalle de una venta, en el teléfono y en la computadora, y el Sale bill que se comparte desde el detalle de una venta. Dónde se ubican es navigation.md.
 
 La protagonista de las historias del teléfono es la vendedora. Los diseños de computadora (`NuevaVentaCompu`, `VentasCompu`) son las mismas historias en una pantalla más grande. Antes del rediseño para teléfono, la vendedora registraba ventas en el teléfono con fricción (bajar para encontrar el botón de guardar, hacer zoom para acertar controles chicos, a veces registrar después de memoria), sin ninguna alternativa fuera de la app.
 
@@ -68,6 +70,8 @@ Antes de la parte 1 de GH-727, en el teléfono el campo de producto de New sale 
 Antes de la parte 2 de GH-793, la pista de nada para vender desaparecía mientras se volvían a pedir los productos después de un cambio de fecha y volvía cuando llegaban, empujando el formulario hacia abajo; en el teléfono, eso arriesga un toque errado.
 
 Antes de la parte 1 de GH-496, para registrar una venta la vendedora busca al cliente en la lista de Customers, recorre los productos para agregar cada línea y elige el medio de la lista completa cada vez, sea cual sea el de la última venta. La app no tiene ningún atajo de "repetir la última venta" ni de "copiar una venta", y este trabajo no lo agrega. La parte 1 entrega solo la lectura de las New sale suggestions, sin pantalla; New sale todavía no las muestra.
+
+Antes de la parte 1 de GH-500, la lista de Sales solo dice si una venta sigue debiendo ("owes you", las **Sales still owing**): no dice si está pagada en parte ni cuánto queda de ella. Para saberlo, la vendedora abre cada venta o la ficha del cliente, o lo saca del Balance con la regla de la deuda más vieja primero. Supuesto: no hay otro atajo que importe (como anotar el monto en la nota de la venta), y el arreglo sería el mismo. La parte 1 entrega solo los dos campos en la API, sin pantalla: la vendedora no ve nada nuevo hasta una parte posterior de GH-500.
 
 Criterios de éxito, registro (API):
 
@@ -161,6 +165,14 @@ Criterios de éxito, New sale suggestions (parte 1 de GH-496; los criterios 51 y
 53. **El medio listo, nunca adivinado.** El medio de la última venta pagada en el momento se preselecciona por id cuando todavía se ofrece. Si está archivado, no se preselecciona nada y nunca se usa uno más viejo.
 54. **Nada cruza de negocio.** Cada sugerencia sale solo del negocio de la vendedora.
 
+Criterios de éxito, Payment state por venta (parte 1 de GH-500; esta parte se juzga en la API, porque la pantalla que lo muestra llega en partes posteriores de GH-500):
+
+55. **Coincide con el Settlement.** Para toda venta, el `payment_state` y el `still_owed` de la lista y del detalle coinciden con el Settlement, con 0 diferencias, en cada clase de venta: pagada en el momento, pagada después, pagada en parte, sin pagar, de $0, saldada por un Credit y sin cliente.
+56. **La lista no se vuelve más lenta.** `GET /sales` hace la misma cantidad de sentencias con 30 y con 300 ventas (9, fijada en `tests/sales/test_list_cost.py`), con todos los Payment states en los datos. No se agrega ningún umbral de tiempo.
+57. **Una venta rota no rompe nada.** Una venta cuyos hechos de pago no se pueden conciliar nunca hace fallar la lista, el detalle, el registro ni la asignación de cliente: esa venta lleva null en los dos campos, y todas las demás quedan como siempre. Deja un rastro para el Operator, sin datos personales.
+58. **Los negocios nunca se mezclan.** La venta de otro negocio nunca aparece en la lista y nunca cambia ningún `still_owed`.
+59. **Una sola regla.** La lista, el detalle y el Sale bill toman el Payment state de una sola función de dominio, nunca de cálculos separados que puedan divergir, y el Sale bill se lee exactamente igual que antes.
+
 Criterios de éxito, Sale bill:
 
 20. **Un toque, sin tipear.** En el detalle de la venta, un toque en el teléfono abre la hoja de compartir del teléfono con el Sale bill listo o lo deja en el portapapeles; elegir el chat y enviar son pasos del propio teléfono. Si compartir o copiar falla, la vendedora igual obtiene el texto sin tipear.
@@ -253,8 +265,24 @@ Criterios de éxito, Sale number:
   - Un rango invertido da vacío.
   - Orden: la fecha más nueva primero, después la registrada más recientemente primero.
   - Cada venta dice si sigue debiendo, calculado en vivo por pagos.
+  - Desde la parte 1 de GH-500, cada venta trae además su Payment state y lo que todavía se debe de ella (`payment_state`, `still_owed`; ver "Payment state por venta"), calculados con una sola lectura del Settlement para los clientes listados.
   - No muestra el Sale number.
-- **Ver una**: el Sale number, fecha, cliente o ninguno, envío, nota, cómo se pagó, total, y de cada línea el producto, los gramos, el precio por gramo guardado, la Pricing rule (con la copia del nombre del tipo cuando la regla es la de un Customer type), el total de la línea y el Cost of goods sold (monto costeado y gramos pendientes). Trae también el Sale bill (abajo), o ninguno.
+- **Ver una**: el Sale number, fecha, cliente o ninguno, envío, nota, cómo se pagó, total, su Payment state y lo que todavía se debe de ella (`payment_state`, `still_owed`), y de cada línea el producto, los gramos, el precio por gramo guardado, la Pricing rule (con la copia del nombre del tipo cuando la regla es la de un Customer type), el total de la línea y el Cost of goods sold (monto costeado y gramos pendientes). Trae también el Sale bill (abajo), o ninguno.
+- **Payment state por venta** (parte 1 de GH-500; trabajo habilitante, sin pantalla):
+  - **Dónde**: toda venta que responden `GET /sales`, `POST /sales`, `PUT /sales/{id}/customer` y `GET /sales/{id}` lleva dos campos: `payment_state` (`paid`, `unpaid`, `part_paid` o null) y `still_owed` (lo que todavía se debe de esa venta, con la misma forma de dinero que `total`, o null). Se calculan en vivo a partir del Settlement y nunca se guardan; no hay migración.
+  - **Nada más cambia en la respuesta**: `GET /sales` sigue siendo una lista, `still_owing` sigue, y no hay parámetro de consulta ni filtro nuevo.
+  - **La regla**: la decide solo la función de dominio `payment_state(total, on_the_spot_method, has_customer, still_owed)` en `app/sales/domain/`, que devuelve un `PaymentState`. Ningún router, esquema ni componente del front lo vuelve a derivar de totales o pagos; el esquema solo traduce el enum a su texto. Gana la primera regla que aplica:
+    1. Un total de $0 es pagada.
+    2. Una venta pagada en el momento es pagada; si el Settlement también la lista, los hechos son inconsistentes.
+    3. Una venta sin cliente que no se pagó en el momento es inconsistente.
+    4. Una venta con cliente que el Settlement no lista es inconsistente.
+    5. Si no: `still_owed` de $0 es pagada (cubre una venta saldada por un Credit), `still_owed` igual al total es sin pagar, y cualquier otro monto es pagada en parte.
+  - **El monto**: `still_owed` es exactamente lo que da el Settlement para esa venta, la deuda más vieja primero, sin redondeo ni regla propia, a la Money scale del negocio. Una venta pagada lleva `still_owed` en 0, también la pagada en el momento, la de $0 y la sin cliente; null aparece solo en una venta inconsistente.
+  - **Cómo se lee**: el puerto `OwingSales.owed_of(customer_ids)` devuelve, por venta, lo que todavía se debe, con la misma lectura `SqlLedgers.for_customers` y el mismo `settle()` (`app/payments/adapters/settlements.py`). `still_owing` pasa a ser un envoltorio de él: las ventas cuyo monto está por encima de 0. La lista hace una sola llamada a `owed_of` para los clientes listados y nunca llama a `settlement_of` por fila; el detalle toma sus valores de `settlement_of`, junto a su Sale bill.
+  - **Venta inconsistente**: en la lista, esa fila lleva null en los dos campos y las demás no se ven afectadas. El detalle, el registro y la asignación de cliente responden la venta con null en los dos campos y no fallan, así que el detalle coincide con su fila.
+  - **Rastro para el Operator**: cada venta salteada escribe una línea de log con el id del negocio y el Sale number, en cada lectura, sin deduplicar ni alertar. Nunca lleva la nota, el nombre o el teléfono de un cliente, un monto ni un Balance, y nada se agrega a la respuesta.
+  - **En el front**: `web/src/api/sales.ts` suma `payment_state: 'paid' | 'unpaid' | 'part_paid' | null` y `still_owed: number | null`. Ningún componente los lee todavía; los fixtures tipados de los tests del front suman los dos campos, solo como cambio de forma.
+  - **Costo (§8)**: la cantidad de sentencias es constante; el trabajo en Python es O(R log R) sobre R, las filas del libro de los clientes listados.
 - **New sale suggestions** (parte 1 de GH-496; `GET /api/sales/suggestions?on=YYYY-MM-DD`, en el router de ventas con sesión, declarada antes de `/{sale_id}`; puerto `NewSaleSuggestions`, caso de uso `suggest_for_new_sale`, adaptador `app/sales/adapters/sql_suggestions.py`):
   - **Decisión**: la regla del último medio (se elige la venta primero y recién entonces se mira si el medio está archivado), la ventana compartida con Days left y el costo están en la [ADR de las New sale suggestions](../adr/20261119-new-sale-suggestions-are-ids-only-the-last-method-is-picked-before-it-is-judged-and-most-sold-shares-the-days-left-window.md).
   - **Para qué**: la usa solo la pantalla de New sale (en una parte posterior de GH-496). Collect y la ficha del cliente no la usan. `on` es la fecha de la venta que se está registrando, que puede ser una carga tardía de otro día.
@@ -281,9 +309,10 @@ Criterios de éxito, Sale number:
   - El nombre del negocio, el Sale number, la fecha, de cada línea el producto, la cantidad, el monto y la regla (bulk, gift o ninguna: lista, VIP, Customer type y Special price se leen todas como ninguna), con el precio unitario en las líneas con Bulk price; el Shipping charged; el total; el estado de pago (paid, owed, none) con lo que todavía se debe de esta venta; y el Balance del cliente, o ninguno cuando la venta no tiene cliente.
   - El nombre del negocio y los nombres de los productos son datos de la vendedora, y viajan exactamente como están guardados: nunca se escapan, se recortan ni se reescriben.
   - El estado de pago, lo que todavía se debe y el Balance salen de la única pasada de Settlement detrás del "still owing" del detalle, en la misma respuesta; nada vuelve a calcular el Settlement en otro lado.
+  - Desde la parte 1 de GH-500, `bill_payment` toma el estado de la misma función `payment_state` que la lista y el detalle: un total de $0 sigue dando none (su propia primera rama), pagada da paid, y sin pagar o pagada en parte dan owed con el monto. El Sale bill se lee exactamente igual que antes, y sus tests existentes pasan sin editarlos.
   - El Balance es la cuenta entera del cliente al momento de leer el detalle, no en la fecha de la venta.
   - Es cerrado: no tiene campo para la nota, el nombre o el id del cliente, ningún id de venta o de línea, la marca VIP, el Customer type ni su nombre, una Pricing rule que no sea bulk o gift, costo, margen, medio de pago ni link. El Sale number no es un id: es el número propio del negocio. El negocio sale solo de la sesión.
-  - Cuando no se puede calcular, el detalle responde sin Sale bill y el resto del detalle no se ve afectado; el error nombra la regla incumplida y ninguna venta, cliente ni monto.
+  - Cuando no se puede calcular (también cuando los hechos de pago son inconsistentes), el detalle responde sin Sale bill y el resto del detalle no se ve afectado; el error nombra la regla incumplida y ninguna venta, cliente ni monto.
   - No se guarda ni se loguea nada de él.
 - **Borrar**:
   - Un borrado definitivo, líneas y On-the-spot payment incluidos; no queda nada para listar ni restaurar. Su Sale number queda como hueco y nunca se vuelve a usar.
@@ -313,6 +342,7 @@ Criterios de éxito, Sale number:
   - Las listas no muestran ninguna venta de otro negocio.
   - Un Customer-type price de otro negocio nunca cotiza una línea.
   - Las New sale suggestions se arman para un solo negocio y filtran cada sentencia por su `business_id`: la venta más nueva, el cliente más reciente o el medio archivado de otro negocio nunca cambian la respuesta ni se revelan, y una respuesta vacía se ve igual tenga o no ventas el negocio.
+  - El Payment state y `still_owed` se calculan solo con el libro de los clientes listados del negocio de la sesión: la venta o el pago de otro negocio nunca aparecen ni cambian ningún `still_owed`.
   - Las rutas están en `tests/test_business_isolation.py`, la de las New sale suggestions incluida en su sembrador.
 
 ### En pantalla: New sale (`NuevaVenta`, `NuevaVentaCompu`)
@@ -463,6 +493,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
   - sus productos y gramos;
   - su total. Una venta que sigue debiendo, las pagadas en parte incluidas, muestra su total en ámbar con "owes you" debajo, tal como lo responde la API.
   - No muestra el Sale number.
+  - Todavía no muestra el Payment state ni `still_owed`: la API ya los trae desde la parte 1 de GH-500, y los muestra una parte posterior de GH-500.
 - **La insignia VIP muestra el estado VIP actual del cliente**, no cómo se cotizó la venta.
   - La insignia de regla de cada línea en el detalle es el registro de cómo se cotizó.
   - Un cliente que deja de ser VIP pierde la insignia en ventas pasadas, mientras sus líneas siguen diciendo "VIP" o el nombre del tipo que las cotizó. Eso no es volver a cotizar (ADR-0003).
@@ -574,6 +605,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
   - El estado sin monto de la franja mientras la venta se vuelve a cotizar no se recorre: es breve, y un control que depende de atraparlo sería inestable (un flake es un defecto del Gate). Lo dice esta definición en palabras.
   - Ninguna lista de infractores crece y ninguna tolerancia se agranda.
 - **Nada para vender en la fecha** (parte 1 de GH-727): todavía no se recorre. Los estados "New sale - nothing priced on the date" y "New sale - date change refetching" (con la API retenida) y su paso por el chequeo `mobile` sin infractores nuevos son de #793. La decisión sobre un lugar de alto reservado ya está tomada (parte 2 de GH-793): mientras se vuelven a pedir los productos después de un cambio de fecha que siguió a una pista, una copia oculta guarda su alto; el estado "date change refetching" es el que va a medir con `content-shift` que el formulario no se mueve. Los colectores de texto del chequeo saltean esa copia porque no es visible. Hasta entonces la protegen el corte de la consulta y los tests del front con `fetch` retenido; los estados recorridos que ya existen usan productos con precio, así que no la muestran. Ni la parte 1 ni la parte 2 agregaron ninguna lista de infractores ni hicieron crecer ninguna.
+- **Payment state por venta** (parte 1 de GH-500): no agrega ningún estado recorrido, pantalla, fila del registro ni elemento; las listas de infractores no cambian.
 
 ## Métricas
 
@@ -671,6 +703,12 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **New sale suggestions, la lectura (criterios 51 a 53)**: 100 % pasando. Un test del adaptador cubre los cinco casos del último medio: (1) el medio de la última venta pagada está archivado y uno más viejo sigue ofrecido: `null`; (2) la última venta queda debiendo: se saltea; (3) la última venta es de $0: se saltea; (4) otro negocio tiene una venta pagada más nueva: nunca se ve; (5) ninguna venta pagada: `null`. Tests HTTP cubren el orden de los clientes recientes (uno por cliente, fecha y después Sale number) y la exclusión de las ventas sin cliente; el orden de los más vendidos y el desempate por nombre sin mayúsculas; los regalos excluidos; los archivados excluidos y los ocultos incluidos; los productos sin nada vendido excluidos; los dos bordes de la ventana (on − 29 días adentro, on − 30 afuera, `on` adentro); el tope de 8 en cada lista; un negocio vacío con 200, listas vacías y `null`; y 422 `RequestInvalid` para un `on` que falta y uno mal formado.
 - **New sale suggestions, aislamiento (criterio 54)**: la ruta está en el sembrador de `tests/test_business_isolation.py`; los datos sembrados de otro negocio nunca cambian la respuesta.
 - **New sale suggestions, uso (criterios 51 a 53; se lee cuando salga la pantalla de New sale de GH-496)**: entre las ventas nuevas, la proporción cuyo cliente, al menos uno de sus productos y su medio estaban entre las sugerencias al momento de guardar. La vara sigue siendo la venta en menos de un minuto del criterio 1.
+- **Payment state, la regla (criterio 59)**: 100 % pasando. Tests unitarios del dominio, escritos antes del código, cubren los tres estados (pagada, sin pagar, pagada en parte, con la saldada por un Credit como pagada) y los tres casos inconsistentes (pagada en el momento y listada por el Settlement, sin cliente y sin pago en el momento, con cliente y no listada). Los tests existentes del Sale bill pasan sin editarlos.
+- **Payment state, juego de referencia (criterios 55, 57)**: un juego por `TestClient` con una venta pagada en el momento, una pagada después, una pagada en parte, una sin pagar, una de $0, una saldada por un Credit, una sin cliente y una inconsistente a propósito: en la lista y en el detalle, `payment_state` y `still_owed` coinciden con el Settlement con 0 diferencias; la inconsistente lleva null en los dos campos en las dos respuestas, sin falla, y las demás filas no cambian.
+- **Payment state, costo (criterio 56)**: `tests/sales/test_list_cost.py` sigue en 9 sentencias con 30 y con 300 ventas, con esa mezcla de estados en los datos.
+- **Payment state, contrato**: `tests/test_contract_shapes.py` declara `payment_state` y `still_owed` como nullables; el tipo del front es `'paid' | 'unpaid' | 'part_paid' | null` y `number | null`.
+- **Payment state, aislamiento (criterio 58)**: `tests/test_business_isolation.py` muestra que una venta de otro negocio nunca aparece en la lista y nunca cambia ningún `still_owed`.
+- **Payment state, rastro (criterio 57)**: un test muestra, para la venta inconsistente, una línea de log con el id del negocio y el Sale number, y sin la nota, el nombre ni el teléfono del cliente, ningún monto ni Balance.
 - **Juego de referencia del Sale bill (criterio 21)**: `saleBill.cases.json`, con los textos esperados escritos a mano contra esta definición, nunca generados; 0 diferencias. Casos: con y sin línea con Bulk price; una línea VIP, una cotizada por un Customer type y una con Special price que se leen como líneas de lista; un regalo; una venta de $0 solo de regalos con Balance distinto de cero; pagada en el momento con cualquier medio (siempre `paid`, sin nombrar el medio), pagada después, debiendo en parte, debiendo entera; un Balance, un Credit y un Balance de exactamente $0; sin cliente; con y sin envío; una línea y varias líneas; cantidades 0,01, 0,1, 1,05 y 1000; un producto cuyo nombre tiene `*`, `_` y una comilla invertida, mostrado sin cambios; Sale #1 y un Sale number de cuatro cifras sin separador de miles, en la línea `Sale #N · dd/mm`.
 - **Formato de cantidades (criterio 21)**: `formatQuantity` da 1 → "0,01", 10 → "0,1", 105 → "1,05", 350 → "3,5", 100000 → "1.000" a partir de centésimos enteros; los tests existentes de `formatGrams` pasan sin editarlos.
 - **Test de filtraciones del Sale bill (criterio 22)**: con nombres de negocio y de productos sin `*`, `_` ni comillas invertidas, ningún texto de los casos contiene la nota, el nombre del cliente, el nombre de su Customer type, "VIP", "special", "list", un id (el `sale.id` incluido), "http", `*`, `_` ni una comilla invertida; el esquema del Sale bill en la API es cerrado y no tiene ningún campo así.
@@ -708,6 +746,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - Para la pista de nada para vender (parte 1 de GH-727): un link o un botón que arregle el producto o el precio que falta; explicar de a uno los productos sin precio cuando otros tienen; otra redacción para el caso del Special price; cualquier cambio en lo que New sale acepta o bloquea; pulido o tests propios de la computadora; un mensaje de error propio de New sale para la consulta de productos fallida (hoy el campo queda en carga). Pasaron a otras partes por decisión del dueño: la lista `OTHER_RECORDS` de la fila "Other things to record" y `describeNewSale` con la descripción del + (#792); mover la frase "Add a price to a product so you can sell" a la copia de ventas con el cambio de import de la barra lateral y `en.baseline.json`, y los dos estados recorridos del chequeo `mobile` (#793).
 - Para el lugar guardado de la pista (parte 2 de GH-793): el ascenso del formulario cuando un cambio de fecha pasa de un día sin precio a uno con precio y llega la respuesta (es el contenido que cambia, no un salto); el ascenso cuando la consulta del día nuevo falla (el lugar cae con la falla); guardar lugar al abrir la página por primera vez (usa el estado de carga compartido y no hay pista previa cuyo lugar guardar); cualquier texto, rol, anuncio o descripción nuevos; los estados recorridos del chequeo `mobile` (#793).
 - Para las New sale suggestions (parte 1 de GH-496): la pantalla de New sale que las muestra y cualquier otra pantalla que las use (Collect y la ficha del cliente no las usan); nombres, precios, montos o un parámetro de límite en la respuesta; cualquier regla de precio dentro de la lectura; un atajo de "repetir la última venta" o "copiar una venta"; un índice nuevo.
+- Para el Payment state por venta (parte 1 de GH-500): cualquier pantalla, texto, filtro u orden con `payment_state` o `still_owed` (los muestran partes posteriores de GH-500); sacar `still_owing`; que `GET /sales` deje de ser una lista o gane un parámetro de consulta; cualquier cambio de comportamiento o de redacción del Sale bill; guardar el estado o el monto; deduplicar el log de las ventas inconsistentes o alertar por ellas; un umbral de tiempo para la lista.
 
 ## Planeado en GH-318
 

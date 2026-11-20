@@ -631,3 +631,7 @@ _Avoid_: cart, basket, order, pending sale, borrador guardado
 **Money in**:
 Los Payments con fecha de hoy de un Business, On-the-spot payments y posteriores, en total y por cada Payment method con Payments hoy (los archivados incluidos, con su nombre actual y en el orden de la lista). Su total es siempre igual a los Payments recibidos del Cash de hoy. En la app: todavía no tiene palabra propia (la muestran partes posteriores de GH-497).
 _Avoid_: income, revenue, collections, takings, cobrado, Cash, cash in hand
+
+**Payment state**:
+Cómo está pagada una Sale: pagada (paid), pagada en parte (part_paid) o sin pagar (unpaid), junto con lo que todavía se debe de ella (`still_owed`), exactamente lo que da el Settlement. Se calcula en el momento con una sola regla de dominio, `payment_state`, y nunca se guarda; una Sale de $0, pagada en el momento o saldada por un Credit está pagada, y una cuyos hechos de pago no se pueden conciliar no tiene ninguno. En la app: todavía no tiene palabra propia (la muestran partes posteriores de GH-500).
+_Avoid_: status, payment status, settled, paid flag, estado de cobro
