@@ -521,6 +521,25 @@ export function parentOf(id: ScreenId, viewport: Viewport): ParentRef | undefine
   return { id: parent.id, path: parent.path, titleKey: parent.titleKey }
 }
 
+/**
+ * The screens whose back arrow names where the seller came from when that is not their registry
+ * parent: Payment methods, opened from the phone Settings home, returns to Settings. It holds on
+ * both viewports, so it takes no viewport.
+ */
+export const ENTRY_PARENTS = { 'settings-payment-methods': 'settings' } as const satisfies Partial<
+  Record<ScreenId, ScreenId>
+>
+
+/**
+ * The entry parent of `id` when the entry came from it (`enteredFrom` is read from the location's
+ * state and is untrusted), otherwise `undefined`: the one place that decides it.
+ */
+export function entryParentOf(id: ScreenId, enteredFrom: unknown): ScreenId | undefined {
+  const table: Partial<Record<ScreenId, ScreenId>> = ENTRY_PARENTS
+  const parent = table[id]
+  return parent !== undefined && enteredFrom === parent ? parent : undefined
+}
+
 /** The bar's and the rail's mark for the screen: its own, else its nearest ancestor's. */
 export function placeOf(id: ScreenId, viewport: Viewport): Place {
   const seen = new Set<ScreenId>()
