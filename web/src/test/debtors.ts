@@ -29,14 +29,9 @@ export function debtorsOf(over: Partial<Debtors> = {}): Debtors {
   return { ...fixtureDebtors(), ...over }
 }
 
-/** The sales-owing line a test fakes, as an override for `debtorsOf`. */
-export function owingSales(count: number): Pick<Debtors, 'sales_owing_count'> {
-  return { sales_owing_count: count }
-}
-
 export const NO_DEBTORS = debtorsOf({
   total_owed: 0,
-  ...owingSales(0),
+  sales_owing_count: 0,
   debtor_count: 0,
   buckets: { this_week: 0, days_8_30: 0, over_30: 0 },
   debtors: [],

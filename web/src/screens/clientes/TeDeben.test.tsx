@@ -14,7 +14,7 @@ import TeDeben from './TeDeben'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { baselineText } from '../../i18n/testing'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
-import { debtorsOf, NO_DEBTORS, owingSales } from '../../test/debtors'
+import { debtorsOf, NO_DEBTORS } from '../../test/debtors'
 
 const DEBTORS_FIXTURE = debtorsOf()
 
@@ -56,13 +56,15 @@ test("heads with the total owed and lists debtors in the API's own order", async
   // debtor; a second is added here only to prove the API's own order is kept,
   // never resorted by this screen.
   vi.mocked(fetch).mockResolvedValue(
-    jsonResponse(200, {
-      ...DEBTORS_FIXTURE,
-      debtors: [
-        ...DEBTORS_FIXTURE.debtors,
-        { customer: { id: 2, name: 'Beto' }, balance: 22000, owing_since: '2026-09-20', standing: 'owes', still_owing: null },
-      ],
-    }),
+    jsonResponse(
+      200,
+      debtorsOf({
+        debtors: [
+          ...DEBTORS_FIXTURE.debtors,
+          { customer: { id: 2, name: 'Beto' }, balance: 22000, owing_since: '2026-09-20', standing: 'owes', still_owing: null },
+        ],
+      }),
+    ),
   )
   renderTeDeben()
 
@@ -85,14 +87,14 @@ test('one sale still owing reads "1 sale owing", singular', async () => {
   // `sales_owing_count` is overridden in memory, never read off the fixture
   // (plan invariant: "A test of a count line fakes the count it asserts and
   // compares against a literal string, never one derived from a fixture value").
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...DEBTORS_FIXTURE, ...owingSales(1) }))
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, debtorsOf({ sales_owing_count: 1 })))
   renderTeDeben()
 
   expect(await screen.findByText('1 sale owing')).toBeInTheDocument()
 })
 
 test('three sales still owing read "3 sales owing", plural', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...DEBTORS_FIXTURE, ...owingSales(3) }))
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, debtorsOf({ sales_owing_count: 3 })))
   renderTeDeben()
 
   expect(await screen.findByText('3 sales owing')).toBeInTheDocument()

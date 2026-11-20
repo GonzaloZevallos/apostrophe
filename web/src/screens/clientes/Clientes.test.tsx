@@ -43,7 +43,7 @@ const EMPTY_CUSTOMERS = baselineText('customers.ts:EMPTY_CUSTOMERS')
 const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
 const SAVED_TOAST_TEXT = baselineText('common.ts:COMMON_TEXT.customerSaved')
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
-import { debtorsOf, NO_DEBTORS, owingSales } from '../../test/debtors'
+import { debtorsOf, NO_DEBTORS } from '../../test/debtors'
 
 const DEBTORS_FIXTURE = debtorsOf()
 
@@ -276,7 +276,7 @@ test("Te deben shows the API's order and total as answered, never a client sort 
           200,
           debtorsOf({
             total_owed: 99000,
-            ...owingSales(1),
+            sales_owing_count: 1,
             debtors: [
               { customer: { id: 5, name: 'Zoe' }, balance: 1000, owing_since: '2026-10-01', standing: 'owes', still_owing: null },
               { customer: { id: 4, name: 'Abel' }, balance: 9000, owing_since: '2026-08-01', standing: 'owes', still_owing: null },
