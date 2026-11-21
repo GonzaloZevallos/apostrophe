@@ -8,25 +8,30 @@
  * pricing is `null`. The component computes no money and no quantity, and reads `current_price`
  * nowhere (`nothingSellable` does, for the hint).
  *
- * The search field always shows and keeps its text (local state, carried nowhere). While it holds text,
- * "Results · N" and the matches in name order replace the hint and the two sections; matching, sorting and
- * the highlight are `selectorSearch.ts`'s. No barcode scan and no category select: the Products have
- * neither.
+ * What shows is decided by `status` (`useNewSaleReads`) alone: `loading` is `MOST_SOLD_ROWS` skeleton
+ * rows with no text, `refreshing` (and a `'pending'` Customer) keeps the names and the line steppers
+ * and puts the compact loading mark where a price goes, `failed` is SinConexion for a `NetworkError`
+ * and ErrorGenerico for any other error, and `ready` is the list. `priceSale` and `rowPrices` run on
+ * no other render. The busy state goes through `LoadingWhile` on the screen's `ContentArea`, which
+ * the list counts on and never renders. No state here reads or writes the draft's lines.
  *
- * Until the loading and failure states land in their own part, one guard decides: while any read is
- * pending, a date's Products are not in, a read failed or the Customer is `'pending'`, the hint, the
- * sections and the results render nothing (no stand-in UI; the field stays). The draft keeps every line
- * meanwhile.
+ * The search field always shows, in every status, and keeps its text (local state, carried nowhere).
+ * While it holds text and the list shows its names (`listed`), "Results · N" and the matches in name
+ * order replace the hint and the two sections, with the same price marks and "+" rules as the sections;
+ * matching, sorting and the highlight are `selectorSearch.ts`'s. No barcode scan and no category
+ * select: the Products have neither. While the list shows a skeleton or a failure, no result or count
+ * shows.
  */
 
-import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { keys } from '../../api/keys'
-import { readStock } from '../../api/stock'
+import { NetworkError } from '../../api/client'
 import Boton from '../../components/Boton'
+import ErrorGenerico from '../../components/ErrorGenerico'
 import Icono from '../../components/Icono'
 import { foldForSearch, matchesQuery, matchRange } from '../../components/selectorSearch'
+import Loading, { LoadingWhile } from '../../components/Loading'
+import SinConexion from '../../components/SinConexion'
 import { formatQuantity } from '../../format/money'
 import { useMoney } from '../../format/moneyContext'
 import { NO_PRICE_HINT, SALES_TEXT } from '../../copy/sales'
@@ -36,22 +41,17 @@ import {
   rowPrices,
   signedHundredthsOfApiGrams,
   type LinePricing,
-  type PricingSettings,
 } from '../../sales/pricing'
 import { MOST_SOLD_ROWS, mostSoldRows } from '../../sales/productList'
 import { saleLineInputsOf } from '../../sales/saleDraft'
+import type { NewSaleReads } from '../../sales/useNewSaleReads'
 import type { SaleDraftApi } from '../../sales/useSaleDraft'
 import type { Variety } from '../Variedades'
 
 const TEXT = SALES_TEXT.newSale
 const MINUS = '−'
 
-interface NuevaVentaProductosProps {
-  products: readonly Variety[] | null
-  productsForDate: boolean
-  settings: PricingSettings | null
-  mostSoldIds: readonly number[] | null
-  failed: Error | null
+interface NuevaVentaProductosProps extends Pick<NewSaleReads, 'status' | 'products' | 'settings' | 'mostSoldIds' | 'stock' | 'failed'> {
   /** The sale's Customer type id, `null` for none, or `'pending'` while the Customer read is in flight
    * and only then: the parent maps a failed Customer read, the list never decides what it means. */
   customerTypeId: number | null | 'pending'
@@ -59,20 +59,20 @@ interface NuevaVentaProductosProps {
 }
 
 export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
-  const { products, productsForDate, settings, mostSoldIds, failed, customerTypeId, draft } = props
+  const { status, products, settings, mostSoldIds, stock, failed, customerTypeId, draft } = props
   const { t } = useTranslation()
   const money = useMoney()
-  const stockQuery = useQuery({ queryKey: keys.stock(), queryFn: readStock })
   const lines = draft.state.lines
   const [query, setQuery] = useState('')
   const searching = query.trim() !== ''
 
+  // The one condition under which a figure is priced: every read is in for the sale's date and the
+  // Customer is known. `pending` stands for the marks, whatever the status was.
   const ready =
+    status === 'ready' &&
     products !== null &&
     settings !== null &&
     mostSoldIds !== null &&
-    productsForDate &&
-    failed === null &&
     customerTypeId !== 'pending'
 
   const sale = useMemo(() => {
@@ -86,9 +86,13 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
     })
   }, [ready, lines, customerTypeId, settings, products])
 
+  // The names and steppers of a loaded list stay while the date's figures come: which Most sold rows
+  // there are depends on ids only, never on a price.
+  const listed =
+    (status === 'ready' || status === 'refreshing') && products !== null && mostSoldIds !== null
   const mostSold = useMemo(
     () =>
-      ready
+      listed
         ? mostSoldRows(
             mostSoldIds,
             products,
@@ -96,7 +100,7 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
             MOST_SOLD_ROWS,
           )
         : [],
-    [ready, mostSoldIds, products, lines],
+    [listed, mostSoldIds, products, lines],
   )
 
   const rows = useMemo(
@@ -122,7 +126,7 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
   }, [inSale])
 
   const matches = useMemo(() => {
-    if (!ready || !searching) return []
+    if (!listed || !searching) return []
     return products
       .filter((product) => matchesQuery(product.name, query))
       .sort((a, b) => {
@@ -131,7 +135,7 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
         if (a.name !== b.name) return a.name < b.name ? -1 : 1
         return a.id - b.id
       })
-  }, [ready, searching, products, query])
+  }, [listed, searching, products, query])
 
   const matchPrices = useMemo(
     () =>
@@ -165,12 +169,36 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
     </label>
   )
 
-  if (!ready || sale === null) return <div className="nv-productos">{field}</div>
+  if (status === 'failed') {
+    return (
+      <div className="nv-productos">
+        {field}
+        {failed instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}
+      </div>
+    )
+  }
+
+  if (!listed) {
+    return (
+      <div className="nv-productos">
+        {field}
+        <LoadingWhile active />
+        <ul className="nv-productos__lista">
+          {Array.from({ length: MOST_SOLD_ROWS }, (_, index) => (
+            <li key={index} className="nv-productos__fila nv-productos__fila--esqueleto" aria-hidden="true">
+              <span className="cargando__barra cargando__barra--corta" />
+              <span className="cargando__barra cargando__barra--corta" />
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
 
   const byId = new Map(products.map((product) => [product.id, product]))
-  const pricedLines = new Map(sale.lines.map((line) => [line.id, line.pricing]))
-  const stockOf = new Map((stockQuery.data?.products ?? []).map((row) => [row.product_id, row.quantity]))
-  const hint = nothingSellable(products)
+  const pricedLines = new Map((sale?.lines ?? []).map((line) => [line.id, line.pricing]))
+  const stockOf = new Map((stock ?? []).map((row) => [row.product_id, row.quantity]))
+  const hint = ready ? nothingSellable(products) : null
 
   function stockText(productId: number): string | null {
     const quantity = stockOf.get(productId)
@@ -180,7 +208,13 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
   function priceCell(pricing: LinePricing | null | undefined) {
     return (
       <span className="nv-productos__precio cifra-n">
-        {pricing === null || pricing === undefined ? TEXT.productNoPrice : money.money(pricing.pricePerGram)}
+        {!ready ? (
+          <Loading compacto />
+        ) : pricing === null || pricing === undefined ? (
+          TEXT.productNoPrice
+        ) : (
+          money.money(pricing.pricePerGram)
+        )}
       </span>
     )
   }
@@ -198,29 +232,32 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
   }
 
   function datos(name: string, productId: number, known: boolean) {
-    const stock = known ? stockText(productId) : null
+    const stockLabel = known ? stockText(productId) : null
     return (
       <span className="nv-productos__datos">
         <span className="nv-productos__nombre">{nameCell(name, known)}</span>
-        {stock === null ? null : <span className="nv-productos__stock">{stock}</span>}
+        {stockLabel === null ? null : <span className="nv-productos__stock">{stockLabel}</span>}
       </span>
     )
   }
 
+  function rowRef(productId: number) {
+    return (node: HTMLLIElement | null) => {
+      if (node === null) rowNodes.current.delete(productId)
+      else rowNodes.current.set(productId, node)
+    }
+  }
+
   function lineRow(productId: number, product: Variety | undefined) {
-    const name = product === undefined ? t('common:noLongerAvailable') : product.name
     const line = lines.find((candidate) => candidate.productId === productId)
     if (line === undefined) return null
+    const name = product === undefined ? t('common:noLongerAvailable') : product.name
     const pricing = pricedLines.get(String(productId))
+    // While the figures come, the "+" stays: the stepper keeps working and the read decides
+    // afterwards whether the line still has a price.
+    const unpriced = ready && (pricing === null || pricing === undefined)
     return (
-      <li
-        key={productId}
-        ref={(node) => {
-          if (node === null) rowNodes.current.delete(productId)
-          else rowNodes.current.set(productId, node)
-        }}
-        className="nv-productos__fila"
-      >
+      <li key={productId} ref={rowRef(productId)} className="nv-productos__fila">
         {datos(name, productId, product !== undefined)}
         {priceCell(pricing)}
         <div role="group" aria-label={name} className="nv-productos__pasos">
@@ -230,7 +267,7 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
             </Boton>
           </span>
           <span className="nv-productos__cantidad cifra-n">{formatQuantity(line.quantityHundredths)}</span>
-          {pricing === null || pricing === undefined ? (
+          {unpriced ? (
             <span className="nv-productos__paso-vacio" aria-hidden="true" />
           ) : (
             <span className="nv-productos__paso">
@@ -251,17 +288,10 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
 
   function addRow(product: Variety, pricing: LinePricing | null | undefined) {
     return (
-      <li
-        key={product.id}
-        ref={(node) => {
-          if (node === null) rowNodes.current.delete(product.id)
-          else rowNodes.current.set(product.id, node)
-        }}
-        className="nv-productos__fila"
-      >
+      <li key={product.id} ref={rowRef(product.id)} className="nv-productos__fila">
         {datos(product.name, product.id, true)}
         {priceCell(pricing)}
-        {pricing === null || pricing === undefined ? null : (
+        {!ready || pricing === null || pricing === undefined ? null : (
           <span className="nv-productos__paso">
             <Boton variant="row" ariaLabel={TEXT.productAdd(product.name)} onClick={() => add(product.id)}>
               <span aria-hidden="true">+</span>
@@ -318,6 +348,7 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
   return (
     <div className="nv-productos">
       {field}
+      <LoadingWhile active={!ready} />
       {searching ? results : sections}
     </div>
   )

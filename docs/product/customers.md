@@ -26,6 +26,8 @@
 
 **Cuando** registro una Expense o guardo un Customer desde el celular, **quiero** elegir su Expense category o su Customer type igual que elijo un Product o un Withdrawal reason (un campo con etiqueta que abre su propia lista, con búsqueda cuando la lista es larga), **para** terminar el formulario en pocos toques y que volver nunca tire lo que ya tipeé. (Parte 6 de GH-581, compartido con expenses.md y selector.md: acá lo sirve el campo "Customer type" del formulario del Customer.)
 
+**Cuando** abro Customers en el celular para perseguir lo que me deben, **quiero** pasar con un toque entre todos mis clientes y solo los que me deben, y ver cuántos hay en cada uno, **para** saber a cuántas personas tengo que perseguir sin recorrer toda la lista. (GH-947, parte 1 de GH-831: lo sirve el control de segmentos `CustomerSegments`, "All | Owed to you" con sus cantidades, construido y probado como componente; el vendedor lo ve recién cuando #934 lo pone en la pantalla de Customers.)
+
 # Clientes
 
 Las personas a quienes un **Business** le vende, cada una identificada dentro de ese Business por su propio registro, y vistas solo por ese Business (ADR-0004). El nombre es la forma en que un **User** reconoce a un **Customer**; el **Phone number** es un dato de contacto opcional.
@@ -37,6 +39,8 @@ El **Balance**, el **Owing since** y la cuenta de un Customer se definen en `pay
 Corregir los datos de un cliente sirve a los mismos jobs. En un negocio con el interruptor Customer types activado, a un cliente del VIP type se le cobra su VIP price en cada venta en la que es el más bajo, así que el vendedor nunca tiene que acordarse de quién es amigo.
 
 La sección "Owed to you" afina el job de pagos y el job de Navigation de arriba para Customers (GH-46); no es un job nuevo. Su protagonista es el vendedor, en el celular; la computadora, con dos paneles, es el mismo job en una pantalla más grande. Tiene dos momentos: cobrar (el principal: un cliente entrega plata, en medio del chat o al entregar) y revisar (entre pedidos o al final del día). Antes, quién debía vivía en una pantalla Owed to you aparte, cobrar una deuda llevaba cuatro toques desde Customers, y el formulario del cliente pedía un canal (Telegram o WhatsApp) que nada del producto usaba.
+
+El job del control de segmentos (GH-947, parte 1 de GH-831) es el de perseguir deudas sin recorrer toda la lista. Hoy el vendedor recorre la lista de Customers o usa la sección "Owed to you" de Customers o el bloque "Owed to you" de Home. No hay forma de filtrar la lista a solo los deudores ni ninguna cantidad de cuántos Customers deben, y esa cantidad que falta es lo que el control agrega. Esta parte entrega el componente terminado y probado, todavía sin pantalla, así que no cambia nada de lo que el vendedor ve hoy. #934 lo pone en Customers y decide qué pasa con la sección "Owed to you" existente y qué dice la lista vacía de deudores.
 
 El job de los Customer types tiene dos momentos: una configuración puntual (el vendedor decide que algunos habituales forman un grupo propio y lo nombra en Settings → Prices → Customer types) y el uso diario (al dar de alta o editar un Customer, dice en qué grupo está). Antes, la única forma de agrupar era la marca VIP de sí o no, y cualquier otro grupo ("mayorista", "amigo") vivía en la cabeza del vendedor o en la Note de una Sale.
 
@@ -85,6 +89,10 @@ Criterios de éxito:
 29. **Nunca un país que no se vio.** Ningún número se guarda con un país que el vendedor no vio en pantalla: el formulario siempre muestra el país que se va a usar, y lo muestra bloqueado cuando lo decide el `+`.
 30. **El país no agrega toques.** Registrar una Sale con un Customer nuevo, número local incluido, se sigue haciendo desde el celular en menos de un minuto: un número local del Detected country agrega 0 toques, y otro país agrega solo los 2 toques del Selector.
 31. **El número sigue opcional.** En la operación normal, ni el número ni el país son un paso que el vendedor tenga que pasar para guardar un Customer o seguir con la Sale. Una carga fallida de la lista de países es un estado de error, no un requisito: el formulario muestra la línea de falla de la app y se recupera cerrándolo y volviéndolo a abrir; en "Pick a customer", un Customer existente o "No customer" siguen dejando avanzar la Sale.
+32. **Cuántos hay, antes de tocar** (GH-947). El control de segmentos muestra cuántos Customers tiene el Business y cuántos le deben antes de que el vendedor toque nada. "Le deben" es un Balance mayor que $0; los Credits no cuentan, la misma regla que el Total owed. Las dos cifras salen del servidor (#943); el teléfono solo les da formato.
+33. **Un toque, en el celular.** Pasar de un segmento al otro lleva un toque. Cada opción tiene al menos 44 px de alto, un toque nunca selecciona texto y un doble toque nunca hace zoom.
+34. **Nada engaña mientras carga.** Mientras las cifras están pendientes (o no se pudieron cargar), se ven solo las dos etiquetas: ningún número, ningún "·" y ningún "0" que no sea real. Un 0 real se muestra como 0.
+35. **Nombres para el lector de pantalla.** Un lector de pantalla anuncia "All" y "Owed to you" dentro del grupo "Customers view". La cifra se lee como descripción, solo el número y sin el "·", y nunca forma parte del nombre de la opción.
 
 ## Comportamiento
 
@@ -299,6 +307,21 @@ Criterios de éxito:
 
 ![Edición de un Customer en el teléfono](../assets/screens/ClienteEditar.webp)
 
+### Componente: control de segmentos de Customers (todavía sin pantalla)
+
+- **Qué es** (GH-947, parte 1 de GH-831): el control "All | Owed to you" con la cantidad de cada segmento, construido como componente con sus propios tests. Todavía no está en ninguna pantalla: #934 lo pone en Customers y decide qué pasa con la sección "Owed to you" existente, qué dice la lista vacía de deudores y con qué segmento se abre. Hasta entonces, el vendedor no ve ningún cambio.
+- **Dónde vive**: `web/src/screens/clientes/CustomerSegments.tsx` es el único que dibuja el control. Sus opciones salen de `CUSTOMER_SEGMENTS` (`all`, `owed`, un Fixed set de `fixedSets.ts`), nunca de un arreglo escrito en el lugar. Sus props son `segment`, `onChange`, `customerCount`, `debtorCount` y `pending`. Mientras no esté conectado figura en `web/scripts/docs/front-exclude.json` (D-62e6dc23); la parte que lo conecta (#934) quita la entrada.
+- **Las cifras**: `customerCount` es la cantidad de Customers del Business y `debtorCount` la de Customers con un Balance mayor que $0; los Credits no cuentan, la misma regla que el Total owed. Las dos salen del servidor (#943). El front solo les da formato: ningún TypeScript divide, suma, redondea ni compara una cifra, y ninguna cifra se prueba como verdadera o falsa.
+- **Formato**: `segmentCount(n)` en `web/src/format/counts.ts` devuelve la cifra ya separada en su marca (`·`) y su número, formateado con `es-AR` y el punto argentino de miles; en pantalla se ve `· 1.234`. Da formato a lo que recibe, sin ningún control de negativos. La cifra usa el mismo estilo de texto que la etiqueta, en **Tabular figures** (la clase de cifras `cifra-n`).
+- **Nombres accesibles**: cada radio se llama exactamente "All" o "Owed to you", la etiqueta del Fixed set, y el grupo se llama "Customers view" (la clave `customersView` del Copy module en `web/src/copy/customers.ts`, con `en.baseline.json` regenerado; `customers.ts` todavía no tiene JSON de idioma (#351), así que `en-XA` no tuvo nada que regenerar). La marca y el número van juntos en un span `aria-hidden`, así que la cifra nunca forma parte del nombre; `aria-describedby` apunta directo al número, y lo que se lee como descripción es solo "1.234". El "·" es decoración y queda oculto para el lector de pantalla.
+- **`SegmentedChoice`** (`web/src/components/SegmentedChoice.tsx`) suma un `suffix` opcional, por valor, para esto. Con un `suffix`, el nombre accesible sigue siendo la etiqueta del Fixed set y la cifra visible se asocia por `aria-describedby`; si la opción ya tiene su propia descripción (`optionState`), la de la cifra va después. Sin él, el marcado queda exactamente como antes para todos los demás usos (`SelectorPago`, `CurrencyAndDecimals`).
+- **Siempre se puede tocar**: ninguna opción se deshabilita ni se oculta nunca, ni con una cifra en 0 ni mientras `pending`. Un 0 es una respuesta real ("nadie me debe"), así que "Owed to you · 0" se puede tocar. Pasar de una opción a la otra funciona mientras las cifras cargan; la cifra nunca condiciona el toque.
+- **Mientras `pending`**: se ven solo las dos etiquetas, sin cifra, sin "·" y sin `aria-describedby`; nunca un esqueleto ni un "0" que no sea real. El componente ignora `customerCount` y `debtorCount`. No tiene un estado de error propio: cuando las cifras no se pudieron cargar, quien lo dibuja pasa `pending` y el control se ve igual. Un 0 real se muestra como `· 0`.
+- **En el celular**: cada opción tiene al menos 44 px de alto (`--alto-tocable`); `user-select: none`, `touch-action: manipulation` y el estado presionado vienen de las reglas compartidas de `.selector-pago__opcion`, así que un toque nunca selecciona texto y un doble toque nunca hace zoom.
+- **Ancho angosto**: las dos opciones comparten el ancho en partes iguales, una al lado de la otra. Cuando la etiqueta y la cifra no entran, se parten en otra línea dentro de su propia opción, que crece más de 44 px; la marca y el número quedan juntos. No hay puntos suspensivos, nada se achica por debajo de un tamaño legible y la cifra nunca se saca. El alto mínimo y el partido son una regla propia de `.segmentos-clientes`, así que los demás usos de `SegmentedChoice` no cambian. D-8ecb8c1d no se aplica: cubre las acciones de la fila del título del teléfono, no una elección de dos opciones.
+- **Estado elegido**: marca toda la opción (superficie y peso 600, nunca solo color) y no le cambia el estilo a la cifra por separado: la cifra no tiene color propio y toma el de su opción. El control no agrega ningún selector de color de estado ni ningún valor hex; el tema oscuro, el foco y el presionado salen de los tokens y reglas existentes.
+- **Dibujo**: el control está dibujado en `Clientes.dc.html` y `ClientesOscuro.dc.html`, en el grupo "Vista" de la cabecera (`Todos · 38` / `Por cobrar · 6`). Tiene tres diferencias con el dibujo, cada una decidida por una regla escrita: el alto es de al menos 44 px y no los 36 px del dibujo (§10); la cifra es una descripción y no parte del nombre; y la pista, la sombra y el radio salen de `SegmentedChoice` (pista `--papel`, radio de píldora, sin sombra), que a ojo es el mismo diseño (Drawing as guide). Ningún dibujo cubre los estados pendiente, cero y partido, que salen de esta definición. El dibujo se abre en "Owed to you"; con qué segmento se abre Customers lo decide #934. No hay Screen image del control hasta que esté en una pantalla.
+
 ### En pantalla: Settings → Business, sin Phone country
 
 - Desde la parte 2 de GH-682, el grupo Business de Settings (`/settings/business`) ya no tiene el campo "Phone country" ni su línea de ayuda; sus textos (la etiqueta, la línea de ayuda, "No country", la confirmación y los errores) salen del Copy module y de `en-XA`. El resto del grupo queda como lo define accounts.md.
@@ -410,7 +433,18 @@ Criterios de éxito:
 - **La marca congelada**: después de la actualización, ningún camino de escritura (API, Spreadsheet import, apertura de un Business) cambia `customer.is_vip`, probado con un registro de sentencias que no encuentra ningún INSERT ni UPDATE que la nombre; el test de arquitectura de columnas congeladas no encuentra ningún módulo fuera de las migraciones y de la definición de la tabla que la nombre.
 - **Spreadsheet import y el VIP type**: tests del import cubren que los VIP de la planilla entran al VIP type existente aunque esté renombrado; que sin VIP type se crea uno; y que sin VIP type y con un tipo del vendedor llamado "VIP" (también " vip ") el import se detiene con su texto fijo y deja 0 filas nuevas en todas las tablas.
 - **Spreadsheet import y el país**: tests del import muestran que lee `011 15 …` como `+549…` en cualquier Business, y que no lee ni escribe `business.default_phone_country`.
-- **Textos**: todo texto nuevo está en el Copy module, `en-XA` está regenerado, las claves de Settings → Business → Phone country ya no existen, y ningún valor por defecto nuevo lleva una palabra propia de un solo tipo de negocio.
+- **El control de segmentos (criterios 32 a 35, GH-947)**, en tests de Testing Library del componente, 100% aprobados:
+  - los dos radios se llaman exactamente "All" y "Owed to you" y el grupo "Customers view"; ninguna cifra forma parte de un nombre;
+  - las cifras salen de `customerCount` y `debtorCount`, se ven como `· 1.234` y cada una se asocia a su opción por `aria-describedby`, con una descripción que es exactamente el número, sin "·";
+  - un 0 real se ve como `· 0`;
+  - con `pending`, ningún dígito, ningún "·" y ninguna descripción;
+  - las dos opciones siguen habilitadas y cambian de segmento con una cifra en 0 y mientras `pending`;
+  - `aria-checked` sigue a `segment`;
+  - `SegmentedChoice` sin `suffix` se dibuja exactamente como antes, y con una descripción propia de la opción y una cifra lleva las dos, la propia primero;
+  - `segmentCount` da el formato con el punto de miles (0, 999, 1.000, 1.234, 1.234.567).
+
+  Lo que ve el vendedor en Customers (el ancho angosto, `en-XA` y el Mobile check) se mide en #934, cuando el control está en la pantalla.
+- **Textos**: todo texto nuevo está en el Copy module, `en-XA` está regenerado donde el módulo tiene JSON de idioma, las claves de Settings → Business → Phone country ya no existen, y ningún valor por defecto nuevo lleva una palabra propia de un solo tipo de negocio.
 - **Sin regresiones**: las suites existentes de customers, payments y navigation pasan sin aflojar ninguna aserción.
 - **Sin curl**: la corrida end-to-end del front agrega, encuentra y edita un Customer, agrega uno sin número, le asigna un tipo, abre Record payment desde "Collect" con el Customer elegido, y abre "New sale to <name>" con ese Customer elegido. (Criterio 4)
 - **Diseño**: `scripts/design/compare.sh` se corre antes y después para Customers, `ClienteFicha`, `Payment`, `NuevaVentaCliente`, `ClienteNuevo`, Settings → Prices y Settings → Business, celular y computadora, claro y oscuro donde el registro tiene los dos, adjunto al PR y juzgado a ojo, con cada diferencia respecto del diseño listada. El lado construido de la captura usa `es-AR` y `America/Argentina/Buenos_Aires`, para que el Detected country sea siempre el mismo. La lista y el formulario de Customer types y el Selector "Phone country" no tienen dibujo y se juzgan contra el diseño escrito; la tarjeta de atrás tampoco tiene dibujo. Las Screen images `ClienteNuevo` y `ClienteEditar` se vuelven a generar.
@@ -432,6 +466,9 @@ Criterios de éxito:
 - Que la Spreadsheet import resuelva sola un choque con un tipo del vendedor llamado "VIP" (adoptarlo, renombrarlo o crear el VIP type con otro nombre).
 - Un canal de Customer, o cualquier reemplazo para él; guardar una copia de los valores viejos del canal en cualquier lado.
 - Una pantalla Owed to you aparte; una cifra de deuda tocable en la cabecera de Customers; cualquier filtro u orden de Customers más allá de lo definido acá.
+- En GH-947: conectar el control de segmentos a la pantalla de Customers, el segmento con que se abre, qué pasa con la sección "Owed to you" existente, qué dice la lista vacía de deudores, pasar `pending` ante una carga fallida de las cifras y el Mobile check del control en ancho angosto y en `en-XA`. Es todo de #934.
+- Un estado de error propio del control de segmentos, o deshabilitar u ocultar una de sus opciones por cualquier motivo.
+- Calcular en el front cualquier cifra del control de segmentos.
 - Importar de vuelta un Business export viejo.
 - Otras reglas VIP (un porcentaje de descuento sobre el **List price**); activar o desactivar Customer types (pricing-settings.md).
 - Hacer obligatorio el Phone number.

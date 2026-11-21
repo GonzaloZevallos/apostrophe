@@ -17,6 +17,8 @@ import { paymentMethodsQueryOptions } from '../api/paymentMethods'
 import { keys } from '../api/keys'
 import { NetworkError } from '../api/client'
 import type { SelectorOption } from '../components/Selector'
+import type { PaymentChoice } from './pricing'
+import type { DraftChoice } from './saleDraft'
 
 export interface PaymentMethodOption extends SelectorOption {
   value: string
@@ -30,6 +32,8 @@ export interface PaymentMethodOptions {
     loading: boolean
     emptySetMessage: string
   }
+  /** The ids of the list read, or `null` while there is no list. */
+  offeredIds: readonly number[] | null
   /** The reading failed: `offline` shows the notice, `server` marks the field. */
   failure: 'offline' | 'server' | null
   /** Reads the list again (a tap on a field that failed). */
@@ -55,6 +59,7 @@ export function usePaymentMethodOptions(): PaymentMethodOptions {
       loading: query.isPending && !failed,
       emptySetMessage: t(failed ? 'emptyStates:selectorPaymentMethodsFailed' : 'emptyStates:selectorNoPaymentMethods'),
     },
+    offeredIds: query.data === undefined ? null : query.data.map((method) => method.id),
     failure,
     reload: () => {
       void query.refetch()
@@ -71,6 +76,31 @@ export function paymentMethodOf(value: string | null): PaymentMethod | null {
 /** The Selector value of a chosen method id. */
 export function paymentMethodValue(method: PaymentMethod | null): string | null {
   return method === null ? null : String(method)
+}
+
+/** The payment the Collect Sheet can collect: it offers methods only (until #944 adds "Owes it"),
+ * so an owing choice, which a draft may already hold, counts as no choice. Anything else is as given. */
+export function collectableChoice(choice: PaymentChoice | null): PaymentChoice | null {
+  return choice === null || choice.kind === 'owing' ? null : choice
+}
+
+/** The draft choice a Selector value stands for: a method id is a paid choice, anything else unset. */
+export function choiceOfValue(value: string | null): DraftChoice {
+  const method = paymentMethodOf(value)
+  return method === null ? { kind: 'unset' } : { kind: 'paid', payment_method_id: method }
+}
+
+/** The Selector value of a draft choice: the id for paid, the proposal for unset only when it is one
+ * of the offered ids, and nothing for owing (the Selector has no such option here). */
+export function selectorValueOf(
+  choice: DraftChoice,
+  proposedMethodId: PaymentMethod | null,
+  offeredIds: readonly number[] | null,
+): string | null {
+  if (choice.kind === 'paid') return paymentMethodValue(choice.payment_method_id)
+  if (choice.kind === 'owing') return null
+  if (proposedMethodId === null || offeredIds === null || !offeredIds.includes(proposedMethodId)) return null
+  return paymentMethodValue(proposedMethodId)
 }
 
 /** The name the list showed for a method id, read before the list is read again (never a guess). */

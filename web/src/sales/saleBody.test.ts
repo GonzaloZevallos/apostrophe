@@ -1,5 +1,19 @@
 import { describe, expect, test } from 'vitest'
-import { saleBodyOf } from './saleBody'
+import { bodyLinesOf, saleBodyOf } from './saleBody'
+
+describe('bodyLinesOf', () => {
+  test('turns hundredths into the wire quantity, with no gift and no special price', () => {
+    expect(
+      bodyLinesOf([
+        { productId: 10, quantityHundredths: 350 },
+        { productId: 11, quantityHundredths: 300 },
+      ]),
+    ).toEqual([
+      { productId: 10, quantity: '3.5', gift: false, specialPrice: null },
+      { productId: 11, quantity: '3', gift: false, specialPrice: null },
+    ])
+  })
+})
 
 const line = (productId: number, quantity: string, gift = false, specialPrice: number | null = null) => ({
   productId,
