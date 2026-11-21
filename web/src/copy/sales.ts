@@ -61,6 +61,9 @@ const NEW_SALE_TEXT = {
   productAdd: (name: string) => `Add ${name}`,
   productIncrease: (name: string) => `Add one ${name}`,
   productDecrease: (name: string) => `Remove one ${name}`,
+  productsResults: (n: number) => `Results · ${n}`,
+  productSearchLabel: 'Search products',
+  productSearchPlaceholder: 'Search by name',
 }
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
@@ -77,6 +80,9 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: NEW_SALE_TEXT.productAdd(SAMPLES.name) },
   { kind: 'help', text: NEW_SALE_TEXT.productIncrease(SAMPLES.name) },
   { kind: 'help', text: NEW_SALE_TEXT.productDecrease(SAMPLES.name) },
+  { kind: 'help', text: NEW_SALE_TEXT.productsResults(Number(SAMPLES.count)) },
+  { kind: 'help', text: NEW_SALE_TEXT.productSearchLabel },
+  { kind: 'help', text: NEW_SALE_TEXT.productSearchPlaceholder },
 ]
 
 /** Nothing here is over 80 characters. */
@@ -109,6 +115,7 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.newSale.productAdd': [['Rosa']],
   'SALES_TEXT.newSale.productIncrease': [['Rosa']],
   'SALES_TEXT.newSale.productDecrease': [['Rosa']],
+  'SALES_TEXT.newSale.productsResults': [[2]],
   'SALE_BILL_TEXT.header': [['Flores Test', 'Sale #1284', D]],
   'SALE_BILL_TEXT.item': [['Rosa', '3,5', 'g', M]],
   'SALE_BILL_TEXT.bulk': [['Rosa', '10', 'g', M, M]],

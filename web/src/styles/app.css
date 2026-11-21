@@ -5311,6 +5311,18 @@ a.ajustes-tema__opcion {
   gap: var(--espacio-lg);
 }
 
+/* The drawing shows no clear control: the native one is hidden. */
+.nv-productos__buscar::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/* The matched part of a name: the accent and weight 600 carry it (weight too, so it is not colour alone). */
+.nv-productos__marca {
+  background: transparent;
+  color: var(--acento);
+  font-weight: 600;
+}
+
 .nv-productos__seccion {
   display: flex;
   flex-direction: column;
