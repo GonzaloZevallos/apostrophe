@@ -98,6 +98,8 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.lineSpecialPrice': [['2']],
   'SALES_TEXT.removeLine': [['2']],
   'SALES_TEXT.products': counted((n) => [n]),
+  'SALES_TEXT.collectTitle': counted((n) => [n]),
+  'SALES_TEXT.collect': [[M]],
   'SALES_TEXT.saleInProgressName': [
     ['2 products', M],
     ['1 product', null],
@@ -180,5 +182,13 @@ export const SALES_TEXT = {
    * figure, or `null` while the prices are being recalculated (the amount clause is dropped). */
   saleInProgressName: (products: string, amount: string | null) =>
     amount === null ? `Sale in progress, ${products}. Back` : `Sale in progress, ${products}, ${amount}. Back`,
+  /** The closing Sheet's title: the sale's line count. */
+  collectTitle: (n: number) => (n === 1 ? 'The sale · 1 item' : `The sale · ${n} items`),
+  howTheyPay: 'How they pay',
+  chooseMethod: 'Choose a method',
+  noMethodToCollect: 'Choose how they pay to collect.',
+  /** `total` is the sale's total in the business's Money format (`useMoney().money`). */
+  collect: (total: string) => `Collect ${total}`,
+  saving: 'Saving…',
   newSale: NEW_SALE_TEXT,
 } as const
