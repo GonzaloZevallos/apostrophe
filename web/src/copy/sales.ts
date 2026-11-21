@@ -194,12 +194,12 @@ export const SALES_TEXT = {
   /** `total` is the sale's total in the business's Money format (`useMoney().money`). */
   collect: (total: string) => `Collect ${total}`,
   /** The label of Collect when `collect(total)` does not fit its line. */
-  collectShort: 'Collect',
+  collectShort: COMMON_TEXT.collect,
   /** The Collect Sheet's Total row: the label alone, its figure drawn beside it. */
   totalLabel: 'Total',
   receivedLabel: 'Received',
   receivedHelp: RECEIVED_HELP,
-  changeLabel: 'Change',
+  changeLabel: COMMON_TEXT.change,
   saving: 'Saving…',
   newSale: NEW_SALE_TEXT,
 } as const
