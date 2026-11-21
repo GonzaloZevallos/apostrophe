@@ -676,7 +676,9 @@ describe('changeFor', () => {
     ['empty', '', 11000, null],
     ['not a number', 'abc', 11000, null],
     ['negative', '-5', 11000, null],
-    ['zero', '0', 0, null],
+    ['zero against a $0 sale', '0', 0, 0],
+    ['zero against a sale above $0', '0', 11000, null],
+    ['positive against a $0 sale', '5', 0, 5],
     ['too many decimals', '10,5', 11000, null],
   ])('0 decimals, %s', (_label, received, total, expected) => {
     expect(changeFor(received, total, whole)).toBe(expected)
@@ -689,6 +691,10 @@ describe('changeFor', () => {
     ['1.234,56', 1000, 234.56],
     ['1,234', 1, null],
     ['10,00', 10.1, null],
+    ['0,00', 0, 0],
+    ['0', 0, 0],
+    ['0,00', 10.1, null],
+    ['0,001', 0, null],
   ])('2 decimals, %s against %s', (received, total, expected) => {
     expect(changeFor(received, total, cents)).toBe(expected)
   })

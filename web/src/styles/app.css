@@ -6304,6 +6304,60 @@ a.ajustes-tema__opcion {
   opacity: 0;
 }
 
+/* The Collect Sheet's form: the Total row, then the block that goes inert while saving (the
+ * method, its refusal, Received and Change), then the action at the full width of the sheet. */
+.cobro__formulario .boton[type='submit'] {
+  width: 100%;
+}
+
+.cobro__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+}
+
+.cobro__bloque {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+/* Change is secondary to the Collect total: the muted ink, laid out like the Total row. */
+.cobro__vuelto {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  color: var(--tinta2);
+}
+
+/* Empty, the status region stays in the accessibility tree but leaves the block's flow, so it adds no gap. */
+.cobro__vuelto:empty {
+  position: absolute;
+}
+
+/* The Collect label always holds its full text and never wraps or shrinks; when it overflows its
+ * button the short word is drawn over it, and the full text stays (hidden) so it can come back. */
+.cobro__etiqueta {
+  display: block;
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cobro__etiqueta-completa--oculta {
+  visibility: hidden;
+}
+
+.cobro__etiqueta-corta {
+  position: absolute;
+  inset: 0;
+  text-align: center;
+}
+
 /* The method: the Payment method Selector and, under it, its refusal. */
 .cobro__metodo {
   display: flex;
