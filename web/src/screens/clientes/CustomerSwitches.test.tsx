@@ -5,6 +5,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import userEvent from '@testing-library/user-event'
 import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { SheetRouterProvider } from '../../components/useSheetStack'
@@ -154,6 +155,7 @@ const LIST_ANSWERS = { 'GET /customers': [LIST_FER], 'GET /payments/debtors': NO
 test('the Clientes list shows a VIP customer\'s mark only while Clientes VIP is on', async () => {
   stub(true, LIST_ANSWERS)
   renderAt(CUSTOMERS)
+  await userEvent.click(await screen.findByRole('radio', { name: 'All' }))
   expect(await screen.findByText('Fer')).toBeInTheDocument()
   expect(screen.getByText('VIP')).toBeInTheDocument()
 })
@@ -161,6 +163,7 @@ test('the Clientes list shows a VIP customer\'s mark only while Clientes VIP is 
 test('the Clientes list hides a VIP customer\'s mark while Clientes VIP is off', async () => {
   stub(false, LIST_ANSWERS)
   renderAt(CUSTOMERS)
+  await userEvent.click(await screen.findByRole('radio', { name: 'All' }))
   expect(await screen.findByText('Fer')).toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })
