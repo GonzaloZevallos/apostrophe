@@ -149,17 +149,16 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
 - **Una Sale sin Customer** a la que después se le asigna uno (`PUT /api/sales/{id}/customer`) ocupa su lugar en la cuenta por su propia fecha y orden de registro.
 - **Aislamiento**: la cuenta de un Customer de otro Business responde 404.
 
-### En pantalla: la sección "Owed to you" de Customers
+### En pantalla: la vista "Owed to you" de Customers
 
-- **Dónde**: la sección de arriba de Customers (customers.md), sobre todos de la A a la Z. Reemplaza a la antigua pantalla Owed to you, que ya no existe; su ruta vieja responde como una dirección desconocida (navigation.md, Direcciones retiradas). El título Owed to you de Home abre Customers en esta sección (results.md).
-- **Su cabecera**: el Total owed y la cantidad de Sales still owing.
-  - La cantidad dice "1 sale owing" cuando es una sola Sale que todavía se debe, y "N sales owing" cuando son dos o más (por ejemplo "4 sales owing"). Es la misma regla de singular y plural que usa el bloque "Owed to you" de Home para la misma cantidad (results.md).
+- **Dónde**: la vista "Owed to you" de Customers (customers.md), una de las dos del control "All | Owed to you"; es la vista con que Customers se abre. Reemplaza a la antigua pantalla Owed to you, que ya no existe; su ruta vieja responde como una dirección desconocida (navigation.md, Direcciones retiradas). El título Owed to you de Home abre Customers en esta vista (results.md).
+- **Su cabecera**: el Total owed, sin título de sección y sin la línea "N sales owing"; esa cantidad sigue en el bloque "Owed to you" de Home (results.md). La cantidad de Customers que deben está en el control, "Owed to you · N".
 - **Sus filas**: solo los Customers cuyo Balance es mayor que $0, en el orden de la lista de deudores: por Owing since (el más viejo primero), después el Balance mayor, después el nombre sin distinguir mayúsculas ni acentos, después el orden de registro.
   - Cada fila muestra el Balance en ámbar y "since dd/mm", nunca como chip.
   - Cada fila lleva **"Collect"** (nombre accesible "Collect from <name>"), que abre Record payment con ese Customer ya elegido. Tocar el resto de la fila abre la ficha del Customer. En el celular, "Collect" y "Owed to you" son blancos táctiles de al menos 44×44 (navigation.md, "Disposición en el celular").
-- **Nadie debe**: la sección dice un "Nobody owes you" fijo, sin nada para tocar.
-- **La cabecera de Customers** no lleva ninguna cifra de deuda tocable: la sección misma está en pantalla.
-- **Búsqueda**: mientras se escribe una consulta, Customers se colapsa en una sola lista plana por nombre (customers.md); un Customer que debe conserva ahí su Balance, "owes you since dd/mm" y "Collect".
+- **Nadie debe**: la vista dice solo un "Nobody owes you" fijo, sin nada para tocar, sin Total owed y sin lista vacía.
+- **La cabecera de Customers** no lleva ninguna cifra de deuda tocable: la vista misma está en pantalla.
+- **Búsqueda**: mientras se escribe una consulta, Customers deja el control de vistas y muestra una sola lista plana por nombre (customers.md); un Customer que debe conserva ahí su Balance, "owes you since dd/mm" y "Collect".
 - **Los Customers con Credit** nunca aparecen en la sección y no cuentan en ninguna cifra. En todos de la A a la Z muestran "Credit $ X" con el tratamiento neutro/azul, nunca verde ni ámbar.
 - Los tramos de antigüedad, las cantidades de Customers y deudores, el Customer type y las líneas por Sale todavía no se muestran: los mostrarán partes posteriores.
 
@@ -299,7 +298,7 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
   - salda todo con "All";
   - registra un Payment parcial;
   - elimina un Payment;
-  - lee la sección "Owed to you" de Customers y su línea de cantidad.
+  - lee la vista "Owed to you" de Customers y su Total owed.
 
   Los controles del estado de guardado en curso siguen como estaban.
 - **Sheet en el celular (criterio 9)**: una corrida end-to-end en un viewport de celular abre Record payment desde "Collect" en Customers, "Collect" en Home y el "Record payment" de la ficha. Verifica cuatro cosas:
