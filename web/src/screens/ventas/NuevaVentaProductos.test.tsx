@@ -625,7 +625,7 @@ test('a second observer of the same Products read keeps its options: the list ov
   expect(query.options.gcTime).toBe(0)
   expect(query.options.networkMode).not.toBe('always')
   expect(query.options.retry).toBe(false)
-  expect(query.options.staleTime).toBe(Infinity)
+  expect(query.observers.map((observer) => observer.options.staleTime)).toEqual([Infinity, Infinity])
   const reconnect = query.observers.map((observer) => observer.options.refetchOnReconnect)
   const onFocus = query.observers.map((observer) => observer.options.refetchOnWindowFocus)
   expect(query.observers).toHaveLength(2)
