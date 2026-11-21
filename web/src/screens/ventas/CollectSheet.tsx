@@ -14,16 +14,23 @@
  * `collectableChoice(effectiveChoice(...))` and refused only through `validateSale`; the body is
  * built only by `saleBodyOf`.
  *
+ * Received and Change are a helper only: Received is text in this Sheet's own state, Change is what
+ * `changeFor` says of it, and neither reaches the body. The helper is hidden by one predicate, the
+ * effective choice being owing; what was typed outlives that, a method change and a failed save.
+ * The Collect label always holds the full "Collect {total}"; when it overflows, the short word is
+ * drawn over it, and the button's name stays the full text.
+ *
  * "Owes it" arrives with GH-944 and the failure messages and retry with GH-930, so a rejected save
  * says nothing here: it only releases the Sheet.
  */
 
 import { useMutation } from '@tanstack/react-query'
-import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
+import { type FormEvent, useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { post } from '../../api/client'
 import Boton from '../../components/Boton'
 import FieldRefusal from '../../components/FieldRefusal'
 import Loading from '../../components/Loading'
+import MoneyInput from '../../components/MoneyInput'
 import Selector from '../../components/Selector'
 import Sheet, { SheetActions } from '../../components/Sheet'
 import { COMMON_TEXT } from '../../copy/common'
@@ -32,6 +39,7 @@ import { useMoney } from '../../format/moneyContext'
 import { choiceOfValue, collectableChoice, selectorValueOf, usePaymentMethodOptions } from '../../sales/paymentMethods'
 import {
   lineValidationsOf,
+  changeFor,
   paymentChoiceOf,
   payStateOfEffective,
   type PricedSale,
@@ -76,7 +84,12 @@ export default function CollectSheet({
   const titleId = useId()
   const refusalId = useId()
   const methodOptions = usePaymentMethodOptions()
+  const receivedId = useId()
+  const receivedHelpId = useId()
   const fieldRef = useRef<HTMLButtonElement>(null)
+  const labelRef = useRef<HTMLSpanElement>(null)
+  const [received, setReceived] = useState('')
+  const [short, setShort] = useState(false)
   const [refused, setRefused] = useState(false)
   const [saving, setSaving] = useState(false)
   // The guard is a ref set before the request: two taps in one frame still make one request.
@@ -91,6 +104,22 @@ export default function CollectSheet({
   const save = useMutation({ mutationFn: (body: SaleBody) => post<SavedSale>('/sales', body) })
 
   const { state } = draft
+  const totalText = money.money(priced.totals.total)
+  const owing = effectiveChoice(state.choice, state.proposedMethodId, methodOptions.offeredIds)?.kind === 'owing'
+  const change = changeFor(received, priced.totals.total, money.format)
+
+  // The label is measured on mount, when the total or the saving state changes, and on every resize.
+  // The full text is always in it, so the label can come back to it.
+  useLayoutEffect(() => {
+    const label = labelRef.current
+    if (saving || label === null) return undefined
+    const measure = () => setShort(label.scrollWidth > label.clientWidth)
+    measure()
+    if (typeof ResizeObserver === 'undefined') return undefined
+    const observer = new ResizeObserver(measure)
+    observer.observe(label)
+    return () => observer.disconnect()
+  }, [totalText, saving])
 
   async function send(body: SaleBody): Promise<void> {
     let sale: SavedSale | null = null
@@ -169,8 +198,11 @@ export default function CollectSheet({
       <span className="cobro__cliente">
         {state.customerId === null ? SALES_TEXT.noCustomer : (customerName ?? <Loading compacto />)}
       </span>
-      <form className="formulario" onSubmit={collect}>
-        <div inert={saving}>
+      <form className="formulario cobro__formulario" onSubmit={collect}>
+        <div className="cobro__total">
+          <span>{SALES_TEXT.totalLabel}</span> <span className="cifra-n cobro__importe">{totalText}</span>
+        </div>
+        <div className="cobro__bloque" inert={saving}>
           <Selector
             {...methodOptions.selector}
             placeholder={SALES_TEXT.chooseMethod}
@@ -183,11 +215,53 @@ export default function CollectSheet({
             fieldRef={fieldRef}
             describedBy={refused ? refusalId : undefined}
           />
+          {refused && <FieldRefusal id={refusalId}>{SALES_TEXT.noMethodToCollect}</FieldRefusal>}
+          {!owing && (
+            <>
+              <div className="campo">
+                <label htmlFor={receivedId} className="campo__rotulo">
+                  {SALES_TEXT.receivedLabel}
+                </label>
+                <MoneyInput
+                  id={receivedId}
+                  className="campo__input"
+                  autoComplete="off"
+                  aria-describedby={receivedHelpId}
+                  value={received}
+                  onChange={setReceived}
+                />
+                <span id={receivedHelpId} className="campo__ayuda">
+                  {SALES_TEXT.receivedHelp}
+                </span>
+              </div>
+              <div role="status" className="cobro__vuelto">
+                {change !== null && (
+                  <>
+                    <span>{SALES_TEXT.changeLabel}</span> <span className="cifra-n cobro__importe">{money.money(change)}</span>
+                  </>
+                )}
+              </div>
+            </>
+          )}
         </div>
-        {refused && <FieldRefusal id={refusalId}>{SALES_TEXT.noMethodToCollect}</FieldRefusal>}
         <SheetActions>
-          <Boton textOnly="submit" type="submit" disabled={methodOptions.selector.loading} ariaBusy={saving}>
-            {saving ? SALES_TEXT.saving : SALES_TEXT.collect(money.money(priced.totals.total))}
+          <Boton
+            textOnly="submit"
+            type="submit"
+            disabled={methodOptions.selector.loading}
+            ariaBusy={saving}
+            ariaLabel={saving ? undefined : SALES_TEXT.collect(totalText)}
+          >
+            {saving ? (
+              SALES_TEXT.saving
+            ) : (
+              <span className="cobro__etiqueta" ref={labelRef}>
+                <span className={short ? 'cobro__etiqueta-completa cobro__etiqueta-completa--oculta' : 'cobro__etiqueta-completa'} aria-hidden={short ? true : undefined}>
+                  {SALES_TEXT.collect(totalText)}
+                </span>
+                {short && <span className="cobro__etiqueta-corta">{SALES_TEXT.collectShort}</span>}
+              </span>
+            )}
           </Boton>
         </SheetActions>
       </form>

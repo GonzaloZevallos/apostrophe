@@ -84,6 +84,8 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 - **Received**: un campo de dinero con la etiqueta "Received", con el formato de `useMoney()`, justo debajo de "How they pay", con la línea de ayuda "Type what they hand over to see the change. It isn't saved.". Es opcional, vive en el estado local de la Sheet, arranca vacío y nunca viene precargado.
 - **Change**: una línea con la etiqueta "Change" justo después de Received, con la cifra que da `changeFor(received, priced.totals.total, format)`, en Tabular figures y a los decimales del Money format. Se muestra solo cuando `changeFor` devuelve un valor: con Received igual al total muestra 0, y con uno mayor, la diferencia. Es secundaria al total de Collect y no parece algo que se cobra.
+- En una venta de $0 la ayuda también se muestra: `changeFor` lee un Received de 0 como "sin monto" (no muestra nada) y cualquier monto positivo es todo vuelto (Received 5 → Change 5).
+- Change vive en una región `role="status"` siempre presente mientras la ayuda se muestra; está vacía cuando `changeFor` no da nada.
 - Un Received vacío, menor que el total o ilegible no muestra nada: ni Change, ni aviso, ni error, ni una línea de "todavía se debe". Nunca frena Collect.
 - Se muestra con cualquier Payment method elegido y se oculta entero (campo, ayuda y Change) solo mientras la elección efectiva es owing, leída mediante `effectiveChoice`; nunca se ata al nombre de un medio ni a una marca de efectivo.
 - Lo tipeado se conserva al cambiar de medio, al pasar a owing y volver, y tras un guardado fallido.
@@ -213,6 +215,7 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Código de barras, categoría y elementos de promoción en la lista de Products.
 - La pantalla anfitriona de New sale que monta la Collect Sheet, el flip que la monta y su regla de no abrirla con una línea sin precio; también, ya en el flip: que la anfitriona ignore el volver del sistema y Escape mientras `onSavingChange(true)`, un test que monte la barra de la venta y la Sheet juntas y muestre el total guardado igual al de la barra y a `SaleOut.total`, y que tras `onSaved` la anfitriona muestre las cifras de la respuesta con el aviso de recotización (`linesRepriced`) cuando el total cambió.
 - Reescribir el criterio 34 de sales.md ("el medio nunca viene puesto"), que le corresponde al flip, cuando la preselección llegue a la vendedora.
+- Una comprobación en un navegador real, en ambos temas, de que la etiqueta de Collect se acorta a "Collect" y vuelve a "Collect {total}" a 320 px y a 246 px (hasta entonces solo la prueba el stub de `scrollWidth`).
 - Pagos parciales al momento de la venta: siguen siendo un Payment posterior con Record payment. Guardar, mandar o mostrar Received o Change en cualquier otro lugar.
 - La opción "Owes it" (#944) y todo camino de fallo del guardado: estado fallido de la lista de medios, medio archivado con su marca "no longer available", texto de guardado fallido y reintento (#930).
 - Un texto propio de la Collect Sheet para una línea sin precio.

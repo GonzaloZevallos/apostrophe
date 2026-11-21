@@ -52,6 +52,9 @@ export const SALE_BILL_TEXT = {
   unit: 'g',
 }
 
+/** The Collect Sheet's Received field: a help line, never a refusal. */
+const RECEIVED_HELP = "Type what they hand over to see the change. It isn't saved."
+
 /** New sale's Product list. `stock` is already formatted; the step names carry the Product's own name. */
 const NEW_SALE_TEXT = {
   productsInSale: (n: number) => `In the sale · ${n}`,
@@ -77,6 +80,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: NEW_SALE_TEXT.productAdd(SAMPLES.name) },
   { kind: 'help', text: NEW_SALE_TEXT.productIncrease(SAMPLES.name) },
   { kind: 'help', text: NEW_SALE_TEXT.productDecrease(SAMPLES.name) },
+  { kind: 'help', text: RECEIVED_HELP },
 ]
 
 /** Nothing here is over 80 characters. */
@@ -189,6 +193,13 @@ export const SALES_TEXT = {
   noMethodToCollect: 'Choose how they pay to collect.',
   /** `total` is the sale's total in the business's Money format (`useMoney().money`). */
   collect: (total: string) => `Collect ${total}`,
+  /** The label of Collect when `collect(total)` does not fit its line. */
+  collectShort: 'Collect',
+  /** The Collect Sheet's Total row: the label alone, its figure drawn beside it. */
+  totalLabel: 'Total',
+  receivedLabel: 'Received',
+  receivedHelp: RECEIVED_HELP,
+  changeLabel: 'Change',
   saving: 'Saving…',
   newSale: NEW_SALE_TEXT,
 } as const
