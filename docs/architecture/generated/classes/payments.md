@@ -112,17 +112,6 @@ classDiagram
     owing_since : date #124; None
     standing : Literal
   }
-  class CreditRow {
-    amount : int
-    credit_amount : int
-    date : date
-    kind : Literal~'credit'~
-    method : PaymentMethodLabel
-    paid_on : date
-    payment_id : int
-    running_balance : int
-    standing : Literal
-  }
   class DebtAgeBuckets {
     days_8_30 : int
     over_30 : int
@@ -173,8 +162,8 @@ classDiagram
   }
   class PaymentRow {
     amount : int
-    applied_to
     date : date
+    is_partial : bool
     kind : Literal~'payment'~
     method : PaymentMethodLabel
     paid_on : date
@@ -191,6 +180,7 @@ classDiagram
     date : date
     how_paid : Literal
     kind : Literal~'sale'~
+    number : int
     payment_method : PaymentMethodLabel #124; None
     running_balance : int
     sale_id : int
@@ -216,7 +206,6 @@ classDiagram
     sale_date : date
     sale_id : int
   }
-  PaymentRow --> Split : applied_to
 ```
 
 ## application
@@ -329,14 +318,6 @@ classDiagram
     sale_id : int
     of(split: Split) AppliedToOut
   }
-  class CreditAccountRowOut {
-    amount
-    date : date
-    kind : Literal~'credit'~
-    payment
-    running_balance
-    standing : Literal
-  }
   class DebtBucketsOut {
     days_8_30
     over_30
@@ -368,8 +349,8 @@ classDiagram
     of(debtors: Debtors, with_lines: bool) DebtorsOut
   }
   class PaymentAccountRowOut {
-    applied_to
     date : date
+    is_partial : bool
     kind : Literal~'payment'~
     payment
     running_balance
@@ -427,6 +408,7 @@ classDiagram
   class SaleAccountRowOut {
     date : date
     kind : Literal~'sale'~
+    number : int
     running_balance
     sale
     standing : Literal
@@ -468,11 +450,9 @@ classDiagram
     of(line: StillOwingLine) StillOwingLineOut
   }
   AccountPaymentRefOut --> PaymentMethodLabelOut : payment_method
-  CreditAccountRowOut --> AccountPaymentRefOut : payment
   DebtorOut --> DebtorCustomerOut : customer
   DebtorsOut --> DebtBucketsOut : buckets
   PaymentAccountRowOut --> AccountPaymentRefOut : payment
-  PaymentAccountRowOut --> AppliedToOut : applied_to
   PaymentPreviewOut --> AfterOut : after
   RecordPaymentOut --> AfterOut : after
   RecordPaymentOut --> PaymentRefOut : payment
