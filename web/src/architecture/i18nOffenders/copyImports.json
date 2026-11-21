@@ -39,6 +39,7 @@
   {"file":"src/screens/clientes/CobroRoute.tsx","imports":["payments.ts"],"issue":351},
   {"file":"src/screens/clientes/CustomerCardBehind.tsx","imports":["customers.ts"],"issue":351},
   {"file":"src/screens/clientes/CustomerFields.tsx","imports":["customers.ts"],"issue":351},
+  {"file":"src/screens/clientes/CustomerSegments.tsx","imports":["customers.ts"],"issue":351},
   {"file":"src/screens/clientes/CustomerTypeField.tsx","imports":["customers.ts"],"issue":351},
   {"file":"src/screens/clientes/CustomersBehind.tsx","imports":["customers.ts"],"issue":351},
   {"file":"src/screens/clientes/accountRows.ts","imports":["customers.ts"],"issue":351},
