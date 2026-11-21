@@ -115,6 +115,7 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.newSale.productAdd': [['Rosa']],
   'SALES_TEXT.newSale.productIncrease': [['Rosa']],
   'SALES_TEXT.newSale.productDecrease': [['Rosa']],
+  // A new key's en.baseline.json entry is inserted in sorted order: `i18n:baseline --update` never adds one.
   'SALES_TEXT.newSale.productsResults': [[2]],
   'SALE_BILL_TEXT.header': [['Flores Test', 'Sale #1284', D]],
   'SALE_BILL_TEXT.item': [['Rosa', '3,5', 'g', M]],
