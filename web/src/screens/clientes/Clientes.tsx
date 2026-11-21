@@ -7,7 +7,10 @@
  * keystroke stays marked `aria-busy` with "Searching…" instead of ever being shown
  * as the answer to the query currently typed (`keepPreviousData`). A dropped
  * network or a server error on the list itself shows the matching state instead
- * of a misleading "no customers yet" (PRD, "Feedback").
+ * of a misleading "no customers yet" (PRD, "Feedback"). Over the list sit the All | Owed to you
+ * segments; a typed query, or a debtors read that failed, draws the flat list alone with no
+ * segments (`customersView`), and while the debtors read is pending the segments show as a
+ * skeleton with nothing below.
  */
 
 import { CUSTOMER, CUSTOMER_NEW } from '../../routes'
@@ -28,8 +31,9 @@ import { owedPlace, useReturnToPlace } from '../../components/useReturnToPlace'
 import { GONE_NOTICE } from '../../api/refusals'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
-import { useCustomerSearch } from './CustomerSearch'
-import { EVERYONE, CUSTOMERS_TEXT } from '../../copy/customers'
+import { customersView, debtorsState, segmentCounts, useCustomerSearch } from './CustomerSearch'
+import CustomerSegments from './CustomerSegments'
+import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import ClienteFila from './ClienteFila'
@@ -49,7 +53,7 @@ function owedOrSearch(root: HTMLElement): HTMLElement | null {
 
 export default function Clientes() {
   const { t } = useTranslation()
-  const { query, setQuery } = useCustomerSearch()
+  const { query, setQuery, segment, setSegment } = useCustomerSearch()
   const vipCustomers = useIsVipCustomers()
   const [debounced, setDebounced] = useState(query)
   const location = useLocation()
@@ -75,7 +79,9 @@ export default function Clientes() {
 
   // Back from Record payment the list returns to its place (PM option a). Beside a customer's
   // card the card is where the seller returns to, so the list leaves it to the card.
-  const debtors = useQuery({ ...debtorsQuery, enabled: query === '' })
+  const debtors = useQuery(debtorsQuery)
+  const view = customersView({ query, isPlaceholderData, debtors: debtorsState(debtors), segment })
+  const answered = debtors.data !== undefined
   const root = useRef<HTMLElement>(null)
   useReturnToPlace({
     root,
@@ -87,7 +93,7 @@ export default function Clientes() {
   return (
     <ContentArea as="main" className="pantalla" ref={root}>
       {/* The first answer only: a new search over the list already shown is not the area loading. */}
-      <LoadingWhile active={isPending} />
+      <LoadingWhile active={isPending || debtors.isPending} />
       <div className="cuerpo">
         <div className="clientes__encabezado cabecera-fila">
           <span className="encabezado__titulo">{COMMON_TEXT.customers}</span>
@@ -109,12 +115,14 @@ export default function Clientes() {
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
-        {query === '' && <TeDeben />}
+        {view !== 'flat' && (
+          <CustomerSegments segment={segment} onChange={setSegment} {...segmentCounts(debtors.data)} />
+        )}
+        {view === 'owed' && answered && <TeDeben />}
         {isError && error instanceof NetworkError && <SinConexion />}
         {isError && !(error instanceof NetworkError) && <ErrorGenerico />}
-        {!isError && (
-          <section aria-label={query === '' ? EVERYONE : undefined} className="clientes__todos">
-            {query === '' && <span className="campo__rotulo">{EVERYONE}</span>}
+        {!isError && (view === 'flat' || (view === 'all' && answered)) && (
+          <section className="clientes__todos">
             <div
               className="lista-clientes"
               aria-busy={isPlaceholderData}
