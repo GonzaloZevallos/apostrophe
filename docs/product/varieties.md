@@ -35,6 +35,10 @@ Su protagonista es quien mantiene la app, o quien revisa en su nombre, al estilo
 
 **Cuando** manejo mi negocio desde el celular entre pedidos o en medio de un chat con un cliente, varias veces al día, **quiero** la app organizada según lo que de verdad hago y cada cuánto, con todo lo de un producto en un solo lugar, **para** volver con el cliente en vez de buscar entre menús, y no preguntarme nunca cuál de varias pantallas tiene lo que necesito. (El job de navegación, navigation.md.)
 
+**Cuando** abro Products en el celular, para ver qué tengo o para agregar un Product, **quiero** que la parte de arriba de la pantalla me diga dónde estoy, con "New product" y Settings siempre en el mismo lugar, **para** empezar a agregar un Product sin buscar el link en la lista.
+
+Este es el job de navegación aplicado a la pestaña Products en el celular (GH-903), no un job nuevo. Lo sirve el bloque de título del celular. Antes, "New product" era un link dentro del cuerpo de la lista y su lugar cambiaba con la lista (vacía, con Products o solo archivados).
+
 **Cuando** estoy atendiendo a un cliente con el celular en la mano, **quiero** que la app se comporte como una app de celular (un formulario que llena la pantalla con su acción principal bajo el pulgar, y nada que necesite escondido detrás del teclado), **para** registrar un precio o editar un producto sin pelearme con la pantalla ni perder lo que tipeé. (El job del diseño en el celular, navigation.md, GH-319: lo sirven acá el formulario de precio, New product y los formularios de renombre, de aviso de Stock bajo y de Catalog attributes de un Product, dibujados en el celular por el único `Sheet` compartido.)
 
 **Cuando** un cliente me pregunta qué tengo o cuánto cuesta algo, o entra mercadería, se acaba o cambia de precio, **quiero** abrir un producto y encontrar todo sobre él en su propia página (su stock y sus Stock entries, sus precios, su aviso de Stock bajo y cómo se muestra en el Catalog), que la lista me diga de un vistazo qué tengo, qué se está acabando y qué no puedo vender, y tener el Catalog de hoy a un toque de esa lista, listo para compartir desde el celular, **para** contestarle al cliente, registrar lo que entró y mandar un Catalog al día sin moverme entre pantallas, y que mis clientes nunca reciban un precio viejo ni un producto que no puedo vender.
@@ -141,6 +145,10 @@ Criterios de éxito:
 24. **Los Businesses existentes cambian sin hacer nada**: el del dueño incluido, ven "Product" / "Products" sin ninguna acción de su parte, y ninguno de sus datos cambia (nombres de los Products, Notes, Catalog header and footer guardados, **Expense category**s).
 25. **El flujo del celular no paga nada**: registrar una venta sigue llevando menos de un minuto y cada pantalla conserva su lugar en la **Navigation**. Solo cambia la palabra.
 26. **El VIP price no cambia para quien vende** (parte customer-type prices): en un Business con su VIP type, el campo "VIP price", su rechazo, la sección Prices y el historial de precios se leen igual que antes, aunque el VIP price ahora se guarda como el Customer-type price del VIP type; y a cada VIP customer se le cobra lo mismo que antes (pricing-settings.md, criterio 3).
+27. **Una fila de título en el celular** (GH-903): a 320 y 246 px, en claro y oscuro, "Products", el botón "New product" (solo el ícono `agregar`, por decisión del dueño) y el avatar de Settings van en una sola línea; cada objetivo mide al menos 44×44 px, cada separación al menos 8 px, y nada envuelve, se superpone, se recorta ni se desplaza de costado.
+28. **Uno de cada uno en cada ancho**: la pantalla muestra exactamente un título "Products" y una sola acción "New product". En el celular esa acción está en el bloque de título en todo estado de la lista y nunca en el cuerpo; a 900 px y más, Products dibuja los mismos elementos que antes.
+29. **Se ve como el dibujo**: la **Design capture** de `Productos` y `ProductosOscuro` a 414×844 se lee bien contra el dibujo, y el **Mobile check** no suma ningún infractor.
+30. **Cruzar 900 px no pierde nada**: con New product abierto, cruzar 900 px en cualquier sentido deja el formulario abierto con lo tipeado.
 
 ## Comportamiento
 
@@ -260,7 +268,16 @@ Criterios de éxito:
     anterior, si no el estado vacío.
   - **En el celular**, la lista es la pantalla; nunca abre un Product por su cuenta.
   - Un Product seleccionado que ya no existe sigue la regla "That is gone." de accounts.md.
-- **Una sola disposición en todo ancho**: el celular y la computadora muestran el mismo cuerpo de la lista, con el título "Products" y el avatar "Settings" arriba; en la computadora las filas abren un Product reemplazando el paso del historial de navegación, y en el celular lo agregan. Un encabezado propio del celular todavía no existe (ver Fuera de alcance).
+- **Dos disposiciones, un solo cuerpo**: la pantalla elige con el único valor `computer` de `useViewport()`, el mismo que pasa al cuerpo como `view.computer`, así que cruzar 900 px nunca muestra las dos disposiciones ni ninguna.
+  - **En la computadora** (900 px y más), la misma de antes: el título "Products" y el avatar "Settings" arriba, y "New product" como link en las acciones de la lista. Las filas abren un Product reemplazando el paso del historial de navegación.
+  - **En el celular** (menos de 900 px), el bloque de título de abajo y, debajo, el mismo cuerpo de la lista sin ningún link "New product". Las filas agregan un paso al historial de navegación.
+- **El bloque de título del celular** (GH-903): un `div` que se desplaza con la pantalla, nunca un `header` y nunca fijo ni pegajoso, con una sola fila que no envuelve. En orden:
+  - el título "Products" (`h1`), que toma el ancho libre;
+  - nada para "Publish catalog": ningún elemento ni espacio; el lugar queda reservado para una parte posterior de GH-845;
+  - el botón "New product": redondo, solo con el ícono `agregar`, un objetivo de 44×44 px relleno con --boton y --boton-texto (texto oscuro sobre el verde en oscuro), con nombre accesible "New product", que abre New product. No muestra la palabra porque no cabe en la fila a 320 y 246 px: por regla del dueño (D-8ecb8c1d), una acción con palabra que no cabe en una fila de título del celular pasa a ser un botón redondo solo ícono con nombre accesible (icon-and-text-rule.md). No deja seleccionar texto, no espera un doble toque y tiene su estado presionado;
+  - el avatar "Settings", un disco de 36 px dentro de un objetivo de 44 px; es la entrada a Settings desde el celular.
+
+  Se ve igual en todo estado de la lista (Loading, vacía, con Products, solo archivados, falla). Ningún texto es nuevo: reusa "Products", "New product" y "Settings".
 - **Todo Product sin archivar**, los ocultos incluidos, ordenados por nombre, en un orden estable.
 - **Cada fila**:
   - el nombre;
@@ -285,7 +302,7 @@ Criterios de éxito:
   que abre el formulario de Stock entry con el Product por elegir (`stock.md`).
 - **"Take from stock"**, un botón secundario junto a "+ Stock entry", en celular y
   computadora, que abre el formulario de Stock withdrawal sin ningún Product elegido (`stock.md`).
-- **"New product"**, un link en las acciones de arriba de la lista, en celular y computadora: agrega un Product (un formulario; en el celular, una **Sheet** dibujada por el único `Sheet` compartido, sobre Products, según "Disposición en el celular" de navigation.md). Se ve en todo estado de la lista.
+- **"New product"**: en la computadora, un link en las acciones de arriba de la lista; en el celular, el botón redondo solo con el ícono `agregar` (44×44 px, nombre accesible "New product") del bloque de título, entre el título y el avatar de Settings, y ningún link en el cuerpo de la lista. Agrega un Product (un formulario; en el celular, una **Sheet** dibujada por el único `Sheet` compartido, sobre Products, según "Disposición en el celular" de navigation.md). Se ve en todo estado de la lista (en el celular, el bloque de título se ve siempre). Con New product abierto, cruzar 900 px en cualquier sentido deja el formulario abierto con lo tipeado.
 - **El aviso, el aviso de "That is gone", la falla ("No connection" o el reintento genérico) y Loading** se muestran una sola vez cada uno, en el cuerpo de la lista.
 - **"All entries"** abajo de todo (`stock.md`), en `/varieties/entries`. Lista solo Stock entries.
 - **"Archived (N)"** abajo de todo, junto a "All entries", que abre la tarjeta
@@ -470,6 +487,12 @@ Criterios de éxito:
   en sus pantallas, no solo literales de una lista de prohibidos.
 - **Dibujos que todavía dicen "Variety"**: bajo el **Drawing as guide**, la definición escrita gana; cada dibujo de `pantallas/` que todavía muestra "Variety" o "Varieties" se lista en el PR como un defecto conocido del dibujo, que diseño corrige en su propio trabajo. El dibujo del formulario de precio no tiene el campo "VIP price": se juzga contra este texto.
 
+### Evidencia de diseño del bloque de título del celular
+
+- **Registro** (`scripts/design/screens.json`): las filas `Productos` y `ProductosOscuro` apuntan a la pantalla viva del celular, con `route` y `path` `/varieties` (el path dejó de ser `/products` porque `routes.test.ts` exige que route y path coincidan) y `design_viewport` [414, 844]. La fila `Variedades` sigue. Las tres recorren la misma pantalla viva, así que un infractor futuro de esa pantalla se lista bajo cada nombre que lo informe.
+- **Diferencias con el dibujo, ya decididas**: el botón redondo de Publish del dibujo es un hueco vacío (parte posterior de GH-845); la píldora "Producto" de 36 px del dibujo es el botón solo ícono "New product" de 44×44 px (decisión del dueño); el disco del avatar sigue en 36 px, dentro de un objetivo de 44 px. La búsqueda, el segmento y el "···" del dibujo son partes posteriores de GH-845.
+- **Medición**: la tabla de 320 y 246 px, claro y oscuro, antes de construir y sobre `/varieties` viva, está en docs/evidence/GH-548-design-capture.md.
+
 ### Restricciones
 
 - Cada ruta, incluidas las de eliminar, archivar y restaurar, entra en el barrido de aislamiento
@@ -481,7 +504,9 @@ Criterios de éxito:
 - **Una fuente por mensaje compartido**: en el front, "Check the grams entered" (que muestran los formularios de precio, de Stock entry y de Stock withdrawal) y el toast "Price saved" se definen cada uno una sola vez y se leen de ahí; ninguna pantalla repite ninguno de los dos como literal propio.
 - **Diseño en el celular (GH-319)**: la rama de celular del formulario de precio, New product y las tres ediciones en línea los dibuja el único `Sheet` compartido; la rama de diálogo `PriceFrame` de ADR-0044 no se edita, y se conservan las claves del registro `VariedadRenombrar`, `VariedadUmbral` y `CatalogoAtributos`.
 - **Sin palabra configurable**: ninguna ruta, campo de esquema ni columna guarda ni sirve una palabra elegida por el Business para lo que vende. La palabra de pantalla vive solo en el Copy module (docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
-- **Piezas de la lista separadas para una segunda disposición** (GH-897, base de #903): `web/src/screens/Variedades.tsx` conserva su ruta y sus lecturas (`FIRST_RUN_READERS` sin cambios) y dibuja `ProductsComputer` en todo ancho. El bloque de "Send catalog" (`SendCatalog`), los links "+ Stock entry" y "Take from stock" (`StockActions`), la línea de resumen (`ProductsSummary`), el estado vacío (`ProductsEmpty`) y las filas (`VarietyRows`) viven en `web/src/screens/varieties/` con el marcado y las clases de siempre. Ninguno de esos archivos importa un valor (solo tipos) de `../Variedades` ni ningún módulo `api/*`; un test de arquitectura (`web/src/architecture/productsFiles.test.ts`) lo controla sobre esa lista explícita.
+- **Piezas de la lista separadas en dos disposiciones** (GH-897 y GH-903): `web/src/screens/Variedades.tsx` conserva su ruta y sus lecturas (`FIRST_RUN_READERS` sin cambios) y dibuja `ProductsComputer` en la computadora (900 px y más) o `ProductsPhone` en el celular, según el único valor `computer` de `useViewport()`, que pasa también como `view.computer`; no hay ningún otro control de ancho. El bloque de "Send catalog" (`SendCatalog`), los links "+ Stock entry" y "Take from stock" (`StockActions`), la línea de resumen (`ProductsSummary`), el estado vacío (`ProductsEmpty`), las filas (`VarietyRows`), el cuerpo común (`ProductsBody`, con su lugar `newProduct`, que el celular deja en `null`) y `ProductsPhone` viven en `web/src/screens/varieties/` con el marcado y las clases de siempre. Ninguno de esos archivos importa un valor (solo tipos) de `../Variedades` ni ningún módulo `api/*`, y todos están en `PRODUCTS_FILES`; un test de arquitectura (`web/src/architecture/productsFiles.test.ts`) lo controla sobre esa lista explícita.
+- **El botón "New product" del celular** es `BotonLink variant="icon" action="add"` (clase `boton-icono boton-icono--lleno`, más `productos-cabecera__nueva`), con sus colores de --boton y --boton-texto; nunca la clase del botón de New sale, el componente de la barra ni la clave "Vender". Su clase propia no fija ningún color.
+- **Landmarks del e2e** (D-69509906): el paso de clic del recorrido móvil (`web/e2e/mobile/walk.ts`) encuentra un link solo ícono por su nombre accesible, así que los pasos que tocan "New product" siguen funcionando sin volver a poner la palabra ni el link viejo.
 
 ## Métricas
 
@@ -529,7 +554,13 @@ Criterios de éxito:
   por nombre; sin Products el panel derecho queda sin ninguna cifra; archivar o
   eliminar el Product seleccionado selecciona el siguiente, si no el anterior, si no el estado
   vacío; en el celular la lista nunca abre un Product.
-- **La lista fijada en los dos anchos** (GH-897): tests del front con ancho de celular y de computadora fijan el marcado de la lista (título y avatar, línea de resumen, acciones con "Send catalog" o su botón deshabilitado con motivo, "+ Stock entry", "Take from stock" y "New product", estado vacío solo cuando está lista sin falla ni filas, filas con `replace` solo en la computadora, "All entries" y "Archived (N)"), escritos antes de separar las piezas y sin editar después. 100% en verde.
+- **El bloque de título del celular (criterios 27 a 30, GH-903)**:
+  - **Medición (criterio 27)**: antes de construir, con la palabra "New product" la fila necesitaba 317,3 px y había 272 px a 320 y 198 px a 246, así que la medición se detuvo y el dueño decidió el botón solo ícono. Con el ícono, la fila es una línea en las cuatro celdas (320 y 246 px, claro y oscuro), con objetivos de 44×44 px, separaciones de 8 px o más, sin recortes ni desplazamiento lateral, y 8,9 px de sobra a 246 px; la medición sobre `/varieties` viva da lo mismo (docs/evidence/GH-548-design-capture.md).
+  - **Tests del front a ancho de celular** (`web/src/screens/Variedades.test.tsx`): el bloque es un `div`, no un `header`, y su posición no es fija ni pegajosa; tiene exactamente 3 hijos en orden (título "Products", link "New product" a `VARIETY_NEW`, link "Settings"); la fila de acciones del cuerpo tiene `['A','A','A']` y ningún "New product"; el bloque está en los estados vacío y solo archivados.
+  - **Uno de cada uno (criterio 28)**: en los dos anchos, exactamente un título "Products" y exactamente un link "New product".
+  - **Cruce de 900 px (criterio 30)**: `screens/varieties/VarietySheet.test.tsx` ("a flip across 900 px keeps what was typed, on the same input") sigue en verde sin editar.
+  - **Diseño (criterio 29)**: la Design capture de `Productos` y `ProductosOscuro` a 414×844 se lee como la fila dibujada, con el botón solo ícono decidido y el hueco de Publish vacío; el proyecto móvil no suma ninguna entrada de infractor. La captura de 900 px, antes y después, es idéntica byte por byte en los dos temas.
+- **La lista fijada en los dos anchos** (GH-897): tests del front con ancho de celular y de computadora fijan el marcado de la lista (título y avatar, línea de resumen, acciones con "Send catalog" o su botón deshabilitado con motivo, "+ Stock entry" y "Take from stock", y en la computadora "New product" (en el celular lo trae el bloque de título), estado vacío solo cuando está lista sin falla ni filas, filas con `replace` solo en la computadora, "All entries" y "Archived (N)"). Se escribieron antes de separar las piezas; las únicas aserciones editadas después son las de ancho de celular que GH-903 cambió por el bloque de título, listadas en su PR, y ninguna de ancho de computadora. 100% en verde.
 - **Nada perdido (criterio 8)**: cada ruta vieja de Stock, Products y Catalog responde como una
   dirección desconocida (navigation.md, Direcciones retiradas, criterio 52), `/mi-stock/entradas/{id}` incluida; cada acción
   vieja tiene un lugar en las pantallas nuevas; ningún link apunta a una pantalla que falta; recargar
@@ -663,7 +694,10 @@ Criterios de éxito:
 - Las demás palabras propias de un solo tipo de negocio (gramos, "g", Indica share, Aroma, 🌿): #420 y #390.
 - El copy en español "producto" / "productos": llega con #317.
 - Corregir los dibujos de `pantallas/` que todavía dicen "Variety": diseño lo hace en su propio trabajo.
-- **El encabezado propio del celular de Products** (GH-845, a cargo de #903): un bloque de título con el + redondo "New product" como única entrada a New product en el celular, la medición previa a 320 px y 246 px, y las filas `Productos` y `ProductosOscuro` del registro. Hasta entonces el celular conserva el link "New product" en el cuerpo de la lista. El botón "Publish catalog" en ese encabezado lo trae la parte posterior de GH-845 (#898 / #848), y el segmento Catalog | Stock, la parte 2 de GH-845.
+- **El botón "Publish catalog" del bloque de título del celular** y el segmento Catalog | Stock: los trae la parte posterior de GH-845 (#898 / #848). Hasta entonces su lugar no dibuja ningún elemento.
+- En la fila de título del celular: mostrar la palabra "New product", acortarla, achicar el título o el avatar, cortar con puntos suspensivos o envolver la fila (D-8ecb8c1d).
+- Un bloque de título fijo o pegajoso, o un `header`, en el celular.
+- Cualquier cambio en la disposición de la computadora (900 px y más).
 
 ## Planned in GH-318
 

@@ -19,6 +19,7 @@ import Clientes from './Clientes'
 import ClientesLayout from './ClientesLayout'
 import ClienteForm from './ClienteForm'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+import { NO_DEBTORS } from '../../test/debtors'
 
 const ME: Me = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
@@ -148,7 +149,7 @@ test('the customer form has no Customer type field while Customer types is off',
 })
 
 const LIST_FER = { ...FER, id: 3, name: 'Fer', owing_since: null }
-const LIST_ANSWERS = { 'GET /customers': [LIST_FER], 'GET /payments/debtors': { total_owed: 0, sales_owing_count: 0, debtors: [] } }
+const LIST_ANSWERS = { 'GET /customers': [LIST_FER], 'GET /payments/debtors': NO_DEBTORS }
 
 test('the Clientes list shows a VIP customer\'s mark only while Clientes VIP is on', async () => {
   stub(true, LIST_ANSWERS)

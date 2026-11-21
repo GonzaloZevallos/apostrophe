@@ -24,6 +24,9 @@
   "^src/phone/served\\.fixture\\.ts$",
   "^src/sales/useSaleDraft\\.ts$",
   "^src/sales/saleDraft\\.ts$",
+  "^src/sales/productList\\.ts$",
   "^src/api/saleSuggestions\\.ts$",
+  "^src/sales/useNewSaleReads\\.ts$",
+  "^src/screens/ventas/NuevaVentaProductos\\.tsx$",
   "^src/screens/ventas/CollectSheet\\.tsx$"
 ]

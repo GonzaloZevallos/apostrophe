@@ -10,11 +10,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import debtorsFixture from '../../api/fixtures/debtors.json'
 import TeDeben from './TeDeben'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { baselineText } from '../../i18n/testing'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+import { debtorsOf, NO_DEBTORS } from '../../test/debtors'
+
+const DEBTORS_FIXTURE = debtorsOf()
 
 const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
 
@@ -54,17 +56,19 @@ test("heads with the total owed and lists debtors in the API's own order", async
   // debtor; a second is added here only to prove the API's own order is kept,
   // never resorted by this screen.
   vi.mocked(fetch).mockResolvedValue(
-    jsonResponse(200, {
-      ...debtorsFixture,
-      debtors: [
-        ...debtorsFixture.debtors,
-        { customer: { id: 2, name: 'Beto' }, balance: 22000, owing_since: '2026-09-20', standing: 'owes' },
-      ],
-    }),
+    jsonResponse(
+      200,
+      debtorsOf({
+        debtors: [
+          ...DEBTORS_FIXTURE.debtors,
+          { customer: { id: 2, name: 'Beto' }, balance: 22000, owing_since: '2026-09-20', standing: 'owes', still_owing: null },
+        ],
+      }),
+    ),
   )
   renderTeDeben()
 
-  expect(await screen.findByText(`$ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`)).toBeInTheDocument()
+  expect(await screen.findByText(`$ ${DEBTORS_FIXTURE.total_owed.toLocaleString('es-AR')}`)).toBeInTheDocument()
 
   const rows = screen
     .getAllByRole('link')
@@ -83,21 +87,21 @@ test('one sale still owing reads "1 sale owing", singular', async () => {
   // `sales_owing_count` is overridden in memory, never read off the fixture
   // (plan invariant: "A test of a count line fakes the count it asserts and
   // compares against a literal string, never one derived from a fixture value").
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...debtorsFixture, sales_owing_count: 1 }))
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, debtorsOf({ sales_owing_count: 1 })))
   renderTeDeben()
 
   expect(await screen.findByText('1 sale owing')).toBeInTheDocument()
 })
 
 test('three sales still owing read "3 sales owing", plural', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...debtorsFixture, sales_owing_count: 3 }))
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, debtorsOf({ sales_owing_count: 3 })))
   renderTeDeben()
 
   expect(await screen.findByText('3 sales owing')).toBeInTheDocument()
 })
 
 test('nobody owing shows the fixed "Nobody owes you"', async () => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { total_owed: 0, sales_owing_count: 0, debtors: [] }))
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, NO_DEBTORS))
   renderTeDeben()
 
   expect(await screen.findByText(NOBODY_OWES)).toBeInTheDocument()

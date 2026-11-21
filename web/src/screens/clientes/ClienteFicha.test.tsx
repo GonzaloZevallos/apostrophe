@@ -304,6 +304,7 @@ const OWING_ACCOUNT = {
       date: '2026-09-14',
       running_balance: 11000,
       standing: 'owes',
+      number: 3,
       sale: { id: 10, total: 11000, how_paid: 'owing', payment_method: null },
     },
   ],
@@ -359,12 +360,9 @@ test('a customer in credit shows "Credit", never "Te debe", and no Registrar cob
   expect(screen.queryByRole('link', { name: 'Record payment' })).not.toBeInTheDocument()
 })
 
-test('the account labels a sale, a later payment\'s split and its leftover credit row only from kind/standing, never a sign on a number', async () => {
-  // `account.json` (plan, invariants: "used by the front's fetch fakes") is the
-  // one case on this branch with all three row kinds together: a sale left
-  // owing, a later payment's split, and the credit left over once every debt is
-  // settled. `CREDIT_CUSTOMER`'s own balance/standing match the fixture's
-  // overall balance, so the card and the account agree.
+test('the account is a ledger: Sale #N, one row per Payment, "In your favor" from the standing only', async () => {
+  // `account.json` is the shared fixture: a sale left owing, a partial payment and a
+  // payment that takes the balance below zero.
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/2': () => jsonResponse(200, CREDIT_CUSTOMER),
@@ -374,76 +372,22 @@ test('the account labels a sale, a later payment\'s split and its leftover credi
   renderFicha('2')
 
   await screen.findByText('Left owing')
-  const account = document.querySelector('.cuenta-cliente')
-  expect(account).not.toBeNull()
-  const inAccount = within(account as HTMLElement)
-  // The joined "Payment · cash · On account of …" line is now two lines: the
-  // title, and the sub-line under it.
-  expect(inAccount.getByText('Payment · Cash')).toBeInTheDocument()
-  expect(inAccount.getAllByText('Payment · Transfer')).toHaveLength(2)
-  expect(inAccount.getAllByText('On account of the sale of 14/09')).toHaveLength(2)
-  expect(inAccount.getByText('Credit')).toBeInTheDocument()
   expect(screen.getByRole('heading', { name: 'Account · running balance' })).toBeInTheDocument()
-
-  // Each row shows its own figure (`.cuenta-cliente__monto`) next to the running
-  // balance it left (`.cuenta-cliente__saldo`) — plan, "On screen": "with the
-  // amount applied to that sale" — never only the running balance (review
-  // finding). The sale row's own total and its running balance happen to be the
-  // same figure here (nothing had been paid against it yet), so the two are read
-  // from their own class, not by text, to tell them apart.
-  const filas = Array.from(account?.querySelectorAll('.cuenta-cliente__fila') ?? [])
-  expect(filas).toHaveLength(4)
-  const [saleFila, firstPaymentFila, secondPaymentFila, creditFila] = filas
-  if (
-    saleFila === undefined ||
-    firstPaymentFila === undefined ||
-    secondPaymentFila === undefined ||
-    creditFila === undefined
-  ) {
-    throw new Error('expected four account rows')
-  }
-  expect(saleFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 11.000')
-  expect(saleFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('balance $ 11.000')
-  // The first payment's own amount ($ 5.000, what it applied to the 14/09 sale)
-  // differs from what it then left owing ($ 6.000) — exactly the figure the
-  // review found missing.
-  expect(firstPaymentFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 5.000')
-  expect(firstPaymentFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('balance $ 6.000')
-  // The second payment (id 6, $ 8.000 in all) finishes off the 14/09 sale's
-  // remaining $ 6.000 — its own split row, before its leftover becomes the
-  // credit row below (plan, "Account": "a credit row ... right after that
-  // payment's splits"; review finding: this split row was missing from the
-  // fixture, leaving the credit jump from $ 6.000 straight to -$ 2.000 with no
-  // row accounting for the $ 6.000 in between).
-  expect(secondPaymentFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 6.000')
-  expect(secondPaymentFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('balance $ 0')
-  // The credit row's own leftover ($ 2.000) and the running balance it leaves
-  // (also "Credit $ 2.000" here) both drop their sign, picked only by `kind`/
-  // `standing`, never a comparison on the number itself.
-  expect(creditFila.querySelector('.cuenta-cliente__monto')).toHaveTextContent('$ 2.000')
-  expect(creditFila.querySelector('.cuenta-cliente__saldo')).toHaveTextContent('Credit $ 2.000')
-
-  // Title over sub-line on the left, the sale naming no product and no grams.
-  expect(saleFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Sale')
-  expect(saleFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('Left owing')
-  expect(firstPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · Cash')
-  expect(firstPaymentFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('On account of the sale of 14/09')
-  expect(secondPaymentFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · Transfer')
-  expect(secondPaymentFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent('On account of the sale of 14/09')
-  expect(creditFila.querySelector('.cuenta-cliente__titulo')).toHaveTextContent('Payment · Transfer')
-  expect(creditFila.querySelector('.cuenta-cliente__sub')).toHaveTextContent(/^Credit$/)
-
-  // Amber marks only what is owed: the owed balance and the settled one are not
-  // amber-by-credit; the credit figure is the blue treatment, never amber.
-  expect(saleFila.querySelector('.cuenta-cliente__saldo')).toHaveClass('monto-deuda')
-  expect(firstPaymentFila.querySelector('.cuenta-cliente__saldo')).toHaveClass('monto-deuda')
-  expect(secondPaymentFila.querySelector('.cuenta-cliente__saldo')).not.toHaveClass('monto-deuda')
-  expect(secondPaymentFila.querySelector('.cuenta-cliente__saldo')).not.toHaveClass('monto-credito')
-  expect(creditFila.querySelector('.cuenta-cliente__saldo')).toHaveClass('monto-credito')
-  expect(creditFila.querySelector('.cuenta-cliente__saldo')).not.toHaveClass('monto-deuda')
-  for (const fila of filas) {
-    expect(fila.querySelector('.cuenta-cliente__monto')).not.toHaveClass('monto-deuda')
-  }
+  expect(screen.getByText('Sale #3')).toBeInTheDocument()
+  expect(screen.getByText('Payment · Cash')).toBeInTheDocument()
+  expect(screen.getByText('Payment · Transfer')).toBeInTheDocument()
+  // One row per payment, with its full amount, and no trace of which sale it covered.
+  expect(screen.getByText('$ 5.000')).toBeInTheDocument()
+  expect(screen.getByText('$ 8.000')).toBeInTheDocument()
+  expect(screen.queryByText(/On account of/)).not.toBeInTheDocument()
+  // The running balance after every row; the one below zero reads by its standing.
+  expect(screen.getAllByText('balance $ 11.000')).toHaveLength(1)
+  expect(screen.getByText('balance $ 6.000')).toBeInTheDocument()
+  const inFavor = screen.getByText('In your favor $ 2.000')
+  expect(inFavor).toHaveClass('monto-credito')
+  expect(inFavor).not.toHaveClass('monto-deuda')
+  expect(screen.getByText('balance $ 6.000')).toHaveClass('monto-deuda')
+  expect(screen.getAllByRole('button', { name: 'Delete payment' })).toHaveLength(2)
 })
 
 test('Delete payment asks before deleting, then shows "Payment deleted" and refreshes the account', async () => {
@@ -466,8 +410,8 @@ test('Delete payment asks before deleting, then shows "Payment deleted" and refr
                     date: '2026-09-20',
                     running_balance: 6000,
                     standing: 'owes',
+                    is_partial: true,
                     payment: { id: 5, paid_on: '2026-09-20', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
-                    applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
                   },
                 ],
               },
@@ -509,17 +453,17 @@ const CREDIT_ONLY_ACCOUNT = {
   standing: 'credit',
   rows: [
     {
-      kind: 'credit',
+      kind: 'payment',
       date: '2026-10-06',
       running_balance: -44000,
       standing: 'credit',
+      is_partial: false,
       payment: { id: 7, paid_on: '2026-10-06', amount: 44000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
-      amount: 44000,
     },
   ],
 }
 
-test('a payment that shows only as "Credit" offers Delete payment, and deleting it brings the balance back to nothing', async () => {
+test('a payment that takes the balance below zero offers Delete payment, and deleting it brings the balance back to nothing', async () => {
   let deleted = false
   api.mockImplementation(
     dispatchFetch({
@@ -544,12 +488,12 @@ test('a payment that shows only as "Credit" offers Delete payment, and deleting 
   await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
 
   expect(await screen.findByText('Payment deleted')).toBeInTheDocument()
-  await waitFor(() => expect(screen.queryByText(/Credit/)).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByText(/In your favor/)).not.toBeInTheDocument())
   expect(screen.queryByText(/Owes you/)).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Delete payment' })).not.toBeInTheDocument()
 })
 
-test('Delete payment on a credit-only payment already gone closes the dialog and shows the gone notice', async () => {
+test('Delete payment on a payment already gone closes the dialog and shows the gone notice', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, CREDIT_ONLY_CUSTOMER),
@@ -567,7 +511,7 @@ test('Delete payment on a credit-only payment already gone closes the dialog and
   expect(screen.queryByText('Payment deleted')).not.toBeInTheDocument()
 })
 
-test('a payment split between a sale and a credit offers one Delete payment, on its payment row', async () => {
+test('a payment covering a sale and more is one row with one Delete payment', async () => {
   api.mockImplementation(
     dispatchFetch({
       'GET /customers/1': () => jsonResponse(200, CREDIT_ONLY_CUSTOMER),
@@ -582,23 +526,16 @@ test('a payment split between a sale and a credit offers one Delete payment, on 
               date: '2026-10-01',
               running_balance: 5000,
               standing: 'owes',
+              number: 7,
               sale: { id: 10, total: 5000, how_paid: 'owing', payment_method: null },
             },
             {
               kind: 'payment',
               date: '2026-10-05',
-              running_balance: 0,
-              standing: 'settled',
-              payment: { id: 8, paid_on: '2026-10-05', amount: 8000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
-              applied_to: { sale_id: 10, sale_date: '2026-10-01', amount: 5000 },
-            },
-            {
-              kind: 'credit',
-              date: '2026-10-05',
               running_balance: -3000,
               standing: 'credit',
+              is_partial: false,
               payment: { id: 8, paid_on: '2026-10-05', amount: 8000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
-              amount: 3000,
             },
           ],
         }),
@@ -608,15 +545,10 @@ test('a payment split between a sale and a credit offers one Delete payment, on 
 
   await screen.findByRole('button', { name: 'Delete payment' })
   expect(screen.getAllByRole('button', { name: 'Delete payment' })).toHaveLength(1)
-  const filas = Array.from(document.querySelectorAll<HTMLElement>('.cuenta-cliente__fila'))
-  expect(filas).toHaveLength(3)
-  const [saleFila, paymentFila, creditFila] = filas
-  if (saleFila === undefined || paymentFila === undefined || creditFila === undefined) {
-    throw new Error('expected three account rows')
-  }
-  expect(within(saleFila).queryByRole('button', { name: 'Delete payment' })).not.toBeInTheDocument()
-  expect(within(paymentFila).getByRole('button', { name: 'Delete payment' })).toBeInTheDocument()
-  expect(within(creditFila).queryByRole('button', { name: 'Delete payment' })).not.toBeInTheDocument()
+  expect(screen.getAllByText('Payment · Cash')).toHaveLength(1)
+  expect(screen.getByText('$ 8.000')).toBeInTheDocument()
+  expect(screen.getByText('In your favor $ 3.000')).toBeInTheDocument()
+  expect(screen.queryByText(/On account of/)).not.toBeInTheDocument()
 })
 
 test('a sale paid on the spot offers no Delete payment', async () => {
@@ -761,8 +693,8 @@ test('a payment deleted by a partner meanwhile shows the gone notice, never the 
               date: '2026-09-20',
               running_balance: 6000,
               standing: 'owes',
+              is_partial: true,
               payment: { id: 5, paid_on: '2026-09-20', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
-              applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
             },
           ],
         }),
@@ -789,8 +721,8 @@ const ACCOUNT_WITH_ONE_PAYMENT = {
       date: '2026-09-20',
       running_balance: 6000,
       standing: 'owes',
+      is_partial: true,
       payment: { id: 5, paid_on: '2026-09-20', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
-      applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
     },
   ],
 }
@@ -1101,8 +1033,8 @@ test('the card and its form follow the icon and text rule: Delete payment is ico
               date: '2026-09-20',
               running_balance: 6000,
               standing: 'owes',
+              is_partial: true,
               payment: { id: 5, paid_on: '2026-09-20', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
-              applied_to: { sale_id: 10, sale_date: '2026-09-14', amount: 5000 },
             },
           ],
         }),

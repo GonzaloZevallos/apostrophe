@@ -12,8 +12,10 @@
  *   submit of a form or sheet), `link` (enlace), `undo` (Deshacer) and `back`
  *   ("‹ <parent>"). They accept no `icon`. Back is never close.
  * - **Icon only** (`variant="icon"`): an obvious action from the closed `ACTION_ICON`
- *   map (`botonVisual.tsx`: delete, search, close, edit, share), with a required `ariaLabel`
- *   (the exact current word, never a new one) and a 44 px target (`.boton-icono`).
+ *   map (`botonVisual.tsx`: delete, search, close, edit, share, add), with a required `ariaLabel`
+ *   (the exact current word, never a new one) and a 44 px target (`.boton-icono`; `add` is the
+ *   round `.boton-icono` filled with `--boton` (`.boton-icono--lleno`), only the phone Products title row's
+ *   "New product").
  * - `row`: a full-width, left-aligned, stacked-content button for a tappable list row,
  *   reset only through its own `boton--fila` class.
  *
@@ -36,7 +38,7 @@ import type { NombreIcono } from './Icono'
 
 /** The actions that may be drawn with no visible word. Closed: adding one changes
  * the rule document first, never a single screen. */
-export type IconOnlyAction = 'delete' | 'search' | 'close' | 'edit' | 'share'
+export type IconOnlyAction = 'delete' | 'search' | 'close' | 'edit' | 'share' | 'add'
 
 interface BotonCommon {
   /** Receives the click, so a link kind can `preventDefault` and go back by history. */
