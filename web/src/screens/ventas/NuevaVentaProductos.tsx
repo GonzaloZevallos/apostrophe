@@ -157,7 +157,10 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
         autoComplete="off"
         placeholder={TEXT.productSearchPlaceholder}
         value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={(event) => {
+          focusAfterAdd.current = null
+          setQuery(event.target.value)
+        }}
       />
     </label>
   )
