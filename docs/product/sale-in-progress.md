@@ -1,5 +1,3 @@
-# Sale in progress
-
 ## Jobs
 
 **Cuando** entrego un pedido y lo registro en el teléfono, **quiero** armar la venta con los clientes, productos y el medio de pago que suelo elegir, ajustando solo cantidades y con cada total calculado por la app, **para** guardar la venta en menos de un minuto y nunca cotizar de memoria ni volver a tipear lo que elegí hace un momento. (Parte 3 de GH-496: la sirven el estado de la venta en curso, `useSaleDraft`, y el cliente del front de las **New sale suggestions**. Afina la primera historia de sales.md; no es un trabajo nuevo).
@@ -75,17 +73,17 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 - Título "The sale · 1 item" para una línea y "The sale · {n} items" para cualquier otro n, con n = `priced.lines.length` (cuenta líneas, no unidades).
 - Una fila de Customer de solo lectura, sin "Cambiar" ni chevron: "No customer" cuando la Sale in progress no tiene cliente; si no, `customerName`, o un marcador de carga compacto y sin texto mientras el nombre todavía no llegó. Para cambiar el cliente, la vendedora cierra la Sheet, lo cambia en New sale y la vuelve a abrir.
-- Una fila "Total" arriba de "How they pay", siempre, en cualquier ancho, con `priced.totals.total` en el Money format del Business y en Tabular figures (Decisión 1 del humano en GH-867; sigue el dibujo NuevaVentaCobrar, así que no es una desviación). Así el total queda a la vista aunque la etiqueta de Collect se acorte.
+- Una fila "Total" arriba de "How they pay", siempre, en cualquier ancho y en cualquier estado (queda fuera del bloque `inert`, así que también se ve mientras guarda), con `priced.totals.total` en el Money format del Business y en Tabular figures (Decisión 1 del humano en GH-867; sigue el dibujo NuevaVentaCobrar, así que no es una desviación). Así el total queda a la vista aunque la etiqueta de Collect se acorte. La cifra se dibuja al tamaño del texto, igual que su etiqueta, y no en la letra grande del dibujo; se lee igual y queda como observación para el dueño.
 - Un **Selector** "How they pay", con los Payment methods ofrecidos por `usePaymentMethodOptions` (que también da `offeredIds`, los ids de la lista leída, o `null` mientras no hay lista). Su valor sale de `selectorValueOf`: el medio elegido (paid(id)), o la propuesta (`proposedMethodId`) con unset solo si está ofrecida; si no, el campo queda vacío ("Choose a method"). Elegir un medio guarda paid(id) mediante `choiceOfValue`. Una elección owing que ya traiga el borrador se muestra como campo vacío y se rechaza como "sin medio". La opción "Owes it" llega con #944.
 - Debajo de "How they pay", la ayuda de vuelto (ver "Received y Change").
-- Un botón fijo abajo "Collect {total}" con `priced.totals.total` en el **Money format** del Business, en Tabular figures, con la misma etiqueta para cualquier elección. Cuando no entra en una línea, se acorta a "Collect": nunca se achica ni se parte en dos líneas. Lo decide un layout effect con un ResizeObserver que compara el `scrollWidth` de la etiqueta con su `clientWidth`, y el nombre accesible conserva siempre el "Collect {total}" completo. No hay ningún hook de producción para forzarlo.
+- Un botón fijo abajo "Collect {total}" con `priced.totals.total` en el **Money format** del Business, en Tabular figures, con la misma etiqueta para cualquier elección. Cuando no entra en una línea, se acorta a "Collect": nunca se achica ni se parte en dos líneas, y vuelve a "Collect {total}" cuando vuelve a entrar. Lo decide un layout effect con un ResizeObserver que compara el `scrollWidth` de la etiqueta con su `clientWidth`, y el nombre accesible conserva siempre el "Collect {total}" completo. No hay ningún hook de producción para forzarlo.
 
 ### Received y Change
 
-- **Received**: un campo de dinero con la etiqueta "Received", con el formato de `useMoney()`, justo debajo de "How they pay", con la línea de ayuda "Type what they hand over to see the change. It isn't saved.". Es opcional, vive en el estado local de la Sheet, arranca vacío y nunca viene precargado.
-- **Change**: una línea con la etiqueta "Change" justo después de Received, con la cifra que da `changeFor(received, priced.totals.total, format)`, en Tabular figures y a los decimales del Money format. Se muestra solo cuando `changeFor` devuelve un valor: con Received igual al total muestra 0, y con uno mayor, la diferencia. Es secundaria al total de Collect y no parece algo que se cobra.
+- **Received**: un campo de dinero con la etiqueta "Received", con el formato de `useMoney()` y sin un símbolo fijo, justo debajo de "How they pay", con la línea de ayuda "Type what they hand over to see the change. It isn't saved." ligada por `aria-describedby`. Es opcional, vive en el estado local de la Sheet, arranca vacío, nunca viene precargado y no ofrece autocompletar.
+- **Change**: una línea con la etiqueta "Change" justo después de Received, con la cifra que da `changeFor(received, priced.totals.total, format)`, en Tabular figures y a los decimales del Money format. Se muestra solo cuando `changeFor` devuelve un valor: con Received igual al total muestra 0, y con uno mayor, la diferencia. Va en la tinta apagada, sin acento, signo ni flecha: es secundaria al total de Collect y no parece algo que se cobra.
 - En una venta de $0 la ayuda también se muestra: con Received 0 (o 0,00 a los decimales del Money format) `changeFor` da 0 y Change muestra 0; cualquier monto positivo es todo vuelto (Received 5 → Change 5). Por encima de $0, un Received de 0 no muestra nada.
-- Change vive en una región `role="status"` siempre presente mientras la ayuda se muestra; está vacía cuando `changeFor` no da nada.
+- Change vive en una región `role="status"` siempre presente mientras la ayuda se muestra; está vacía cuando `changeFor` no da nada y no ocupa lugar.
 - Un Received vacío, menor que el total o ilegible no muestra nada: ni Change, ni aviso, ni error, ni una línea de "todavía se debe". Nunca frena Collect.
 - Se muestra con cualquier Payment method elegido y se oculta entero (campo, ayuda y Change) solo mientras la elección efectiva es owing, leída mediante `effectiveChoice`; nunca se ata al nombre de un medio ni a una marca de efectivo.
 - Lo tipeado se conserva al cambiar de medio, al pasar a owing y volver, y tras un guardado fallido.
@@ -95,7 +93,7 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 ### Estados de la lista de medios
 
-- Pendiente: el Selector muestra que carga y Collect queda deshabilitado, con su etiqueta.
+- Pendiente: el Selector muestra que carga y Collect queda deshabilitado, con su etiqueta. La fila Total y Received se pueden usar.
 - Llegada: Collect queda habilitado.
 - El estado fallido (el Selector muestra su fallo y Collect sigue habilitado) llega con #930.
 
@@ -116,7 +114,7 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 ### Textos
 
-- Viven en `SALES_TEXT`, el módulo de ventas de `web/src/copy/`, en inglés y sin palabra de unidad, moneda ni tipo de producto: `collectTitle(n)`, `howTheyPay` ("How they pay"), `chooseMethod` ("Choose a method"), `noMethodToCollect` ("Choose how they pay to collect."), `collect(total)` ("Collect {total}"), el texto corto "Collect" de la etiqueta acortada, `saving` ("Saving…"), y los de esta parte: "Total", "Received", su ayuda "Type what they hand over to see the change. It isn't saved." y "Change". "No customer" ya existía. "Owes it" llega con #944 y el texto de guardado fallido con #930.
+- Viven en `SALES_TEXT`, el módulo de ventas de `web/src/copy/`, en inglés y sin palabra de unidad, moneda ni tipo de producto: `collectTitle(n)`, `howTheyPay` ("How they pay"), `chooseMethod` ("Choose a method"), `noMethodToCollect` ("Choose how they pay to collect."), `collect(total)` ("Collect {total}"), `collectShort` ("Collect", el texto de la etiqueta acortada), `saving` ("Saving…"), y los de la parte 3 de GH-867: `totalLabel` ("Total"), `receivedLabel` ("Received"), `receivedHelp` ("Type what they hand over to see the change. It isn't saved.") y `changeLabel` ("Change"). Están registrados en LIMITED_COPY y BASELINE_ARGS, y el baseline se regenera, nunca se edita a mano. "No customer" ya existía. "Owes it" llega con #944 y el texto de guardado fallido con #930.
 
 ### Hueco conocido
 
@@ -215,7 +213,7 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Código de barras, categoría y elementos de promoción en la lista de Products.
 - La pantalla anfitriona de New sale que monta la Collect Sheet, el flip que la monta y su regla de no abrirla con una línea sin precio; también, ya en el flip: que la anfitriona ignore el volver del sistema y Escape mientras `onSavingChange(true)`, un test que monte la barra de la venta y la Sheet juntas y muestre el total guardado igual al de la barra y a `SaleOut.total`, y que tras `onSaved` la anfitriona muestre las cifras de la respuesta con el aviso de recotización (`linesRepriced`) cuando el total cambió.
 - Reescribir el criterio 34 de sales.md ("el medio nunca viene puesto"), que le corresponde al flip, cuando la preselección llegue a la vendedora.
-- Una comprobación en un navegador real, en ambos temas, de que la etiqueta de Collect se acorta a "Collect" y vuelve a "Collect {total}" a 320 px y a 246 px (hasta entonces solo la prueba el stub de `scrollWidth`).
+- Una comprobación en un navegador real, en ambos temas, de que la etiqueta de Collect se acorta a "Collect" y vuelve a "Collect {total}" a 320 px y a 246 px, y de que la Sheet entera entra en el teléfono con la fila Total y la ayuda de vuelto (hasta entonces solo la prueba el stub de `scrollWidth`).
 - Pagos parciales al momento de la venta: siguen siendo un Payment posterior con Record payment. Guardar, mandar o mostrar Received o Change en cualquier otro lugar.
 - La opción "Owes it" (#944) y todo camino de fallo del guardado: estado fallido de la lista de medios, medio archivado con su marca "no longer available", texto de guardado fallido y reintento (#930).
 - Un texto propio de la Collect Sheet para una línea sin precio.
@@ -239,6 +237,6 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Llamadas a `priceSale`/`priceLine` desde la Collect Sheet: 0, y operaciones de dinero propias en ella: 0 (todo pasa por `pricing.ts`, el Change incluido mediante `changeFor`).
 - Textos de la Collect Sheet fuera de `web/src/copy/`: 0.
 - Con el medio propuesto ya elegido, la Collect Sheet guarda con a lo sumo una elección y un toque en Collect (la vara del flip, arriba, se juzga cuando la monte).
-- Received y Change, en un segundo archivo de tests de la Collect Sheet con Testing Library a nivel de fetch: con Received vacío, menor o inválido, 0 líneas de Change y 0 avisos o errores; con Received igual al total, Change 0; con uno mayor, la diferencia exacta, a 0 y a 2 decimales del Money format; 0 apariciones de Received o Change en el cuerpo de `POST /api/sales`; Received conservado tras cambiar de medio, pasar a owing y volver, y tras un guardado fallido; ayuda oculta con owing; al ancho angosto donde el botón dice "Collect", la fila Total muestra el total; etiqueta acortada a "Collect" con `scrollWidth` > `clientWidth` (definido con `Object.defineProperty`) y nombre accesible con el "Collect {total}" completo.
+- Received y Change, en un segundo archivo de tests de la Collect Sheet con Testing Library a nivel de fetch: con Received vacío, menor o inválido, 0 líneas de Change y 0 avisos o errores; con Received igual al total, Change 0; con uno mayor, la diferencia exacta, a 0 y a 2 decimales del Money format; en una venta de $0 con Received 0, Change 0; 0 apariciones de Received o Change en el cuerpo de `POST /api/sales`; Received conservado tras cambiar de medio, pasar a owing y volver, y tras un guardado fallido; ayuda oculta con owing; al ancho angosto donde el botón dice "Collect", la fila Total muestra el total; etiqueta acortada a "Collect" con `scrollWidth` > `clientWidth` (definido con `Object.defineProperty`), nombre accesible con el "Collect {total}" completo, y la etiqueta completa de vuelta cuando vuelve a entrar.
 - Toques o pasos extra para registrar una venta que ignora Received: 0. Diferencias en Payments, Balance, Cash y Money in con o sin Received: 0.
 - Vara del vuelto, que se juzga cuando el flip la monte: con Received tipeado, el Change aparece sin ningún toque extra.
