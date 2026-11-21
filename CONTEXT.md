@@ -639,3 +639,11 @@ _Avoid_: status, payment status, settled, paid flag, estado de cobro
 **Best sellers**:
 Hasta 4 Products de un Business con más plata cobrada en las Sales con fecha desde el lunes de la semana en curso hasta hoy: la suma de los totales guardados de sus Sale lines, sin envío y con los Gifts en $0. Se dejan afuera los de $0, los empates van por nombre, entran los Archived y los Hidden products, y nunca se completa con otra semana. En la app: todavía no tiene palabra propia (la muestran partes posteriores de GH-497).
 _Avoid_: top products, top sellers, ranking, most sold, más vendidos, favorites
+
+**Received**:
+Lo que el Customer entrega en mano al pagar en el momento, tipeado de forma opcional en la Collect Sheet solo para ver el Change. Arranca vacío, nunca viene precargado, nunca se guarda ni se manda y no cambia el Payment, que sigue siendo el total de la Sale con el Payment method elegido. Se oculta mientras la venta queda debiendo y nunca se ata al nombre de un medio ni a una marca de efectivo. _In the app_: Received.
+_Avoid_: tendered, cash given, amount paid, pago, Payment
+
+**Change**:
+El vuelto que la vendedora devuelve: Received menos el total de la Sale, calculado solo por `changeFor` a los decimales del Money format y mostrado solo cuando Received alcanza el total (0 si son iguales). Es una ayuda para la entrega: nunca se guarda, nunca se manda y no es un Credit ni un Payment. _In the app_: Change.
+_Avoid_: refund, Credit, vuelto, balance, difference

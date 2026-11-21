@@ -6,6 +6,8 @@
 
 **Cuando** termino de armar una venta en New sale, **quiero** ver lo que estoy por cobrar y decir cómo me pagaron, o que me lo deben, **para** guardar la venta de un toque con el pago correcto y la deuda correcta. (Parte 2 de GH-867: la sirve la **Collect Sheet**. Es el paso de cierre del trabajo de BRIEF "una venta se registra desde el teléfono en menos de un minuto"; no es un trabajo nuevo. "Que me lo deben" llega con #944).
 
+**Cuando** un cliente me paga su pedido en el momento y me da más que el total, **quiero** tipear lo que me dio y ver el vuelto al instante, **para** devolver el monto justo sin hacer la cuenta de cabeza mientras espera. (Parte 3 de GH-867: la sirven el **Received** y el **Change** de la Collect Sheet y su fila Total. Son solo una ayuda: nunca deciden ni cambian lo que se registra).
+
 **Cuando** un cliente me manda su pedido y armo la venta en el teléfono, **quiero** encontrar cada Product que pidió y fijar cuánto con un toque o dos, viendo lo que ya está en la venta, **para** que cada línea salga con los precios de ese día y nunca tipee un precio ni cotice de memoria. (Parte 2 de GH-863: la sirve la lista de Products de New sale. Afina la misma primera historia de sales.md, acotada a elegir Products y cantidades; cliente, pago y guardado son de otras partes).
 
 ## Qué es
@@ -14,7 +16,9 @@ La **Sale in progress** es la venta que se está armando en New sale antes de gu
 
 Hasta la parte de GH-496 que la monta en pantalla (el flip), ninguna pantalla la usa: no hay ruta, constante de build, parámetro de consulta, bandera de ventana ni hook `data-*` para llegar a ella ni a la lista de Products ni a la Collect Sheet, y se prueban solo con tests unitarios, de componente y del cliente a nivel de fetch.
 
-Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clientes, productos y medio de pago, y tipea las cantidades a mano, de a un Product por vez y sin ver de una sola vez lo que ya está en la venta ni lo que suele vender. El costo principal son las elecciones repetidas, y el segundo es tipear cantidades. Hoy dice cómo le pagaron en el mismo formulario de New sale; la Collect Sheet pasa esa elección a un paso de cierre sin cambiar qué significan Payment, On-the-spot payment, Balance, Settlement ni Owing since. Un pago parcial sigue siendo un Payment posterior registrado con Record payment.
+Nota: el criterio 34 de sales.md ("el medio nunca viene puesto") sigue vigente hasta la parte del flip de GH-496, porque la New sale en vivo todavía arranca sin medio. La propuesta de medio de esta capacidad no llega a la vendedora hasta entonces.
+
+Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clientes, productos y medio de pago, y tipea las cantidades a mano, de a un Product por vez y sin ver de una sola vez lo que ya está en la venta ni lo que suele vender. El costo principal son las elecciones repetidas, y el segundo es tipear cantidades. Hoy dice cómo le pagaron en el mismo formulario de New sale; la Collect Sheet pasa esa elección a un paso de cierre sin cambiar qué significan Payment, On-the-spot payment, Balance, Settlement ni Owing since. Un pago parcial sigue siendo un Payment posterior registrado con Record payment. El vuelto hoy se calcula de cabeza o con la calculadora del teléfono en medio de la entrega; la planilla nunca registró lo que el cliente entregó, así que no guardarlo no pierde nada.
 
 ## Reglas
 
@@ -55,7 +59,7 @@ Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clien
 
 ### Dinero
 
-- Ni la Sale in progress, ni el cliente de sugerencias, ni la lista de Products, ni la Collect Sheet calculan dinero. Toda cifra de la venta (precio de la fila, total de la línea, total de la barra, total de Collect, aviso de recotización) sale de `priceSale`/`rowPrices`/`priceLine` en `web/src/sales/pricing.ts`, calculada por la pantalla anfitriona. El Shipping charged y la Note se guardan tal como se ingresaron.
+- Ni la Sale in progress, ni el cliente de sugerencias, ni la lista de Products, ni la Collect Sheet calculan dinero. Toda cifra de la venta (precio de la fila, total de la línea, total de la barra, total de Collect, fila Total, aviso de recotización) sale de `priceSale`/`rowPrices`/`priceLine` en `web/src/sales/pricing.ts`, calculada por la pantalla anfitriona. El Received se lee y el Change se calcula solo con `changeFor` del mismo módulo, mediante `parseMoneyInput`, como enteros a los decimales del Money format. El Shipping charged y la Note se guardan tal como se ingresaron.
 
 ## Collect Sheet
 
@@ -71,8 +75,21 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 - Título "The sale · 1 item" para una línea y "The sale · {n} items" para cualquier otro n, con n = `priced.lines.length` (cuenta líneas, no unidades).
 - Una fila de Customer de solo lectura, sin "Cambiar" ni chevron: "No customer" cuando la Sale in progress no tiene cliente; si no, `customerName`, o un marcador de carga compacto y sin texto mientras el nombre todavía no llegó. Para cambiar el cliente, la vendedora cierra la Sheet, lo cambia en New sale y la vuelve a abrir.
-- Un **Selector** "How they pay", con los Payment methods ofrecidos por `usePaymentMethodOptions` (que también da `offeredIds`, los ids de la lista leída, o `null` mientras no hay lista). Su valor sale de `selectorValueOf`: el medio elegido (paid(id)), o la propuesta (`proposedMethodId`) con unset solo si está ofrecida; si no, el campo queda vacío ("Choose a method"). Elegir un medio guarda paid(id) mediante `choiceOfValue`. Una elección owing que ya traiga el borrador se muestra como campo vacío y se rechaza como "sin medio". La opción "Owes it" no está en esta parte (llega con #944).
-- Un botón fijo abajo "Collect {total}" con `priced.totals.total` en el **Money format** del Business, en Tabular figures, con la misma etiqueta para cualquier elección.
+- Una fila "Total" arriba de "How they pay", siempre, en cualquier ancho, con `priced.totals.total` en el Money format del Business y en Tabular figures (Decisión 1 del humano en GH-867; sigue el dibujo NuevaVentaCobrar, así que no es una desviación). Así el total queda a la vista aunque la etiqueta de Collect se acorte.
+- Un **Selector** "How they pay", con los Payment methods ofrecidos por `usePaymentMethodOptions` (que también da `offeredIds`, los ids de la lista leída, o `null` mientras no hay lista). Su valor sale de `selectorValueOf`: el medio elegido (paid(id)), o la propuesta (`proposedMethodId`) con unset solo si está ofrecida; si no, el campo queda vacío ("Choose a method"). Elegir un medio guarda paid(id) mediante `choiceOfValue`. Una elección owing que ya traiga el borrador se muestra como campo vacío y se rechaza como "sin medio". La opción "Owes it" llega con #944.
+- Debajo de "How they pay", la ayuda de vuelto (ver "Received y Change").
+- Un botón fijo abajo "Collect {total}" con `priced.totals.total` en el **Money format** del Business, en Tabular figures, con la misma etiqueta para cualquier elección. Cuando no entra en una línea, se acorta a "Collect": nunca se achica ni se parte en dos líneas. Lo decide un layout effect con un ResizeObserver que compara el `scrollWidth` de la etiqueta con su `clientWidth`, y el nombre accesible conserva siempre el "Collect {total}" completo. No hay ningún hook de producción para forzarlo.
+
+### Received y Change
+
+- **Received**: un campo de dinero con la etiqueta "Received", con el formato de `useMoney()`, justo debajo de "How they pay", con la línea de ayuda "Type what they hand over to see the change. It isn't saved.". Es opcional, vive en el estado local de la Sheet, arranca vacío y nunca viene precargado.
+- **Change**: una línea con la etiqueta "Change" justo después de Received, con la cifra que da `changeFor(received, priced.totals.total, format)`, en Tabular figures y a los decimales del Money format. Se muestra solo cuando `changeFor` devuelve un valor: con Received igual al total muestra 0, y con uno mayor, la diferencia. Es secundaria al total de Collect y no parece algo que se cobra.
+- Un Received vacío, menor que el total o ilegible no muestra nada: ni Change, ni aviso, ni error, ni una línea de "todavía se debe". Nunca frena Collect.
+- Se muestra con cualquier Payment method elegido y se oculta entero (campo, ayuda y Change) solo mientras la elección efectiva es owing, leída mediante `effectiveChoice`; nunca se ata al nombre de un medio ni a una marca de efectivo.
+- Lo tipeado se conserva al cambiar de medio, al pasar a owing y volver, y tras un guardado fallido.
+- Received y Change nunca se guardan ni se mandan: no aparecen en el cuerpo de `POST /api/sales`, que sigue armando solo `saleBodyOf`. Payments, Balance, Cash y Money in son iguales con ellos o sin ellos, y una venta que ignora Received se registra exactamente igual que antes.
+- Que Received y Change vayan uno al lado del otro (como en el dibujo) o apilados es un detalle de disposición; en un teléfono angosto se apilan.
+- Mientras se guarda, Received se ve igual: queda bloqueado con el resto del campo (`inert`), y "Saving…" sigue siendo la única señal.
 
 ### Estados de la lista de medios
 
@@ -87,17 +104,17 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 - Si `priced` trae una línea sin precio para la fecha de la venta, el toque no manda nada (0 pedidos), no muestra "Saving…" ni ningún texto nuevo y no llama a `onSavingChange`. Es solo una guarda: se lee lo que `priced` ya dice de la línea, nunca se calcula un precio, y la vendedora no llega a ese estado porque la pantalla anfitriona no abre la Sheet.
 - Sin medio por encima de $0 no se manda nada: se muestra "Choose how they pay to collect." en el `FieldRefusal` debajo del Selector, con el **Attention icon** y ligado por `describedBy`, y se enfoca el campo. Elegir un medio borra el rechazo.
 - Una venta de $0 sin medio se guarda con `payment: null`; una de $0 con un medio elegido lo manda.
-- Si no, el botón muestra "Saving…" de inmediato, los toques siguientes no mandan nada (una guarda que se activa antes del pedido, así que dos toques seguidos hacen un solo pedido), llama a `onSavingChange(true)` y hace `POST /api/sales` con el cuerpo armado solo por `saleBodyOf`: líneas desde la Sale in progress con `bodyLinesOf` (que usa `quantityOfHundredths`, sin Gift ni Special price); fecha y Note desde la Sale in progress (una Note en blanco va como null) y el Shipping charged desde `priced.totals.shippingCharged`, para que la etiqueta y el cuerpo no puedan discrepar.
+- Si no, el botón muestra "Saving…" de inmediato, los toques siguientes no mandan nada (una guarda que se activa antes del pedido, así que dos toques seguidos hacen un solo pedido), llama a `onSavingChange(true)` y hace `POST /api/sales` con el cuerpo armado solo por `saleBodyOf`: líneas desde la Sale in progress con `bodyLinesOf` (que usa `quantityOfHundredths`, sin Gift ni Special price); fecha y Note desde la Sale in progress (una Note en blanco va como null) y el Shipping charged desde `priced.totals.shippingCharged`, para que la etiqueta y el cuerpo no puedan discrepar. Ni Received ni Change van en el cuerpo.
 - Mientras guarda, el Close propio de la Sheet no hace nada y nada más lo señala: "Saving…" es la única señal. El campo queda bloqueado (`inert`) y Collect no toma toques. Un 401 llega al límite de sesión compartido.
 
 ### Resultado
 
 - Éxito: `onSavingChange(false)` y después `onSaved` con la respuesta del servidor sin tocar, aunque su total difiera de `priced`. La Sheet no muestra ninguna cifra propia después.
-- Rechazo del pedido: `onSavingChange(false)`, sin ningún texto; las líneas y el medio se conservan, Collect se puede volver a tocar y Close vuelve a funcionar. Los textos de fallo, el estado fallido de la lista, la marca "no longer available" y el reintento llegan con #930. Hasta entonces un guardado fallido no dice nada, por eso el flip de GH-496 no sale antes de #930 y #944.
+- Rechazo del pedido: `onSavingChange(false)`, sin ningún texto; las líneas, el medio y lo tipeado en Received se conservan, Collect se puede volver a tocar y Close vuelve a funcionar. Los textos de fallo, el estado fallido de la lista, la marca "no longer available" y el reintento llegan con #930. Hasta entonces un guardado fallido no dice nada, por eso el flip de GH-496 no sale antes de #930 y #944.
 
 ### Textos
 
-- Viven en `SALES_TEXT`, el módulo de ventas de `web/src/copy/`, en inglés y sin palabra de unidad, moneda ni tipo de producto: `collectTitle(n)`, `howTheyPay` ("How they pay"), `chooseMethod` ("Choose a method"), `noMethodToCollect` ("Choose how they pay to collect."), `collect(total)` ("Collect {total}") y `saving` ("Saving…"). "No customer" ya existía. "Owes it" llega con #944 y el texto de guardado fallido con #930.
+- Viven en `SALES_TEXT`, el módulo de ventas de `web/src/copy/`, en inglés y sin palabra de unidad, moneda ni tipo de producto: `collectTitle(n)`, `howTheyPay` ("How they pay"), `chooseMethod` ("Choose a method"), `noMethodToCollect` ("Choose how they pay to collect."), `collect(total)` ("Collect {total}"), el texto corto "Collect" de la etiqueta acortada, `saving` ("Saving…"), y los de esta parte: "Total", "Received", su ayuda "Type what they hand over to see the change. It isn't saved." y "Change". "No customer" ya existía. "Owes it" llega con #944 y el texto de guardado fallido con #930.
 
 ### Hueco conocido
 
@@ -194,9 +211,9 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - La cantidad tipeada en la lista y un botón propio para limpiar la búsqueda (flip).
 - Los pasos de cliente, pago y guardado de New sale, incluido qué pasa al guardar una línea cuyo Product ya no está disponible.
 - Código de barras, categoría y elementos de promoción en la lista de Products.
-- La pantalla anfitriona de New sale que monta la Collect Sheet, el flip que la monta y su regla de no abrirla con una línea sin precio.
+- La pantalla anfitriona de New sale que monta la Collect Sheet, el flip que la monta y su regla de no abrirla con una línea sin precio; también, ya en el flip: que la anfitriona ignore el volver del sistema y Escape mientras `onSavingChange(true)`, un test que monte la barra de la venta y la Sheet juntas y muestre el total guardado igual al de la barra y a `SaleOut.total`, y que tras `onSaved` la anfitriona muestre las cifras de la respuesta con el aviso de recotización (`linesRepriced`) cuando el total cambió.
 - Reescribir el criterio 34 de sales.md ("el medio nunca viene puesto"), que le corresponde al flip, cuando la preselección llegue a la vendedora.
-- Received y Change en la Collect Sheet.
+- Pagos parciales al momento de la venta: siguen siendo un Payment posterior con Record payment. Guardar, mandar o mostrar Received o Change en cualquier otro lugar.
 - La opción "Owes it" (#944) y todo camino de fallo del guardado: estado fallido de la lista de medios, medio archivado con su marca "no longer available", texto de guardado fallido y reintento (#930).
 - Un texto propio de la Collect Sheet para una línea sin precio.
 - Gift, Special price y la Sheet del detalle de línea.
@@ -216,6 +233,9 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Gate (pytest, vitest, e2e) pasa, y tsc strict y oxlint pasan sin nada silenciado.
 - Vara del trabajo, que se juzga cuando el flip la monte: una venta se registra desde el teléfono en menos de un minuto (sales.md, criterio 1), y un Product habitual se encuentra, se agrega y se ajusta sin salir de la lista (1 toque para un Product habitual a 1 unidad desde "Most sold").
 - Collect Sheet, con Testing Library a nivel de fetch: sin medio por encima de $0, 0 pedidos y el campo enfocado; con una línea sin precio en `priced`, 0 pedidos, ningún texto nuevo y ninguna llamada a `onSavingChange`; mientras guarda, toques extra y Close dan 0 pedidos adicionales; tras un pedido rechazado, `onSavingChange` termina en false y Close vuelve a funcionar; un borrador que ya trae owing no se manda; la etiqueta de Collect es igual a `priced.totals.total` formateado y `onSaved` recibe la respuesta sin tocar.
-- Llamadas a `priceSale`/`priceLine` desde la Collect Sheet: 0, y operaciones de dinero propias en ella: 0 (todo pasa por `pricing.ts`).
+- Llamadas a `priceSale`/`priceLine` desde la Collect Sheet: 0, y operaciones de dinero propias en ella: 0 (todo pasa por `pricing.ts`, el Change incluido mediante `changeFor`).
 - Textos de la Collect Sheet fuera de `web/src/copy/`: 0.
 - Con el medio propuesto ya elegido, la Collect Sheet guarda con a lo sumo una elección y un toque en Collect (la vara del flip, arriba, se juzga cuando la monte).
+- Received y Change, en un segundo archivo de tests de la Collect Sheet con Testing Library a nivel de fetch: con Received vacío, menor o inválido, 0 líneas de Change y 0 avisos o errores; con Received igual al total, Change 0; con uno mayor, la diferencia exacta, a 0 y a 2 decimales del Money format; 0 apariciones de Received o Change en el cuerpo de `POST /api/sales`; Received conservado tras cambiar de medio, pasar a owing y volver, y tras un guardado fallido; ayuda oculta con owing; al ancho angosto donde el botón dice "Collect", la fila Total muestra el total; etiqueta acortada a "Collect" con `scrollWidth` > `clientWidth` (definido con `Object.defineProperty`) y nombre accesible con el "Collect {total}" completo.
+- Toques o pasos extra para registrar una venta que ignora Received: 0. Diferencias en Payments, Balance, Cash y Money in con o sin Received: 0.
+- Vara del vuelto, que se juzga cuando el flip la monte: con Received tipeado, el Change aparece sin ningún toque extra.
