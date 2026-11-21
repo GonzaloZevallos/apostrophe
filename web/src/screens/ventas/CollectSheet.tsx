@@ -14,7 +14,7 @@
  * `collectableChoice(effectiveChoice(...))` and refused only through `validateSale`; the body is
  * built only by `saleBodyOf`.
  *
- * "Owes it" arrives with #944 and the failure messages and retry with #930, so a rejected save
+ * "Owes it" arrives with GH-944 and the failure messages and retry with GH-930, so a rejected save
  * says nothing here: it only releases the Sheet.
  */
 
@@ -97,7 +97,7 @@ export default function CollectSheet({
     try {
       sale = await save.mutateAsync(body)
     } catch {
-      // A 401 is left to the session boundary; no text for any other cause until #930.
+      // A 401 is left to the session boundary; no text for any other cause until GH-930.
       sale = null
     } finally {
       savingRef.current = false

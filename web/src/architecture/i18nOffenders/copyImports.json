@@ -106,6 +106,7 @@
   {"file":"src/screens/varieties/priceFieldRules.ts","imports":["stock.ts","varieties.ts"],"issue":352},
   {"file":"src/screens/varieties/renderVarieties.tsx","imports":["varieties.ts"],"issue":352},
   {"file":"src/screens/varieties/useRestore.tsx","imports":["varieties.ts"],"issue":352},
+  {"file":"src/screens/ventas/CollectSheet.tsx","imports":["sales.ts"],"issue":351},
   {"file":"src/screens/ventas/NuevaVenta.tsx","imports":["sales.ts"],"issue":351},
   {"file":"src/screens/ventas/NuevaVenta.tsx","imports":["settings.ts"],"issue":353},
   {"file":"src/screens/ventas/NuevaVentaCliente.tsx","imports":["sales.ts"],"issue":351},
