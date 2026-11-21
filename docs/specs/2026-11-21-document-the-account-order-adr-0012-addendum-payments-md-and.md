@@ -19,8 +19,8 @@ It is for the agentic system and the people who maintain it. Later account work 
   - one full-amount row per Payment, with no split and no Credit row;
   - `is_partial` = running balance > 0, calculated and never stored;
   - recorded_at is set once: assigning a Customer does not change it, and a deleted and re-recorded Payment is a new Payment.
-- Line 31 of ADR-0012 no longer states a key. It points to the addendum and keeps its reference to ADR-20261120.
-- The addendum says the account order is a ledger order of its own (ADR-20261120). It also says the glossary's Settlement order (Sales, then Payments, each by date and then by order recorded) does not change and still decides which Sale a Payment pays.
+- Line 31 of ADR-0012 no longer states a key. It points to the addendum and keeps its reference to ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view.
+- The addendum says the account order is a ledger order of its own (ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view). It also says the glossary's Settlement order (Sales, then Payments, each by date and then by order recorded) does not change and still decides which Sale a Payment pays.
 - `docs/product/payments.md` describes:
   - the full-amount Payment row with no sub-line;
   - "In your favor" on a running balance below zero;
@@ -36,13 +36,13 @@ It is for the agentic system and the people who maintain it. Later account work 
 - Any change to behaviour, screens, the API, the Copy module or the architecture docs.
 - Editing `CONTEXT.md`.
 - Deciding again the account order, the Payment row or the "In your favor" wording.
-- Reopening ADR-20261120 or the Settlement order.
+- Reopening ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view or the Settlement order.
 
 ## Decisions
 
 - The addendum says the account order and the Settlement order are distinct, and that their difference is not a finding.
-  - Reason: ADR-20261120 makes the account a ledger walk, not a Settlement view, so the account key can never read the same as the Settlement order. Requiring them to match would always raise a false finding.
-- Line 31 of ADR-0012 keeps its existing reference to ADR-20261120 next to the new pointer to the addendum.
+  - Reason: ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view makes the account a ledger walk, not a Settlement view, so the account key can never read the same as the Settlement order. Requiring them to match would always raise a false finding.
+- Line 31 of ADR-0012 keeps its existing reference to ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view next to the new pointer to the addendum.
   - Reason: the ADR has already been taken and is applied, not reopened. Dropping the reference would hide the decision the addendum documents.
 - If the code's sort order differs from the key in the request, it is raised as a finding and the docs are not bent to match the request.
   - Reason: this part only documents shipped behaviour, and the doc follows the app.
@@ -63,7 +63,7 @@ none
 #### Acceptance criteria
 
 - The ADR-0012 addendum "Account order and running balance (GH-829)" exists with the key, the tie rule, the `settle().balance` equality, one full-amount row per Payment with no Credit row, `is_partial` calculated and never stored, and recorded_at set once.
-- Line 31 of ADR-0012 states no key and points to the addendum and to ADR-20261120.
+- Line 31 of ADR-0012 states no key and points to the addendum and to ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view.
 - `docs/product/payments.md` matches the shipped account and the glossary (Settlement, Credit, Balance).
 - The `colorCensus.ts` entry `.cuenta-cliente__saldo.monto-deuda` carries `the word "balance" before the figure (below zero the row reads "In your favor")`, and its test is still `ClienteFicha.test.tsx`.
 - Nothing under `docs/api/**` or `docs/architecture/**` is edited, `ClienteFicha.test.tsx` is untouched and passes, and CI is ci-ok.

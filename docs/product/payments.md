@@ -37,7 +37,7 @@ Criterios de éxito:
 4. **Quién debe, de un vistazo**: todo Customer que debe, con la deuda más vieja primero, cada uno con su Balance y su Owing since, arriba de Customers. También el **Total owed** y la cantidad de **Sales still owing**, sin calcularlos a partir de las Sales. En Sales, una Sale que todavía se debe aparece marcada como tal.
 5. **Una cuenta que se lee de una pasada** (parte 1 de GH-829; documentada en la adenda "Account order and running balance (GH-829)" de ADR-0012):
    - La cuenta de cada Customer es un libro corrido: sus Sales y Payments ordenados por fecha, después por `recorded_at`, después Sale antes que Payment, después id; cada Sale suma, cada Payment resta y cada fila lleva el saldo después de ella. Con fecha y `recorded_at` iguales, la Sale va primero.
-   - Ese orden es el del libro, no el del Settlement (ADR-20261120): el orden del Settlement, que decide qué Sale salda un Payment, no cambia.
+   - Ese orden es el del libro, no el del Settlement (ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view): el orden del Settlement, que decide qué Sale salda un Payment, no cambia.
    - `recorded_at` se fija una sola vez: asignarle un Customer a una Sale sin Customer no lo cambia, y un Payment eliminado y vuelto a registrar es un Payment nuevo.
    - El saldo de la fila más nueva es siempre igual al Balance de la cabecera de la ficha (`settle().balance`), sin excepción: también con un Payment de fecha anterior a su Sale, una Sale y un Payment del mismo día, un Credit que quedó al eliminar una Sale y una Sale sin Customer a la que después se le asigna uno.
    - Cada Sale dice su **Sale number**, si se pagó y con qué medio, o si quedó debiendo.
@@ -62,7 +62,7 @@ Criterios de éxito:
 16. **"N de M clientes me deben"** (GH-828): la cantidad de Customers incluye a los que no tienen Sales y a los que tienen un Credit; la cantidad de deudores no incluye a ninguno de los dos.
 17. **Nada de otro Business** (GH-828, #899): ninguna cifra, cantidad, Sale ni **Sale number** de otro Business aparece en la lista de deudores ni en sus líneas, y nada revela que exista.
 18. **La marca de Payment parcial, solo en la API** (parte 1 de GH-829): cada fila de Payment de la cuenta lleva `is_partial`, verdadero solo cuando el saldo corrido después de ese Payment es mayor que 0, y falso en exactamente 0 y por debajo. La calcula solo `account_of()` y nunca se guarda. La ficha todavía no la muestra; una parte posterior la muestra como una palabra en la fila, nunca solo por color, con su propio chequeo contra el dibujo.
-19. **Los docs dicen lo que la cuenta hace** (parte 2 de GH-829): la adenda de ADR-0012 es el único lugar con el orden completo de la cuenta y sus reglas de saldo corrido; la línea 31 de ADR-0012 ya no da una clave propia y apunta a la adenda y a ADR-20261120; este documento y la entrada del censo de colores coinciden con la cuenta entregada y con el glosario (Settlement, Credit, Balance).
+19. **Los docs dicen lo que la cuenta hace** (parte 2 de GH-829): la adenda de ADR-0012 es el único lugar con el orden completo de la cuenta y sus reglas de saldo corrido; la línea 31 de ADR-0012 ya no da una clave propia y apunta a la adenda y a ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view; este documento y la entrada del censo de colores coinciden con la cuenta entregada y con el glosario (Settlement, Credit, Balance).
 
 ## Comportamiento
 
@@ -259,7 +259,7 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
 - La API de Payments lleva `payment_method_id` en lugar de `method`; es un quiebre declarado con una línea `Breaking-API:` en el PR (ADR-0066). Agregar `still_owing` y `with_lines` (#899) solo suma un campo y un parámetro opcional, así que no es un quiebre.
 - La cuenta como libro corrido (parte 1 de GH-829) es un quiebre declarado: "Breaking-API: GET /api/customers/{id}/account drops applied_to from payment rows and the credit row kind" (ADR-0066). Su único consumidor, la ficha del Customer, cambia en la misma parte, y el snapshot de OpenAPI se regenera.
 - Los saldos corridos y `is_partial` salen solo de `account_of()`; ningún adaptador, router, esquema ni código del navegador los calcula, y nada los guarda. `applied_to` se quitó solo de las filas de la cuenta; las respuestas de registrar y de vista previa de Record payment lo conservan.
-- El orden de la cuenta y sus reglas de saldo corrido se documentan en un solo lugar, la adenda "Account order and running balance (GH-829)" de ADR-0012; la línea 31 de ADR-0012 apunta a ella y a ADR-20261120 y no da una clave propia.
+- El orden de la cuenta y sus reglas de saldo corrido se documentan en un solo lugar, la adenda "Account order and running balance (GH-829)" de ADR-0012; la línea 31 de ADR-0012 apunta a ella y a ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view y no da una clave propia.
 - Las rutas de Payment se suman al barrido de aislamiento, al test de rutas con acceso restringido y al test de migración de pertenencia.
 - Los códigos de rechazo van en `contract.json` (ADR-0008):
   - por encima del Balance;
@@ -372,4 +372,4 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
 - Un tope de líneas por deudor, campos extra en una línea (el total de la Sale, su Note) o un endpoint aparte por Customer para las líneas.
 - Mostrar en la ficha a qué Sales fue un Payment: eso queda solo en Record payment y su vista previa.
 - Mostrar en pantalla la marca de Payment parcial: una parte posterior de GH-498 la muestra como palabra, con su propio chequeo contra el dibujo.
-- Volver a decidir el orden de la cuenta, la fila de Payment o la redacción "In your favor", o reabrir ADR-20261120 o el orden del Settlement (parte 2 de GH-829 solo documenta lo entregado).
+- Volver a decidir el orden de la cuenta, la fila de Payment o la redacción "In your favor", o reabrir ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view o el orden del Settlement (parte 2 de GH-829 solo documenta lo entregado).
