@@ -6,6 +6,8 @@
 
 **Cuando** termino de armar una venta en New sale, **quiero** ver lo que estoy por cobrar y decir cómo me pagaron, o que me lo deben, **para** guardar la venta de un toque con el pago correcto y la deuda correcta. (Parte 2 de GH-867: la sirve la **Collect Sheet**. Es el paso de cierre del trabajo de BRIEF "una venta se registra desde el teléfono en menos de un minuto"; no es un trabajo nuevo. "Que me lo deben" llega con #944).
 
+**Cuando** estoy cerrando una venta en el teléfono y algo falla (no cargan los medios de pago o el guardado no pasa), **quiero** ver en palabras simples qué pasó y terminar con un toque más, con mis líneas y el medio que elegí todavía ahí, **para** que la venta quede registrada y nunca la vuelva a tipear, la pierda o crea que se guardó cuando no se guardó. (#930: la sirven los caminos de fallo de la **Collect Sheet**. Es la versión de fallo de la misma primera historia de sales.md; no es un trabajo nuevo).
+
 **Cuando** un cliente me manda su pedido y armo la venta en el teléfono, **quiero** encontrar cada Product que pidió y fijar cuánto con un toque o dos, viendo lo que ya está en la venta, **para** que cada línea salga con los precios de ese día y nunca tipee un precio ni cotice de memoria. (Parte 2 de GH-863: la sirve la lista de Products de New sale. Afina la misma primera historia de sales.md, acotada a elegir Products y cantidades; cliente, pago y guardado son de otras partes).
 
 ## Qué es
@@ -59,7 +61,7 @@ Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clien
 
 ## Collect Sheet
 
-El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibujado dentro de la Sheet compartida (`web/src/components/Sheet.tsx`) a partir del dibujo NuevaVentaCobrar y su gemelo oscuro (salida aceptada 3), con la misma división que Cobro/CobroRoute. Sirve igual para entregar en la puerta que para registrar una venta después: la fecha viene de la Sale in progress. No tiene ruta hasta el flip de GH-496, así que no tiene Design capture ni Screen image.
+El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibujado dentro de la Sheet compartida (`web/src/components/Sheet.tsx`) a partir del dibujo NuevaVentaCobrar y su gemelo oscuro (salida aceptada 3), con la misma división que Cobro/CobroRoute. Sirve igual para entregar en la puerta que para registrar una venta después: la fecha viene de la Sale in progress. No tiene ruta hasta el flip de GH-496, así que no tiene Design capture ni Screen image. Los estados de fallo no tienen dibujo aprobado: sus textos y marcas salen de componentes compartidos (Selector, Attention icon), y si aparece un dibujo que muestre otra cosa, la diferencia la decide el dueño.
 
 ### Props
 
@@ -78,11 +80,12 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 - Pendiente: el Selector muestra que carga y Collect queda deshabilitado, con su etiqueta.
 - Llegada: Collect queda habilitado.
-- El estado fallido (el Selector muestra su fallo y Collect sigue habilitado) llega con #930.
+- Fallida (cualquier lectura fallida de `GET /api/payment-methods`, por un error del servidor o sin conexión): el Selector muestra su propia línea de fallo y vuelve a leer al tocarlo, que es comportamiento compartido de todo Selector (selector.md). La Sheet no agrega ningún texto propio, tampoco un aviso de sin conexión. Collect queda habilitado: una venta de $0 sin medio se guarda con `payment: null`, y por encima de $0 se aplica el rechazo sin medio de abajo, sin mandar nada. Cuando la lista vuelve a llegar y la vendedora elige un medio, el rechazo se borra.
 
 ### Collect
 
 - Al tocar, llama a `validateSale({...payStateOfEffective(efectivo), total: priced.totals.total, hasCustomer, lines: lineValidationsOf(priced)})`, donde `efectivo` es `collectableChoice(effectiveChoice(...))`; es el único lugar que rechaza el pago. `payStateOfEffective` lee "ningún medio" como pagar sin medio conocido, que `validateSale` rechaza por encima de $0 y deja pasar en $0. `collectableChoice` trata owing como ninguna elección hasta #944. `lineValidationsOf` solo lee lo que `priced` ya dice de cada línea.
+- Un medio elegido que ya no se ofrece (el que marcó "no longer available" un rechazo del guardado) cuenta como ningún medio, igual que en `NuevaVenta`.
 - Orden de un toque: primero una línea sin precio (no hace nada), después el error de medio, después guardar.
 - Si `priced` trae una línea sin precio para la fecha de la venta, el toque no manda nada (0 pedidos), no muestra "Saving…" ni ningún texto nuevo y no llama a `onSavingChange`. Es solo una guarda: se lee lo que `priced` ya dice de la línea, nunca se calcula un precio, y la vendedora no llega a ese estado porque la pantalla anfitriona no abre la Sheet.
 - Sin medio por encima de $0 no se manda nada: se muestra "Choose how they pay to collect." en el `FieldRefusal` debajo del Selector, con el **Attention icon** y ligado por `describedBy`, y se enfoca el campo. Elegir un medio borra el rechazo.
@@ -93,15 +96,23 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 ### Resultado
 
 - Éxito: `onSavingChange(false)` y después `onSaved` con la respuesta del servidor sin tocar, aunque su total difiera de `priced`. La Sheet no muestra ninguna cifra propia después.
-- Rechazo del pedido: `onSavingChange(false)`, sin ningún texto; las líneas y el medio se conservan, Collect se puede volver a tocar y Close vuelve a funcionar. Los textos de fallo, el estado fallido de la lista, la marca "no longer available" y el reintento llegan con #930. Hasta entonces un guardado fallido no dice nada, por eso el flip de GH-496 no sale antes de #930 y #944.
+- Cualquier fallo del guardado llama a `onSavingChange(false)` al terminar, termine como termine.
+- 401: lo maneja el límite de sesión compartido, como en el resto de la app; la Sheet no muestra nada propio.
+- Rechazo del medio (el 404 `payment_method.unavailable`, el mismo que `NuevaVenta` lleva al campo del medio con sus `submitOverrides`): el Selector conserva el medio elegido con su nombre y la marca "no longer available", y se invalida `keys.paymentMethods()` para volver a leer la lista. Ese medio cuenta desde ahí como ningún medio: un nuevo toque en Collect por encima de $0 muestra el rechazo sin medio, no manda nada y enfoca el Selector; en $0 guarda con `payment: null`. El mismo rechazo nunca se repite.
+- Cualquier otra causa (otro rechazo de la API, red caída, respuesta mal formada): arriba de Collect se muestra "The sale was not saved. Your lines are kept, so try again." con el Attention icon, anunciado a los lectores de pantalla (rol alert). Es el único texto para esas causas: el `detail` de la API nunca se muestra, y no hay diagnósticos, toast, vibración ni una señal solo de color.
+- Después de cualquier fallo, las líneas y el medio se conservan, Collect se puede volver a tocar (un toque es exactamente un pedido más) y Close vuelve a funcionar. El foco queda en Collect o vuelve a él al terminar el guardado, también tras el rechazo del medio; es el toque siguiente el que lo lleva al Selector.
+- El texto "not saved" se borra al empezar un reintento, al elegir otro medio o con un guardado exitoso; nunca con un temporizador. Mientras corre un reintento solo se ve "Saving…".
+- Un guardado fallido que el front ve nunca deja una venta registrada ni se ve como un éxito, y "the sale was not saved" siempre se distingue de "no longer available".
 
 ### Textos
 
-- Viven en `SALES_TEXT`, el módulo de ventas de `web/src/copy/`, en inglés y sin palabra de unidad, moneda ni tipo de producto: `collectTitle(n)`, `howTheyPay` ("How they pay"), `chooseMethod` ("Choose a method"), `noMethodToCollect` ("Choose how they pay to collect."), `collect(total)` ("Collect {total}") y `saving` ("Saving…"). "No customer" ya existía. "Owes it" llega con #944 y el texto de guardado fallido con #930.
+- Viven en `SALES_TEXT`, el módulo de ventas de `web/src/copy/`, en inglés y sin palabra de unidad, moneda ni tipo de producto: `collectTitle(n)`, `howTheyPay` ("How they pay"), `chooseMethod` ("Choose a method"), `noMethodToCollect` ("Choose how they pay to collect."), `collect(total)` ("Collect {total}"), `saving` ("Saving…") y, desde #930, el texto de guardado fallido ("The sale was not saved. Your lines are kept, so try again."). "No customer" ya existía. "Owes it" llega con #944.
+- La marca "no longer available" y la línea de fallo del Selector (`selectorPaymentMethodsFailed`) se reutilizan, sin claves nuevas.
 
-### Hueco conocido
+### Huecos conocidos
 
 - Una venta cuya respuesta se perdió después de que el servidor la guardó puede registrarse dos veces al reintentar, e inflar Sales, Profit y, si se debe, el Balance del Customer. No hay protección en el repo; requiere trabajo en el servidor y va como pieza propia. Se tiene que resolver antes del flip de GH-496.
+- Todo rechazo que no es el del medio muestra el mismo texto. Para uno que un reintento no arregla (por ejemplo una fecha futura), "try again" no ayuda, y la vendedora lo corrige desde la pantalla anfitriona después de Close. La pantalla anfitriona controla fecha, envío, Note y cliente antes de abrir la Sheet, así que deberían ser raros. El flip de GH-496 decide si alguno vuelve a la pantalla anfitriona.
 
 ## Cliente de las New sale suggestions
 
@@ -197,7 +208,9 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - La pantalla anfitriona de New sale que monta la Collect Sheet, el flip que la monta y su regla de no abrirla con una línea sin precio.
 - Reescribir el criterio 34 de sales.md ("el medio nunca viene puesto"), que le corresponde al flip, cuando la preselección llegue a la vendedora.
 - Received y Change en la Collect Sheet.
-- La opción "Owes it" (#944) y todo camino de fallo del guardado: estado fallido de la lista de medios, medio archivado con su marca "no longer available", texto de guardado fallido y reintento (#930).
+- La opción "Owes it" (#944).
+- Textos propios de la Collect Sheet para rechazos que no son el del medio, y devolverlos a la pantalla anfitriona (lo decide el flip).
+- Cualquier cambio al Selector, a `usePaymentMethodOptions`, al Attention icon o a la Icon and text rule por los caminos de fallo de la Collect Sheet.
 - Un texto propio de la Collect Sheet para una línea sin precio.
 - Gift, Special price y la Sheet del detalle de línea.
 - Conservar la venta en curso tras una recarga.
@@ -216,6 +229,15 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Gate (pytest, vitest, e2e) pasa, y tsc strict y oxlint pasan sin nada silenciado.
 - Vara del trabajo, que se juzga cuando el flip la monte: una venta se registra desde el teléfono en menos de un minuto (sales.md, criterio 1), y un Product habitual se encuentra, se agrega y se ajusta sin salir de la lista (1 toque para un Product habitual a 1 unidad desde "Most sold").
 - Collect Sheet, con Testing Library a nivel de fetch: sin medio por encima de $0, 0 pedidos y el campo enfocado; con una línea sin precio en `priced`, 0 pedidos, ningún texto nuevo y ninguna llamada a `onSavingChange`; mientras guarda, toques extra y Close dan 0 pedidos adicionales; tras un pedido rechazado, `onSavingChange` termina en false y Close vuelve a funcionar; un borrador que ya trae owing no se manda; la etiqueta de Collect es igual a `priced.totals.total` formateado y `onSaved` recibe la respuesta sin tocar.
+- Caminos de fallo de la Collect Sheet (#930), con Testing Library a nivel de fetch y en el mismo host que los tests de #918:
+  - Lista de medios fallida (error del servidor y sin conexión): una venta de $0 se guarda con `payment: null`; por encima de $0 se muestra el texto sin medio con 0 pedidos y el foco en el Selector.
+  - Guardado fallido: las líneas y el medio se conservan, el texto "not saved" se muestra con rol alert, un reintento hace exactamente 1 pedido más y borra el texto, y Close vuelve a funcionar.
+  - Rechazo del medio archivado: se muestra la marca "no longer available", se vuelve a leer la lista y el toque siguiente por encima de $0 da 0 pedidos.
+  - 401: ningún texto propio de la Sheet.
+  - Elegir otro medio borra el texto "not saved".
+- Fallos del guardado mostrados como éxito, o con el `detail` de la API en pantalla: 0.
+- Claves del Copy module agregadas por #930: 1, en inglés y sin palabras de Unit, moneda ni tipo de producto.
 - Llamadas a `priceSale`/`priceLine` desde la Collect Sheet: 0, y operaciones de dinero propias en ella: 0 (todo pasa por `pricing.ts`).
 - Textos de la Collect Sheet fuera de `web/src/copy/`: 0.
 - Con el medio propuesto ya elegido, la Collect Sheet guarda con a lo sumo una elección y un toque en Collect (la vara del flip, arriba, se juzga cuando la monte).
+- Vara de #930, que se juzga cuando el flip monte la Sheet: después de cualquier fallo, la venta se termina de registrar con un toque más en Collect, sin volver a tipear ninguna línea.
