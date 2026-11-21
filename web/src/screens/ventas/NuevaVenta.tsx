@@ -29,7 +29,7 @@
  * one source of a line's message, in the plan's priority order.
  */
 
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { tooManyDecimalsMessage } from '../../api/amountRefusal'
@@ -38,7 +38,6 @@ import type { Customer } from '../../api/customers'
 import { customerTypesQueryOptions } from '../../api/customerTypes'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
-import type { PricingSettings as ApiPricingSettings } from '../../api/pricingSettings'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
 import type { PaymentMethod } from '../../api/payments'
 import Boton from '../../components/Boton'
@@ -75,6 +74,11 @@ import {
 import { paymentMethodName } from '../../sales/paymentMethods'
 import { type SaleBody, saleBodyOf } from '../../sales/saleBody'
 import { nothingSellable } from '../../sales/nothingSellable'
+import {
+  pricingSettingsOf,
+  saleFormPricingSettingsQuery,
+  saleFormProductsQuery,
+} from '../../sales/saleFormQueries'
 import { OWING_HINT, SALES_TEXT } from '../../copy/sales'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
@@ -239,28 +243,10 @@ function NuevaVentaForm() {
   const gramsFieldRef = useRef<HTMLInputElement | null>(null)
   const specialPriceFieldRef = useRef<HTMLInputElement | null>(null)
 
-  const varietiesQuery = useQuery({
-    queryKey: keys.saleFormVarieties(date),
-    queryFn: () => get<Variety[]>(`/api/products?on=${encodeURIComponent(date)}`),
-    // A date change keeps the form's varieties (names, options) while that day's prices
-    // come; no figure of the previous day is ever shown (`repricing` below).
-    placeholderData: keepPreviousData,
-    gcTime: 0,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  })
+  const varietiesQuery = useQuery(saleFormProductsQuery(date))
 
   // The switches come with each day's prices: on opening and on every date change.
-  const settingsQuery = useQuery({
-    queryKey: keys.saleFormPricingSettings(date),
-    queryFn: () => get<ApiPricingSettings>('/pricing-settings'),
-    placeholderData: keepPreviousData,
-    gcTime: 0,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  })
+  const settingsQuery = useQuery(saleFormPricingSettingsQuery(date))
 
   const customerByIdQuery = useQuery({
     queryKey: keys.saleFormCustomer(initialCustomerId ?? ''),
@@ -287,9 +273,7 @@ function NuevaVentaForm() {
   const reservedHint = varietiesQuery.isPlaceholderData ? nothingSellable(varietiesQuery.data) : null
   const repricing = varietiesQuery.isPlaceholderData || settingsQuery.isPlaceholderData
   const settings: PricingSettings =
-    settingsQuery.data === undefined
-      ? NO_RULES
-      : { bulk: settingsQuery.data.is_bulk_pricing, vip: settingsQuery.data.is_vip_customers }
+    settingsQuery.data === undefined ? NO_RULES : pricingSettingsOf(settingsQuery.data)
 
   const customerTypeId = customer?.customer_type_id ?? null
   // The name for the badge: the list of types is asked only while it can matter.

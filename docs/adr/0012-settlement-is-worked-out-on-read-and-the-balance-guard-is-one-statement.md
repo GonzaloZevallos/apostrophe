@@ -30,6 +30,7 @@ cost of goods; settlement takes the same shape.
   - The account is laid out from `settle()`'s result in `app/payments/domain/account.py`.
     Rows are ordered by `(date, sales before payments, recorded_at, id)`, and every row
     carries its own `running_balance`.
+    Superseded by `20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view.md`.
 - **Other capabilities reach settlement only through ports they declare** (ADR-0006).
   - `Balances` is declared in customers; `OwingSales` is declared in sales.
   - Both are implemented by one payments adapter over one loader, and wired as factories

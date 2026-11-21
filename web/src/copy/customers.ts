@@ -43,8 +43,7 @@ export const CUSTOMERS_TEXT = {
   nothingToPay: 'Nothing to pay',
   accountHeading: 'Account · running balance',
   paymentTitle: (method: string | number) => `Payment · ${method}`,
-  onAccountOf: (sale_date: string | number) => `On account of the sale of ${sale_date}`,
-  creditAmount: (running_balance: string | number) => `Credit ${running_balance}`,
+  creditAmount: (running_balance: string | number) => `In your favor ${running_balance}`,
   giveItAName: 'Give them a name',
   notAPhone: 'Enter the number with its area code, or start with + and the country code.',
   phoneHintNone: '+ and country code, then the number',
@@ -142,7 +141,6 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: CUSTOMERS_TEXT.accountHeading },
   { kind: 'help', text: CUSTOMERS_TEXT.paymentTitle(SAMPLES.name) },
   { kind: 'help', text: CUSTOMERS_TEXT.paidWith(SAMPLES.name) },
-  { kind: 'help', text: CUSTOMERS_TEXT.onAccountOf(SAMPLES.date) },
 ]
 
 
@@ -153,7 +151,6 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'CUSTOMERS_TEXT.deletePaymentOf': [[M, 'cash', D]],
   'CUSTOMERS_TEXT.paymentTitle': [['cash']],
   'CUSTOMERS_TEXT.paidWith': [['cash']],
-  'CUSTOMERS_TEXT.onAccountOf': [[D]],
   'CUSTOMERS_TEXT.creditAmount': [[M]],
   'CUSTOMERS_TEXT.balanceAmount': [[M]],
   'CUSTOMERS_TEXT.phoneCountryOption': [['Uruguay', '598']],

@@ -433,6 +433,27 @@ export function payStateOf(choice: PaymentChoice | null): { payState: PayState |
   return { payState: 'paid', method: choice.payment_method_id }
 }
 
+/** `payStateOf` for what `effectiveChoice` gives: `null` here means paying with no method known, so
+ * `validateSale` refuses it above $0 and lets it through at $0 (a $0 sale then sends no payment). */
+export function payStateOfEffective(choice: PaymentChoice | null): {
+  payState: PayState | null
+  method: PaymentMethod | null
+} {
+  if (choice === null) return { payState: 'paid', method: null }
+  return payStateOf(choice)
+}
+
+/** What `validateSale` reads of a sale already priced by the host: an unpriced line (`pricing: null`)
+ * is a line with no quote and no gift or special price, so it is refused; every other line passes.
+ * It computes no price. */
+export function lineValidationsOf(priced: PricedSale): LineValidation[] {
+  return priced.lines.map((line) =>
+    line.pricing === null
+      ? { id: line.id, varietyName: '', gift: line.gift, specialPrice: null, quote: null }
+      : { id: line.id, varietyName: '', gift: true, specialPrice: null, quote: null },
+  )
+}
+
 /** The change owed for what the Customer handed over: `null` when `receivedText` is empty or refused
  * by `parseMoneyInput`, or is below `total`; otherwise the difference in currency units (0 when equal).
  * Both amounts become integers at the format's decimals and are subtracted as integers. For display
