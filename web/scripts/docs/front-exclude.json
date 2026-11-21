@@ -29,5 +29,6 @@
   "^src/screens/clientes/CustomerSegments\\.tsx$",
   "^src/sales/useNewSaleReads\\.ts$",
   "^src/screens/ventas/NuevaVentaProductos\\.tsx$",
+  "^src/sales/newSalePricing\\.ts$",
   "^src/screens/ventas/CollectSheet\\.tsx$"
 ]

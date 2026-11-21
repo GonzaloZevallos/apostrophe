@@ -3,16 +3,17 @@
  * the lines of the sale with their steppers, then the Most sold rows, then the hint when nothing
  * is sellable. Not mounted by any route until the flip part of GH-496.
  *
- * Every figure is `pricing.ts`'s: the lines' price per unit is `priceSale` over the draft's own
- * lines (shipping 0), every other row's is `rowPrices`; "No price" renders exactly when that
- * pricing is `null`. The component computes no money and no quantity, and reads `current_price`
- * nowhere (`nothingSellable` does, for the hint).
+ * Every figure is `pricing.ts`'s: the lines' price per unit comes from the parent's `NewSalePricing`
+ * (`newSalePricing.ts`, the one `priceSale` over the draft's own lines; shipping reaches only its
+ * totals, so no line price depends on it), every other row's is `rowPrices`; "No price" renders
+ * exactly when that pricing is `null`. The component computes no money and no quantity, and reads
+ * `current_price` nowhere (`nothingSellable` does, for the hint).
  *
  * What shows is decided by `status` (`useNewSaleReads`) alone: `loading` is `MOST_SOLD_ROWS` skeleton
  * rows with no text, `refreshing` (and a `'pending'` Customer) keeps the names and the line steppers
  * and puts the compact loading mark where a price goes, `failed` is SinConexion for a `NetworkError`
- * and ErrorGenerico for any other error, and `ready` is the list. `priceSale` and `rowPrices` run on
- * no other render. The busy state goes through `LoadingWhile` on the screen's `ContentArea`, which
+ * and ErrorGenerico for any other error, and `ready` is the list. `rowPrices` runs on
+ * no other render, and the lines' prices are read only from a `priced` result. The busy state goes through `LoadingWhile` on the screen's `ContentArea`, which
  * the list counts on and never renders. No state here reads or writes the draft's lines.
  *
  * The search field always shows, in every status, and keeps its text (local state, carried nowhere).
@@ -36,14 +37,13 @@ import { formatQuantity } from '../../format/money'
 import { useMoney } from '../../format/moneyContext'
 import { NO_PRICE_HINT, SALES_TEXT } from '../../copy/sales'
 import { nothingSellable } from '../../sales/nothingSellable'
+import { newSaleReady, type NewSalePricing } from '../../sales/newSalePricing'
 import {
-  priceSale,
   rowPrices,
   signedHundredthsOfApiGrams,
   type LinePricing,
 } from '../../sales/pricing'
 import { MOST_SOLD_ROWS, mostSoldRows } from '../../sales/productList'
-import { saleLineInputsOf } from '../../sales/saleDraft'
 import type { NewSaleReads } from '../../sales/useNewSaleReads'
 import type { SaleDraftApi } from '../../sales/useSaleDraft'
 import type { Variety } from '../Variedades'
@@ -56,10 +56,13 @@ interface NuevaVentaProductosProps extends Pick<NewSaleReads, 'status' | 'produc
    * and only then: the parent maps a failed Customer read, the list never decides what it means. */
   customerTypeId: number | null | 'pending'
   draft: SaleDraftApi
+  /** The sale's one price result: `notReady` while a figure cannot be priced, else the `priceSale` the
+   * parent made. The list prices no line itself. */
+  pricing: NewSalePricing
 }
 
 export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
-  const { status, products, settings, mostSoldIds, stock, failed, customerTypeId, draft } = props
+  const { status, products, settings, mostSoldIds, stock, failed, customerTypeId, draft, pricing } = props
   const { t } = useTranslation()
   const money = useMoney()
   const lines = draft.state.lines
@@ -68,23 +71,11 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
 
   // The one condition under which a figure is priced: every read is in for the sale's date and the
   // Customer is known. `pending` stands for the marks, whatever the status was.
-  const ready =
-    status === 'ready' &&
-    products !== null &&
-    settings !== null &&
-    mostSoldIds !== null &&
-    customerTypeId !== 'pending'
-
-  const sale = useMemo(() => {
-    if (!ready) return null
-    return priceSale({
-      lines: saleLineInputsOf(lines),
-      customerTypeId,
-      pricingSettings: settings,
-      products,
-      shippingCharged: 0,
-    })
-  }, [ready, lines, customerTypeId, settings, products])
+  const readyReads = useMemo(() => {
+    const reads = { status, products, settings, mostSoldIds, customerTypeId }
+    return newSaleReady(reads) ? reads : null
+  }, [status, products, settings, mostSoldIds, customerTypeId])
+  const ready = readyReads !== null
 
   // The names and steppers of a loaded list stay while the date's figures come: which Most sold rows
   // there are depends on ids only, never on a price.
@@ -105,10 +96,15 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
 
   const rows = useMemo(
     () =>
-      ready
-        ? rowPrices({ productIds: mostSold, products, customerTypeId, pricingSettings: settings })
-        : new Map<number, LinePricing | null>(),
-    [ready, mostSold, products, customerTypeId, settings],
+      readyReads === null
+        ? new Map<number, LinePricing | null>()
+        : rowPrices({
+            productIds: mostSold,
+            products: readyReads.products,
+            customerTypeId: readyReads.customerTypeId,
+            pricingSettings: readyReads.settings,
+          }),
+    [readyReads, mostSold],
   )
 
   const inSale = useMemo(() => new Set(lines.map((line) => line.productId)), [lines])
@@ -139,15 +135,15 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
 
   const matchPrices = useMemo(
     () =>
-      ready
-        ? rowPrices({
+      readyReads === null
+        ? new Map<number, LinePricing | null>()
+        : rowPrices({
             productIds: matches.filter((product) => !inSale.has(product.id)).map((product) => product.id),
-            products,
-            customerTypeId,
-            pricingSettings: settings,
-          })
-        : new Map<number, LinePricing | null>(),
-    [ready, matches, inSale, products, customerTypeId, settings],
+            products: readyReads.products,
+            customerTypeId: readyReads.customerTypeId,
+            pricingSettings: readyReads.settings,
+          }),
+    [readyReads, matches, inSale],
   )
 
   const field = (
@@ -196,7 +192,9 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
   }
 
   const byId = new Map(products.map((product) => [product.id, product]))
-  const pricedLines = new Map((sale?.lines ?? []).map((line) => [line.id, line.pricing]))
+  const pricedLines = new Map(
+    (pricing.kind === 'priced' ? pricing.sale.lines : []).map((line) => [line.id, line.pricing]),
+  )
   const stockOf = new Map((stock ?? []).map((row) => [row.product_id, row.quantity]))
   const hint = ready ? nothingSellable(products) : null
 
@@ -205,15 +203,15 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
     return quantity === undefined ? null : TEXT.productStock(formatQuantity(signedHundredthsOfApiGrams(quantity)))
   }
 
-  function priceCell(pricing: LinePricing | null | undefined) {
+  function priceCell(figure: LinePricing | null | undefined) {
     return (
       <span className="nv-productos__precio cifra-n">
-        {!ready ? (
+        {pricing.kind === 'notReady' ? (
           <Loading compacto />
-        ) : pricing === null || pricing === undefined ? (
+        ) : figure === null || figure === undefined ? (
           TEXT.productNoPrice
         ) : (
-          money.money(pricing.pricePerGram)
+          money.money(figure.pricePerGram)
         )}
       </span>
     )
@@ -252,14 +250,14 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
     const line = lines.find((candidate) => candidate.productId === productId)
     if (line === undefined) return null
     const name = product === undefined ? t('common:noLongerAvailable') : product.name
-    const pricing = pricedLines.get(String(productId))
+    const linePricing = pricedLines.get(String(productId))
     // While the figures come, the "+" stays: the stepper keeps working and the read decides
     // afterwards whether the line still has a price.
-    const unpriced = ready && (pricing === null || pricing === undefined)
+    const unpriced = pricing.kind === 'priced' && (linePricing === null || linePricing === undefined)
     return (
       <li key={productId} ref={rowRef(productId)} className="nv-productos__fila">
         {datos(name, productId, product !== undefined)}
-        {priceCell(pricing)}
+        {priceCell(linePricing)}
         <div role="group" aria-label={name} className="nv-productos__pasos">
           <span className="nv-productos__paso">
             <Boton variant="row" ariaLabel={TEXT.productDecrease(name)} onClick={() => draft.stepDown(productId)}>
@@ -286,12 +284,12 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
     draft.addProduct(productId)
   }
 
-  function addRow(product: Variety, pricing: LinePricing | null | undefined) {
+  function addRow(product: Variety, figure: LinePricing | null | undefined) {
     return (
       <li key={product.id} ref={rowRef(product.id)} className="nv-productos__fila">
         {datos(product.name, product.id, true)}
-        {priceCell(pricing)}
-        {!ready || pricing === null || pricing === undefined ? null : (
+        {priceCell(figure)}
+        {!ready || figure === null || figure === undefined ? null : (
           <span className="nv-productos__paso">
             <Boton variant="row" ariaLabel={TEXT.productAdd(product.name)} onClick={() => add(product.id)}>
               <span aria-hidden="true">+</span>

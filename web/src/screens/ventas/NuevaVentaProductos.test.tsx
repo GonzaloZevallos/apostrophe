@@ -11,6 +11,7 @@ import { useState } from 'react'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import ContentArea from '../../components/ContentArea'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+import { pricedSaleOf } from '../../sales/newSalePricing'
 import { MOST_SOLD_ROWS } from '../../sales/productList'
 import { saleFormProductsQuery } from '../../sales/saleFormQueries'
 import { useNewSaleReads } from '../../sales/useNewSaleReads'
@@ -130,6 +131,7 @@ function Harness({ initialCustomer = null, format = { symbol: '$', decimals: 0 }
   const draft = useSaleDraft({ today: TODAY })
   const [customer, setCustomer] = useState<number | null | 'pending'>(initialCustomer)
   const reads = useNewSaleReads({ date: draft.state.date, openedOn: draft.state.openedOn })
+  const pricing = pricedSaleOf({ ...reads, customerTypeId: customer, lines: draft.state.lines, shipping: '0', format })
   return (
     <MoneyFormatProvider format={format}>
       <button type="button" onClick={() => draft.setDate(LATER)}>change date</button>
@@ -144,7 +146,7 @@ function Harness({ initialCustomer = null, format = { symbol: '$', decimals: 0 }
       {second ? <SecondObserver date={draft.state.date} /> : null}
       <output aria-label="totals">{JSON.stringify(draft.state.lines)}</output>
       <ContentArea as="main" aria-label="list under test">
-        <NuevaVentaProductos {...reads} customerTypeId={customer} draft={draft} />
+        <NuevaVentaProductos {...reads} customerTypeId={customer} draft={draft} pricing={pricing} />
       </ContentArea>
     </MoneyFormatProvider>
   )
