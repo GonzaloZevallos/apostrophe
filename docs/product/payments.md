@@ -22,6 +22,8 @@ Es el mismo job de "manejar mi negocio desde el celular" que el de cualquier otr
 
 **Cuando** cambio la cuenta del Customer, el Settlement o el censo de colores, **quiero** que ADR-0012, este documento y el censo describan el orden de la cuenta y el saldo corrido exactamente como los entregó la parte 1 de GH-829, **para** no reabrir una decisión tomada ni volver a traer el reparto de un Payment ni las sublíneas "On account of the sale of dd/mm" y "Credit". (Parte 2 de GH-829: lo leen el sistema agéntico y quienes lo mantienen; el PM y el dueño, solo cuando una tarea posterior de la cuenta lo cita. Acá lo sirven la adenda "Account order and running balance (GH-829)" de ADR-0012, "La cuenta" de abajo y la entrada `.cuenta-cliente__saldo.monto-deuda` de `colorCensus.ts`.)
 
+**Cuando** un Customer me debe y estoy por recordárselo, o por decidir si le vuelvo a vender sin que me pague, **quiero** ver en su cuenta hace cuánto está abierta su deuda más vieja, qué Sales todavía me debe y cuánto queda de cada una, y cuánto me compra normalmente, **para** mandarle un recordatorio preciso sin hacer ninguna cuenta y juzgar cuánto confiar en él. (Parte 3 de GH-498: acá lo sirven `age_days`, `still_owing`, `sales_by_month` y `average_sale` de `GET /api/customers/{id}/account`, que leerán las pantallas de partes posteriores. Antes, la cuenta mostraba el Balance y el "Since", pero no cuán vieja era esa deuda, lo que queda de cada Sale ni lo que el Customer suele comprar; en la planilla el vendedor recorría filas por nombre y sumaba a mano.)
+
 # Pagos
 
 El dinero que un **Customer** entrega, y lo que cada Customer debe por eso: su **Balance**, su **Owing since** y la cuenta de sus **Sales** y **Payments**. Lo ve solo su **Business** (ADR-0004). Lee las Sales y sus **On-the-spot payments** de sales (ADR-0007), los Customers de customers y los **Payment methods** de payment-methods (ADR-20261111-payment-methods-by-id). **Cash** (#7) cuenta los Payments en sus propias fechas, sea cual sea su medio. Qué Sale salda un Payment se calcula en el momento y nunca se guarda, igual que el **Cost of goods sold** (ADR-0009, ADR-0010), mientras que los precios de una Sale quedan congelados (ADR-0003). Quién debe se muestra como la sección Owed to you arriba de Customers y como el bloque "Owed to you" de Home; no hay una pantalla Owed to you aparte.
@@ -63,6 +65,10 @@ Criterios de éxito:
 17. **Nada de otro Business** (GH-828, #899): ninguna cifra, cantidad, Sale ni **Sale number** de otro Business aparece en la lista de deudores ni en sus líneas, y nada revela que exista.
 18. **La marca de Payment parcial, solo en la API** (parte 1 de GH-829): cada fila de Payment de la cuenta lleva `is_partial`, verdadero solo cuando el saldo corrido después de ese Payment es mayor que 0, y falso en exactamente 0 y por debajo. La calcula solo `account_of()` y nunca se guarda. La ficha todavía no la muestra; una parte posterior la muestra como una palabra en la fila, nunca solo por color, con su propio chequeo contra el dibujo.
 19. **Los docs dicen lo que la cuenta hace** (parte 2 de GH-829): la adenda de ADR-0012 es el único lugar con el orden completo de la cuenta y sus reglas de saldo corrido; la línea 31 de ADR-0012 ya no da una clave propia y apunta a la adenda y a ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view; este documento y la entrada del censo de colores coinciden con la cuenta entregada y con el glosario (Settlement, Credit, Balance).
+20. **La deuda de un Customer, sin hacer cuentas** (parte 3 de GH-498): desde la cuenta de un Customer, el vendedor obtiene la antigüedad en días de su deuda más vieja y cada Sale que todavía se debe (Sale number, fecha, lo que queda), la más vieja primero, sin calcular nada.
+21. **Lo que se debe por Sale suma el Balance** (parte 3 de GH-498): los `remaining` de `still_owing` suman exactamente el Balance del Customer cuando es mayor que $0, porque salen del mismo Settlement. Un Customer que no debe nada, o que tiene un Credit, no tiene Sales que se deban ni antigüedad de deuda.
+22. **Lo que compra, igual que a mano** (parte 3 de GH-498): los totales por mes y el **Average sale** del Customer coinciden con una suma a mano de sus Sales en los seis meses: envío incluido, pagadas o no, cada Sale en el mes de su propia fecha, con el redondeo compartido de la mitad hacia arriba que usa Analysis.
+23. **Nunca un promedio inventado** (parte 3 de GH-498): un Customer sin Sales en la ventana muestra 0 en cada mes y ningún `average_sale`, nunca un promedio de $0.
 
 ## Comportamiento
 
@@ -151,9 +157,35 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
 - **Cada fila** lleva el saldo corrido después de ella. El de la fila más nueva es siempre igual a `settle().balance`.
 - **Por debajo de cero**: un saldo corrido puede quedar menor que cero en un punto del libro (por ejemplo, un Payment de fecha anterior a su Sale, hasta que llega la fila de la Sale) o al final (un Credit después de eliminar una Sale). Es solo una cifra corrida, no crea un Credit.
 - **Sin `applied_to` y sin fila de crédito**: la cuenta no dice qué Sales salda cada Payment, y no hay un tipo de fila aparte para un Credit. Las antiguas sublíneas "On account of the sale of dd/mm" y la fila "Credit" de la cuenta se quitaron en la parte 1 de GH-829 y no vuelven. `AppliedToOut`, `Split` y las respuestas de registrar y de vista previa de Record payment no cambian.
-- `settle()` se usa en la cuenta solo para el Balance, el Owing since y el estado; nunca para armar filas.
+- `settle()` se usa en la cuenta para el Balance, el Owing since, el estado, `age_days` y `still_owing`; nunca para armar filas.
 - **Una Sale sin Customer** a la que después se le asigna uno (`PUT /api/sales/{id}/customer`) ocupa su lugar en la cuenta por su propia fecha y su `recorded_at`, que la asignación no cambia.
 - **Aislamiento**: la cuenta de un Customer de otro Business responde 404.
+
+#### Deuda y compras del Customer (parte 3 de GH-498)
+
+Cuatro campos que se suman a la respuesta de la cuenta para recordarle la deuda al Customer o juzgar si venderle sin cobrar. Las pantallas que los muestran son partes posteriores de GH-498; en esta parte ninguna pantalla cambia. Solo suman campos: las filas, el Balance y el Owing since no cambian, y no es un quiebre de la API (ADR-0066).
+
+- **`age_days`**: los días enteros entre el Owing since del Customer (la fecha de su Sale más vieja que no está pagada por completo después del Settlement) y hoy del Business, en hora argentina hasta la parte time-zone de GH-318.
+  - Una Sale con fecha de hoy da 0, y una con fecha posterior a hoy también da 0, igual que en `debt_age`.
+  - Una Sale pagada en parte conserva su fecha, así que pagar una parte nunca reinicia la antigüedad.
+  - Vale `null` cuando el Customer no debe nada o tiene un Credit. Siempre coincide con el "Since" que el vendedor ya ve.
+  - Sale solo de `debt_age` y del Settlement.
+- **`still_owing`**: la lista `{sale_number, date, remaining}` de las Sales del Customer que no están pagadas por completo después del Settlement, las pagadas en parte incluidas, con la misma forma y las mismas reglas que una línea de la lista de deudores (#899):
+  - `sale_number` es el Sale number, nunca un id;
+  - `remaining` es lo que queda de esa Sale, nunca su total, siempre mayor que 0 y en unidades de moneda como decimal (ADR-0058).
+  - Van en el orden del Settlement (por fecha, después por orden de registro), sin tope. Los `remaining` suman exactamente el Balance cuando es mayor que $0.
+  - Un Customer que no debe nada o que tiene un Credit recibe una lista vacía. Un Credit nunca se descuenta de una línea ni aparece como una.
+- **`sales_by_month`**: la lista `{month, total}` de seis meses calendario, el más viejo primero, que termina en el mes en curso del día del Business. `month` va como `YYYY-MM` y `total` en unidades de moneda como decimal (ADR-0058).
+  - Seis es la cantidad de meses que dibuja `ClientesCompu.dc.html` ("de mayo a octubre"), fijada en una sola constante.
+  - El mes en curso cuenta las Sales que lleva hasta ahora.
+  - Cada Sale cuenta en el mes de su propia fecha, con el Shipping charged incluido, pagada o no; los Gifts suman su $0.
+  - Todo mes sin Sales vale 0, también los anteriores a la primera Sale del Customer, así que la lista siempre tiene exactamente seis entradas.
+  - Una Sale con fecha posterior al mes en curso queda fuera de la ventana; una con fecha más adelante dentro del mes en curso cuenta en ese mes.
+- **`average_sale`**: el **Average sale** del Customer en la misma ventana de seis meses: el total de sus Sales en ella, envío incluido, dividido por su cantidad de Sales (no de líneas), en unidades de moneda como decimal (ADR-0058).
+  - Se redondea con la misma regla de la mitad hacia arriba que el Average sale de Analysis, movida sin cambios a `app/shared/`, así que las dos cifras nunca se contradicen.
+  - Vale `null` cuando la ventana no tiene Sales, también cuando todas las Sales del Customer son más viejas que la ventana.
+  - Cubre solo la ventana, nunca toda la historia, así que el vendedor puede compararlo con los seis meses que tiene al lado.
+- **Supuesto conocido de Assume nothing**: la ventana de seis meses está fija en el código y es la misma para todo Business. Queda anotada para #330, junto con los límites de antigüedad; esta parte no la vuelve configurable.
 
 ### En pantalla: la sección "Owed to you" de Customers
 
@@ -195,6 +227,7 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
   - Se confirma con "Delete the payment of $ 15.000 (<medio>) from 20/09?", "No, keep it / Yes, delete it". La confirmación nombra el Payment y su medio, nunca las Sales que cubría.
   - Después, el toast "Payment deleted", sin datos, y la cuenta y el Balance se refrescan desde la API.
   - Un Payment que ya no existe sigue la regla "That is gone." de accounts.md.
+- `age_days`, `still_owing`, `sales_by_month` y `average_sale` (parte 3 de GH-498) todavía no se muestran: los mostrarán partes posteriores de GH-498, con su propio chequeo contra el dibujo.
 
 ### En pantalla: Record payment (`Payment`)
 
@@ -250,13 +283,14 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
 - Las 21 entradas `radio:Cash`, `radio:Transfer` y `radio:Owing` de `touch-action.json` eran todas de estados recorridos de New sale. Record payment no tenía ninguna, así que su cambio al Selector no borró ni agregó ningún infractor.
 - Record payment no tiene un estado de WalkState con la lista de medios abierta (`record-payment/method-selector-open` no se agregó). La lista abierta la cubren los tests del front (`CobroHistory.test.tsx`). El estado `CobroDesdeClientes` elige el medio abriendo el campo y tocando la opción. Los estados de carga, error del servidor, sin conexión y "no longer available" del campo están registrados en WalkState.
 - La cuenta como libro corrido (parte 1 de GH-829) no cambia WalkState ni `screens.json`.
+- Los campos nuevos de la cuenta (parte 3 de GH-498) no cambian WalkState ni `screens.json`: ninguna pantalla los muestra todavía.
 
 ### Restricciones
 
 - `payment` es la tabla de ADR-0007 y lleva `business_id`. El Business sale de la **Session**.
 - `payment.payment_method_id` apunta a `payment_method` con una FK compuesta `(business_id, payment_method_id)` ON DELETE RESTRICT; `payment.method` queda congelada, ahora admite nulo y las filas nuevas la dejan vacía (ADR-20261111-payment-methods-by-id). Solo el adaptador de tablas y las migraciones la nombran, y un test de arquitectura lo controla. La migración solo agregó y llenó la columna nueva, y el comparador M3 lo prueba.
 - El medio de un Payment nuevo se controla dentro del mismo `INSERT … SELECT` que lo escribe: si no es un medio ofrecido del Business, no se escribe nada y se responde 404 `payment_method.unavailable`.
-- La API de Payments lleva `payment_method_id` en lugar de `method`; es un quiebre declarado con una línea `Breaking-API:` en el PR (ADR-0066). Agregar `still_owing` y `with_lines` (#899) solo suma un campo y un parámetro opcional, así que no es un quiebre.
+- La API de Payments lleva `payment_method_id` en lugar de `method`; es un quiebre declarado con una línea `Breaking-API:` en el PR (ADR-0066). Agregar `still_owing` y `with_lines` (#899) solo suma un campo y un parámetro opcional, así que no es un quiebre. Agregar `age_days`, `still_owing`, `sales_by_month` y `average_sale` a la cuenta (parte 3 de GH-498) solo suma campos, así que tampoco lo es; el snapshot de OpenAPI se regenera.
 - La cuenta como libro corrido (parte 1 de GH-829) es un quiebre declarado: "Breaking-API: GET /api/customers/{id}/account drops applied_to from payment rows and the credit row kind" (ADR-0066). Su único consumidor, la ficha del Customer, cambia en la misma parte, y el snapshot de OpenAPI se regenera.
 - Los saldos corridos y `is_partial` salen solo de `account_of()`; ningún adaptador, router, esquema ni código del navegador los calcula, y nada los guarda. `applied_to` se quitó solo de las filas de la cuenta; las respuestas de registrar y de vista previa de Record payment lo conservan.
 - El orden de la cuenta y sus reglas de saldo corrido se documentan en un solo lugar, la adenda "Account order and running balance (GH-829)" de ADR-0012; la línea 31 de ADR-0012 apunta a ella y a ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view y no da una clave propia.
@@ -271,8 +305,11 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
   - Customer inexistente;
   - Payment inexistente.
 - Ningún monto ni nombre en los rechazos, los logs, la consola ni el almacenamiento del navegador (ADR-0005).
-- Todo Balance, Owing since, reparto del Settlement, saldo corrido, marca de Payment parcial, total y cantidad en pantalla se lee de la API.
-- La antigüedad de cada deuda y lo que queda de cada Sale salen solo de `settle()` y de `app/payments/domain/debt_age.py`. Los tres tramos, la antigüedad de cada deudor y sus líneas `still_owing` (`StillOwingLine(sale_number, sale_date, remaining)`, armadas desde `SettleResult.sales` con `still_owed > 0` en `app/payments/application/view_accounts.py`) se arman con los mismos valores del Settlement, nunca con una segunda consulta ni un segundo recorrido; ningún adaptador, router ni esquema recorre Sales contra Payments, asigna un tramo a una fecha ni reordena las líneas. El esquema (`DebtorsOut.of(debtors, with_lines)`) solo decide si `still_owing` sale como lista o como null.
+- Todo Balance, Owing since, reparto del Settlement, saldo corrido, marca de Payment parcial, antigüedad, total por mes, Average sale, total y cantidad en pantalla se lee de la API.
+- La antigüedad de cada deuda y lo que queda de cada Sale salen solo de `settle()` y de `app/payments/domain/debt_age.py`. Los tres tramos, la antigüedad de cada deudor y sus líneas `still_owing` (`StillOwingLine(sale_number, sale_date, remaining)`, armadas desde `SettleResult.sales` con `still_owed > 0` en `app/payments/application/view_accounts.py`) se arman con los mismos valores del Settlement, nunca con una segunda consulta ni un segundo recorrido; ningún adaptador, router ni esquema recorre Sales contra Payments, asigna un tramo a una fecha ni reordena las líneas. El esquema (`DebtorsOut.of(debtors, with_lines)`) solo decide si `still_owing` sale como lista o como null. El `age_days` y el `still_owing` de la cuenta (parte 3 de GH-498) siguen la misma regla.
+- Los totales por mes y el Average sale de un Customer salen solo de `app/payments/domain/customer_sales.py`; ningún adaptador, router, esquema ni código del navegador los calcula. La cantidad de meses es una sola constante, `SALES_BY_MONTH_WINDOW` (6), en ese mismo módulo.
+- El redondeo de la mitad hacia arriba del Average sale vive solo en `app/shared/`: results lo importa de ahí sin cambios y payments usa el mismo, así que el Average sale de Analysis y el de un Customer nunca se contradicen.
+- La cuenta extendida usa un repositorio armado para el Business de la Session y sus registros se siembran en `tests/test_business_isolation.py`, incluido un Customer con meses vacíos.
 - Payments lee el interruptor Customer types por su propio puerto (`PricingSettingsReader`) y nunca importa `app.pricing_settings`.
 - El registro de pantallas no tiene clave para "modal en la computadora"; ningún chequeo del registro distingue una Sheet de una página. La **Design capture** y la corrida e2e son la evidencia.
 - La rama de computadora de `CobroFrame` no la edita el layout de celular; solo su rama de celular la dibuja `Sheet`.
@@ -350,6 +387,21 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
 - **Customer type (GH-828)**: `customer_type_id` es null con el interruptor Customer types desactivado y es el id guardado con el interruptor activado.
 - **Aislamiento de deudores (criterio 17)**: con un deudor, un Credit y un Customer sin Sales sembrados en otro Business, ninguna de sus cifras ni cantidades aparece; con `with_lines=true` (`client` y `other_client`), las líneas de cada Business tienen solo sus propias Sales y Sale numbers, y nada de las del otro.
 - **Marca parcial (criterio 18)**: en la matriz de la cuenta y en el test de propiedad, `is_partial` es verdadero exactamente cuando el saldo corrido después del Payment es mayor que 0, y falso en 0 y por debajo; ningún archivo del front calcula un saldo ni una marca, y el Copy module no tiene clave de "Partial payment".
+- **Deuda de la cuenta (criterios 20, 21)**: tests por la API HTTP (TestClient, `app.state.clock`) sobre `GET /api/customers/{id}/account`:
+  - un Customer que debe trae `age_days` igual a los días entre su Owing since y hoy, y `still_owing` en el orden del Settlement con la fecha de la primera línea igual a su Owing since;
+  - la suma de los `remaining` es igual al Balance, 0 diferencias;
+  - una Sale pagada en parte aparece una sola vez con lo que le queda y no reinicia `age_days`;
+  - una Sale con fecha de hoy da `age_days` 0;
+  - un Customer que no debe nada y uno con Credit traen `still_owing` vacío y `age_days` null;
+  - las filas, el Balance y el Owing since de la cuenta son iguales a los de antes.
+- **Compras por mes y Average sale (criterios 22, 23)**: tests de dominio de `customer_sales.py` contra un cálculo directo, 0 diferencias:
+  - seis entradas siempre, la más vieja primero, terminando en el mes en curso, con meses vacíos en 0;
+  - envío incluido, pagadas o no, Gifts en $0, cada Sale en el mes de su fecha;
+  - una Sale con fecha más adelante en el mes en curso cuenta en él, y una posterior al mes en curso queda afuera;
+  - el Average sale redondea la mitad hacia arriba con el helper de `app/shared/`, con un caso exactamente en la mitad;
+  - un Customer sin Sales y uno con todas sus Sales más viejas que la ventana dan 0 en cada mes y `average_sale` null.
+- **Redondeo compartido (criterio 22)**: los tests existentes de results pasan sin cambiar sus aserciones con el redondeo importado de `app/shared/`, y ningún otro módulo define un redondeo propio del Average sale.
+- **Aislamiento de la cuenta extendida (criterio 7)**: `tests/test_business_isolation.py` siembra un Customer con meses vacíos y la cuenta de un Customer de otro Business sigue respondiendo 404, sin ninguna cifra de él.
 
 ## Fuera de alcance
 
@@ -373,3 +425,6 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
 - Mostrar en la ficha a qué Sales fue un Payment: eso queda solo en Record payment y su vista previa.
 - Mostrar en pantalla la marca de Payment parcial: una parte posterior de GH-498 la muestra como palabra, con su propio chequeo contra el dibujo.
 - Volver a decidir el orden de la cuenta, la fila de Payment o la redacción "In your favor", o reabrir ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view o el orden del Settlement (parte 2 de GH-829 solo documenta lo entregado).
+- Mostrar en pantalla la antigüedad, las Sales que se deben, las compras por mes o el Average sale del Customer, y el texto o el envío de un recordatorio: partes posteriores de GH-498.
+- El Average sale sobre toda la historia del Customer, o una ventana de meses configurable por Business (supuesto conocido, #330).
+- Estas cifras en el Catalog, el Sale bill o cualquier otra lectura.
