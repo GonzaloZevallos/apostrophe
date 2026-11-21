@@ -114,6 +114,9 @@ export interface Debtor {
 export interface Debtors {
   total_owed: number
   sales_owing_count: number
+  customer_count: number
+  debtor_count: number
+  buckets: { this_week: number; days_8_30: number; over_30: number }
   debtors: Debtor[]
 }
 
