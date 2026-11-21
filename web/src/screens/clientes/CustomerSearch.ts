@@ -44,7 +44,11 @@ export function customersView(input: {
   return input.segment
 }
 
-/** The props `CustomerSegments` takes for a debtors answer: counts only from data, the skeleton otherwise. */
+/**
+ * The props `CustomerSegments` takes for a debtors answer: counts only from data, the skeleton
+ * otherwise. The merged control takes `customerCount`, `debtorCount` and `pending`, not a single
+ * `counts`, and the control's file is not this task's to change; this maps one to the other.
+ */
 export function segmentCounts(data: Debtors | undefined): {
   customerCount: number
   debtorCount: number
