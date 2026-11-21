@@ -97,7 +97,7 @@ function mount(props: HostProps) {
         ),
       },
     ],
-    { initialEntries: ['/'] },
+    { initialEntries: [HOME] },
   )
   return render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -111,7 +111,6 @@ function mount(props: HostProps) {
 }
 
 interface Sent {
-  path: string
   body: unknown
 }
 let sent: Sent[] = []
@@ -134,8 +133,8 @@ function stubFetch({
       if (path === '/api/payment-methods') {
         return methods === 'pending' ? new Promise<Response>(() => undefined) : Promise.resolve(json(200, METHODS_ANSWER))
       }
-      if ((init?.method ?? 'GET') !== 'POST') return Promise.reject(new Error(`unexpected request: ${path}`))
-      sent.push({ path, body: JSON.parse(String(init?.body)) })
+      if ((init?.method ?? 'GET') !== 'POST' || path !== '/sales') return Promise.reject(new Error(`unexpected request: ${path}`))
+      sent.push({ body: JSON.parse(String(init?.body)) })
       if (reply === 'held') {
         return new Promise<Response>((resolve) => {
           answerSave = resolve
@@ -272,7 +271,6 @@ test('the payload: shipping from priced, a blank note null, the lines as quantit
   await user.click(collect())
   await waitFor(() => expect(sent).toHaveLength(1))
   expect(sent[0]).toEqual({
-    path: '/sales',
     body: {
       date: '2026-10-02',
       customer_id: 4,
