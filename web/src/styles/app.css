@@ -5341,6 +5341,13 @@ a.ajustes-tema__opcion {
   border-bottom: 1px solid var(--linea);
 }
 
+/* The loading skeleton's row: as tall as a real one (the 44 px stepper target), so the rows do not
+ * reflow when the list arrives, with the name's bar and the price's bar at its two ends. */
+.nv-productos__fila--esqueleto {
+  justify-content: space-between;
+  min-height: calc(var(--alto-tocable) + 2 * var(--espacio-sm));
+}
+
 .nv-productos__datos {
   display: flex;
   flex: 1;
