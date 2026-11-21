@@ -22,6 +22,8 @@ export const OWING_HINT = 'To leave it owing, pick a customer'
 export const NO_PRICE_HINT = 'Add a price to a product so you can sell'
 
 /** The Collect Sheet's one text for a save that failed for any cause but the method: it never carries the API's `detail`. */
+/** The refusal when Collect is blocked for owing with no Customer: the problem first, then both ways out. */
+const OWING_NEEDS_CUSTOMER = 'Owing needs a customer. Pick one, or choose how they pay.'
 const SALE_NOT_SAVED = 'The sale was not saved. Your lines are kept, so try again.'
 
 /** The line of a variety with no price on the sale's date. */
@@ -55,6 +57,9 @@ export const SALE_BILL_TEXT = {
   unit: 'g',
 }
 
+/** The Collect Sheet's Received field: a help line, never a refusal. */
+const RECEIVED_HELP = "Type what they hand over to see the change. It isn't saved."
+
 /** New sale's Product list. `stock` is already formatted; the step names carry the Product's own name. */
 const NEW_SALE_TEXT = {
   productsInSale: (n: number) => `In the sale · ${n}`,
@@ -64,6 +69,9 @@ const NEW_SALE_TEXT = {
   productAdd: (name: string) => `Add ${name}`,
   productIncrease: (name: string) => `Add one ${name}`,
   productDecrease: (name: string) => `Remove one ${name}`,
+  productsResults: (n: number) => `Results · ${n}`,
+  productSearchLabel: 'Search products',
+  productSearchPlaceholder: 'Search by name',
 }
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
@@ -74,6 +82,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'notice', text: SALE_BILL_TEXT.shareFailed },
   { kind: 'notice', text: SALE_BILL_TEXT.copyFailed },
   { kind: 'notice', text: SALE_NOT_SAVED },
+  { kind: 'notice', text: OWING_NEEDS_CUSTOMER },
   { kind: 'help', text: NEW_SALE_TEXT.productsInSale(Number(SAMPLES.count)) },
   { kind: 'help', text: NEW_SALE_TEXT.productsMostSold },
   { kind: 'help', text: NEW_SALE_TEXT.productStock(SAMPLES.grams) },
@@ -81,6 +90,10 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: NEW_SALE_TEXT.productAdd(SAMPLES.name) },
   { kind: 'help', text: NEW_SALE_TEXT.productIncrease(SAMPLES.name) },
   { kind: 'help', text: NEW_SALE_TEXT.productDecrease(SAMPLES.name) },
+  { kind: 'help', text: NEW_SALE_TEXT.productsResults(Number(SAMPLES.count)) },
+  { kind: 'help', text: NEW_SALE_TEXT.productSearchLabel },
+  { kind: 'help', text: NEW_SALE_TEXT.productSearchPlaceholder },
+  { kind: 'help', text: RECEIVED_HELP },
 ]
 
 /** Nothing here is over 80 characters. */
@@ -115,6 +128,8 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.newSale.productAdd': [['Rosa']],
   'SALES_TEXT.newSale.productIncrease': [['Rosa']],
   'SALES_TEXT.newSale.productDecrease': [['Rosa']],
+  // A new key's en.baseline.json entry is inserted in sorted order: `i18n:baseline --update` never adds one.
+  'SALES_TEXT.newSale.productsResults': [[2]],
   'SALE_BILL_TEXT.header': [['Flores Test', 'Sale #1284', D]],
   'SALE_BILL_TEXT.item': [['Rosa', '3,5', 'g', M]],
   'SALE_BILL_TEXT.bulk': [['Rosa', '10', 'g', M, M]],
@@ -190,11 +205,19 @@ export const SALES_TEXT = {
   collectTitle: (n: number) => (n === 1 ? 'The sale · 1 item' : `The sale · ${n} items`),
   howTheyPay: 'How they pay',
   owesIt: 'Owes it',
+  owingNeedsCustomer: OWING_NEEDS_CUSTOMER,
   chooseMethod: 'Choose a method',
   noMethodToCollect: 'Choose how they pay to collect.',
   saleNotSaved: SALE_NOT_SAVED,
   /** `total` is the sale's total in the business's Money format (`useMoney().money`). */
   collect: (total: string) => `Collect ${total}`,
+  /** The label of Collect when `collect(total)` does not fit its line. */
+  collectShort: COMMON_TEXT.collect,
+  /** The Collect Sheet's Total row: the label alone, its figure drawn beside it. */
+  totalLabel: 'Total',
+  receivedLabel: 'Received',
+  receivedHelp: RECEIVED_HELP,
+  changeLabel: COMMON_TEXT.change,
   saving: 'Saving…',
   newSale: NEW_SALE_TEXT,
 } as const

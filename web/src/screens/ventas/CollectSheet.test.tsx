@@ -638,7 +638,7 @@ test('a successful save after a failure clears the not-saved text', async () => 
   await expectPosts(2)
 })
 
-const OWING_HINT = 'To leave it owing, pick a customer'
+const OWING_REFUSAL = 'Owing needs a customer. Pick one, or choose how they pay.'
 
 function drive(action: (draft: SaleDraftApi) => void): void {
   act(() => {
@@ -719,17 +719,17 @@ test('owing with the Customer cleared: marked, refused with 0 requests, focused;
   expect(field()).toHaveTextContent('Owes it')
   await user.click(collect())
   const refusal = await screen.findByRole('alert')
-  expect(refusal).toHaveTextContent(OWING_HINT)
+  expect(refusal).toHaveTextContent(OWING_REFUSAL)
   expect(field()).toHaveFocus()
-  expect(field()).toHaveAccessibleDescription(OWING_HINT)
+  expect(field()).toHaveAccessibleDescription(OWING_REFUSAL)
   expect(sent).toHaveLength(0)
 
   drive((draft) => draft.chooseCustomer(4))
-  await waitFor(() => expect(screen.queryByText(OWING_HINT)).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByText(OWING_REFUSAL)).not.toBeInTheDocument())
   expect(screen.queryByText('no longer available')).not.toBeInTheDocument()
 
   drive((draft) => draft.removeCustomer())
-  expect(screen.queryByText(OWING_HINT)).not.toBeInTheDocument()
+  expect(screen.queryByText(OWING_REFUSAL)).not.toBeInTheDocument()
 
   drive((draft) => draft.chooseCustomer(4))
   await user.click(collect())
@@ -750,8 +750,8 @@ test('two refusals in a row: the method line goes when owing arrives with no Cus
   expect(field()).not.toHaveAccessibleDescription(NO_METHOD)
 
   await user.click(collect())
-  expect(await screen.findByText(OWING_HINT)).toBeInTheDocument()
-  expect(field()).toHaveAccessibleDescription(OWING_HINT)
+  expect(await screen.findByText(OWING_REFUSAL)).toBeInTheDocument()
+  expect(field()).toHaveAccessibleDescription(OWING_REFUSAL)
   expect(sent).toHaveLength(0)
 })
 

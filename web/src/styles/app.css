@@ -5311,6 +5311,18 @@ a.ajustes-tema__opcion {
   gap: var(--espacio-lg);
 }
 
+/* The drawing shows no clear control: the native one is hidden. */
+.nv-productos__buscar::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+/* The matched part of a name: the accent and weight 600 carry it (weight too, so it is not colour alone). */
+.nv-productos__marca {
+  background: transparent;
+  color: var(--acento);
+  font-weight: 600;
+}
+
 .nv-productos__seccion {
   display: flex;
   flex-direction: column;
@@ -5339,6 +5351,13 @@ a.ajustes-tema__opcion {
   min-height: var(--alto-tocable);
   padding: var(--espacio-sm) 0;
   border-bottom: 1px solid var(--linea);
+}
+
+/* The loading skeleton's row: as tall as a real one (the 44 px stepper target), so the rows do not
+ * reflow when the list arrives, with the name's bar and the price's bar at its two ends. */
+.nv-productos__fila--esqueleto {
+  justify-content: space-between;
+  min-height: calc(var(--alto-tocable) + 2 * var(--espacio-sm));
 }
 
 .nv-productos__datos {
@@ -6297,6 +6316,60 @@ a.ajustes-tema__opcion {
   opacity: 0;
 }
 
+/* The Collect Sheet's form: the Total row, then the block that goes inert while saving (the
+ * method, its refusal, Received and Change), then the action at the full width of the sheet. */
+.cobro__formulario .boton[type='submit'] {
+  width: 100%;
+}
+
+.cobro__total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+}
+
+.cobro__bloque {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+/* Change is secondary to the Collect total: the muted ink, laid out like the Total row. */
+.cobro__vuelto {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  color: var(--tinta2);
+}
+
+/* Empty, the status region stays in the accessibility tree but leaves the block's flow, so it adds no gap. */
+.cobro__vuelto:empty {
+  position: absolute;
+}
+
+/* The Collect label always holds its full text and never wraps or shrinks; when it overflows its
+ * button the short word is drawn over it, and the full text stays (hidden) so it can come back. */
+.cobro__etiqueta {
+  display: block;
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.cobro__etiqueta-completa--oculta {
+  visibility: hidden;
+}
+
+.cobro__etiqueta-corta {
+  position: absolute;
+  inset: 0;
+  text-align: center;
+}
+
 /* The method: the Payment method Selector and, under it, its refusal. */
 .cobro__metodo {
   display: flex;
@@ -7209,3 +7282,21 @@ button:has(> .venta-en-curso) {
   font-weight: 600;
 }
 /* ===== end venta-gasto-telefono ===== */
+
+/* Customers segmented control: the wrapper sizes the shared option, which splits the width
+ * equally and may wrap its label and count (no nowrap, no ellipsis) and grow past 44 px. */
+.segmentos-clientes .selector-pago__opcion {
+  flex: 1 1 0;
+  min-height: var(--alto-tocable);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--espacio-xs);
+  padding: var(--espacio-xs) var(--espacio-md);
+}
+
+/* A count's dot and figure stay one unit; the colour is the option's own. */
+.selector-pago__cuenta {
+  display: inline-block;
+}
