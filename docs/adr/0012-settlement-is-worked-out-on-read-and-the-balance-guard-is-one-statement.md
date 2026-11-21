@@ -96,7 +96,7 @@ no agrega ninguna regla: cada una nombra el test o la función que la respalda.
   `test_a_payment_covering_several_sales_is_still_one_row_with_its_full_amount` y
   `test_a_payment_beyond_every_debt_is_one_negative_row_in_credit`.
 - **Un running balance bajo cero es un punto del ledger, no un Credit guardado.** La
-  pantalla dice "In your favor".
+  pantalla dice "In your favor" (`web/src/screens/clientes/ClienteFicha.test.tsx`).
 - **`is_partial` es verdadero cuando el running balance tras el Payment es mayor que 0**, y
   falso en exactamente 0 y por debajo. Se calcula solo en `account_of()` y nunca se guarda.
   Respaldo: `test_partial_marks_above_zero_true_exactly_zero_and_below_false`.
@@ -104,4 +104,7 @@ no agrega ninguna regla: cada una nombra el test o la función que la respalda.
   cambia: el repositorio actualiza solo `customer_id`
   (`test_a_sale_assigned_a_customer_later_keeps_its_place_in_the_account`). Un Payment
   borrado y vuelto a registrar es un Payment nuevo, con su propio `recorded_at` y su
-  propio `id`.
+  propio `id`: `record_payment()` en `app/payments/application/record_payment.py` lo
+  inserta con `insert_later(..., recorded_at)`, y `insert_later` y `delete_later` son las
+  únicas escrituras de `app/payments/adapters/sql_payments.py`, por lo que ningún camino
+  actualiza el `recorded_at` de un Payment existente.
