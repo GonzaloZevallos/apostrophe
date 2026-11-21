@@ -2,7 +2,10 @@
   "title": "Payment methods",
   "group": {
     "title": "Payments and expenses",
-    "row": "Payment methods"
+    "row": "Payment methods",
+    "lead": "How you get paid and what you spend on",
+    "paymentsHeading": "Payments",
+    "expensesHeading": "Expenses"
   },
   "list": {
     "add": "Add method",
