@@ -26,7 +26,7 @@ Es la parte 2 de GH-863 (#924 y su recorte de estados de carga y falla). Sigue s
 
 ### Lectura de nuevo tras una falla
 
-- Tras una falla, la lista vuelve a leer sola cuando el teléfono se reconecta o cuando la app recupera el foco, y reemplaza el aviso por la lista, con las cantidades que había cargado quien vende y los precios nuevos. Sin botón: los dos avisos no cambian (ADR 20261121).
+- Tras una falla, la lista vuelve a leer sola cuando el teléfono se reconecta o cuando la app recupera el foco, y reemplaza el aviso por la lista, con las cantidades que había cargado quien vende y los precios nuevos. Sin botón: los dos avisos no cambian. Ver el ADR [20261121-new-sale-s-product-list-re-reads-after-a-failure-on-reconnect-or-focus-the-only-exception-to-no-background-retry](../adr/20261121-new-sale-s-product-list-re-reads-after-a-failure-on-reconnect-or-focus-the-only-exception-to-no-background-retry.md).
 - Nunca vuelve a leer en segundo plano una lista que ya cargó, y no hay un bucle de reintentos: una lectura que vuelve a fallar deja el aviso hasta el próximo evento.
 - Sin red al abrir cuenta como una falla: muestra SinConexion sin `aria-busy` y no pide nada hasta que el teléfono vuelve.
 - Una falla de Stock o de New sale suggestions es silenciosa: la lista aparece sin texto de stock o sin sugerencias.

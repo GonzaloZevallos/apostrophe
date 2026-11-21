@@ -12,7 +12,7 @@
  * A failed suggestions or Stock read counts as settled: no suggestions, no stock text.
  */
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, type QueryStatus } from '@tanstack/react-query'
 import { useState } from 'react'
 import { NetworkError } from '../api/client'
 import { keys } from '../api/keys'
@@ -42,7 +42,7 @@ export interface NewSaleReads {
 
 /** Re-read only a query that is in error (ADR 20261121: the one exception to "no background retry").
  * Per observer: no query-level option (`networkMode`, `gcTime`, `retry`, `staleTime`) is touched. */
-function rereadAfterError(query: { state: { status: string } }): 'always' | false {
+function rereadAfterError(query: { state: { status: QueryStatus } }): 'always' | false {
   return query.state.status === 'error' ? 'always' : false
 }
 
