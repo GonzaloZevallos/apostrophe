@@ -4,7 +4,9 @@
 
 **Cuando** entrego un pedido y lo registro en el teléfono, **quiero** armar la venta con los clientes, productos y el medio de pago que suelo elegir, ajustando solo cantidades y con cada total calculado por la app, **para** guardar la venta en menos de un minuto y nunca cotizar de memoria ni volver a tipear lo que elegí hace un momento. (Parte 3 de GH-496: la sirven el estado de la venta en curso, `useSaleDraft`, y el cliente del front de las **New sale suggestions**. Afina la primera historia de sales.md; no es un trabajo nuevo).
 
-**Cuando** termino de armar una venta en New sale, **quiero** ver lo que estoy por cobrar y decir cómo me pagaron, o que me lo deben, **para** guardar la venta de un toque con el pago correcto y la deuda correcta. (Parte 2 de GH-867: la sirve la **Collect Sheet**. Es el paso de cierre del trabajo de BRIEF "una venta se registra desde el teléfono en menos de un minuto"; no es un trabajo nuevo. "Que me lo deben" llega con #944).
+**Cuando** termino de armar una venta en New sale, **quiero** ver lo que estoy por cobrar y decir cómo me pagaron, o que me lo deben, **para** guardar la venta de un toque con el pago correcto y la deuda correcta. (Parte 2 de GH-867: la sirve la **Collect Sheet**. Es el paso de cierre del trabajo de BRIEF "una venta se registra desde el teléfono en menos de un minuto"; no es un trabajo nuevo).
+
+**Cuando** le entrego un pedido a un cliente que conozco y se lo lleva sin pagar ahora, **quiero** guardar la venta como adeudada con los mismos pocos toques que una venta pagada, **para** que su Balance y su Owing since la muestren y pueda cobrarla después sin perder la fecha. (#944: la sirve la opción "Owes it" de la **Collect Sheet**. Son los dos primeros trabajos de BRIEF, registrar una venta en pocos toques y saber quién debe qué y desde cuándo, aplicados a New sale; no es un trabajo nuevo).
 
 **Cuando** estoy cerrando una venta en el teléfono y algo falla (no cargan los medios de pago o el guardado no pasa), **quiero** ver en palabras simples qué pasó y terminar con un toque más, con mis líneas y el medio que elegí todavía ahí, **para** que la venta quede registrada y nunca la vuelva a tipear, la pierda o crea que se guardó cuando no se guardó. (#930: la sirven los caminos de fallo de la **Collect Sheet**. Es la versión de fallo de la misma primera historia de sales.md; no es un trabajo nuevo).
 
@@ -17,6 +19,8 @@ La **Sale in progress** es la venta que se está armando en New sale antes de gu
 Hasta la parte de GH-496 que la monta en pantalla (el flip), ninguna pantalla la usa: no hay ruta, constante de build, parámetro de consulta, bandera de ventana ni hook `data-*` para llegar a ella ni a la lista de Products ni a la Collect Sheet, y se prueban solo con tests unitarios, de componente y del cliente a nivel de fetch.
 
 Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clientes, productos y medio de pago, y tipea las cantidades a mano, de a un Product por vez y sin ver de una sola vez lo que ya está en la venta ni lo que suele vender. El costo principal son las elecciones repetidas, y el segundo es tipear cantidades. Hoy dice cómo le pagaron en el mismo formulario de New sale; la Collect Sheet pasa esa elección a un paso de cierre sin cambiar qué significan Payment, On-the-spot payment, Balance, Settlement ni Owing since. Un pago parcial sigue siendo un Payment posterior registrado con Record payment.
+
+En la planilla, una venta sin pagar era una fila sin pago, y saldarla después pisaba la deuda (BRIEF, Problema). "Owes it" existe para que la vendedora nunca necesite inventar un Payment, ni uno de $0, para que los libros den bien: eso falsearía el Cash y el Money in y dejaría mal el Owing since. Es un supuesto decidido en la entrevista de #944, no verificado.
 
 ## Reglas
 
@@ -42,13 +46,15 @@ Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clien
 - Sin sugerencia (sin historial o con el último medio archivado) o con la lectura fallida, `proposedMethodId` queda vacío y unset no tiene medio efectivo. Una lectura fallida no muestra ningún error.
 - La propuesta es siempre el id de un **Payment method**, nunca un nombre ni una marca de efectivo.
 - La propuesta cuenta solo si está entre los Payment methods ofrecidos; si no lo está, o la lista ofrecida todavía no llegó, unset no tiene medio efectivo. paid(id) y owing se devuelven como los eligió la vendedora.
+- La Sale in progress no recuerda una elección anterior: salir de owing sin nombrar un medio deja unset, nunca el medio elegido antes.
 
 ### Cliente y owing
 
-- Sacar el cliente con `choice` en owing lo vuelve a unset, porque una venta sin cliente no puede quedar debiendo. Es el único cambio automático.
+- Desde #944, sacar el cliente con `choice` en owing conserva owing: la Sale in progress no cambia la elección por su cuenta, para que una venta adeudada nunca pase en silencio a pagada con el medio propuesto (un Payment que nadie hizo). La Collect Sheet se encarga de no guardarla (ver Collect Sheet). Antes de #944 la volvía a unset; esa regla queda reemplazada.
 - Cambiar a otro cliente conserva owing.
 - Sacar el cliente conserva paid(id), porque una **Sale without a customer** se permite pagada por completo.
 - Elegir owing sin cliente se conserva tal cual; rechazar el guardado es de la API y de la pantalla.
+- La Sale in progress no tiene ningún cambio automático de `choice`.
 
 ### Apertura
 
@@ -73,8 +79,12 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 - Título "The sale · 1 item" para una línea y "The sale · {n} items" para cualquier otro n, con n = `priced.lines.length` (cuenta líneas, no unidades).
 - Una fila de Customer de solo lectura, sin "Cambiar" ni chevron: "No customer" cuando la Sale in progress no tiene cliente; si no, `customerName`, o un marcador de carga compacto y sin texto mientras el nombre todavía no llegó. Para cambiar el cliente, la vendedora cierra la Sheet, lo cambia en New sale y la vuelve a abrir.
-- Un **Selector** "How they pay", con los Payment methods ofrecidos por `usePaymentMethodOptions` (que también da `offeredIds`, los ids de la lista leída, o `null` mientras no hay lista). Su valor sale de `selectorValueOf`: el medio elegido (paid(id)), o la propuesta (`proposedMethodId`) con unset solo si está ofrecida; si no, el campo queda vacío ("Choose a method"). Elegir un medio guarda paid(id) mediante `choiceOfValue`. Una elección owing que ya traiga el borrador se muestra como campo vacío y se rechaza como "sin medio". La opción "Owes it" no está en esta parte (llega con #944).
-- Un botón fijo abajo "Collect {total}" con `priced.totals.total` en el **Money format** del Business, en Tabular figures, con la misma etiqueta para cualquier elección.
+- Un **Selector** "How they pay", con los Payment methods ofrecidos por `usePaymentMethodOptions` (que también da `offeredIds`, los ids de la lista leída, o `null` mientras no hay lista). Su valor sale de `selectorValueOf`: el medio elegido (paid(id)), "Owes it" (owing), o la propuesta (`proposedMethodId`) con unset solo si está ofrecida; si no, el campo queda vacío ("Choose a method"). Elegir un medio guarda paid(id) mediante `choiceOfValue`.
+- La opción "Owes it" (#944) se ofrece solo cuando la Sale in progress tiene cliente (`draft.state.customerId`), siempre última, después de los Payment methods del Business en el orden de su propia lista, y sin importar el total. Elegirla llama a `draft.setChoice({kind:'owing'})`. No es un Payment method: es la ausencia de un Payment, nunca está en la lista de Payment methods del Business y Settings no la renombra, archiva ni reordena.
+- Salir de "Owes it" eligiendo un medio guarda paid(id) de ese medio; salir sin nombrar un medio guarda unset, y el campo muestra la propuesta o queda vacío. No se recuerda ninguna elección anterior.
+- Con owing y sin cliente (el cliente se sacó en New sale), el campo sigue mostrando "Owes it" con la marca existente "no longer available", y nunca se pone otro medio en su lugar. Volver a poner un cliente la deja válida otra vez sin ningún paso más; elegir un medio también borra la marca.
+- Un botón fijo abajo "Collect {total}" con `priced.totals.total` en el **Money format** del Business, en Tabular figures, con la misma etiqueta para cualquier elección, "Owes it" incluida: no hay línea extra ni otra palabra de acción para una venta adeudada.
+- En el momento de la venta no se dice nada sobre un Credit del cliente ni hay vista previa del Balance; la cuenta del Customer y el Sale bill muestran el resultado.
 
 ### Estados de la lista de medios
 
@@ -85,9 +95,12 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 ### Collect
 
-- Al tocar, llama a `validateSale({...payStateOfEffective(efectivo), total: priced.totals.total, hasCustomer, lines: lineValidationsOf(priced)})`, donde `efectivo` es `collectableChoice(effectiveChoice(...))`; es el único lugar que rechaza el pago. `payStateOfEffective` lee "ningún medio" como pagar sin medio conocido, que `validateSale` rechaza por encima de $0 y deja pasar en $0. `collectableChoice` trata owing como ninguna elección hasta #944. `lineValidationsOf` solo lee lo que `priced` ya dice de cada línea.
+- Al tocar, llama a `validateSale({...payStateOfEffective(efectivo), total: priced.totals.total, hasCustomer, lines: lineValidationsOf(priced)})`, donde `efectivo` es `collectableChoice(effectiveChoice(...))`; es el único lugar que rechaza el pago. `payStateOfEffective` lee "ningún medio" como pagar sin medio conocido, que `validateSale` rechaza por encima de $0 y deja pasar en $0. Desde #944, `collectableChoice` deja pasar owing como cualquier otra elección: una venta con "Owes it" va por `validateSale`/`payStateOf` y `saleBodyOf` igual que las demás, y un borrador que ya trae owing con cliente se muestra como "Owes it" y se guarda. `lineValidationsOf` solo lee lo que `priced` ya dice de cada línea.
+- Con owing y sin cliente no se manda nada: se muestra, en el `FieldRefusal` debajo del Selector y con el **Attention icon**, el motivo que `validateSale` ya da para una venta adeudada sin cliente, y se enfoca el campo, igual que el rechazo sin medio. Volver a poner un cliente o elegir un medio borra el rechazo.
+- Una venta de $0 guardada con "Owes it" queda pagada, como dice **Payment state**; la opción no se esconde ni se rechaza por el total.
+- Una venta adeudada no crea ningún Payment: suma al Balance de su Customer, fija su Owing since cuando es su venta sin pagar más antigua, cuenta en Sales y Profit en su propia fecha y no mueve el Cash ni el Money in.
 - Un medio que el servidor rechazó como no disponible cuenta como ningún medio durante toda la vida de la Sheet, igual que en `NuevaVenta`, se haya vuelto a leer la lista o no.
-- Orden de un toque: primero una línea sin precio (no hace nada), después el error de medio, después guardar.
+- Orden de un toque: primero una línea sin precio (no hace nada), después el error de medio o de owing sin cliente, después guardar.
 - Si `priced` trae una línea sin precio para la fecha de la venta, el toque no manda nada (0 pedidos), no muestra "Saving…" ni ningún texto nuevo y no llama a `onSavingChange`. Es solo una guarda: se lee lo que `priced` ya dice de la línea, nunca se calcula un precio, y la vendedora no llega a ese estado porque la pantalla anfitriona no abre la Sheet.
 - Sin medio por encima de $0 no se manda nada: se muestra "Choose how they pay to collect." en el `FieldRefusal` debajo del Selector, con el **Attention icon** y ligado por `describedBy`, y se enfoca el campo. Si el campo todavía está cargando (y por eso deshabilitado), el foco va al grupo que lo envuelve, el mismo destino que usa el Selector al pasar a carga. Elegir un medio borra el rechazo.
 - Una venta de $0 sin medio se guarda con `payment: null`; una de $0 con un medio elegido lo manda.
@@ -102,13 +115,13 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 - 401: lo maneja el límite de sesión compartido (el `MutationCache.onError` global), como en el resto de la app; la Sheet no muestra nada propio.
 - Rechazo del medio (el 404 `payment_method.unavailable`): lo reconoce un único predicado, `isMethodUnavailable` en `web/src/sales/saleRefusal.ts`, que también usa `NuevaVenta` (ya no está entre sus `submitOverrides`), así que el mismo rechazo significa lo mismo en los dos lugares. El Selector conserva el medio elegido con su nombre y la marca "no longer available" de inmediato, aunque la lista no se vuelva a leer o esa lectura falle, y debajo se muestra `common:paymentMethodUnavailable` en un `FieldRefusal` con el Attention icon y rol alert, así que se anuncia. Se invalida `keys.paymentMethods()` para volver a leer la lista. El medio rechazado no se vuelve a ofrecer ni a mandar mientras la Sheet esté abierta. Elegir otro medio borra la marca y lo manda; un nuevo toque en Collect sin elegir otro, por encima de $0, muestra el rechazo sin medio, no manda nada y enfoca el Selector, y en $0 guarda con `payment: null`. El mismo rechazo nunca se repite, y no se muestra el texto "not saved".
 - Cualquier otra causa (otro rechazo de la API, red caída, respuesta mal formada): arriba de Collect, al final del cuerpo y justo encima del pie fijo de la Sheet (la convención de errores de las Sheets), se muestra "The sale was not saved. Your lines are kept, so try again." en un `FieldRefusal` con el Attention icon, anunciado a los lectores de pantalla (rol alert). Es el único texto para esas causas: el `detail` de la API nunca se muestra, y no hay diagnósticos, toast, vibración ni una señal solo de color.
-- Después de cualquier fallo, las líneas y el medio se conservan, Collect se puede volver a tocar (un toque es exactamente un pedido más) y Close vuelve a funcionar. El foco queda en Collect o vuelve a él al terminar el guardado, también tras el rechazo del medio; es el toque siguiente el que lo lleva al Selector.
+- Después de cualquier fallo, las líneas y el medio (o "Owes it") se conservan, Collect se puede volver a tocar (un toque es exactamente un pedido más) y Close vuelve a funcionar. El foco queda en Collect o vuelve a él al terminar el guardado, también tras el rechazo del medio; es el toque siguiente el que lo lleva al Selector.
 - El texto "not saved" se borra al empezar un reintento, al elegir cualquier medio o con un guardado exitoso; nunca con un temporizador. Mientras corre un reintento solo se ve "Saving…".
 - Un guardado fallido que el front ve nunca deja una venta registrada ni se ve como un éxito, y "the sale was not saved" siempre se distingue de "no longer available" por sus palabras.
 
 ### Textos
 
-- Viven en `SALES_TEXT`, el módulo de ventas de `web/src/copy/`, en inglés y sin palabra de unidad, moneda ni tipo de producto: `collectTitle(n)`, `howTheyPay` ("How they pay"), `chooseMethod` ("Choose a method"), `noMethodToCollect` ("Choose how they pay to collect."), `collect(total)` ("Collect {total}"), `saving` ("Saving…") y, desde #930, `saleNotSaved` ("The sale was not saved. Your lines are kept, so try again."), registrada en LIMITED_COPY como las otras claves de ventas. "No customer" ya existía. "Owes it" llega con #944. El baseline se regenera, nunca se edita a mano.
+- Viven en `SALES_TEXT`, el módulo de ventas de `web/src/copy/`, en inglés y sin palabra de unidad, moneda ni tipo de producto: `collectTitle(n)`, `howTheyPay` ("How they pay"), `chooseMethod` ("Choose a method"), `noMethodToCollect` ("Choose how they pay to collect."), `collect(total)` ("Collect {total}"), `saving` ("Saving…"), desde #930 `saleNotSaved` ("The sale was not saved. Your lines are kept, so try again.") y desde #944 la clave de "Owes it", registradas en LIMITED_COPY como las otras claves de ventas. Si la validación de #918 no tiene en palabras el motivo de una venta adeudada sin cliente, #944 agrega una sola clave más para ese motivo, en inglés. "No customer" ya existía. El baseline se regenera, nunca se edita a mano.
 - La marca "no longer available", `common:paymentMethodUnavailable` y la línea de fallo del Selector (`selectorPaymentMethodsFailed`) se reutilizan, sin claves nuevas.
 
 ### Huecos conocidos
@@ -120,6 +133,7 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 - En $0, si después del rechazo del medio un reintento falla por otra causa, la línea "no longer available" y el texto "not saved" se ven a la vez. Las palabras los siguen distinguiendo y la venta se puede terminar; lo juzga el flip.
 - Con la lista de medios fallida y un total mayor que $0, la recuperación suele llevar 4 toques, porque la línea de fallo del Selector solo se ve dentro de la lista abierta.
 - Qué hacen el total y la etiqueta de Collect cuando el medio rechazado tenía una promoción atada queda sin definir; lo decide el flip.
+- Si la palabra de la acción "Collect" resulta decir que se cobra plata cuando se eligió "Owes it", es una pregunta sobre el texto de #918, no de #944; lo juzga el flip.
 
 ## Cliente de las New sale suggestions
 
@@ -215,9 +229,11 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - La pantalla anfitriona de New sale que monta la Collect Sheet, el flip que la monta y su regla de no abrirla con una línea sin precio.
 - Reescribir el criterio 34 de sales.md ("el medio nunca viene puesto"), que le corresponde al flip, cuando la preselección llegue a la vendedora.
 - Received y Change en la Collect Sheet.
-- La opción "Owes it" (#944).
+- Un pago parcial en el momento de la venta: las opciones son pagada por completo con un medio o "Owes it" sin nada pagado ahora; un pago parcial es un Payment posterior por Record payment y el Settlement.
+- Un aviso de Credit o una vista previa del Balance en la Collect Sheet, y una línea extra u otra palabra de acción para una venta adeudada.
+- Cualquier cambio a los Payment methods o a Settings por "Owes it".
 - Textos propios de la Collect Sheet para rechazos que no son el del medio, y devolverlos a la pantalla anfitriona (lo decide el flip).
-- Cualquier cambio al Selector, a `usePaymentMethodOptions` o al cargador compartido de la lista de medios, al Attention icon o a la Icon and text rule por los caminos de fallo de la Collect Sheet, incluida la línea de fallo sin conexión antes de la primera carga.
+- Cualquier cambio al Selector, a `usePaymentMethodOptions` o al cargador compartido de la lista de medios, al Attention icon o a la Icon and text rule por los caminos de fallo de la Collect Sheet o por "Owes it", incluida la línea de fallo sin conexión antes de la primera carga.
 - Un texto propio de la Collect Sheet para una línea sin precio.
 - Gift, Special price y la Sheet del detalle de línea.
 - Conservar la venta en curso tras una recarga.
@@ -225,7 +241,7 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 
 ## Métricas
 
-- Cada regla de Líneas, Sin guardar, Cómo se paga, Cliente y owing, y Apertura tiene su test unitario de la Sale in progress, y pasa.
+- Cada regla de Líneas, Sin guardar, Cómo se paga, Cliente y owing, y Apertura tiene su test unitario de la Sale in progress, y pasa; incluye que sacar el cliente con owing conserva owing (#944).
 - Cliente de sugerencias, a nivel de fetch: exactamente 1 pedido por apertura, con `on` igual a la fecha de apertura; 0 pedidos nuevos después de editar la fecha o volver a dibujar; 1 pedido nuevo en una apertura de otro día; una lectura fallida da ninguna sugerencia y 0 errores lanzados.
 - Lista de Products, en tests de componente a nivel de fetch: cada caso de la lista (pasos, cantidades tipeadas, una línea por Product, "No price", línea que pierde su precio, línea cuyo Product ya no vuelve, sugerencias filtradas y con tope, Stock, bulk a 10, recotización por Customer y por fecha, aviso, símbolo y decimales del Money format, nada antes de tiempo) tiene su test y pasa; 0 pedidos nuevos de sugerencias tras cambiar la fecha; 0 cambios en los totales de la venta al mostrar más filas.
 - Líneas perdidas por una acción de la lista o una recarga de Products: 0. Ids internos mostrados en pantalla: 0.
@@ -235,7 +251,16 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Claves del Copy module agregadas por la lista de Products: 7, en inglés y sin palabras de Unit ni de tipo de producto.
 - Gate (pytest, vitest, e2e) pasa, y tsc strict y oxlint pasan sin nada silenciado.
 - Vara del trabajo, que se juzga cuando el flip la monte: una venta se registra desde el teléfono en menos de un minuto (sales.md, criterio 1), y un Product habitual se encuentra, se agrega y se ajusta sin salir de la lista (1 toque para un Product habitual a 1 unidad desde "Most sold").
-- Collect Sheet, con Testing Library a nivel de fetch: sin medio por encima de $0, 0 pedidos y el campo enfocado; con una línea sin precio en `priced`, 0 pedidos, ningún texto nuevo y ninguna llamada a `onSavingChange`; mientras guarda, toques extra y Close dan 0 pedidos adicionales; tras un pedido rechazado, `onSavingChange` termina en false y Close vuelve a funcionar; un borrador que ya trae owing no se manda; la etiqueta de Collect es igual a `priced.totals.total` formateado y `onSaved` recibe la respuesta sin tocar.
+- Collect Sheet, con Testing Library a nivel de fetch: sin medio por encima de $0, 0 pedidos y el campo enfocado; con una línea sin precio en `priced`, 0 pedidos, ningún texto nuevo y ninguna llamada a `onSavingChange`; mientras guarda, toques extra y Close dan 0 pedidos adicionales; tras un pedido rechazado, `onSavingChange` termina en false y Close vuelve a funcionar; la etiqueta de Collect es igual a `priced.totals.total` formateado y `onSaved` recibe la respuesta sin tocar.
+- "Owes it" (#944), con Testing Library a nivel de fetch y en el mismo host que los tests de #918:
+  - Se ofrece solo con cliente, última después de los Payment methods, y elegirla guarda `{kind:'owing'}`; Collect hace exactamente 1 pedido, armado por `saleBodyOf`, sin ningún Payment.
+  - Elegir el medio B, después "Owes it" y después volver: el campo muestra la propuesta.
+  - Un borrador que ya trae owing con cliente se muestra como "Owes it" y se guarda en 1 pedido.
+  - Con owing y el cliente sacado por el host: "Owes it" con la marca "no longer available", 0 pedidos al tocar Collect, el rechazo visible y el Selector enfocado; volver a poner el cliente lo guarda en 1 pedido.
+  - La etiqueta de Collect con "Owes it" es la misma que con un medio.
+- Ventas guardadas como adeudadas sin Customer: 0. Payments creados por una venta con "Owes it": 0. Medios puestos en lugar de "Owes it" sin que la vendedora los elija: 0.
+- Claves del Copy module agregadas por #944: 1, o 2 solo si la validación de #918 no tiene en palabras el motivo de una venta adeudada sin cliente; en inglés y sin palabras de Unit, moneda ni tipo de producto.
+- Vara de #944, que se juzga cuando el flip monte la Sheet: con cliente, una venta adeudada se guarda con los mismos toques que una pagada (una elección y un toque en Collect).
 - Caminos de fallo de la Collect Sheet (#930), con Testing Library a nivel de fetch y en el mismo host que los tests de #918:
   - Lista de medios fallida por error del servidor o por un pedido rechazado: el Selector muestra su línea de fallo; una venta de $0 se guarda con `payment: null` en un solo pedido; por encima de $0 se muestra el texto sin medio con 0 pedidos y el foco en el Selector.
   - Sin conexión antes de la primera carga de la lista: Collect está habilitado, una venta de $0 se guarda con `payment: null` y por encima de $0 se muestra el texto sin medio con 0 pedidos y el foco en el grupo del campo. No se exige la línea de fallo del Selector.
