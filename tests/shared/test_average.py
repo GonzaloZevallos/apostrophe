@@ -5,7 +5,10 @@ The helper moved here from `app/results/domain/arithmetic.py` (GH-498 part 3); t
 assertions are the ones it always had.
 """
 
+from fractions import Fraction
+
 from app.shared.average import average_sale
+from app.shared.money import round_half_up_to_units
 
 
 def test_average_sale_rounds_half_up_to_the_whole_peso() -> None:
@@ -28,3 +31,12 @@ def test_average_sale_on_a_tie_goes_up_and_just_below_it_stays_down() -> None:
     assert average_sale(total=5, count=2) == 3
     # 499 / 200 = 2.495, just below the tie.
     assert average_sale(total=499, count=200) == 2
+
+
+def test_average_sale_rounds_exactly_as_the_money_helper_does() -> None:
+    """`app/shared/average.py` imports only the standard library, so its half-up step is
+    its own: this keeps it the same rule as `round_half_up_to_units` over many ratios,
+    ties and negatives included."""
+    for count in range(1, 41):
+        for total in range(-200, 201):
+            assert average_sale(total, count) == round_half_up_to_units(Fraction(total, count))

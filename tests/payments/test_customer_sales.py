@@ -10,6 +10,7 @@ from app.payments.domain.customer_sales import SALES_BY_MONTH_WINDOW, customer_s
 from app.payments.domain.settlement import OwedSale
 from app.shared.average import average_sale
 from app.shared.calendar import Month
+from app.shared.payment_method import PaymentMethodLabel
 from tests.payments.builders import owed_sale
 
 TODAY = date(2026, 11, 21)
@@ -107,7 +108,9 @@ def test_a_zero_sale_counts_in_the_denominator() -> None:
 
 
 def test_shipping_and_unpaid_sales_count_through_the_stored_total() -> None:
-    paid = owed_sale(1, date(2026, 9, 3), 1_250, on_the_spot_method="Efectivo")
+    paid = owed_sale(
+        1, date(2026, 9, 3), 1_250, on_the_spot_method=PaymentMethodLabel(1, "Cash", "banknote")
+    )
     unpaid = owed_sale(2, date(2026, 9, 4), 750)
     result = customer_sales([paid, unpaid], TODAY)
     assert result.by_month[3].total == 2_000

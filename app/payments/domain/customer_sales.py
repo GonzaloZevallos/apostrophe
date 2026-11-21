@@ -16,10 +16,10 @@ from app.payments.domain.settlement import OwedSale
 from app.shared.average import average_sale
 from app.shared.calendar import Month
 
+# How many calendar months the read covers, ending in the current one: the number of
+# months the ClientesCompu design draws. One constant, the same for every Business; #330
+# will sweep it.
 SALES_BY_MONTH_WINDOW = 6
-"""How many calendar months the read covers, ending in the current one: the number of
-months `ClientesCompu.dc.html` draws ("de mayo a octubre"). One constant, the same for
-every Business; #330 will sweep it."""
 
 
 @dataclass(frozen=True)
