@@ -17,11 +17,12 @@ export interface WalkScreen extends Omit<RegistryScreen, 'steps' | 'walkedAs' | 
 
 export type Facts = Readonly<Record<string, string | number>>
 
-/** A click names what the seller reads: its text, or, for an icon-only button, its accessible name. Waits for either. */
+/** A click names what the seller reads: its text, or, for an icon-only button or link, its accessible name. Waits for any. */
 function clickTarget(page: Page, name: string): Locator {
   return page
     .getByText(name, { exact: true })
     .or(page.getByRole('button', { name, exact: true }))
+    .or(page.getByRole('link', { name, exact: true }))
     .first()
 }
 
