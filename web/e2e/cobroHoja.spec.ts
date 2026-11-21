@@ -278,7 +278,7 @@ for (const viewport of VIEWPORTS) {
             // Twelve more customers still owe, so the list stays and takes focus.
             await expect(page.locator(':focus')).toHaveAttribute('data-place', 'owed')
             await expect(page.getByRole('link', { name: OPENER.customers })).toHaveCount(0)
-            await expect(page.getByRole('link', { name: /^Collect from Zeta/ })).toHaveCount(24)
+            await expect(page.getByRole('link', { name: /^Collect from Zeta/ })).toHaveCount(12)
           } else if (origin === 'home') {
             // Twelve customers still owe: the block stays, with its heading focused and Carla gone from it.
             await expect(page.locator(':focus')).toHaveText('Owed to you')

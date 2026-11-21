@@ -89,6 +89,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   // The card shows the debt, straight from the API.
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 5\.000/ })).toBeVisible()
   await expect(page.getByText(`since ${today}`, { exact: true })).toBeVisible()
@@ -125,6 +126,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 8\.000/ })).toBeVisible()
 
@@ -198,6 +200,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   const creditSaleUrl = page.url()
 
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByRole('button', { name: 'All: $ 5.000' }).click()
@@ -238,6 +241,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // debiendo", and Te deben's header total is their sum (payments.md, Métricas
   // "Who-owes totals" and "No curl"). ---
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'New sale to Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
@@ -248,6 +252,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'New sale to Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
