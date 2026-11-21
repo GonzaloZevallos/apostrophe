@@ -25,5 +25,9 @@
   "^src/sales/useSaleDraft\\.ts$",
   "^src/sales/saleDraft\\.ts$",
   "^src/sales/productList\\.ts$",
-  "^src/api/saleSuggestions\\.ts$"
+  "^src/api/saleSuggestions\\.ts$",
+  "^src/screens/clientes/CustomerSegments\\.tsx$",
+  "^src/sales/useNewSaleReads\\.ts$",
+  "^src/screens/ventas/NuevaVentaProductos\\.tsx$",
+  "^src/screens/ventas/CollectSheet\\.tsx$"
 ]

@@ -123,5 +123,6 @@
   "seeExpenses": "See expenses",
   "recordExpense": "Record expense",
   "newSaleFabDescription": "Opens New sale. You can also record an expense from there.",
-  "newSaleFabName": "Vender"
+  "newSaleFabName": "Vender",
+  "customerSegmentAll": "All"
 }

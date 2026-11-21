@@ -21,6 +21,9 @@ export const OWING_HINT = 'To leave it owing, pick a customer'
  * as the open line's hint on New sale when no Product has a Current price on the date. */
 export const NO_PRICE_HINT = 'Add a price to a product so you can sell'
 
+/** The Collect Sheet's one text for a save that failed for any cause but the method: it never carries the API's `detail`. */
+const SALE_NOT_SAVED = 'The sale was not saved. Your lines are kept, so try again.'
+
 /** The line of a variety with no price on the sale's date. */
 export function noPriceMessage(varietyName: string): string {
   return `${varietyName} has no price for that date`
@@ -52,6 +55,17 @@ export const SALE_BILL_TEXT = {
   unit: 'g',
 }
 
+/** New sale's Product list. `stock` is already formatted; the step names carry the Product's own name. */
+const NEW_SALE_TEXT = {
+  productsInSale: (n: number) => `In the sale · ${n}`,
+  productsMostSold: 'Most sold',
+  productStock: (stock: string) => `${stock} in stock`,
+  productNoPrice: 'No price',
+  productAdd: (name: string) => `Add ${name}`,
+  productIncrease: (name: string) => `Add one ${name}`,
+  productDecrease: (name: string) => `Remove one ${name}`,
+}
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: OWING_HINT },
   { kind: 'help', text: NO_PRICE_HINT },
@@ -59,6 +73,14 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: noPriceMessage(SAMPLES.name) },
   { kind: 'notice', text: SALE_BILL_TEXT.shareFailed },
   { kind: 'notice', text: SALE_BILL_TEXT.copyFailed },
+  { kind: 'notice', text: SALE_NOT_SAVED },
+  { kind: 'help', text: NEW_SALE_TEXT.productsInSale(Number(SAMPLES.count)) },
+  { kind: 'help', text: NEW_SALE_TEXT.productsMostSold },
+  { kind: 'help', text: NEW_SALE_TEXT.productStock(SAMPLES.grams) },
+  { kind: 'help', text: NEW_SALE_TEXT.productNoPrice },
+  { kind: 'help', text: NEW_SALE_TEXT.productAdd(SAMPLES.name) },
+  { kind: 'help', text: NEW_SALE_TEXT.productIncrease(SAMPLES.name) },
+  { kind: 'help', text: NEW_SALE_TEXT.productDecrease(SAMPLES.name) },
 ]
 
 /** Nothing here is over 80 characters. */
@@ -80,12 +102,19 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.lineSpecialPrice': [['2']],
   'SALES_TEXT.removeLine': [['2']],
   'SALES_TEXT.products': counted((n) => [n]),
+  'SALES_TEXT.collectTitle': counted((n) => [n]),
+  'SALES_TEXT.collect': [[M]],
   'SALES_TEXT.saleInProgressName': [
     ['2 products', M],
     ['1 product', null],
   ],
   'SALES_TEXT.saleNumber': [[1284]],
   'SALES_TEXT.deleteSaleConfirm': [[M, D, G]],
+  'SALES_TEXT.newSale.productsInSale': [[2]],
+  'SALES_TEXT.newSale.productStock': [['1,5']],
+  'SALES_TEXT.newSale.productAdd': [['Rosa']],
+  'SALES_TEXT.newSale.productIncrease': [['Rosa']],
+  'SALES_TEXT.newSale.productDecrease': [['Rosa']],
   'SALE_BILL_TEXT.header': [['Flores Test', 'Sale #1284', D]],
   'SALE_BILL_TEXT.item': [['Rosa', '3,5', 'g', M]],
   'SALE_BILL_TEXT.bulk': [['Rosa', '10', 'g', M, M]],
@@ -157,4 +186,14 @@ export const SALES_TEXT = {
    * figure, or `null` while the prices are being recalculated (the amount clause is dropped). */
   saleInProgressName: (products: string, amount: string | null) =>
     amount === null ? `Sale in progress, ${products}. Back` : `Sale in progress, ${products}, ${amount}. Back`,
+  /** The closing Sheet's title: the sale's line count. */
+  collectTitle: (n: number) => (n === 1 ? 'The sale · 1 item' : `The sale · ${n} items`),
+  howTheyPay: 'How they pay',
+  chooseMethod: 'Choose a method',
+  noMethodToCollect: 'Choose how they pay to collect.',
+  saleNotSaved: SALE_NOT_SAVED,
+  /** `total` is the sale's total in the business's Money format (`useMoney().money`). */
+  collect: (total: string) => `Collect ${total}`,
+  saving: 'Saving…',
+  newSale: NEW_SALE_TEXT,
 } as const

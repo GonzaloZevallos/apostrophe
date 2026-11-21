@@ -1,10 +1,15 @@
 /**
- * The "‹ <parent>" arrow every card shows, and the only place the app draws one. The word is
- * the screen's fixed parent, from `parentOf(id, viewport)`; tapping it goes back through
- * history when the entry is in-app, and to that same parent (replacing the entry) when it is
- * not (`useBackOr`). The label and the fallback are one registry answer, so they cannot
- * disagree, and the fallback's path template is filled with the leaf's route params, so it is
- * never a literal `:id`. The accessible name is the visible text, nothing else.
+ * The "‹ <parent>" arrow every card shows, and the only place the app draws one. Tapping it goes
+ * back through history when the entry is in-app, and to the same parent (replacing the entry)
+ * when it is not (`useBackOr`). The label and the fallback are one answer, so they cannot
+ * disagree: the entry parent when `entryParentOf` answers (the screen was opened from the screen
+ * its table names, read from the location's `enteredFrom`), the registry parent
+ * (`parentOf(id, viewport)`) otherwise. The fallback's path template is filled with the leaf's
+ * route params, so it is never a literal `:id`. The accessible name is the visible text, nothing
+ * else.
+ *
+ * Precedence: a declared record override (`useBackParent`) wins over everything; the entry parent
+ * applies only when none is declared; the registry parent is the last answer.
  *
  * A leaf the registry marks `backLabel: 'record'` (a variety's page, its prices, its entries)
  * names a word only the loaded record knows. It draws only an override its screen declared
@@ -14,11 +19,11 @@
 
 import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router'
+import { useLocation, useParams } from 'react-router'
 import Boton from '../components/Boton'
 import { useBackOr } from '../components/useBackOr'
 import { useLabel, type Label } from '../i18n/label'
-import { HOME, parentOf, pathTo, screenOf, type ScreenId } from '../routes'
+import { HOME, entryParentOf, parentOf, pathTo, screenOf, type ScreenId } from '../routes'
 import { BackParentContext, type BackOverride } from './useBackParent'
 import { useViewport } from './useViewport'
 
@@ -45,6 +50,11 @@ function targetOf(declared: BackOverride, registryPath: string | undefined): Tar
   return registryPath === undefined ? undefined : { path: registryPath, title: { kind: 'text', text: declared.title } }
 }
 
+/** Where the entry was opened from, as the location's state carries it; anything else is `undefined`. */
+function enteredFromOf(state: unknown): unknown {
+  return typeof state === 'object' && state !== null && 'enteredFrom' in state ? state.enteredFrom : undefined
+}
+
 export default function BackArrow({ id }: { id: ScreenId }) {
   const { t } = useTranslation()
   const resolve = useLabel()
@@ -54,11 +64,12 @@ export default function BackArrow({ id }: { id: ScreenId }) {
   const registryPath = registryParent === undefined ? undefined : pathTo(registryParent.path, params)
   const declared = slot !== undefined && slot.screen === id && slot.param === params.id ? slot.override : undefined
   const override = declared === undefined ? undefined : targetOf(declared, registryPath)
-  const back = useBackOr(override?.path ?? registryPath ?? HOME)
+  const entry = entryParentOf(id, enteredFromOf(useLocation().state))
+  const entryScreen = declared === undefined && entry !== undefined ? screenOf(entry) : undefined
+  const back = useBackOr(override?.path ?? entryScreen?.path ?? registryPath ?? HOME)
+  const named = entryScreen ?? registryParent
   const label: Label | undefined =
-    screenOf(id).backLabel === 'record'
-      ? override?.title
-      : registryParent && { kind: 'key', key: registryParent.titleKey }
+    screenOf(id).backLabel === 'record' ? override?.title : named && { kind: 'key', key: named.titleKey }
   if (label === undefined) return null
   const word = resolve(label)
   return (

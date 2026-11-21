@@ -35,7 +35,6 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import paymentPreviewFixture from '../../api/fixtures/payment-preview.json'
 import customerFixture from '../../api/fixtures/customer.json'
 import customerNoPhoneFixture from '../../api/fixtures/customer-no-phone.json'
-import debtorsFixture from '../../api/fixtures/debtors.json'
 import Clientes from './Clientes'
 import ClientesLayout from './ClientesLayout'
 import { baselineText } from '../../i18n/testing'
@@ -44,6 +43,9 @@ const EMPTY_CUSTOMERS = baselineText('customers.ts:EMPTY_CUSTOMERS')
 const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
 const SAVED_TOAST_TEXT = baselineText('common.ts:COMMON_TEXT.customerSaved')
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
+import { debtorsOf, NO_DEBTORS } from '../../test/debtors'
+
+const DEBTORS_FIXTURE = debtorsOf()
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -53,7 +55,7 @@ function jsonResponse(status: number, body: unknown): Response {
 }
 
 const LU_SETTLED = { id: 2, name: 'Lu', phone: '+5491100000002', phone_display: '+54 9 11 0000-0002', vip: false, balance: 0, owing_since: null, standing: 'settled' }
-const EMPTY_DEBTORS = { total_owed: 0, sales_owing_count: 0, debtors: [] }
+const EMPTY_DEBTORS = NO_DEBTORS
 
 /** Dispatches on the request's own path, not on call order (plan, invariants):
  * `/payments/debtors` goes to `debtors`, `/customers` and `/customers?q=...` go
@@ -241,7 +243,7 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
           customerFixture,
           { id: 2, name: 'Lu', phone: '+5491100000002', phone_display: '+54 9 11 0000-0002', vip: false, balance: 0, owing_since: null, standing: 'settled' },
         ]),
-      () => jsonResponse(200, debtorsFixture),
+      () => jsonResponse(200, DEBTORS_FIXTURE),
     ),
   )
   renderClientes()
@@ -254,7 +256,7 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
   const everyone = await screen.findByRole('region', { name: 'Everyone · A–Z' })
   expect(section.compareDocumentPosition(everyone) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   expect(
-    within(section).getByText(`$ ${debtorsFixture.total_owed.toLocaleString('es-AR')}`),
+    within(section).getByText(`$ ${DEBTORS_FIXTURE.total_owed.toLocaleString('es-AR')}`),
   ).toBeInTheDocument()
   expect(within(section).getAllByRole('link').map((link) => link.textContent)).toEqual([
     'APAna Pérez$ 15.000owes you since 14/09',
@@ -270,14 +272,17 @@ test("Te deben shows the API's order and total as answered, never a client sort 
     fetchStub(
       () => jsonResponse(200, []),
       () =>
-        jsonResponse(200, {
-          total_owed: 99000,
-          sales_owing_count: 1,
-          debtors: [
-            { customer: { id: 5, name: 'Zoe' }, balance: 1000, owing_since: '2026-10-01', standing: 'owes' },
-            { customer: { id: 4, name: 'Abel' }, balance: 9000, owing_since: '2026-08-01', standing: 'owes' },
-          ],
-        }),
+        jsonResponse(
+          200,
+          debtorsOf({
+            total_owed: 99000,
+            sales_owing_count: 1,
+            debtors: [
+              { customer: { id: 5, name: 'Zoe' }, balance: 1000, owing_since: '2026-10-01', standing: 'owes', still_owing: null },
+              { customer: { id: 4, name: 'Abel' }, balance: 9000, owing_since: '2026-08-01', standing: 'owes', still_owing: null },
+            ],
+          }),
+        ),
     ),
   )
   renderClientes()
@@ -297,7 +302,7 @@ test('a customer in credit is only in A–Z, never in Te deben', async () => {
         jsonResponse(200, [
           { id: 2, name: 'Lu', phone: '+5491100000002', phone_display: '+54 9 11 0000-0002', vip: false, balance: -2000, owing_since: null, standing: 'credit' },
         ]),
-      () => jsonResponse(200, debtorsFixture),
+      () => jsonResponse(200, DEBTORS_FIXTURE),
     ),
   )
   renderClientes()
@@ -315,7 +320,7 @@ test('searching collapses both sections into one flat list that keeps Cobrar, an
           200,
           query === '' ? [customerFixture, LU_SETTLED] : [customerFixture],
         ),
-      () => jsonResponse(200, debtorsFixture),
+      () => jsonResponse(200, DEBTORS_FIXTURE),
     ),
   )
   renderClientes()
@@ -343,7 +348,7 @@ test('"Collect from X" is on every row that owes, in the section and in the list
           customerFixture,
           { id: 2, name: 'Lu', phone: '+5491100000002', phone_display: '+54 9 11 0000-0002', vip: false, balance: 0, owing_since: null, standing: 'settled' },
         ]),
-      () => jsonResponse(200, debtorsFixture),
+      () => jsonResponse(200, DEBTORS_FIXTURE),
     ),
   )
   renderClientes()
@@ -440,7 +445,7 @@ const ANA_PAYMENT = pathTo(CUSTOMER_PAYMENT, { id: customerFixture.id })
 
 function fetchApp(input: RequestInfo | URL): Promise<Response> {
   const url = typeof input === 'string' ? input : input.toString()
-  if (url === '/payments/debtors') return Promise.resolve(jsonResponse(200, debtorsFixture))
+  if (url === '/payments/debtors') return Promise.resolve(jsonResponse(200, DEBTORS_FIXTURE))
   if (url.includes('/preview')) return Promise.resolve(jsonResponse(200, paymentPreviewFixture))
   if (url === `/customers/${customerFixture.id}`) return Promise.resolve(jsonResponse(200, customerFixture))
   if (url === `/customers/${customerFixture.id}/account`) {
@@ -640,7 +645,7 @@ const RULE = { limits: LIMITS, samples: { name: SAMPLES.name }, optionClasses: [
 
 test('every action on the list and in Te deben is icon + text, and Cobrar keeps its accessible name', async () => {
   vi.mocked(fetch).mockImplementation(
-    fetchStub(() => jsonResponse(200, [customerFixture]), () => jsonResponse(200, debtorsFixture)),
+    fetchStub(() => jsonResponse(200, [customerFixture]), () => jsonResponse(200, DEBTORS_FIXTURE)),
   )
   renderClientes()
 
@@ -656,7 +661,7 @@ test('every action on the list and in Te deben is icon + text, and Cobrar keeps 
 
 test('the header holds the title and "New customer" with its icon, and no count line', async () => {
   vi.mocked(fetch).mockImplementation(
-    fetchStub(() => jsonResponse(200, [customerFixture]), () => jsonResponse(200, debtorsFixture)),
+    fetchStub(() => jsonResponse(200, [customerFixture]), () => jsonResponse(200, DEBTORS_FIXTURE)),
   )
   renderClientes()
 

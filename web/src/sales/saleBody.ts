@@ -3,7 +3,8 @@
  * It maps what the screen already parsed onto the wire keys and does no parsing of its own.
  */
 
-import type { PaymentChoice } from './pricing'
+import { type PaymentChoice, quantityOfHundredths } from './pricing'
+import type { DraftLine } from './saleDraft'
 
 export interface LineBody {
   product_id: number
@@ -19,6 +20,19 @@ export interface SaleBody {
   note: string | null
   payment: PaymentChoice | null
   lines: LineBody[]
+}
+
+/** The body lines of the draft's lines: the quantity as the wire text, never a gift or a special price
+ * (the Sale in progress holds neither). */
+export function bodyLinesOf(
+  lines: readonly DraftLine[],
+): { productId: number; quantity: string; gift: boolean; specialPrice: number | null }[] {
+  return lines.map((line) => ({
+    productId: line.productId,
+    quantity: quantityOfHundredths(line.quantityHundredths),
+    gift: false,
+    specialPrice: null,
+  }))
 }
 
 /** The wire body of a sale, keys in this order. A blank or whitespace-only note is `null`; any other

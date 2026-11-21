@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useContext, useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
-import { createMemoryRouter, Outlet, RouterProvider, useParams, type RouteObject } from 'react-router'
+import { createMemoryRouter, Outlet, RouterProvider, useParams, type InitialEntry, type RouteObject } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import { SHOWN_EN } from '../test/shownLanguage'
@@ -17,7 +17,11 @@ import {
   ANALYSIS,
   ARCHIVED_VARIETIES,
   SALE,
+  SALES,
   SCREENS,
+  SETTINGS,
+  SETTINGS_PAYMENTS,
+  SETTINGS_PAYMENT_METHODS,
   VARIETIES,
   VARIETY,
   VARIETY_ENTRIES,
@@ -100,7 +104,7 @@ function Client({ children }: { children: ReactNode }) {
   return <QueryClientProvider client={client}>{children}</QueryClientProvider>
 }
 
-function renderAt(entries: string[]) {
+function renderAt(entries: InitialEntry[]) {
   const leaf = (path: string, id: string): RouteObject => {
     const marked = id === 'variety' || id === 'variety-prices' || id === 'variety-entries'
     return {
@@ -298,3 +302,38 @@ test('an unmarked card still prints its registry parent, a tab root no back', ()
   expect(backs()).toEqual([])
 })
 
+
+test('Payment methods entered from Settings reads "‹ Settings", and with no history a tap lands on Settings', async () => {
+  const user = userEvent.setup()
+  const { router } = renderAt([{ pathname: SETTINGS_PAYMENT_METHODS, state: { enteredFrom: 'settings' } }])
+  expect(backs()).toEqual(['‹ Settings'])
+
+  await user.click(screen.getByRole('button', { name: '‹ Settings' }))
+
+  expect(router.state.location.pathname).toBe(SETTINGS)
+})
+
+test('Payment methods with no entry state reads "‹ Payments and expenses" and falls back to Payments', async () => {
+  const user = userEvent.setup()
+  const { router } = renderAt([SETTINGS_PAYMENT_METHODS])
+  expect(backs()).toEqual(['‹ Payments and expenses'])
+
+  await user.click(screen.getByRole('button', { name: '‹ Payments and expenses' }))
+
+  expect(router.state.location.pathname).toBe(SETTINGS_PAYMENTS)
+})
+
+test('Payment methods entered from another screen keeps its registry parent', () => {
+  renderAt([{ pathname: SETTINGS_PAYMENT_METHODS, state: { enteredFrom: 'sales' } }])
+  expect(backs()).toEqual(['‹ Payments and expenses'])
+})
+
+test('a card that is not in the table keeps its registry word and fallback when entered from Settings', async () => {
+  const user = userEvent.setup()
+  const { router } = renderAt([{ pathname: pathTo(SALE, { id: 7 }), state: { enteredFrom: 'settings' } }])
+  expect(backs()).toEqual(['‹ Sales'])
+
+  await user.click(screen.getByRole('button', { name: '‹ Sales' }))
+
+  expect(router.state.location.pathname).toBe(SALES)
+})
