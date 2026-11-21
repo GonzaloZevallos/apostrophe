@@ -72,6 +72,7 @@ import {
   validateSale,
 } from '../../sales/pricing'
 import { paymentMethodName } from '../../sales/paymentMethods'
+import { isMethodUnavailable } from '../../sales/saleRefusal'
 import { type SaleBody, saleBodyOf } from '../../sales/saleBody'
 import { nothingSellable } from '../../sales/nothingSellable'
 import {
@@ -131,7 +132,7 @@ interface SavedSale {
 type SubmitOverrides = Partial<
   Record<
     RefusalCode,
-    { field: 'customer' | 'shipping' | 'note' | 'date' | 'payment' | 'method' | 'form'; message: string }
+    { field: 'customer' | 'shipping' | 'note' | 'date' | 'payment' | 'form'; message: string }
   >
 >
 
@@ -142,7 +143,6 @@ function submitOverrides(format: MoneyFormat): SubmitOverrides {
     'sale.note_too_long': { field: 'note', message: SALES_TEXT.noteTooLong },
     'sale.date_in_future': { field: 'date', message: COMMON_TEXT.dateCannotBeFuture },
     'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
-    'payment_method.unavailable': { field: 'method', message: GENERIC_REFUSAL },
     'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
     'sale.variety_not_found': { field: 'form', message: GENERIC_REFUSAL },
     'sale.lines_missing': { field: 'form', message: GENERIC_REFUSAL },
@@ -626,19 +626,18 @@ function NuevaVentaForm() {
         }
         return
       }
-      if (caught instanceof ApiError) {
+      if (isMethodUnavailable(caught)) {
+        // The method was archived or deleted meanwhile: the form stays and the field keeps the
+        // chosen method with the "no longer available" mark until the person picks another.
+        if (method !== null) setMethodGone(paymentMethodName(queryClient, method) ?? '')
+        void queryClient.invalidateQueries({ queryKey: keys.paymentMethods() })
+      } else if (caught instanceof ApiError) {
         const override = resolveOverride(submitOverrides(money.format), caught.code)
         if (override !== undefined) {
           if (override.field === 'shipping') setShippingError(override.message)
           else if (override.field === 'note') setNoteError(override.message)
           else if (override.field === 'date') setDateError(override.message)
           else if (override.field === 'payment') setPaymentError(override.message)
-          else if (override.field === 'method') {
-            // The method was archived or deleted meanwhile: the form stays and the field keeps the
-            // chosen method with the "no longer available" mark until the person picks another.
-            if (method !== null) setMethodGone(paymentMethodName(queryClient, method) ?? '')
-            void queryClient.invalidateQueries({ queryKey: keys.paymentMethods() })
-          }
           else setFormError(override.message)
         } else if (caught.code !== UNKNOWN_CODE) {
           setFormError(GENERIC_REFUSAL)
