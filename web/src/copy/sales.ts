@@ -21,6 +21,9 @@ export const OWING_HINT = 'To leave it owing, pick a customer'
  * as the open line's hint on New sale when no Product has a Current price on the date. */
 export const NO_PRICE_HINT = 'Add a price to a product so you can sell'
 
+/** The Collect Sheet's one text for a save that failed for any cause but the method: it never carries the API's `detail`. */
+const SALE_NOT_SAVED = 'The sale was not saved. Your lines are kept, so try again.'
+
 /** The line of a variety with no price on the sale's date. */
 export function noPriceMessage(varietyName: string): string {
   return `${varietyName} has no price for that date`
@@ -70,6 +73,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: noPriceMessage(SAMPLES.name) },
   { kind: 'notice', text: SALE_BILL_TEXT.shareFailed },
   { kind: 'notice', text: SALE_BILL_TEXT.copyFailed },
+  { kind: 'notice', text: SALE_NOT_SAVED },
   { kind: 'help', text: NEW_SALE_TEXT.productsInSale(Number(SAMPLES.count)) },
   { kind: 'help', text: NEW_SALE_TEXT.productsMostSold },
   { kind: 'help', text: NEW_SALE_TEXT.productStock(SAMPLES.grams) },
@@ -98,6 +102,8 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.lineSpecialPrice': [['2']],
   'SALES_TEXT.removeLine': [['2']],
   'SALES_TEXT.products': counted((n) => [n]),
+  'SALES_TEXT.collectTitle': counted((n) => [n]),
+  'SALES_TEXT.collect': [[M]],
   'SALES_TEXT.saleInProgressName': [
     ['2 products', M],
     ['1 product', null],
@@ -180,5 +186,14 @@ export const SALES_TEXT = {
    * figure, or `null` while the prices are being recalculated (the amount clause is dropped). */
   saleInProgressName: (products: string, amount: string | null) =>
     amount === null ? `Sale in progress, ${products}. Back` : `Sale in progress, ${products}, ${amount}. Back`,
+  /** The closing Sheet's title: the sale's line count. */
+  collectTitle: (n: number) => (n === 1 ? 'The sale · 1 item' : `The sale · ${n} items`),
+  howTheyPay: 'How they pay',
+  chooseMethod: 'Choose a method',
+  noMethodToCollect: 'Choose how they pay to collect.',
+  saleNotSaved: SALE_NOT_SAVED,
+  /** `total` is the sale's total in the business's Money format (`useMoney().money`). */
+  collect: (total: string) => `Collect ${total}`,
+  saving: 'Saving…',
   newSale: NEW_SALE_TEXT,
 } as const

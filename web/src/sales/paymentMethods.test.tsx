@@ -10,7 +10,14 @@ import { beforeEach, expect, test, vi } from 'vitest'
 import Selector from '../components/Selector'
 import { renderForm } from '../components/selectorTestKit'
 import { stubViewport } from '../test-viewport'
-import { paymentMethodOf, paymentMethodValue, usePaymentMethodOptions } from './paymentMethods'
+import {
+  choiceOfValue,
+  collectableChoice,
+  paymentMethodOf,
+  paymentMethodValue,
+  selectorValueOf,
+  usePaymentMethodOptions,
+} from './paymentMethods'
 
 const LIST = [
   { id: 4, name: 'Cash', icon: 'banknote', position: 1, in_use: false },
@@ -28,10 +35,11 @@ beforeEach(() => {
 
 function Field() {
   const [value, setValue] = useState<string | null>(null)
-  const { selector, failure, reload } = usePaymentMethodOptions()
+  const { selector, failure, reload, offeredIds } = usePaymentMethodOptions()
   return (
     <>
       <p>failure={String(failure)}</p>
+      <p>offered={offeredIds === null ? 'none' : offeredIds.join(',')}</p>
       <button type="button" onClick={reload}>
         Retry
       </button>
@@ -66,6 +74,40 @@ test('a dropped network is reported as offline, not as a server error', async ()
   renderForm(<Field />)
 
   expect(await screen.findByText('failure=offline')).toBeInTheDocument()
+})
+
+test('the offered ids are the ids of the list, and null while there is no list', async () => {
+  vi.stubGlobal('fetch', vi.fn(() => Promise.resolve(answer(500, {}))))
+  renderForm(<Field />)
+  expect(await screen.findByText('failure=server')).toBeInTheDocument()
+  expect(screen.getByText('offered=none')).toBeInTheDocument()
+})
+
+test('the offered ids arrive in the server order', async () => {
+  renderForm(<Field />)
+  expect(await screen.findByText('offered=4,9')).toBeInTheDocument()
+})
+
+test('an owing choice is not collectable here; a method and no choice pass through', () => {
+  expect(collectableChoice({ kind: 'owing' })).toBeNull()
+  expect(collectableChoice({ kind: 'paid', payment_method_id: 4 })).toEqual({ kind: 'paid', payment_method_id: 4 })
+  expect(collectableChoice(null)).toBeNull()
+})
+
+test('a Selector value and a draft choice round-trip', () => {
+  expect(choiceOfValue('4')).toEqual({ kind: 'paid', payment_method_id: 4 })
+  expect(choiceOfValue(null)).toEqual({ kind: 'unset' })
+  expect(choiceOfValue('owing')).toEqual({ kind: 'unset' })
+  expect(selectorValueOf(choiceOfValue('4'), null, [4, 9])).toBe('4')
+})
+
+test('the Selector value of a choice: the proposal only when offered, nothing for owing', () => {
+  expect(selectorValueOf({ kind: 'unset' }, 9, [4, 9])).toBe('9')
+  expect(selectorValueOf({ kind: 'unset' }, 7, [4, 9])).toBeNull()
+  expect(selectorValueOf({ kind: 'unset' }, 9, null)).toBeNull()
+  expect(selectorValueOf({ kind: 'unset' }, null, [4, 9])).toBeNull()
+  expect(selectorValueOf({ kind: 'owing' }, 9, [4, 9])).toBeNull()
+  expect(selectorValueOf({ kind: 'paid', payment_method_id: 4 }, 9, [4, 9])).toBe('4')
 })
 
 test('a value that is not a method id is never taken for one', () => {
