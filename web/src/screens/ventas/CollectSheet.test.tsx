@@ -177,6 +177,14 @@ async function pickMethod(user: ReturnType<typeof userEvent.setup>, name: string
   await waitFor(() => expect(option).not.toBeInTheDocument())
 }
 
+/** Lets any later request arrive, then asserts how many saves were sent: a duplicate cannot slip in after the count. */
+async function expectPosts(count: number): Promise<void> {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 50))
+  })
+  expect(sent).toHaveLength(count)
+}
+
 async function ready(): Promise<void> {
   await waitFor(() => expect(collect()).toBeEnabled())
 }
@@ -403,6 +411,7 @@ test.each([
   expect(await screen.findByRole('button', { name: 'Collect $ 0' })).toBeEnabled()
   await user.click(collect())
   await waitFor(() => expect(sent).toHaveLength(1))
+  await expectPosts(1)
   expect(sent[0]?.body).toMatchObject({ payment: null })
 })
 
@@ -433,6 +442,7 @@ test('a methods read that never resolves while online does not block a $0 sale',
   expect(button).toBeEnabled()
   await user.click(button)
   await waitFor(() => expect(sent).toHaveLength(1))
+  await expectPosts(1)
   expect(sent[0]?.body).toMatchObject({ payment: null })
 })
 
@@ -482,6 +492,7 @@ test.each([
   expect(sent[1]).toEqual(sent[0])
   await act(async () => answerSave?.(json(201, { id: 55 })))
   await waitFor(() => expect(onSavingChange).toHaveBeenLastCalledWith(false))
+  await expectPosts(2)
 
   await user.click(screen.getByRole('button', { name: 'Close' }))
   expect(onClose).toHaveBeenCalledTimes(1)
@@ -497,6 +508,7 @@ test('after a failed save, Close works again', async () => {
   await screen.findByText(NOT_SAVED)
   await user.click(screen.getByRole('button', { name: 'Close' }))
   expect(onClose).toHaveBeenCalledTimes(1)
+  await expectPosts(1)
 })
 
 test('a save that fails while offline rejects instead of pausing', async () => {
@@ -575,4 +587,56 @@ test('picking a different method after a refusal clears the mark and sends it', 
   await user.click(collect())
   await waitFor(() => expect(sent).toHaveLength(2))
   expect(sent[1]?.body).toMatchObject({ payment: { kind: 'paid', payment_method_id: 2 } })
+})
+
+test('a refused method is never offered or sent again, even when the list is not read again, and after a second refusal', async () => {
+  stubFetch({
+    methods: 'then-error',
+    replies: [() => json(404, { code: 'payment_method.unavailable' }), () => json(404, { code: 'payment_method.unavailable' })],
+  })
+  const user = userEvent.setup()
+  mount({ priced: pricedOf(3000), proposal: 1 })
+  await ready()
+  await user.click(collect())
+  await screen.findByText('no longer available')
+  await waitFor(() => expect(methodReads).toBeGreaterThan(1))
+
+  await pickMethod(user, 'Transfer')
+  expect(screen.queryByText('no longer available')).not.toBeInTheDocument()
+  await user.click(field())
+  expect(screen.queryByText('Cash')).not.toBeInTheDocument()
+  // The field and the open list both read Transfer.
+  await waitFor(() => expect(screen.getAllByText('Transfer').length).toBeGreaterThan(1))
+  await user.keyboard('{Escape}')
+  await waitFor(() => expect(screen.getAllByText('Transfer')).toHaveLength(1))
+
+  await user.click(collect())
+  await waitFor(() => expect(sent).toHaveLength(2))
+  expect(sent[1]?.body).toMatchObject({ payment: { kind: 'paid', payment_method_id: 2 } })
+  expect(await screen.findByText('no longer available')).toBeInTheDocument()
+
+  await user.click(field())
+  expect(screen.queryByText('Cash')).not.toBeInTheDocument()
+  // Only the field's own mark names Transfer: no list row offers it.
+  expect(screen.getAllByText('Transfer')).toHaveLength(1)
+  await user.keyboard('{Escape}')
+  await user.click(collect('Collect $ 3.000'))
+  expect(await screen.findByText(NO_METHOD)).toBeInTheDocument()
+  await expectPosts(2)
+  expect(sent[0]?.body).toMatchObject({ payment: { payment_method_id: 1 } })
+  expect(sent[1]?.body).toMatchObject({ payment: { payment_method_id: 2 } })
+})
+
+test('a successful save after a failure clears the not-saved text', async () => {
+  stubFetch({ replies: [() => json(500, {}), () => json(201, { id: 55 })] })
+  const user = userEvent.setup()
+  const onSaved = vi.fn()
+  mount({ priced: pricedOf(3000), proposal: 1, onSaved })
+  await ready()
+  await user.click(collect())
+  await screen.findByText(NOT_SAVED)
+  await user.click(collect())
+  await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
+  expect(screen.queryByText(NOT_SAVED)).not.toBeInTheDocument()
+  await expectPosts(2)
 })

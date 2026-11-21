@@ -99,6 +99,9 @@ export default function CollectSheet({
   const [refused, setRefused] = useState(false)
   // The method the server said is no longer available: kept in the field with the mark, never offered.
   const [methodGone, setMethodGone] = useState<{ id: number; name: string } | null>(null)
+  // Every id this Sheet was refused for, kept for its whole life: never offered and never sent again,
+  // whether or not the list was read again (the mark above clears on another pick, this does not).
+  const [refusedIds, setRefusedIds] = useState<readonly number[]>([])
   const [notSaved, setNotSaved] = useState(false)
   const [saving, setSaving] = useState(false)
   // The guard is a ref set before the request: two taps in one frame still make one request.
@@ -136,7 +139,10 @@ export default function CollectSheet({
         if (caught instanceof ApiError && caught.status === 401) {
           // Left to the session boundary (queryClient's MutationCache.onError): nothing to show here.
         } else if (isMethodUnavailable(caught)) {
-          if (paid !== null) setMethodGone({ id: paid, name: paymentMethodName(queryClient, paid) ?? '' })
+          if (paid !== null) {
+            setMethodGone({ id: paid, name: paymentMethodName(queryClient, paid) ?? '' })
+            setRefusedIds((ids) => (ids.includes(paid) ? ids : [...ids, paid]))
+          }
           void queryClient.invalidateQueries({ queryKey: keys.paymentMethods() })
         } else {
           setNotSaved(true)
@@ -162,7 +168,7 @@ export default function CollectSheet({
     const chosen = collectableChoice(effectiveChoice(state.choice, state.proposedMethodId, methodOptions.offeredIds))
     // A method the server refused as no longer available counts as no method, whether or not the list was read again.
     const effective =
-      chosen !== null && chosen.kind === 'paid' && chosen.payment_method_id === methodGone?.id ? null : chosen
+      chosen !== null && chosen.kind === 'paid' && refusedIds.includes(chosen.payment_method_id) ? null : chosen
     const pay = payStateOfEffective(effective)
     const errors = validateSale({
       ...pay,
@@ -193,6 +199,8 @@ export default function CollectSheet({
       effective?.kind === 'paid' ? effective.payment_method_id : null,
     )
   }
+
+  const shownValue = selectorValueOf(state.choice, state.proposedMethodId, methodOptions.offeredIds)
 
   return (
     <Sheet
@@ -227,12 +235,14 @@ export default function CollectSheet({
           <div onClickCapture={methodOptions.failure === null ? undefined : methodOptions.reload}>
             <Selector
               {...methodOptions.selector}
-              options={methodOptions.selector.options.filter((option) => option.value !== String(methodGone?.id))}
+              options={methodOptions.selector.options.filter((option) => !refusedIds.includes(Number(option.value)))}
               placeholder={SALES_TEXT.chooseMethod}
               label={SALES_TEXT.howTheyPay}
               value={
                 methodGone === null
-                  ? selectorValueOf(state.choice, state.proposedMethodId, methodOptions.offeredIds)
+                  ? shownValue !== null && refusedIds.includes(Number(shownValue))
+                    ? null
+                    : shownValue
                   : String(methodGone.id)
               }
               selected={methodGone === null ? undefined : { value: String(methodGone.id), label: methodGone.name }}
