@@ -74,8 +74,15 @@ Diferencias con los dibujos aceptadas por el dueño:
 
 - Desviación 2 del pedido: sin código de barras ni categoría.
 - Desviación de dibujo #2 (GH-924, Decisión 3), solo para esta parte: todavía no hay estados de carga ni de fallo; llegan en #941.
+- Desviaciones de dibujo #1 y #2 de #940 (Decisión 1 del humano): ni el botón de escanear código de barras junto al campo de búsqueda ni el select de categoría junto a "Results · N". Los Products no tienen código ni categoría, y por la regla del dueño del 2026-11-19 lo que un dibujo muestra de una función que no existe se oculta, nunca queda como marcador ni como control deshabilitado. El placeholder es "Search by name" (inglés hasta #317), no el "Buscar producto o código" del dibujo.
 
 La desviación de dibujo #1 de GH-924 (sin búsqueda) quedó retirada con #940. #941 tiene que estar entregada antes de que el flip de GH-496 monte la lista.
+
+Diferencias con el dibujo del estado de búsqueda que #940 le planteó al dueño en el PR y que ningún rol decidió (siguen abiertas hasta que el dueño las resuelva):
+
+- El resaltado va en peso 600, con el color del acento y sin subrayado; el dibujo lo pone en peso 700, en tinta, con un subrayado de 2 px en el acento.
+- Los resultados van en orden por nombre; el dibujo pone primero los Products que ya están en la venta.
+- El campo no tiene lupa (`.campo` no tiene lugar para un ícono); el dibujo la muestra al principio del campo.
 
 ### Lecturas
 
@@ -101,6 +108,7 @@ La desviación de dibujo #1 de GH-924 (sin búsqueda) quedó retirada con #940. 
 - Una línea muestra su propio precio por unidad, de `priceSale` sobre las líneas de la venta (vía `saleLineInputsOf`, envío 0). Puede diferir del de la fila, por ejemplo por un Bulk price o un precio de Customer type.
 - El precio pasa por el formateador de dinero del Business (su símbolo y sus decimales) y no lleva etiqueta de Unit, para que sirva a cualquier Business.
 - "No price" se muestra exactamente cuando la fila no tiene precio; el componente nunca lee `current_price` por su cuenta (solo `nothingSellable`, para el aviso).
+- Las filas de las secciones y las de los resultados de búsqueda se dibujan con las mismas dos formas (línea con pasos, fila con "+"), y ambas usan el id del Product como clave.
 
 ### Pasos
 
@@ -116,15 +124,15 @@ La desviación de dibujo #1 de GH-924 (sin búsqueda) quedó retirada con #940. 
 
 (#940.) Sirve para encontrar por nombre un Product que no está en la venta ni en "Most sold". Solo acota lo que se muestra: nunca cambia la Sale in progress, sus líneas ni sus cantidades.
 
-- **Campo**: arriba de todo, construido como la búsqueda de Customers. Etiqueta visualmente oculta "Search products" y placeholder "Search by name"; `type="search"`, `inputMode="search"`, `autoComplete="off"`, `enterKeyHint="search"`, con letra de al menos 16 px para que el teléfono no haga zoom. Se muestra siempre y conserva su texto, también mientras la lista no muestra nada.
-- **Qué coincide**: el texto tipeado, recortado, coincide en cualquier parte del nombre del Product tal como lo escribió la vendedora, sin importar mayúsculas ni acentos (la misma regla que la búsqueda de Customers). No supone marca, tipo de producto ni Unit.
+- **Campo**: arriba de todo, construido como la búsqueda de Customers (`label.campo` + `input.campo__input`, a 17 px y con la altura `--alto-boton`), sin lupa. Etiqueta visualmente oculta "Search products" y placeholder "Search by name"; `type="search"`, `inputMode="search"`, `autoComplete="off"`, `enterKeyHint="search"`, con letra de al menos 16 px para que el teléfono no haga zoom. Se muestra siempre y conserva su texto, también mientras la lista no muestra nada. El texto es estado local del componente.
+- **Qué coincide**: el texto tipeado, recortado, coincide en cualquier parte del nombre del Product tal como lo escribió la vendedora, sin importar mayúsculas ni acentos (la misma regla que la búsqueda de Customers y el Selector: `matchesQuery`, `foldForSearch` y `matchRange` de `web/src/components/selectorSearch.ts`, sin un segundo normalizador). No supone marca, tipo de producto ni Unit.
 - **Texto solo de espacios** cuenta como búsqueda vacía: se ve la lista normal, con el aviso, "In the sale" y "Most sold".
 - **Qué cubre**: solo los Products que la lista ya recibe (nunca Archived products ni nada de otro Business). Una línea "no longer available" no tiene nombre, así que nunca coincide; no se muestra mientras se busca y vuelve al borrar la búsqueda, sin perderse nunca de la venta.
-- **Resultados**: con texto, "Results · {n}" y debajo las coincidencias, ordenadas por nombre sin importar mayúsculas ni acentos; n es la cantidad de filas mostradas. Sin coincidencias, solo "Results · 0", nada más. Mientras se busca no se muestran el aviso, "In the sale" ni "Most sold".
-- **Filas de resultados**: cada una es la misma fila que en la lista sin búsqueda. Un Product que ya está en la venta aparece con su línea (pasos, cantidad y su propio precio); uno sin precio, con "No price" y sin "+".
-- **Resaltado**: el nombre lleva un elemento `mark` sobre la primera coincidencia, en peso 600 y con el token del acento. El `mark` cubre los caracteres del nombre tal como está escrito, aunque la coincidencia haya sido ignorando un acento o una mayúscula; el nombre mostrado nunca cambia.
-- **Después de tocar un resultado**: el texto de búsqueda queda; solo la vendedora lo borra. Así puede agregar varios Products que coinciden con las mismas letras sin volver a tipear, y la venta sigue con a lo sumo una línea por Product.
-- **Limpiar**: no hay un control propio para limpiar; el campo sigue al dibujo: si el estado de búsqueda de NuevaVentaProductos dibuja uno, se construye ese, y si no dibuja ninguno, no se agrega. Borrar el texto devuelve la lista exactamente como estaba: las mismas secciones, filas y orden.
+- **Resultados**: con texto, "Results · {n}" (un encabezado de sección con su nombre accesible, como los demás) y debajo las coincidencias, sin agrupar por si están en la venta, ordenadas por nombre sin importar mayúsculas ni acentos (empates por el nombre tal cual y después por id); n es la cantidad de filas mostradas. Sin coincidencias, solo "Results · 0", nada más. Mientras se busca no se muestran el aviso, "In the sale" ni "Most sold".
+- **Filas de resultados**: cada una es la misma fila que en la lista sin búsqueda. Un Product que ya está en la venta aparece con su línea (pasos, cantidad y su propio precio); uno con precio fuera de la venta, con su precio y "+"; uno sin precio, con "No price" y sin "+".
+- **Resaltado**: el nombre lleva un elemento `mark` (`nv-productos__marca`) sobre la primera coincidencia, en peso 600, con el token del acento y fondo transparente; como también cambia el peso, no depende solo del color. El `mark` cubre los caracteres del nombre tal como está escrito, aunque la coincidencia haya sido ignorando un acento o una mayúscula ("arb" sobre "Árbol" marca "Árb"); el nombre mostrado nunca cambia.
+- **Después de tocar un resultado**: el texto de búsqueda queda; solo la vendedora lo borra. La fila conserva su lugar y pasa del "+" a sus pasos sin salto, y el foco va al "+" de los pasos ("Add one {name}"). Así puede agregar varios Products que coinciden con las mismas letras sin volver a tipear, y la venta sigue con a lo sumo una línea por Product.
+- **Limpiar**: el dibujo del estado de búsqueda no muestra ningún control para limpiar, así que no hay ninguno: ni uno propio ni el nativo del campo `search`, que se oculta (`.nv-productos__buscar::-webkit-search-cancel-button`). Borrar el texto devuelve la lista exactamente como estaba: las mismas secciones, filas y orden.
 - **Sin filtros**: solo por nombre; nada de filtros por Stock, precio, Hidden product ni Catalog attributes.
 
 ### Secciones
@@ -151,9 +159,9 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 
 ### Diseño
 
-- Colores, tipografía y espacios salen solo de los tokens; el modo oscuro es el mismo marcado con los tokens oscuros.
-- Las diferencias aprobadas con los dibujos son las de arriba (desviación 2 y desviación de dibujo #2). Diferencias de peso y tono que se leen igual (precio y nombre más livianos que en el dibujo, pasos en pastillas separadas) quedan como observaciones. Cualquier otra diferencia que el dueño leería o haría distinto en el teléfono se le plantea al dueño en el PR; nadie la acepta como supuesto.
-- El estado de búsqueda se compara a ojo con NuevaVentaProductos y NuevaVentaProductosOscuro, claro y oscuro, con la Design capture adjunta al PR. Esa captura decide, como desviación para el dueño si difiere, cómo se ve un Product de la venta en los resultados, qué pasa con el texto después de un toque y si el dibujo muestra un control para limpiar.
+- Colores, tipografía y espacios salen solo de los tokens; el modo oscuro es el mismo marcado con los tokens oscuros (el acento del resaltado sigue a `NuevaVentaProductosOscuro`).
+- Las diferencias aprobadas con los dibujos son las de arriba (desviación 2, desviación de dibujo #2 de GH-924 y desviaciones de dibujo #1 y #2 de #940); las tres del estado de búsqueda (resaltado, orden, lupa) siguen planteadas al dueño. Diferencias de peso y tono que se leen igual (precio y nombre más livianos que en el dibujo, pasos en pastillas separadas) quedan como observaciones. Cualquier otra diferencia que el dueño leería o haría distinto en el teléfono se le plantea al dueño en el PR; nadie la acepta como supuesto.
+- El estado de búsqueda se compara a ojo con NuevaVentaProductos y NuevaVentaProductosOscuro, claro y oscuro, con la Design capture adjunta al PR. Mientras la lista no tenga ruta (`route: null` en el registro de pantallas), la captura lado a lado no es posible y queda "not compared"; la comparación de #940 se hizo sobre el código y el marcado del dibujo. Confirmar a ojo el estado de búsqueda, claro y oscuro, queda para el recorrido del flip.
 - El corrimiento de contenido y el blanco durante la carga se juzgan en el recorrido del flip.
 
 ## Fuera de esta capacidad (por ahora)
@@ -161,7 +169,8 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Cualquier ruta, entrada de navegación, pantalla o Sheet que monte la Sale in progress o la lista de Products, y el flip que las monta.
 - Los estados de carga y de fallo de la lista: filas esqueleto ocupadas, marca compacta de carga al cambiar fecha o Customer conservando nombres y pasos, sin conexión y error genérico, y la recuperación tras un fallo (#941).
 - Qué significa para la lista una lectura del Customer fallida (lo decide y prueba el flip).
-- La cantidad tipeada en la lista (flip). Un control propio para limpiar la búsqueda que el dibujo no muestre.
+- La cantidad tipeada en la lista (flip). Un control para limpiar la búsqueda, que el dibujo no muestra.
+- Si el texto de búsqueda se recuerda al salir de la lista y volver (lo decide el flip; hoy es estado local y no se lleva a ningún lado).
 - Filtros de la lista por Stock, precio, Hidden product o Catalog attributes.
 - Los pasos de cliente, pago y guardado de New sale, incluido qué pasa al guardar una línea cuyo Product ya no está disponible.
 - Código de barras, categoría y elementos de promoción en la lista de Products.
@@ -175,7 +184,7 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Cada regla de Líneas, Sin guardar, Cómo se paga, Cliente y owing, y Apertura tiene su test unitario de la Sale in progress, y pasa.
 - Cliente de sugerencias, a nivel de fetch: exactamente 1 pedido por apertura, con `on` igual a la fecha de apertura; 0 pedidos nuevos después de editar la fecha o volver a dibujar; 1 pedido nuevo en una apertura de otro día; una lectura fallida da ninguna sugerencia y 0 errores lanzados.
 - Lista de Products, en tests de componente a nivel de fetch: cada caso de la lista (pasos, cantidades tipeadas, una línea por Product, "No price", línea que pierde su precio, línea cuyo Product ya no vuelve, sugerencias filtradas y con tope, Stock, bulk a 10, recotización por Customer y por fecha, aviso, símbolo y decimales del Money format, nada antes de tiempo) tiene su test y pasa; 0 pedidos nuevos de sugerencias tras cambiar la fecha; 0 cambios en los totales de la venta al mostrar más filas.
-- Búsqueda, en `NuevaVentaProductos.test.tsx` con el arnés de #924: mayúsculas, acentos, coincidencia en cualquier parte, orden por nombre, "Results · 0" sin nada más, resaltado de la primera coincidencia sobre los caracteres originales, texto solo de espacios como vacío, aviso y secciones ocultos mientras se busca, Product de la venta con su línea en los resultados; cada caso tiene su test y pasa.
+- Búsqueda, en `NuevaVentaProductos.test.tsx` con el arnés de #924: mayúsculas, acentos, coincidencia en cualquier parte, orden por nombre (con orden fijo entre nombres que solo difieren por acento o mayúscula), "Results · 0" sin nada más, resaltado de la primera coincidencia sobre los caracteres originales, texto solo de espacios como vacío, aviso y secciones ocultos mientras se busca, Product de la venta con su línea en los resultados, Product con precio fuera de "Most sold" con su "+", Product sin precio con "No price" y sin "+", el texto que queda y el foco en los pasos tras tocar "+" en un resultado, y el campo a la vista sin conteo ni resultados mientras las lecturas no llegaron; cada caso tiene su test y pasa.
 - Al borrar la búsqueda, diferencias en secciones, filas u orden respecto de antes de buscar: 0. Cambios en la Sale in progress (líneas, cantidades, orden) causados por tipear o borrar en la búsqueda: 0. Pedidos de red nuevos causados por la búsqueda: 0.
 - Líneas perdidas por una acción de la lista, una búsqueda o una recarga de Products: 0. Ids internos mostrados en pantalla: 0.
 - Cifras mostradas antes de que lleguen todas las lecturas o mientras el Customer está pendiente (dígitos, símbolo de moneda, "No price", aviso, encabezados, "Results · N"): 0.
@@ -183,4 +192,4 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Rutas, constantes, parámetros, banderas, props, exports o hooks `data-*` solo para tests: 0.
 - Claves del Copy module de la lista de Products: 10 (7 de #924 y 3 de #940), en inglés y sin palabras de Unit ni de tipo de producto; `en.baseline.json` regenerado con su paso, 0 ediciones a mano.
 - Gate (pytest, vitest, e2e) pasa, y tsc strict y oxlint pasan sin nada silenciado.
-- Vara del trabajo, que se juzga cuando el flip la monte: una venta se registra desde el teléfono en menos de un minuto (sales.md, criterio 1); un Product habitual se encuentra, se agrega y se ajusta sin salir de la lista (1 toque para un Product habitual a 1 unidad desde "Most sold"), y uno que no está en "Most sold" se agrega tipeando parte de su nombre y con un toque en su resultado.
+- Vara del trabajo, que se juzga cuando el flip la monte: una venta se registra desde el teléfono en menos de un minuto (sales.md, criterio 1); un Product habitual se encuentra, se agrega y se ajusta sin salir de la lista (1 toque para un Product habitual a 1 unidad desde "Most sold"), y uno que no está en "Most sold" se agrega en 2 toques (el campo y el "+" de su resultado) tipeando parte de su nombre.
