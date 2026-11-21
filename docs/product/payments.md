@@ -252,7 +252,7 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
 - El medio de un Payment nuevo se controla dentro del mismo `INSERT … SELECT` que lo escribe: si no es un medio ofrecido del Business, no se escribe nada y se responde 404 `payment_method.unavailable`.
 - La API de Payments lleva `payment_method_id` en lugar de `method`; es un quiebre declarado con una línea `Breaking-API:` en el PR (ADR-0066). Agregar `still_owing` y `with_lines` (#899) solo suma un campo y un parámetro opcional, así que no es un quiebre.
 - La cuenta como libro corrido (parte 1 de GH-829) es un quiebre declarado: "Breaking-API: GET /api/customers/{id}/account drops applied_to from payment rows and the credit row kind" (ADR-0066). Su único consumidor, la ficha del Customer, cambia en la misma parte, y el snapshot de OpenAPI se regenera.
-- Los saldos corridos y `is_partial` salen solo de `account_of()`; ningún adaptador, router, esquema ni código del navegador los calcula. `applied_to` sale solo de las filas de la cuenta, nunca de las respuestas de registrar ni de vista previa.
+- Los saldos corridos y `is_partial` salen solo de `account_of()`; ningún adaptador, router, esquema ni código del navegador los calcula. `applied_to` se quitó solo de las filas de la cuenta; las respuestas de registrar y de vista previa de Record payment lo conservan.
 - Las rutas de Payment se suman al barrido de aislamiento, al test de rutas con acceso restringido y al test de migración de pertenencia.
 - Los códigos de rechazo van en `contract.json` (ADR-0008):
   - por encima del Balance;
