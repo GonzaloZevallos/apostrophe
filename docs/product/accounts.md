@@ -383,7 +383,7 @@ Criterios de éxito, el test de seguridad de la cookie (seguimiento de GH-130):
   - Android recibe un acceso directo en la pantalla de inicio, porque los navegadores permiten un service worker y el aviso de instalación solo en un origen seguro;
   - la app no muestra ningún banner ni explicación de la diferencia.
 - **Instalación en la instalación publicada**, con el TLS de Render: se ofrece el aviso de instalación propio de Android cuando el navegador lo hace disponible. El manifest y el service worker que ya existen no necesitan más trabajo para eso.
-- **Sin red**: cuando una solicitud falla porque se cayó la red, la app abierta muestra "No connection" en cualquier origen. Esto no depende del service worker.
+- **Sin red**: cuando una solicitud falla porque se cayó la red, la app abierta muestra "No connection" en cualquier origen. Esto no depende del service worker. La app no reintenta sola en segundo plano; la única excepción es la lista de Products de New sale, que tras un fallo vuelve a leer al reconectar o al volver a la app, sin botón (ADR 20261121, `sale-in-progress.md`).
 - **Tema**: la app está en Automatic por defecto: sin nada guardado sigue en vivo la configuración clara u oscura del teléfono, y la vuelve a revisar cuando la persona vuelve a la app. Un Light o Dark guardado en ese dispositivo gana sobre el teléfono. El único lugar donde una persona elige es Settings → Appearance, Theme: Automatic, Light o Dark (navigation.md).
   - La regla es una: el atributo en `<html>` lleva el tema resuelto. Sin atributo significa claro, `data-tema="oscuro"` significa oscuro. No hay excepción por pantalla, ruta ni Session. El valor guardado es `claro` u `oscuro`; sin clave, cualquier otro valor o un error de almacenamiento es Automatic.
   - **La Theme choice se recuerda por dispositivo**:
@@ -589,7 +589,7 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo renovado a partir del 
 - **Los estados vacíos** conservan la redacción fija propia de cada capacidad.
 - **Salir de un formulario o una Sheet** con cambios sin guardar pregunta antes de descartar, y uno sin tocar se cierra al instante (navigation.md). La pregunta de New sale es "Discard the sale?" (sales.md). La Forgot sheet no tiene nada que guardar, así que siempre se cierra al instante.
 - **Los rechazos** se muestran en línea y conservan lo tipeado. La única excepción: una contraseña actual incorrecta vacía "Current password".
-- **Sin red** muestra "No connection"; un error del servidor muestra un reintento genérico.
+- **Sin red** muestra "No connection"; un error del servidor muestra un reintento genérico. Única excepción al reintento solo a pedido: la lista de Products de New sale vuelve a leer sola al reconectar o al volver a la app tras un fallo (`sale-in-progress.md`).
 - **Un registro que ya no está** responde 404 tanto si se borró, como si nunca existió o si pertenece a otro Business (ADR-0004). La app nunca dice quién lo borró ni que alguna vez existió.
   - **Guardar una edición, confirmar un borrado o deshacer** sobre un registro que ya no está:
     - el formulario o el diálogo se cierra y lo tipeado se descarta;

@@ -5341,6 +5341,13 @@ a.ajustes-tema__opcion {
   border-bottom: 1px solid var(--linea);
 }
 
+/* The loading skeleton's row: as tall as a real one (the 44 px stepper target), so the rows do not
+ * reflow when the list arrives, with the name's bar and the price's bar at its two ends. */
+.nv-productos__fila--esqueleto {
+  justify-content: space-between;
+  min-height: calc(var(--alto-tocable) + 2 * var(--espacio-sm));
+}
+
 .nv-productos__datos {
   display: flex;
   flex: 1;
@@ -7263,3 +7270,21 @@ button:has(> .venta-en-curso) {
   font-weight: 600;
 }
 /* ===== end venta-gasto-telefono ===== */
+
+/* Customers segmented control: the wrapper sizes the shared option, which splits the width
+ * equally and may wrap its label and count (no nowrap, no ellipsis) and grow past 44 px. */
+.segmentos-clientes .selector-pago__opcion {
+  flex: 1 1 0;
+  min-height: var(--alto-tocable);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: var(--espacio-xs);
+  padding: var(--espacio-xs) var(--espacio-md);
+}
+
+/* A count's dot and figure stay one unit; the colour is the option's own. */
+.selector-pago__cuenta {
+  display: inline-block;
+}

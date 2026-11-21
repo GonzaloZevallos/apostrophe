@@ -21,6 +21,9 @@ export const OWING_HINT = 'To leave it owing, pick a customer'
  * as the open line's hint on New sale when no Product has a Current price on the date. */
 export const NO_PRICE_HINT = 'Add a price to a product so you can sell'
 
+/** The Collect Sheet's one text for a save that failed for any cause but the method: it never carries the API's `detail`. */
+const SALE_NOT_SAVED = 'The sale was not saved. Your lines are kept, so try again.'
+
 /** The line of a variety with no price on the sale's date. */
 export function noPriceMessage(varietyName: string): string {
   return `${varietyName} has no price for that date`
@@ -73,6 +76,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: noPriceMessage(SAMPLES.name) },
   { kind: 'notice', text: SALE_BILL_TEXT.shareFailed },
   { kind: 'notice', text: SALE_BILL_TEXT.copyFailed },
+  { kind: 'notice', text: SALE_NOT_SAVED },
   { kind: 'help', text: NEW_SALE_TEXT.productsInSale(Number(SAMPLES.count)) },
   { kind: 'help', text: NEW_SALE_TEXT.productsMostSold },
   { kind: 'help', text: NEW_SALE_TEXT.productStock(SAMPLES.grams) },
@@ -191,6 +195,7 @@ export const SALES_TEXT = {
   howTheyPay: 'How they pay',
   chooseMethod: 'Choose a method',
   noMethodToCollect: 'Choose how they pay to collect.',
+  saleNotSaved: SALE_NOT_SAVED,
   /** `total` is the sale's total in the business's Money format (`useMoney().money`). */
   collect: (total: string) => `Collect ${total}`,
   /** The label of Collect when `collect(total)` does not fit its line. */
