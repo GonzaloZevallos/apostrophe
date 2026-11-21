@@ -27,10 +27,10 @@ cost of goods; settlement takes the same shape.
     - the balance and owing since;
     - the sales still owing.
   - An on-the-spot payment is matched to its own sale before the walk and never enters it.
-  - The account is laid out from `settle()`'s result in `app/payments/domain/account.py`.
-    Rows are ordered by `(date, sales before payments, recorded_at, id)`, and every row
-    carries its own `running_balance`.
-    Superseded by `20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view.md`.
+  - The account is laid out by `account_of()` in `app/payments/domain/account.py`. Its
+    order and running-balance rules are in the addendum *Account order and running balance
+    (GH-829)* below, which follows
+    `20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view.md`.
 - **Other capabilities reach settlement only through ports they declare** (ADR-0006).
   - `Balances` is declared in customers; `OwingSales` is declared in sales.
   - Both are implemented by one payments adapter over one loader, and wired as factories
@@ -67,3 +67,41 @@ cost of goods; settlement takes the same shape.
   which is wider than this task.
 - **Raw balances with the sign tested in the front**: five call sites, each with its own
   `>` or `>=`.
+
+## Account order and running balance (GH-829)
+
+Addendum, 2026-11-21. Reúne en un solo lugar el orden de la cuenta del Customer y sus
+reglas de saldo corrido, tal como las dejó la parte 1 de GH-829. Sigue a
+`20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view.md`, no lo reabre, y
+no agrega ninguna regla: cada una nombra el test o la función que la respalda.
+
+- **La clave** es `(date, recorded_at, Sale antes que Payment, id)`. Es la misma de
+  `ledger_key` en `app/payments/domain/account.py` y la del ADR del ledger walk.
+  Respaldo: `test_ledger_key_is_date_then_recorded_at_then_sale_before_payment_then_id` y
+  el test de propiedad `test_ledgers_in_any_order_keep_the_newest_row_equal_to_the_balance`.
+- **Con `date` y `recorded_at` iguales, va primero el Sale.** Respaldo:
+  `test_an_equal_date_and_recorded_at_tie_puts_the_sale_first_so_no_row_is_negative`.
+- **Es un orden de ledger propio, no el orden del Settlement.** El orden del Settlement no
+  cambia: Sales, después Payments, cada uno por fecha y luego por orden de registro; sigue
+  decidiendo qué Sale paga cada Payment. En la cuenta, en cambio, un Payment fechado antes
+  de su Sale va primero (`test_a_payment_dated_before_its_sale_is_a_negative_row_and_not_partial`).
+  El orden del Settlement lo respaldan, en `tests/payments/test_settlement.py`,
+  `test_owed_sales_on_the_same_date_are_taken_oldest_recorded_first` y
+  `test_later_payments_on_the_same_date_are_applied_oldest_recorded_first`.
+- **El running balance de la fila más nueva es siempre igual a `settle().balance`.**
+  Respaldo: se afirma en cada caso de `tests/payments/test_account.py` y en el test de
+  propiedad.
+- **Una fila por cada Payment later, por su monto completo.** Sin partir entre Sales y sin
+  fila de Credit: `AccountRow` es solo `SaleRow | PaymentRow`. Respaldo:
+  `test_a_payment_covering_several_sales_is_still_one_row_with_its_full_amount` y
+  `test_a_payment_beyond_every_debt_is_one_negative_row_in_credit`.
+- **Un running balance bajo cero es un punto del ledger, no un Credit guardado.** La
+  pantalla dice "In your favor".
+- **`is_partial` es verdadero cuando el running balance tras el Payment es mayor que 0**, y
+  falso en exactamente 0 y por debajo. Se calcula solo en `account_of()` y nunca se guarda.
+  Respaldo: `test_partial_marks_above_zero_true_exactly_zero_and_below_false`.
+- **`recorded_at` se fija una sola vez.** Asignarle un Customer a un Sale que no tenía no lo
+  cambia: el repositorio actualiza solo `customer_id`
+  (`test_a_sale_assigned_a_customer_later_keeps_its_place_in_the_account`). Un Payment
+  borrado y vuelto a registrar es un Payment nuevo, con su propio `recorded_at` y su
+  propio `id`.
