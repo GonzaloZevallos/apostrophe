@@ -160,11 +160,8 @@ export function saleDraftReducer(state: DraftState, action: DraftAction): DraftS
     case 'customerChosen':
       return { ...state, customerId: action.customerId }
     case 'customerRemoved':
-      return {
-        ...state,
-        customerId: null,
-        choice: state.choice.kind === 'owing' ? { kind: 'unset' } : state.choice,
-      }
+      // Owing stays: resetting it would turn the proposal into a Payment nobody chose.
+      return { ...state, customerId: null }
     case 'choiceSet':
       return { ...state, choice: action.choice }
     case 'proposalArrived':

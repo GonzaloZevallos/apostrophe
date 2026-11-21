@@ -22,6 +22,8 @@ export const OWING_HINT = 'To leave it owing, pick a customer'
 export const NO_PRICE_HINT = 'Add a price to a product so you can sell'
 
 /** The Collect Sheet's one text for a save that failed for any cause but the method: it never carries the API's `detail`. */
+/** The refusal when Collect is blocked for owing with no Customer: the problem first, then both ways out. */
+const OWING_NEEDS_CUSTOMER = 'Owing needs a customer. Pick one, or choose how they pay.'
 const SALE_NOT_SAVED = 'The sale was not saved. Your lines are kept, so try again.'
 
 /** The line of a variety with no price on the sale's date. */
@@ -80,6 +82,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'notice', text: SALE_BILL_TEXT.shareFailed },
   { kind: 'notice', text: SALE_BILL_TEXT.copyFailed },
   { kind: 'notice', text: SALE_NOT_SAVED },
+  { kind: 'notice', text: OWING_NEEDS_CUSTOMER },
   { kind: 'help', text: NEW_SALE_TEXT.productsInSale(Number(SAMPLES.count)) },
   { kind: 'help', text: NEW_SALE_TEXT.productsMostSold },
   { kind: 'help', text: NEW_SALE_TEXT.productStock(SAMPLES.grams) },
@@ -201,6 +204,8 @@ export const SALES_TEXT = {
   /** The closing Sheet's title: the sale's line count. */
   collectTitle: (n: number) => (n === 1 ? 'The sale · 1 item' : `The sale · ${n} items`),
   howTheyPay: 'How they pay',
+  owesIt: 'Owes it',
+  owingNeedsCustomer: OWING_NEEDS_CUSTOMER,
   chooseMethod: 'Choose a method',
   noMethodToCollect: 'Choose how they pay to collect.',
   saleNotSaved: SALE_NOT_SAVED,

@@ -31,7 +31,17 @@
  */
 
 import { onlineManager, useMutation, useQueryClient } from '@tanstack/react-query'
-import { type FormEvent, useEffect, useId, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react'
+import {
+  Fragment,
+  type FormEvent,
+  type ReactNode,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 import { ApiError, post } from '../../api/client'
 import { keys } from '../../api/keys'
 import Boton from '../../components/Boton'
@@ -47,8 +57,8 @@ import { useMoney } from '../../format/moneyContext'
 import {
   choiceOfValue,
   collectableChoice,
+  howTheyPayView,
   paymentMethodName,
-  selectorValueOf,
   usePaymentMethodOptions,
 } from '../../sales/paymentMethods'
 import {
@@ -100,6 +110,7 @@ export default function CollectSheet({
   const queryClient = useQueryClient()
   const titleId = useId()
   const refusalId = useId()
+  const listLineId = useId()
   const notSavedId = useId()
   const methodOptions = usePaymentMethodOptions()
   const receivedId = useId()
@@ -109,7 +120,8 @@ export default function CollectSheet({
   const labelRef = useRef<HTMLSpanElement>(null)
   const [received, setReceived] = useState('')
   const [short, setShort] = useState(false)
-  const [refused, setRefused] = useState(false)
+  // What stopped the last Collect, and the one cause that set it: it shows only while that cause holds.
+  const [refusal, setRefusal] = useState<'method' | 'customer' | null>(null)
   // The method the server said is no longer available: kept in the field with the mark, never offered.
   const [methodGone, setMethodGone] = useState<{ id: number; name: string } | null>(null)
   // Every id this Sheet was refused for, kept for its whole life: never offered and never sent again,
@@ -146,6 +158,13 @@ export default function CollectSheet({
     observer.observe(label)
     return () => observer.disconnect()
   }, [totalText, saving])
+
+  // A refusal never outlives a change of Customer or of choice kind: reset while rendering, with no effect.
+  const [seen, setSeen] = useState({ customerId: state.customerId, kind: state.choice.kind })
+  if (seen.customerId !== state.customerId || seen.kind !== state.choice.kind) {
+    setSeen({ customerId: state.customerId, kind: state.choice.kind })
+    setRefusal(null)
+  }
 
   /** Focuses the method field, or the group around it while the field is disabled (the list is loading). */
   function focusMethodField(): void {
@@ -206,14 +225,15 @@ export default function CollectSheet({
       lines: lineValidationsOf(priced),
     })
     if (errors.some((error) => error.field.startsWith('line:'))) return
-    if (errors.some((error) => error.field === 'method')) {
-      setRefused(true)
+    const stopping = errors.find((error) => error.field === 'method' || error.field === 'customer')
+    if (stopping !== undefined) {
+      setRefusal(stopping.field === 'customer' ? 'customer' : 'method')
       focusMethodField()
       return
     }
     savingRef.current = true
     setSaving(true)
-    setRefused(false)
+    setRefusal(null)
     setNotSaved(false)
     onSavingChange(true)
     void send(
@@ -229,7 +249,48 @@ export default function CollectSheet({
     )
   }
 
-  const shownValue = selectorValueOf(state.choice, state.proposedMethodId, methodOptions.offeredIds)
+  const view = howTheyPayView({
+    choice: state.choice,
+    customerId: state.customerId,
+    proposedMethodId: state.proposedMethodId,
+    offeredIds: methodOptions.offeredIds,
+    methodOptions: methodOptions.selector.options,
+    refusedIds,
+    methodGone,
+    owesItLabel: SALES_TEXT.owesIt,
+  })
+  // The lines under the field: each has an id, and the field points at exactly the ones drawn.
+  // A refusal of this Collect replaces the "no longer available" line, as it always did.
+  const lines: { id: string; node: ReactNode }[] = []
+  if (refusal === 'customer' && owing && state.customerId === null) {
+    lines.push({ id: refusalId, node: <FieldRefusal id={refusalId}>{SALES_TEXT.owingNeedsCustomer}</FieldRefusal> })
+  } else if (refusal === 'method' && !owing) {
+    lines.push({ id: refusalId, node: <FieldRefusal id={refusalId}>{SALES_TEXT.noMethodToCollect}</FieldRefusal> })
+  } else if (methodGone !== null) {
+    lines.push({
+      id: refusalId,
+      node: <FieldRefusal id={refusalId}>{t('common:paymentMethodUnavailable')}</FieldRefusal>,
+    })
+  }
+  // With "Owes it" in the list the Selector's own empty/failed message never shows (the list is not
+  // empty), so the Sheet says it. An empty list is read on the server's list, before the refused ids go.
+  if (
+    !methodOptions.selector.loading &&
+    state.customerId !== null &&
+    (methodOptions.failure !== null || methodOptions.offeredIds?.length === 0)
+  ) {
+    lines.push({
+      id: listLineId,
+      node:
+        methodOptions.failure !== null ? (
+          <FieldRefusal id={listLineId}>{methodOptions.selector.emptySetMessage}</FieldRefusal>
+        ) : (
+          <span id={listLineId} className="campo__ayuda" data-copy="help">
+            {methodOptions.selector.emptySetMessage}
+          </span>
+        ),
+    })
+  }
 
   return (
     <Sheet
@@ -267,32 +328,24 @@ export default function CollectSheet({
           <div onClickCapture={methodOptions.failure === null ? undefined : methodOptions.reload}>
             <Selector
               {...methodOptions.selector}
-              options={methodOptions.selector.options.filter((option) => !refusedIds.includes(Number(option.value)))}
+              options={view.options}
               placeholder={SALES_TEXT.chooseMethod}
               label={SALES_TEXT.howTheyPay}
-              value={
-                methodGone === null
-                  ? shownValue !== null && refusedIds.includes(Number(shownValue))
-                    ? null
-                    : shownValue
-                  : String(methodGone.id)
-              }
-              selected={methodGone === null ? undefined : { value: String(methodGone.id), label: methodGone.name }}
+              value={view.value}
+              selected={view.selected}
               onChange={(value) => {
                 draft.setChoice(choiceOfValue(value))
-                setRefused(false)
+                setRefusal(null)
                 setNotSaved(false)
                 if (methodGone !== null && value !== String(methodGone.id)) setMethodGone(null)
               }}
               fieldRef={fieldRef}
-              describedBy={refused || methodGone !== null ? refusalId : undefined}
+              describedBy={lines.length === 0 ? undefined : lines.map((line) => line.id).join(' ')}
             />
           </div>
-          {refused ? (
-            <FieldRefusal id={refusalId}>{SALES_TEXT.noMethodToCollect}</FieldRefusal>
-          ) : (
-            methodGone !== null && <FieldRefusal id={refusalId}>{t('common:paymentMethodUnavailable')}</FieldRefusal>
-          )}
+          {lines.map((line) => (
+            <Fragment key={line.id}>{line.node}</Fragment>
+          ))}
           {!owing && (
             <>
               <div className="campo">

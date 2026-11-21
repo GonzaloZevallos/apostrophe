@@ -603,6 +603,8 @@
   {"source":"sales.ts:SALES_TEXT.newSale.productsMostSold","args":null,"text":"Most sold"},
   {"source":"sales.ts:SALES_TEXT.newSale.productsResults","args":[2],"text":"Results · 2"},
   {"source":"sales.ts:SALES_TEXT.otherThingsToRecord","args":null,"text":"Other things to record"},
+  {"source":"sales.ts:SALES_TEXT.owesIt","args":null,"text":"Owes it"},
+  {"source":"sales.ts:SALES_TEXT.owingNeedsCustomer","args":null,"text":"Owing needs a customer. Pick one, or choose how they pay."},
   {"source":"sales.ts:SALES_TEXT.expense","args":null,"text":"Expense"},
   {"source":"sales.ts:SALES_TEXT.saleInProgress","args":null,"text":"Sale in progress"},
   {"source":"sales.ts:SALES_TEXT.products","args":[0],"text":"0 products"},
