@@ -139,7 +139,7 @@ La lectura de la que salen la sección "Owed to you" de Customers y el bloque de
 
 La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `account_of()` en `app/payments/domain/account.py` (parte 1 de GH-829).
 
-- **Un libro corrido**: un recorrido simple de las Sales y los Payments posteriores del Customer, ordenado por fecha, después por `recorded_at`, después Sale antes que Payment, después id. No es el orden del Settlement: un Payment de fecha anterior a su Sale va antes que ella.
+- **Un libro corrido**: un recorrido simple de las Sales y los Payments posteriores del Customer, ordenado por fecha, después por `recorded_at`, después Sale antes que Payment, después id. No es el orden del Settlement: un Payment de fecha anterior a su Sale va antes que ella. Ver el ADR [20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view](../adr/20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view.md).
 - **Fila de Sale**: suma su total al saldo corrido, o 0 cuando la Sale se pagó en el momento. Lleva su `number` (el Sale number), `how_paid` (`paid`, `owing` o `none`) y, para una Sale pagada en el momento, su `payment_method` (`{id, name, icon}`).
 - **Fila de Payment**: una por cada Payment posterior, que resta su monto completo. Lleva su `payment_method` e `is_partial`: verdadero solo cuando el saldo corrido después de él es mayor que 0; falso en exactamente 0 y por debajo.
 - **Cada fila** lleva el saldo corrido después de ella. El de la fila más nueva es siempre igual a `settle().balance`.
