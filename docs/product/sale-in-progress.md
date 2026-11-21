@@ -12,6 +12,8 @@
 
 **Cuando** abro New sale en el teléfono, o cambio la fecha o el Customer, y los precios todavía se están cargando o no se pudieron leer, **quiero** ver claramente que la lista está cargando o falló, y nunca ver un precio equivocado, viejo o vacío, **para** nunca cotizar de memoria ni registrar una venta a una cifra que la app no calculó. (#941, recorte de #924: la sirven los estados de carga y de falla de la lista de Products de New sale. Afina la misma primera historia de sales.md).
 
+**Cuando** registro una venta en el teléfono y el Product que pidió el cliente no está entre los que ya están en la venta ni entre los más vendidos, **quiero** tipear parte de su nombre y ver solo los Products que coinciden, **para** agregarlo en un toque o dos sin scrollear ni acordarme de dónde queda en la lista. (#940: la sirve la búsqueda de la lista de Products de New sale. Afina la misma primera historia de sales.md, "una venta se registra desde el teléfono en menos de un minuto"; la búsqueda es el atajo cuando las sugerencias no alcanzan).
+
 ## Qué es
 
 La **Sale in progress** es la venta que se está armando en New sale antes de guardarla: cliente, líneas, fecha, **Shipping charged**, **Note** y cómo se paga. Es solo del front (`web/src/sales/useSaleDraft.ts`) y vive en memoria durante una apertura de New sale: nunca se guarda en el dispositivo y una recarga la pierde (igual que lo que dice sales.md, criterio 43). Lo que se guarda es la **Sale**, con las reglas de sales.md.
@@ -20,7 +22,7 @@ Hasta la parte de GH-496 que la monta en pantalla (el flip), ninguna pantalla la
 
 Nota: el criterio 34 de sales.md ("el medio nunca viene puesto") sigue vigente hasta la parte del flip de GH-496, porque la New sale en vivo todavía arranca sin medio. La propuesta de medio de esta capacidad no llega a la vendedora hasta entonces.
 
-Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clientes, productos y medio de pago, y tipea las cantidades a mano, de a un Product por vez y sin ver de una sola vez lo que ya está en la venta ni lo que suele vender. El costo principal son las elecciones repetidas, y el segundo es tipear cantidades. Hoy dice cómo le pagaron en el mismo formulario de New sale; la Collect Sheet pasa esa elección a un paso de cierre sin cambiar qué significan Payment, On-the-spot payment, Balance, Settlement ni Owing since. Un pago parcial sigue siendo un Payment posterior registrado con Record payment. El vuelto hoy se calcula de cabeza o con la calculadora del teléfono en medio de la entrega; la planilla nunca registró lo que el cliente entregó, así que no guardarlo no pierde nada.
+Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clientes, productos y medio de pago, y tipea las cantidades a mano, de a un Product por vez y sin ver de una sola vez lo que ya está en la venta ni lo que suele vender. El costo principal son las elecciones repetidas, y el segundo es tipear cantidades. Cuando el Product pedido no está en la venta ni en "Most sold", hoy se recorre la lista entera a ojo; la búsqueda (#940) reemplaza ese recorrido. Hoy dice cómo le pagaron en el mismo formulario de New sale; la Collect Sheet pasa esa elección a un paso de cierre sin cambiar qué significan Payment, On-the-spot payment, Balance, Settlement ni Owing since. Un pago parcial sigue siendo un Payment posterior registrado con Record payment. El vuelto hoy se calcula de cabeza o con la calculadora del teléfono en medio de la entrega; la planilla nunca registró lo que el cliente entregó, así que no guardarlo no pierde nada.
 
 ## Reglas
 
@@ -156,9 +158,15 @@ El componente `web/src/screens/ventas/NuevaVentaProductos.tsx`, con sus lecturas
 Diferencias con los dibujos aceptadas por el dueño:
 
 - Desviación 2 del pedido: sin código de barras ni categoría.
-- Desviación de dibujo #1 (GH-924, Decisión 3), solo para esta parte: todavía no hay búsqueda; llega en #940.
+- Desviaciones de dibujo #1 y #2 de #940 (Decisión 1 del humano): ni el botón de escanear código de barras junto al campo de búsqueda ni el select de categoría junto a "Results · N". Los Products no tienen código ni categoría, y por la regla del dueño del 2026-11-19 lo que un dibujo muestra de una función que no existe se oculta, nunca queda como marcador ni como control deshabilitado. El placeholder es "Search by name" (inglés hasta #317), no el "Buscar producto o código" del dibujo.
 
-La desviación de dibujo #2 (sin estados de carga ni de falla) quedó cerrada con #941. #940 tiene que estar entregada antes de que el flip de GH-496 monte la lista.
+La desviación de dibujo #1 de GH-924 (sin búsqueda) quedó retirada con #940 y la #2 (sin estados de carga ni de falla) quedó cerrada con #941. Las dos tienen que estar entregadas antes de que el flip de GH-496 monte la lista.
+
+Diferencias con el dibujo del estado de búsqueda que #940 le planteó al dueño en el PR y que ningún rol decidió (siguen abiertas hasta que el dueño las resuelva):
+
+- El resaltado va en peso 600, con el color del acento y sin subrayado; el dibujo lo pone en peso 700, en tinta, con un subrayado de 2 px en el acento.
+- Los resultados van en orden por nombre; el dibujo pone primero los Products que ya están en la venta.
+- El campo no tiene lupa (`.campo` no tiene lugar para un ícono); el dibujo la muestra al principio del campo.
 
 ### Lecturas
 
@@ -178,6 +186,7 @@ La desviación de dibujo #2 (sin estados de carga ni de falla) quedó cerrada co
   4. **ready:** todo llegó.
 - "Ya se cargó una lista" se enciende al llegar a `ready` y se apaga en cada falla, en el mismo render, sin efecto: así una lista de otra fecha que la caché devuelve después de una falla nunca se toma por cargada.
 - **Lectura de nuevo tras una falla** (decisión 1 (b) del humano; ADR [20261121](../adr/20261121-new-sale-s-product-list-re-reads-after-a-failure-on-reconnect-or-focus-the-only-exception-to-no-background-retry.md)): solo los observadores de esta lista sobre las dos lecturas de fecha vuelven a pedir cuando el teléfono se reconecta o la app recupera el foco, y solo mientras la lectura está en error. No cambia ninguna opción por defecto de la app ni de la consulta (`networkMode`, `gcTime`, `retry`, `staleTime`), no hay bucle de reintentos y una lista cargada nunca se vuelve a pedir en segundo plano. Es la única excepción a "Sin red" de accounts.md. Al montarse la lista en el flip, una lectura de nuevo que ella dispare también refresca al observador de `NuevaVenta.tsx`, porque comparten la entrada de la caché; está aceptado en el ADR.
+- La búsqueda no agrega ninguna lectura: filtra en el front los Products que la lista ya recibió.
 
 ### Estados de la lista
 
@@ -196,7 +205,8 @@ La lista dibuja solo a partir de `status`, y `priceSale` y `rowPrices` corren so
 - **Nueva lectura después de una falla:** como no queda una lista cargada, vuelve el esqueleto con las reglas de la primera carga, nunca la marca compacta.
 - **Recuperación:** cuando una lectura posterior sale bien (al reconectar, al recuperar el foco o por un cambio de fecha), la lista reemplaza el aviso, con las líneas, sus cantidades y los precios nuevos. Una lectura que vuelve a fallar deja el aviso hasta el próximo evento.
 - **Sale in progress:** ningún estado de carga o de falla la borra ni la cambia; las líneas viven en el borrador, fuera de las lecturas.
-- **Para la parte del flip:** Guardar y el total no están disponibles salvo que `status` sea `ready` y el Customer no esté en `'pending'`. Qué rodea al aviso de falla (Cerrar, Cliente, búsqueda) lo decide la Sheet que monte la lista.
+- **Para la parte del flip:** Guardar y el total no están disponibles salvo que `status` sea `ready` y el Customer no esté en `'pending'`. Qué rodea al aviso de falla (Cerrar, Cliente) lo decide la Sheet que monte la lista.
+- **Búsqueda (#940):** el campo queda fuera de `status`: se muestra siempre (esqueleto, recarga, falla y cargada) y conserva su texto. Con texto y la lista mostrando sus nombres (`refreshing` o `ready`), "Results · N" y las coincidencias reemplazan la pista y las secciones, con la marca compacta de carga y las reglas del "+" de las secciones; en `loading` y en una falla no hay resultados ni conteo. Una línea cuyo Product ya no vuelve nunca coincide y no se muestra mientras se busca.
 
 ### Filas
 
@@ -207,6 +217,7 @@ La lista dibuja solo a partir de `status`, y `priceSale` y `rowPrices` corren so
 - Una línea muestra su propio precio por unidad, de `priceSale` sobre las líneas de la venta (vía `saleLineInputsOf`, envío 0). Puede diferir del de la fila, por ejemplo por un Bulk price o un precio de Customer type.
 - El precio pasa por el formateador de dinero del Business (su símbolo y sus decimales) y no lleva etiqueta de Unit, para que sirva a cualquier Business.
 - "No price" se muestra exactamente cuando la fila no tiene precio; el componente nunca lee `current_price` por su cuenta (solo `nothingSellable`, para el aviso).
+- Las filas de las secciones y las de los resultados de búsqueda se dibujan con las mismas dos formas (línea con pasos, fila con "+"), y ambas usan el id del Product como clave.
 
 ### Pasos
 
@@ -214,22 +225,37 @@ La lista dibuja solo a partir de `status`, y `priceSale` y `rowPrices` corren so
 - Una línea tiene, en un grupo nombrado por el Product: "−" ("Remove one {name}"), la cantidad de solo lectura y "+" ("Add one {name}"). Siguen funcionando mientras la lista recarga.
 - La lista no fija ningún paso ni hace cuentas de cantidad: lo decide la Sale in progress (ver Líneas), y "−" desde 1 o menos saca la línea. Un Product que sale de la venta vuelve a "Most sold" si está entre las sugerencias.
 - Una línea sin precio muestra "No price", "−" y la cantidad, sin "+"; el lugar del "+" queda vacío para que "−" no se mueva. Una línea que pierde su precio por un cambio de fecha se queda en la venta hasta que la vendedora la saca con "−"; ninguna acción de la lista pierde una línea.
-- Una línea cuyo Product la lectura de Products ya no devuelve (archivado o eliminado en otro lado después de agregarlo) también se queda: muestra, en lugar del nombre, el texto compartido "no longer available" (el mismo que usa el Selector para una elección que ya no se ofrece), "No price", su cantidad y "−", que la saca como a cualquier línea. Nunca muestra un id interno ni un nombre adivinado. Su grupo y su "−" usan ese mismo texto como nombre, sin clave de copy nueva. Queda en "In the sale" en el orden en que se agregó y cuenta en su número, nunca aparece en "Most sold" y no tiene "+". Qué pasa al guardar con una línea así es de la parte del guardado.
+- Una línea cuyo Product la lectura de Products ya no devuelve (archivado o eliminado en otro lado después de agregarlo) también se queda: muestra, en lugar del nombre, el texto compartido "no longer available" (el mismo que usa el Selector para una elección que ya no se ofrece), "No price", su cantidad y "−", que la saca como a cualquier línea. Nunca muestra un id interno ni un nombre adivinado. Su grupo y su "−" usan ese mismo texto como nombre, sin clave de copy nueva. Queda en "In the sale" en el orden en que se agregó y cuenta en su número, nunca aparece en "Most sold" ni en los resultados de una búsqueda, y no tiene "+". Qué pasa al guardar con una línea así es de la parte del guardado.
 - Los botones miden al menos 44x44 px, no seleccionan texto, responden al toque sin demora y sus glifos están ocultos para la accesibilidad. Cada botón es su propia pastilla en el tono suave del acento (el dibujo los agrupa en una sola pastilla; el dueño lee y hace lo mismo).
 - Todavía no hay forma de tipear una cantidad en la lista: 10 unidades son 10 toques. Dónde vive la cantidad tipeada lo decide el flip.
 
+### Búsqueda
+
+(#940.) Sirve para encontrar por nombre un Product que no está en la venta ni en "Most sold". Solo acota lo que se muestra: nunca cambia la Sale in progress, sus líneas ni sus cantidades.
+
+- **Campo**: arriba de todo, construido como la búsqueda de Customers (`label.campo` + `input.campo__input`, a 17 px y con la altura `--alto-boton`), sin lupa. Etiqueta visualmente oculta "Search products" y placeholder "Search by name"; `type="search"`, `inputMode="search"`, `autoComplete="off"`, `enterKeyHint="search"`, con letra de al menos 16 px para que el teléfono no haga zoom. Se muestra siempre y conserva su texto, también mientras la lista no muestra nada. El texto es estado local del componente.
+- **Qué coincide**: el texto tipeado, recortado, coincide en cualquier parte del nombre del Product tal como lo escribió la vendedora, sin importar mayúsculas ni acentos (la misma regla que la búsqueda de Customers y el Selector: `matchesQuery`, `foldForSearch` y `matchRange` de `web/src/components/selectorSearch.ts`, sin un segundo normalizador). No supone marca, tipo de producto ni Unit.
+- **Texto solo de espacios** cuenta como búsqueda vacía: se ve la lista normal, con el aviso, "In the sale" y "Most sold".
+- **Qué cubre**: solo los Products que la lista ya recibe (nunca Archived products ni nada de otro Business). Una línea "no longer available" no tiene nombre, así que nunca coincide; no se muestra mientras se busca y vuelve al borrar la búsqueda, sin perderse nunca de la venta.
+- **Resultados**: con texto, "Results · {n}" (un encabezado de sección con su nombre accesible, como los demás) y debajo las coincidencias, sin agrupar por si están en la venta, ordenadas por nombre sin importar mayúsculas ni acentos (empates por el nombre tal cual y después por id); n es la cantidad de filas mostradas. Sin coincidencias, solo "Results · 0", nada más. Mientras se busca no se muestran el aviso, "In the sale" ni "Most sold".
+- **Filas de resultados**: cada una es la misma fila que en la lista sin búsqueda. Un Product que ya está en la venta aparece con su línea (pasos, cantidad y su propio precio); uno con precio fuera de la venta, con su precio y "+"; uno sin precio, con "No price" y sin "+".
+- **Resaltado**: el nombre lleva un elemento `mark` (`nv-productos__marca`) sobre la primera coincidencia, en peso 600, con el token del acento y fondo transparente; como también cambia el peso, no depende solo del color. El `mark` cubre los caracteres del nombre tal como está escrito, aunque la coincidencia haya sido ignorando un acento o una mayúscula ("arb" sobre "Árbol" marca "Árb"); el nombre mostrado nunca cambia.
+- **Después de tocar un resultado**: el texto de búsqueda queda; solo la vendedora lo borra. La fila conserva su lugar y pasa del "+" a sus pasos sin salto, y el foco va al "+" de los pasos ("Add one {name}"). Así puede agregar varios Products que coinciden con las mismas letras sin volver a tipear, y la venta sigue con a lo sumo una línea por Product.
+- **Limpiar**: el dibujo del estado de búsqueda no muestra ningún control para limpiar, así que no hay ninguno: ni uno propio ni el nativo del campo `search`, que se oculta (`.nv-productos__buscar::-webkit-search-cancel-button`). Borrar el texto devuelve la lista exactamente como estaba: las mismas secciones, filas y orden.
+- **Sin filtros**: solo por nombre; nada de filtros por Stock, precio, Hidden product ni Catalog attributes.
+
 ### Secciones
 
-- Arriba va el aviso, cuando corresponde; después, "In the sale · {n}" con las líneas en el orden en que se agregaron, solo si hay líneas.
+- Con la búsqueda vacía: arriba va el aviso, cuando corresponde; después, "In the sale · {n}" con las líneas en el orden en que se agregaron, solo si hay líneas.
 - Debajo, "Most sold" se muestra solo si tiene filas: conserva el orden de las sugerencias, deja afuera los Products que ya están en la venta y los ids que la lectura de Products no devolvió, y aplica el tope (`MOST_SOLD_ROWS`) después de filtrar. Sale solo del propio Business, sin Gifts ni Archived products, y nunca fija un precio, un monto ni una cantidad.
-- Los encabezados de sección son chicos, en negrita media y en gris, como en el dibujo.
-- Sin Sales todavía (y sin líneas), el cuerpo queda vacío: ninguna fila, encabezado ni aviso.
-- Hasta que llegue #940, un Product que no está en la venta ni en "Most sold" no se alcanza desde esta lista; es aceptable solo porque nada la monta todavía.
+- Con texto en la búsqueda, las secciones no se muestran: solo los resultados (ver Búsqueda).
+- Los encabezados de sección y el de resultados son chicos, en negrita media y en gris, como en el dibujo.
+- Sin Sales todavía (y sin líneas), el cuerpo con la búsqueda vacía queda vacío: ninguna fila, encabezado ni aviso. Un Product que no está en la venta ni en "Most sold" se alcanza con la búsqueda.
 
 ### Aviso
 
-- Cuando no hay nada para vender, arriba de las secciones se muestra, con el Attention icon y sin poder tocarse, el aviso de que no hay Products (`selectorNoVarieties`) o el de que ninguno tiene precio para esa fecha (`NO_PRICE_HINT`), según `nothingSellable`.
-- Sigue a la fecha de la venta y se muestra solo con la lista en `ready` y el Customer conocido: se oculta mientras carga o recarga y en una falla. Su altura no se reserva, así que puede correr la lista al aparecer; se juzga en el recorrido del flip. Cuando llegue la búsqueda (#940) irá debajo de ella y se ocultará mientras se busca.
+- Cuando no hay nada para vender, debajo del campo de búsqueda y arriba de las secciones se muestra, con el Attention icon y sin poder tocarse, el aviso de que no hay Products (`selectorNoVarieties`) o el de que ninguno tiene precio para esa fecha (`NO_PRICE_HINT`), según `nothingSellable`.
+- Sigue a la fecha de la venta y se muestra solo con la lista en `ready` y el Customer conocido: se oculta mientras carga o recarga y en una falla. Su altura no se reserva, así que puede correr la lista al aparecer; se juzga en el recorrido del flip. Se oculta mientras se busca.
 
 ### Fallos
 
@@ -239,23 +265,26 @@ La lista dibuja solo a partir de `status`, y `priceSale` y `rowPrices` corren so
 
 ### Textos
 
-En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en inglés y sin palabras de Unit ni de tipo de producto: `productsInSale` "In the sale · {n}", `productsMostSold` "Most sold", `productStock` "{stock} in stock", `productNoPrice` "No price", `productAdd` "Add {name}", `productIncrease` "Add one {name}", `productDecrease` "Remove one {name}". Están registrados en LIMITED_COPY y BASELINE_ARGS. El texto "no longer available" se reutiliza del existente, no se agrega. Los estados de carga y de falla no agregan ninguna clave: reutilizan SinConexion, ErrorGenerico, `LoadingWhile` y `Loading compacto`. Las claves de la búsqueda (`productsResults`, `productSearchLabel`, `productSearchPlaceholder`) llegan con #940. El baseline se regenera, nunca se edita a mano.
+En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en inglés y sin palabras de Unit ni de tipo de producto: `productsInSale` "In the sale · {n}", `productsMostSold` "Most sold", `productStock` "{stock} in stock", `productNoPrice` "No price", `productAdd` "Add {name}", `productIncrease` "Add one {name}", `productDecrease` "Remove one {name}", y desde #940 `productsResults(n)` "Results · {n}", `productSearchLabel` "Search products" y `productSearchPlaceholder` "Search by name". Están registrados en LIMITED_COPY y BASELINE_ARGS. El texto "no longer available" se reutiliza del existente, no se agrega. Los estados de carga y de falla no agregan ninguna clave: reutilizan SinConexion, ErrorGenerico, `LoadingWhile` y `Loading compacto`. El baseline (`en.baseline.json`) se regenera con su paso cuando el paso puede; como `i18n:baseline --update` nunca agrega una entrada, la de una clave nueva se inserta en su lugar ordenado con el texto que emite el propio script.
 
 ### Diseño
 
 - Colores, tipografía y espacios salen solo de los tokens; el modo oscuro es el mismo marcado con los tokens oscuros. La fila esqueleto tiene su única regla propia, `.nv-productos__fila--esqueleto`, que le da la altura mínima de la fila real con tokens.
-- Las diferencias aprobadas con los dibujos son las de arriba (desviación 2 y desviación de dibujo #1). Diferencias de peso y tono que se leen igual (precio y nombre más livianos que en el dibujo, pasos en pastillas separadas, fila esqueleto de dos barras sin forma de paso) quedan como observaciones. Ningún dibujo muestra la marca compacta en estas celdas ni el "+" oculto de "Most sold" al recargar. Cualquier otra diferencia que el dueño leería o haría distinto en el teléfono se le plantea al dueño en el PR; nadie la acepta como supuesto.
+- Las diferencias aprobadas con los dibujos son las de arriba (desviación 2 y desviaciones de dibujo #1 y #2 de #940); las tres del estado de búsqueda (resaltado, orden, lupa) siguen planteadas al dueño. Diferencias de peso y tono que se leen igual (precio y nombre más livianos que en el dibujo, pasos en pastillas separadas, fila esqueleto de dos barras sin forma de paso) quedan como observaciones. Ningún dibujo muestra la marca compacta en estas celdas ni el "+" oculto de "Most sold" al recargar. Cualquier otra diferencia que el dueño leería o haría distinto en el teléfono se le plantea al dueño en el PR; nadie la acepta como supuesto.
 - El dibujo compartido de sin conexión en `Estados.dc.html` promete volver a intentar sola cuando vuelve la conexión; para esta lista eso es cierto desde #941.
 - No hay captura lado a lado mientras la pantalla no tenga ruta (`route: null` en `scripts/design/screens.json`). El corrimiento de contenido y el blanco durante la carga se juzgan en el recorrido del flip.
+- El resaltado va en peso 600 y en el color del acento (el acento del resaltado sigue a `NuevaVentaProductosOscuro`), sin depender solo del color. El campo oculta el botón nativo de borrar porque el dibujo no muestra un control de borrado.
+- El estado de búsqueda se compara a ojo con NuevaVentaProductos y NuevaVentaProductosOscuro, claro y oscuro, con la Design capture adjunta al PR. Mientras la lista no tenga ruta, la captura lado a lado no es posible y queda "not compared"; confirmarla a ojo queda para el recorrido del flip.
 
 ## Fuera de esta capacidad (por ahora)
 
 - Cualquier ruta, entrada de navegación, pantalla o Sheet que monte la Sale in progress o la lista de Products, y el flip que las monta.
-- La búsqueda de la lista de Products: campo, "Results · {n}", resaltado de coincidencias, "Results · 0" y sus textos (#940).
 - Un botón de reintento en los avisos de falla, o cualquier reintento más allá de la lectura de nuevo al reconectar o al recuperar el foco; cambios a SinConexion o a ErrorGenerico.
 - Qué muestran el total y Cobrar mientras la lista carga o falló, y qué rodea al aviso de falla (flip).
 - Qué significa para la lista una lectura del Customer fallida (lo decide y prueba el flip).
-- La cantidad tipeada en la lista y un botón propio para limpiar la búsqueda (flip).
+- La cantidad tipeada en la lista (flip). Un control para limpiar la búsqueda, que el dibujo no muestra.
+- Si el texto de búsqueda se recuerda al salir de la lista y volver (lo decide el flip; hoy es estado local y no se lleva a ningún lado).
+- Filtros de la lista por Stock, precio, Hidden product o Catalog attributes.
 - Los pasos de cliente, pago y guardado de New sale, incluido qué pasa al guardar una línea cuyo Product ya no está disponible.
 - Código de barras, categoría y elementos de promoción en la lista de Products.
 - La pantalla anfitriona de New sale que monta la Collect Sheet, el flip que la monta y su regla de no abrirla con una línea sin precio; también, ya en el flip: que la anfitriona ignore el volver del sistema y Escape mientras `onSavingChange(true)`, un test que monte la barra de la venta y la Sheet juntas y muestre el total guardado igual al de la barra y a `SaleOut.total`, y que tras `onSaved` la anfitriona muestre las cifras de la respuesta con el aviso de recotización (`linesRepriced`) cuando el total cambió.
@@ -275,6 +304,8 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Cada regla de Líneas, Sin guardar, Cómo se paga, Cliente y owing, y Apertura tiene su test unitario de la Sale in progress, y pasa.
 - Cliente de sugerencias, a nivel de fetch: exactamente 1 pedido por apertura, con `on` igual a la fecha de apertura; 0 pedidos nuevos después de editar la fecha o volver a dibujar; 1 pedido nuevo en una apertura de otro día; una lectura fallida da ninguna sugerencia y 0 errores lanzados.
 - Lista de Products, en tests de componente a nivel de fetch: cada caso de la lista (pasos, cantidades tipeadas, una línea por Product, "No price", línea que pierde su precio, línea cuyo Product ya no vuelve, sugerencias filtradas y con tope, Stock, bulk a 10, recotización por Customer y por fecha, aviso, símbolo y decimales del Money format) tiene su test y pasa; 0 pedidos nuevos de sugerencias tras cambiar la fecha; 0 cambios en los totales de la venta al mostrar más filas.
+- Búsqueda, en `NuevaVentaProductos.test.tsx` con el arnés de #924: mayúsculas, acentos, coincidencia en cualquier parte, orden por nombre (con orden fijo entre nombres que solo difieren por acento o mayúscula), "Results · 0" sin nada más, resaltado de la primera coincidencia sobre los caracteres originales, texto solo de espacios como vacío, aviso y secciones ocultos mientras se busca, Product de la venta con su línea en los resultados, Product con precio fuera de "Most sold" con su "+", Product sin precio con "No price" y sin "+", el texto que queda y el foco en los pasos tras tocar "+" en un resultado, y el campo a la vista sin conteo ni resultados mientras las lecturas no llegaron; cada caso tiene su test y pasa.
+- Al borrar la búsqueda, diferencias en secciones, filas u orden respecto de antes de buscar: 0. Cambios en la Sale in progress (líneas, cantidades, orden) causados por tipear o borrar en la búsqueda: 0. Pedidos de red nuevos causados por la búsqueda: 0.
 - Estados de carga y de falla, en `NuevaVentaProductos.test.tsx` sobre el arnés de #924, cada uno con su test que pasa en el Gate (vitest):
   1. **Primera carga sin cifras:** mientras falta alguna lectura (sugerencias y Stock incluidas), la lista está `aria-busy` y muestra 0 dígitos, 0 símbolos del Money format, 0 textos de lista vacía y 0 encabezados.
   2. **Recarga sin precio viejo:** un cambio de Customer o de fecha conserva las líneas y sus cantidades, pone la marca compacta en las celdas de precio sin destellar la cifra anterior, oculta la pista y deja la lista `aria-busy`; un "+" durante un cambio de fecha sube la cantidad.
@@ -286,9 +317,9 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Cifras mostradas antes de que lleguen todas las lecturas, mientras el Customer está pendiente o durante una falla (dígitos, símbolo de moneda, "No price", aviso, encabezados): 0.
 - Operaciones de dinero en `useSaleDraft`, en el cliente de sugerencias y en la lista de Products: 0 (todo pasa por `pricing.ts`).
 - Rutas, constantes, parámetros, banderas, props, exports o hooks `data-*` solo para tests: 0.
-- Claves del Copy module agregadas por la lista de Products: 7, en inglés y sin palabras de Unit ni de tipo de producto; agregadas por los estados de carga y de falla: 0.
+- Claves del Copy module de la lista de Products: 10 (7 de #924 y 3 de #940), en inglés y sin palabras de Unit ni de tipo de producto; agregadas por los estados de carga y de falla: 0. Pedidos de red nuevos causados por la búsqueda: 0.
 - Gate (pytest, vitest, e2e) pasa, y tsc strict y oxlint pasan sin nada silenciado.
-- Vara del trabajo, que se juzga cuando el flip la monte: una venta se registra desde el teléfono en menos de un minuto (sales.md, criterio 1), y un Product habitual se encuentra, se agrega y se ajusta sin salir de la lista (1 toque para un Product habitual a 1 unidad desde "Most sold"). No hay medición de uso en la app hasta el flip de GH-496.
+- Vara del trabajo, que se juzga cuando el flip la monte: una venta se registra desde el teléfono en menos de un minuto (sales.md, criterio 1), y un Product habitual se encuentra, se agrega y se ajusta sin salir de la lista (1 toque para un Product habitual a 1 unidad desde "Most sold"), y uno que no está en "Most sold" se agrega en 2 toques (el campo y el "+" de su resultado) tipeando parte de su nombre. No hay medición de uso en la app hasta el flip de GH-496.
 - Collect Sheet, con Testing Library a nivel de fetch: sin medio por encima de $0, 0 pedidos y el campo enfocado; con una línea sin precio en `priced`, 0 pedidos, ningún texto nuevo y ninguna llamada a `onSavingChange`; mientras guarda, toques extra y Close dan 0 pedidos adicionales; tras un pedido rechazado, `onSavingChange` termina en false y Close vuelve a funcionar; un borrador que ya trae owing no se manda; la etiqueta de Collect es igual a `priced.totals.total` formateado y `onSaved` recibe la respuesta sin tocar.
 - Received y Change, en un segundo archivo de tests de la Collect Sheet con Testing Library a nivel de fetch: con Received vacío, menor o inválido, 0 líneas de Change y 0 avisos o errores; con Received igual al total, Change 0; con uno mayor, la diferencia exacta, a 0 y a 2 decimales del Money format; en una venta de $0 con Received 0, Change 0; 0 apariciones de Received o Change en el cuerpo de `POST /api/sales`; Received conservado tras cambiar de medio, pasar a owing y volver, y tras un guardado fallido; ayuda oculta con owing; al ancho angosto donde el botón dice "Collect", la fila Total muestra el total; etiqueta acortada a "Collect" con `scrollWidth` > `clientWidth` (definido con `Object.defineProperty`), nombre accesible con el "Collect {total}" completo, y la etiqueta completa de vuelta cuando vuelve a entrar.
 - Caminos de fallo de la Collect Sheet (#930), con Testing Library a nivel de fetch y en el mismo host que los tests de #918:

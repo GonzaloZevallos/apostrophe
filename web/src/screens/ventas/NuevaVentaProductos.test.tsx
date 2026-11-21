@@ -336,7 +336,8 @@ test.each(['products', 'settings', 'suggestions', 'stock'])(
     expect(within(area()).getAllByRole('listitem', { hidden: true })).toHaveLength(MOST_SOLD_ROWS)
     expect(within(area()).queryByRole('listitem')).toBeNull()
     expect(within(area()).queryByRole('button')).toBeNull()
-    expect(area().textContent).toBe('')
+    // Only the search field's visually hidden label: nothing the list reads shows.
+    expect(area().textContent).toBe('Search products')
     expectNoFigures()
     release(read)
     expect(await screen.findByRole('heading', { name: 'Most sold' })).toBeInTheDocument()
@@ -489,7 +490,7 @@ test('a failed suggestions read and a failed Stock read are silent: the lines ad
   await act(async () => undefined)
   expect(within(area()).queryByRole('alert')).toBeNull()
   expect(within(area()).queryByRole('status')).toBeNull()
-  expect(area().textContent).toBe('')
+  expect(area().textContent).toBe('Search products')
 })
 
 test('a Stock 500 shows the list with no stock text and no error', async () => {
@@ -632,4 +633,229 @@ test('a second observer of the same Products read keeps its options: the list ov
   expect(reconnect.filter((option) => option === false)).toHaveLength(1)
   expect(onFocus.filter((option) => option === false)).toHaveLength(1)
   expect(reconnect.filter((option) => typeof option === 'function')).toHaveLength(1)
+})
+
+const field = () => screen.getByRole('searchbox', { name: 'Search products' })
+const search = async (text: string) => {
+  await screen.findByRole('heading', { name: /Most sold|Results/ })
+  await userEvent.clear(field())
+  await userEvent.type(field(), text)
+}
+/** The rows' leading names, given the names the test expects (a row's text is its name, then price and steps). */
+const names = (expected: string[]) =>
+  screen.getAllByRole('listitem').map((item) => expected.find((name) => (item.textContent ?? '').startsWith(name)) ?? item.textContent)
+
+test('the search field is a search keyboard field with its label, placeholder and no clear control', async () => {
+  renderList()
+  const input = await screen.findByRole('searchbox', { name: 'Search products' })
+  expect(input).toHaveAttribute('type', 'search')
+  expect(input).toHaveAttribute('inputmode', 'search')
+  expect(input).toHaveAttribute('enterkeyhint', 'search')
+  expect(input).toHaveAttribute('autocomplete', 'off')
+  expect(input).toHaveAttribute('placeholder', 'Search by name')
+  expect(screen.queryByRole('button', { name: /scan|barcode|clear/i })).toBeNull()
+  expect(screen.queryByRole('combobox')).toBeNull()
+})
+
+test('the match ignores case and accents and the results follow the name order, not the Most sold order', async () => {
+  productsByDate.set(TODAY, [...PRODUCTS, product(5, 'Lirio', price(250))])
+  renderList()
+  await search('I')
+  expect(await screen.findByRole('heading', { name: 'Results · 3' })).toBeInTheDocument()
+  expect(names(['Lirio', 'Sin precio', 'Tulipán'])).toEqual(['Lirio', 'Sin precio', 'Tulipán'])
+  await search('TULIPAN')
+  expect(await screen.findByRole('heading', { name: 'Results · 1' })).toBeInTheDocument()
+  expect(names(['Tulipán'])).toEqual(['Tulipán'])
+  await search('árb')
+  expect(await screen.findByRole('heading', { name: 'Results · 1' })).toBeInTheDocument()
+  expect(names(['Árbol'])).toEqual(['Árbol'])
+})
+
+test('names that differ only by case or accent keep a pinned order: fold, then raw name, then id', async () => {
+  productsByDate.set(TODAY, [product(2, 'Árbol', price(500)), product(5, 'arbol', price(1)), product(6, 'ARBOL', price(2)), product(7, 'arbol', price(3))])
+  suggestionIds = [2]
+  renderList()
+  await search('arbol')
+  expect(await screen.findByRole('heading', { name: 'Results · 4' })).toBeInTheDocument()
+  const rows = screen.getAllByRole('listitem')
+  expect(rows.map((item) => item.querySelector('mark')?.textContent)).toEqual(['ARBOL', 'arbol', 'arbol', 'Árbol'])
+  expect(within(rows[1] as HTMLElement).getByText(/\$\s?1$/)).toBeInTheDocument()
+  expect(within(rows[2] as HTMLElement).getByText(/\$\s?3$/)).toBeInTheDocument()
+})
+
+test('no match shows "Results · 0" and nothing else', async () => {
+  renderList()
+  await search('zzz')
+  expect(await screen.findByRole('heading', { name: 'Results · 0' })).toBeInTheDocument()
+  expect(screen.getAllByRole('heading')).toHaveLength(1)
+  expect(screen.queryByRole('listitem')).toBeNull()
+  expect(screen.queryByRole('button', { name: /^Add / })).toBeNull()
+  expect(area().textContent).toBe('Search productsResults · 0')
+})
+
+test('the mark holds exactly the characters the seller wrote, and the name is unchanged', async () => {
+  renderList()
+  await search('arb')
+  const found = await row('Árbol')
+  const mark = within(found).getByText('Árb')
+  expect(mark.tagName).toBe('MARK')
+  expect(found.querySelectorAll('mark')).toHaveLength(1)
+  expect((found.textContent ?? '').startsWith('Árbol')).toBe(true)
+  expect(screen.getByRole('button', { name: 'Add Árbol' })).toBeInTheDocument()
+})
+
+test('only the first match in a name is marked', async () => {
+  productsByDate.set(TODAY, [product(8, 'Ana banana', price(100))])
+  suggestionIds = [8]
+  renderList()
+  await search('an')
+  const found = await row('Ana banana')
+  expect(found.querySelectorAll('mark')).toHaveLength(1)
+  expect(within(found).getByText('An').tagName).toBe('MARK')
+})
+
+test('a query of only spaces counts as empty: the sections and the hint stay', async () => {
+  productsByDate.set(TODAY, [product(1, 'Rosa', null)])
+  suggestionIds = [1]
+  renderList()
+  await search('   ')
+  expect(screen.getByRole('heading', { name: 'Most sold' })).toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: /^Results/ })).toBeNull()
+  expect(screen.getByText('Add a price to a product so you can sell')).toBeInTheDocument()
+  expect(screen.queryByRole('mark')).toBeNull()
+})
+
+test('while searching the hint and both sections are hidden, and they come back unchanged once cleared', async () => {
+  productsByDate.set(TODAY, [...PRODUCTS, product(5, 'Lirio', price(250))])
+  renderList()
+  await click('Add Rosa')
+  await screen.findByRole('heading', { name: 'In the sale · 1' })
+  const before = screen.getAllByRole('listitem').map((item) => item.textContent)
+  const headings = screen.getAllByRole('heading').map((heading) => heading.textContent)
+  await userEvent.type(field(), 'lir')
+  expect(screen.queryByRole('heading', { name: /^In the sale/ })).toBeNull()
+  expect(screen.queryByRole('heading', { name: 'Most sold' })).toBeNull()
+  expect(screen.queryByText('Add a price to a product so you can sell')).toBeNull()
+  await userEvent.clear(field())
+  expect(screen.getAllByRole('heading').map((heading) => heading.textContent)).toEqual(headings)
+  expect(screen.getAllByRole('listitem').map((item) => item.textContent)).toEqual(before)
+})
+
+test('the hint is hidden while searching', async () => {
+  productsByDate.set(TODAY, [product(1, 'Rosa', null)])
+  suggestionIds = [1]
+  renderList()
+  expect(await screen.findByText('Add a price to a product so you can sell')).toBeInTheDocument()
+  await userEvent.type(field(), 'ro')
+  expect(screen.queryByText('Add a price to a product so you can sell')).toBeNull()
+  expect(screen.getByRole('heading', { name: 'Results · 1' })).toBeInTheDocument()
+})
+
+test('a priced Product outside Most sold shows its price and "Add <name>"', async () => {
+  productsByDate.set(TODAY, [...PRODUCTS, product(5, 'Lirio', price(250))])
+  renderList()
+  await search('lir')
+  const found = await row('Lirio')
+  expect(within(found).getByText(/250/)).toBeInTheDocument()
+  expect(within(found).getByRole('button', { name: 'Add Lirio' })).toBeInTheDocument()
+})
+
+test('a match already in the sale shows its stepper, its quantity and the line\'s own price', async () => {
+  renderList()
+  await click('Add Rosa')
+  await userEvent.click(screen.getByRole('button', { name: 'type 10' }))
+  await userEvent.type(field(), 'ros')
+  const found = await row('Rosa')
+  expect(within(found).getByText(/800/)).toBeInTheDocument()
+  expect(within(found).queryByText(/1\.000/)).toBeNull()
+  expect(within(found).getByText('10')).toBeInTheDocument()
+  expect(within(found).getByRole('button', { name: 'Remove one Rosa' })).toBeInTheDocument()
+  expect(within(found).getByRole('button', { name: 'Add one Rosa' })).toBeInTheDocument()
+  expect(within(found).queryByRole('button', { name: 'Add Rosa' })).toBeNull()
+  expect(screen.getAllByRole('group', { name: 'Rosa' })).toHaveLength(1)
+})
+
+test('an unpriced match says "No price" and has no "+"', async () => {
+  renderList()
+  await search('sin')
+  const found = await row('Sin precio')
+  expect(within(found).getByText('No price')).toBeInTheDocument()
+  expect(within(found).queryByRole('button')).toBeNull()
+})
+
+test('tapping "Add <name>" in the results keeps the search text and moves to the stepper', async () => {
+  productsByDate.set(TODAY, [...PRODUCTS, product(5, 'Lirio', price(250))])
+  renderList()
+  await search('lir')
+  await userEvent.click(await screen.findByRole('button', { name: 'Add Lirio' }))
+  expect(await screen.findByRole('button', { name: 'Add one Lirio' })).toBeInTheDocument()
+  expect(field()).toHaveValue('lir')
+  expect(screen.getByRole('button', { name: 'Add one Lirio' })).toHaveFocus()
+  expect(screen.getByRole('heading', { name: 'Results · 1' })).toBeInTheDocument()
+  expect(screen.getAllByRole('group', { name: 'Lirio' })).toHaveLength(1)
+  expect(screen.getByLabelText('totals').textContent).toContain('"productId":5')
+})
+
+test('typing leaves the Sale in progress unchanged', async () => {
+  renderList()
+  await click('Add Árbol')
+  const totals = screen.getByLabelText('totals').textContent
+  await userEvent.type(field(), 'rb')
+  await userEvent.clear(field())
+  await userEvent.type(field(), 'zzz')
+  expect(screen.getByLabelText('totals').textContent).toBe(totals)
+})
+
+test('a line whose Product is gone never matches and comes back once the search is cleared', async () => {
+  productsByDate.set(LATER, [product(2, 'Árbol', price(700))])
+  renderList()
+  await click('Add Rosa')
+  await userEvent.click(screen.getByRole('button', { name: 'change date' }))
+  await screen.findByRole('group', { name: 'no longer available' })
+  await userEvent.type(field(), 'no longer')
+  expect(await screen.findByRole('heading', { name: 'Results · 0' })).toBeInTheDocument()
+  expect(screen.queryByRole('group', { name: 'no longer available' })).toBeNull()
+  await userEvent.clear(field())
+  expect(await screen.findByRole('group', { name: 'no longer available' })).toBeInTheDocument()
+})
+
+test('while the reads are held the field shows and keeps its text, and no results or count do', async () => {
+  held = new Set(['products'])
+  renderList()
+  await waitFor(() => expect(gates.has('products')).toBe(true))
+  await userEvent.type(field(), 'ros')
+  expect(field()).toHaveValue('ros')
+  expect(screen.queryByRole('heading')).toBeNull()
+  expect(screen.queryByText(/Results/)).toBeNull()
+  release('products')
+  expect(await screen.findByRole('heading', { name: 'Results · 1' })).toBeInTheDocument()
+  expect(field()).toHaveValue('ros')
+})
+
+test('searching while a date change refreshes shows the matches with price marks and no "+", then the prices', async () => {
+  productsByDate.set(LATER, [product(1, 'Rosa', price(1200)), product(2, 'Árbol', price(700))])
+  renderList()
+  await click('Add Rosa')
+  await userEvent.type(field(), 'ár')
+  held = new Set(['products'])
+  await userEvent.click(screen.getByRole('button', { name: 'change date' }))
+  await waitFor(() => expect(gates.has('products')).toBe(true))
+  const found = await row('Árbol')
+  expect(screen.getByRole('heading', { name: 'Results · 1' })).toBeInTheDocument()
+  expect(within(found).queryByText(/\$|\d{3}|No price/)).toBeNull()
+  expect(within(found).queryByRole('button')).toBeNull()
+  expect(field()).toHaveValue('ár')
+  release('products')
+  expect(await within(await row('Árbol')).findByText(/700/)).toBeInTheDocument()
+  expect(within(await row('Árbol')).getByRole('button', { name: 'Add Árbol' })).toBeInTheDocument()
+})
+
+test('on a failed read the search field stays beside the error and no results or count show', async () => {
+  broken.set('products', 'server')
+  renderList()
+  expect(await within(area()).findByRole('alert')).toHaveTextContent('Something went wrong. Try again.')
+  await userEvent.type(field(), 'ros')
+  expect(field()).toHaveValue('ros')
+  expect(screen.queryByText(/Results/)).toBeNull()
+  expect(screen.queryByRole('listitem')).toBeNull()
 })

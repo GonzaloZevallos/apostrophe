@@ -14,14 +14,22 @@
  * and ErrorGenerico for any other error, and `ready` is the list. `priceSale` and `rowPrices` run on
  * no other render. The busy state goes through `LoadingWhile` on the screen's `ContentArea`, which
  * the list counts on and never renders. No state here reads or writes the draft's lines.
+ *
+ * The search field always shows, in every status, and keeps its text (local state, carried nowhere).
+ * While it holds text and the list shows its names (`listed`), "Results · N" and the matches in name
+ * order replace the hint and the two sections, with the same price marks and "+" rules as the sections;
+ * matching, sorting and the highlight are `selectorSearch.ts`'s. No barcode scan and no category
+ * select: the Products have neither. While the list shows a skeleton or a failure, no result or count
+ * shows.
  */
 
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NetworkError } from '../../api/client'
 import Boton from '../../components/Boton'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import Icono from '../../components/Icono'
+import { foldForSearch, matchesQuery, matchRange } from '../../components/selectorSearch'
 import Loading, { LoadingWhile } from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
 import { formatQuantity } from '../../format/money'
@@ -38,6 +46,7 @@ import { MOST_SOLD_ROWS, mostSoldRows } from '../../sales/productList'
 import { saleLineInputsOf } from '../../sales/saleDraft'
 import type { NewSaleReads } from '../../sales/useNewSaleReads'
 import type { SaleDraftApi } from '../../sales/useSaleDraft'
+import type { Variety } from '../Variedades'
 
 const TEXT = SALES_TEXT.newSale
 const MINUS = '−'
@@ -54,6 +63,8 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
   const { t } = useTranslation()
   const money = useMoney()
   const lines = draft.state.lines
+  const [query, setQuery] = useState('')
+  const searching = query.trim() !== ''
 
   // The one condition under which a figure is priced: every read is in for the sale's date and the
   // Customer is known. `pending` stands for the marks, whatever the status was.
@@ -100,11 +111,77 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
     [ready, mostSold, products, customerTypeId, settings],
   )
 
-  if (status === 'failed') return failed instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />
+  const inSale = useMemo(() => new Set(lines.map((line) => line.productId)), [lines])
+
+  /** A result's "+" turns into its stepper in place: focus follows to the stepper's "+", or a keyboard or
+   * screen reader loses its place. */
+  const rowNodes = useRef(new Map<number, HTMLLIElement>())
+  const focusAfterAdd = useRef<number | null>(null)
+  useEffect(() => {
+    const id = focusAfterAdd.current
+    if (id === null || !inSale.has(id)) return
+    focusAfterAdd.current = null
+    const buttons = rowNodes.current.get(id)?.querySelectorAll('button')
+    buttons?.[buttons.length - 1]?.focus()
+  }, [inSale])
+
+  const matches = useMemo(() => {
+    if (!listed || !searching) return []
+    return products
+      .filter((product) => matchesQuery(product.name, query))
+      .sort((a, b) => {
+        const [x, y] = [foldForSearch(a.name), foldForSearch(b.name)]
+        if (x !== y) return x < y ? -1 : 1
+        if (a.name !== b.name) return a.name < b.name ? -1 : 1
+        return a.id - b.id
+      })
+  }, [listed, searching, products, query])
+
+  const matchPrices = useMemo(
+    () =>
+      ready
+        ? rowPrices({
+            productIds: matches.filter((product) => !inSale.has(product.id)).map((product) => product.id),
+            products,
+            customerTypeId,
+            pricingSettings: settings,
+          })
+        : new Map<number, LinePricing | null>(),
+    [ready, matches, inSale, products, customerTypeId, settings],
+  )
+
+  const field = (
+    <label className="campo">
+      <span className="visualmente-oculto">{TEXT.productSearchLabel}</span>
+      <input
+        className="campo__input nv-productos__buscar"
+        type="search"
+        inputMode="search"
+        enterKeyHint="search"
+        autoComplete="off"
+        placeholder={TEXT.productSearchPlaceholder}
+        value={query}
+        onChange={(event) => {
+          focusAfterAdd.current = null
+          setQuery(event.target.value)
+        }}
+      />
+    </label>
+  )
+
+  if (status === 'failed') {
+    return (
+      <div className="nv-productos">
+        {field}
+        {failed instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />}
+      </div>
+    )
+  }
 
   if (!listed) {
     return (
       <div className="nv-productos">
+        {field}
         <LoadingWhile active />
         <ul className="nv-productos__lista">
           {Array.from({ length: MOST_SOLD_ROWS }, (_, index) => (
@@ -142,19 +219,104 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
     )
   }
 
+  function nameCell(name: string, known: boolean) {
+    const range = searching && known ? matchRange(name, query) : null
+    if (range === null) return name
+    return (
+      <>
+        {name.slice(0, range[0])}
+        <mark className="nv-productos__marca">{name.slice(range[0], range[1])}</mark>
+        {name.slice(range[1])}
+      </>
+    )
+  }
+
   function datos(name: string, productId: number, known: boolean) {
     const stockLabel = known ? stockText(productId) : null
     return (
       <span className="nv-productos__datos">
-        <span className="nv-productos__nombre">{name}</span>
+        <span className="nv-productos__nombre">{nameCell(name, known)}</span>
         {stockLabel === null ? null : <span className="nv-productos__stock">{stockLabel}</span>}
       </span>
     )
   }
 
-  return (
-    <div className="nv-productos">
-      <LoadingWhile active={!ready} />
+  function rowRef(productId: number) {
+    return (node: HTMLLIElement | null) => {
+      if (node === null) rowNodes.current.delete(productId)
+      else rowNodes.current.set(productId, node)
+    }
+  }
+
+  function lineRow(productId: number, product: Variety | undefined) {
+    const line = lines.find((candidate) => candidate.productId === productId)
+    if (line === undefined) return null
+    const name = product === undefined ? t('common:noLongerAvailable') : product.name
+    const pricing = pricedLines.get(String(productId))
+    // While the figures come, the "+" stays: the stepper keeps working and the read decides
+    // afterwards whether the line still has a price.
+    const unpriced = ready && (pricing === null || pricing === undefined)
+    return (
+      <li key={productId} ref={rowRef(productId)} className="nv-productos__fila">
+        {datos(name, productId, product !== undefined)}
+        {priceCell(pricing)}
+        <div role="group" aria-label={name} className="nv-productos__pasos">
+          <span className="nv-productos__paso">
+            <Boton variant="row" ariaLabel={TEXT.productDecrease(name)} onClick={() => draft.stepDown(productId)}>
+              <span aria-hidden="true">{MINUS}</span>
+            </Boton>
+          </span>
+          <span className="nv-productos__cantidad cifra-n">{formatQuantity(line.quantityHundredths)}</span>
+          {unpriced ? (
+            <span className="nv-productos__paso-vacio" aria-hidden="true" />
+          ) : (
+            <span className="nv-productos__paso">
+              <Boton variant="row" ariaLabel={TEXT.productIncrease(name)} onClick={() => draft.stepUp(productId)}>
+                <span aria-hidden="true">+</span>
+              </Boton>
+            </span>
+          )}
+        </div>
+      </li>
+    )
+  }
+
+  function add(productId: number) {
+    if (searching) focusAfterAdd.current = productId
+    draft.addProduct(productId)
+  }
+
+  function addRow(product: Variety, pricing: LinePricing | null | undefined) {
+    return (
+      <li key={product.id} ref={rowRef(product.id)} className="nv-productos__fila">
+        {datos(product.name, product.id, true)}
+        {priceCell(pricing)}
+        {!ready || pricing === null || pricing === undefined ? null : (
+          <span className="nv-productos__paso">
+            <Boton variant="row" ariaLabel={TEXT.productAdd(product.name)} onClick={() => add(product.id)}>
+              <span aria-hidden="true">+</span>
+            </Boton>
+          </span>
+        )}
+      </li>
+    )
+  }
+
+  const results = (
+    <section className="nv-productos__seccion" aria-label={TEXT.productsResults(matches.length)}>
+      <h2 className="nv-productos__titulo">{TEXT.productsResults(matches.length)}</h2>
+      {matches.length === 0 ? null : (
+        <ul className="nv-productos__lista">
+          {matches.map((product) =>
+            inSale.has(product.id) ? lineRow(product.id, product) : addRow(product, matchPrices.get(product.id)),
+          )}
+        </ul>
+      )}
+    </section>
+  )
+
+  const sections = (
+    <>
       {hint === null ? null : (
         <p className="pie nueva-venta__sin-vendible">
           <span className="aviso-ambar__icono">
@@ -166,39 +328,7 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
       {lines.length === 0 ? null : (
         <section className="nv-productos__seccion" aria-label={TEXT.productsInSale(lines.length)}>
           <h2 className="nv-productos__titulo">{TEXT.productsInSale(lines.length)}</h2>
-          <ul className="nv-productos__lista">
-            {lines.map((line) => {
-              const product = byId.get(line.productId)
-              const name = product === undefined ? t('common:noLongerAvailable') : product.name
-              const pricing = pricedLines.get(String(line.productId))
-              // While the figures come, the "+" stays: the stepper keeps working and the read decides
-              // afterwards whether the line still has a price.
-              const unpriced = ready && (pricing === null || pricing === undefined)
-              return (
-                <li key={line.productId} className="nv-productos__fila">
-                  {datos(name, line.productId, product !== undefined)}
-                  {priceCell(pricing)}
-                  <div role="group" aria-label={name} className="nv-productos__pasos">
-                    <span className="nv-productos__paso">
-                      <Boton variant="row" ariaLabel={TEXT.productDecrease(name)} onClick={() => draft.stepDown(line.productId)}>
-                        <span aria-hidden="true">{MINUS}</span>
-                      </Boton>
-                    </span>
-                    <span className="nv-productos__cantidad cifra-n">{formatQuantity(line.quantityHundredths)}</span>
-                    {unpriced ? (
-                      <span className="nv-productos__paso-vacio" aria-hidden="true" />
-                    ) : (
-                      <span className="nv-productos__paso">
-                        <Boton variant="row" ariaLabel={TEXT.productIncrease(name)} onClick={() => draft.stepUp(line.productId)}>
-                          <span aria-hidden="true">+</span>
-                        </Boton>
-                      </span>
-                    )}
-                  </div>
-                </li>
-              )
-            })}
-          </ul>
+          <ul className="nv-productos__lista">{lines.map((line) => lineRow(line.productId, byId.get(line.productId)))}</ul>
         </section>
       )}
       {mostSold.length === 0 ? null : (
@@ -207,25 +337,19 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
           <ul className="nv-productos__lista">
             {mostSold.flatMap((id) => {
               const product = byId.get(id)
-              if (product === undefined) return []
-              const pricing = rows.get(id)
-              return [
-                <li key={id} className="nv-productos__fila">
-                  {datos(product.name, id, true)}
-                  {priceCell(pricing)}
-                  {!ready || pricing === null || pricing === undefined ? null : (
-                    <span className="nv-productos__paso">
-                      <Boton variant="row" ariaLabel={TEXT.productAdd(product.name)} onClick={() => draft.addProduct(id)}>
-                        <span aria-hidden="true">+</span>
-                      </Boton>
-                    </span>
-                  )}
-                </li>,
-              ]
+              return product === undefined ? [] : [addRow(product, rows.get(id))]
             })}
           </ul>
         </section>
       )}
+    </>
+  )
+
+  return (
+    <div className="nv-productos">
+      {field}
+      <LoadingWhile active={!ready} />
+      {searching ? results : sections}
     </div>
   )
 }
