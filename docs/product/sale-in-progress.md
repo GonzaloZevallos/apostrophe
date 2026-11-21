@@ -24,6 +24,15 @@ Es la parte 2 de GH-863 (#924 y su recorte de estados de carga y falla). Sigue s
 - Cuando una lectura posterior sale bien, las líneas vuelven con las cantidades que había cargado quien vende y con los precios nuevos.
 - Si falla solo la lectura de New sale suggestions, no se ve nada: ni error, ni marca, ni encabezado de sugerencias vacío, y la lista funciona sin sugerencias. Las sugerencias tampoco tienen marca de carga.
 
+### Lectura de nuevo tras una falla
+
+- Tras una falla, la lista vuelve a leer sola cuando el teléfono se reconecta o cuando la app recupera el foco, y reemplaza el aviso por la lista, con las cantidades que había cargado quien vende y los precios nuevos. Sin botón: los dos avisos no cambian (ADR 20261121).
+- Nunca vuelve a leer en segundo plano una lista que ya cargó, y no hay un bucle de reintentos: una lectura que vuelve a fallar deja el aviso hasta el próximo evento.
+- Sin red al abrir cuenta como una falla: muestra SinConexion sin `aria-busy` y no pide nada hasta que el teléfono vuelve.
+- Una falla de Stock o de New sale suggestions es silenciosa: la lista aparece sin texto de stock o sin sugerencias.
+- La lista cuenta con el `ContentArea` de la pantalla y no renderiza ninguno: su estado de ocupado pasa solo por `LoadingWhile`.
+- Para la parte del flip: Guardar y el total no están disponibles salvo que `status` sea `ready` y el Customer no esté `'pending'`.
+
 ### Sale in progress
 
 Ningún estado de carga o de falla de la lista borra ni cambia la Sale in progress: solo cambia lo que muestra la lista.
@@ -31,7 +40,7 @@ Ningún estado de carga o de falla de la lista borra ni cambia la Sale in progre
 ### Fuera de alcance
 
 - La ruta, la Navigation y el montaje de la lista (parte del flip de GH-496).
-- Un comportamiento de reintento nuevo.
+- Un botón o un comportamiento de reintento más allá de la lectura de nuevo al reconectar o al recuperar el foco.
 - Guardar o recuperar una Sale in progress.
 - Cambios a SinConexion o a ErrorGenerico.
 - Texto nuevo: no se agrega ninguna clave al Copy module.
