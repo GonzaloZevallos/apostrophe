@@ -73,22 +73,17 @@ interface AccountRowBase {
 
 export interface SaleAccountRow extends AccountRowBase {
   kind: 'sale'
+  number: number
   sale: { id: number; total: number; how_paid: HowPaid; payment_method: PaymentMethodLabel | null }
 }
 
 export interface PaymentAccountRow extends AccountRowBase {
   kind: 'payment'
+  is_partial: boolean
   payment: Payment
-  applied_to: AppliedTo
 }
 
-export interface CreditAccountRow extends AccountRowBase {
-  kind: 'credit'
-  payment: Payment
-  amount: number
-}
-
-export type AccountRow = SaleAccountRow | PaymentAccountRow | CreditAccountRow
+export type AccountRow = SaleAccountRow | PaymentAccountRow
 
 export interface Account {
   balance: number
