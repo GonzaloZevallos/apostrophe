@@ -146,7 +146,6 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 ### Textos
 
 - Viven en `SALES_TEXT`, el módulo de ventas de `web/src/copy/`, en inglés y sin palabra de unidad, moneda ni tipo de producto: `collectTitle(n)`, `howTheyPay` ("How they pay"), `owesIt` ("Owes it", desde #944), `chooseMethod` ("Choose a method"), `noMethodToCollect` ("Choose how they pay to collect."), `collect(total)` ("Collect {total}"), `collectShort` ("Collect", el texto de la etiqueta acortada), `saving` ("Saving…") y, desde #930, `saleNotSaved` ("The sale was not saved. Your lines are kept, so try again."), registrada en LIMITED_COPY como las otras claves de ventas. Los de la parte 3 de GH-867 son `totalLabel` ("Total"), `receivedLabel` ("Received"), `receivedHelp` ("Type what they hand over to see the change. It isn't saved.", registrada en LIMITED_COPY) y `changeLabel` ("Change"); el baseline recibe sus filas del script, nunca a mano. "No customer" ya existía. El baseline se regenera, nunca se edita a mano.
-- La marca "no longer available", `common:paymentMethodUnavailable` y la línea de fallo del Selector (`selectorPaymentMethodsFailed`) se reutilizan, sin claves nuevas.
 - El rechazo de owing sin cliente tiene su propia clave, `owingNeedsCustomer` ("Owing needs a customer. Pick one, or choose how they pay."), registrada en LIMITED_COPY: dice el problema primero y las dos salidas después (la fila de Customer de la Sheet es de solo lectura, así que "choose how they pay" es la que la vendedora puede hacer en la Sheet). No reutiliza `OWING_HINT`, que es la ayuda de New sale. El mapeo del servidor `sale.owing_without_customer` → `refusals:generic` no cambia, y la Sheet nunca llega a él porque rechaza antes de mandar.
 - La marca "no longer available", `common:paymentMethodUnavailable`, la línea de fallo del Selector (`selectorPaymentMethodsFailed`) y el texto de lista vacía (`selectorNoPaymentMethods`) se reutilizan, sin claves nuevas.
 
@@ -310,14 +309,13 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Código de barras, categoría y elementos de promoción en la lista de Products.
 - La pantalla anfitriona de New sale que monta la Collect Sheet, el flip que la monta y su regla de no abrirla con una línea sin precio; también, ya en el flip: que la anfitriona ignore el volver del sistema y Escape mientras `onSavingChange(true)`, un test que monte la barra de la venta y la Sheet juntas y muestre el total guardado igual al de la barra y a `SaleOut.total`, y que tras `onSaved` la anfitriona muestre las cifras de la respuesta con el aviso de recotización (`linesRepriced`) cuando el total cambió.
 - Reescribir el criterio 34 de sales.md ("el medio nunca viene puesto"), que le corresponde al flip, cuando la preselección llegue a la vendedora.
-- Received y Change en la Collect Sheet.
 - Un pago parcial en el momento de la venta: las opciones son pagada por completo con un medio o "Owes it" sin nada pagado ahora; un pago parcial es un Payment posterior por Record payment y el Settlement.
+- Guardar, mandar o mostrar Received o Change en cualquier otro lugar que la Collect Sheet.
 - Un aviso de Credit o una vista previa del Balance en la Collect Sheet, y una línea extra u otra palabra de acción para una venta adeudada.
 - Cualquier cambio a los Payment methods o a Settings por "Owes it".
 - Un gesto para volver a unset desde "Owes it" que exija cambiar el Selector compartido.
 - Una comprobación en un navegador real, en ambos temas, de que la etiqueta de Collect se acorta a "Collect" y vuelve a "Collect {total}" a 320 px y a 246 px, y de que la Sheet entera entra en el teléfono con la fila Total y la ayuda de vuelto (hasta entonces solo la prueba el stub de `scrollWidth`).
-- Pagos parciales al momento de la venta: siguen siendo un Payment posterior con Record payment. Guardar, mandar o mostrar Received o Change en cualquier otro lugar.
-- Textos propios de la Collect Sheet para rechazos que no son el del medio, y devolverlos a la pantalla anfitriona (lo decide el flip).
+- Textos propios de la Collect Sheet para rechazos que no son el del medio ni el de owing sin cliente, y devolverlos a la pantalla anfitriona (lo decide el flip).
 - Cualquier cambio al Selector, a `usePaymentMethodOptions` o al cargador compartido de la lista de medios, al Attention icon o a la Icon and text rule por los caminos de fallo de la Collect Sheet o por "Owes it", incluida la línea de fallo sin conexión antes de la primera carga.
 - Un texto propio de la Collect Sheet para una línea sin precio.
 - Gift, Special price y la Sheet del detalle de línea.
