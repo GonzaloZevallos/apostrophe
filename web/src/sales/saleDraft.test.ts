@@ -164,13 +164,23 @@ describe('lines', () => {
 describe('customer and the owing choice', () => {
   const owing = { kind: 'owing' } as const
 
-  test('removing the customer while owing resets the choice to unset', () => {
+  test('removing the customer while owing keeps owing: the draft changes nothing on its own', () => {
     const state = run([
       { type: 'customerChosen', customerId: 5 },
       { type: 'choiceSet', choice: owing },
       { type: 'customerRemoved' },
     ])
     expect(state.customerId).toBeNull()
+    expect(state.choice).toEqual(owing)
+  })
+
+  test('choiceSet unset after owing leaves nothing remembered', () => {
+    const state = run([
+      { type: 'customerChosen', customerId: 5 },
+      { type: 'choiceSet', choice: { kind: 'paid', payment_method_id: 3 } },
+      { type: 'choiceSet', choice: owing },
+      { type: 'choiceSet', choice: { kind: 'unset' } },
+    ])
     expect(state.choice).toEqual({ kind: 'unset' })
   })
 
@@ -192,6 +202,14 @@ describe('customer and the owing choice', () => {
     ])
     expect(state.customerId).toBe(6)
     expect(state.choice).toEqual(owing)
+  })
+
+  test('customerChosen keeps a paid choice', () => {
+    const state = run([
+      { type: 'choiceSet', choice: { kind: 'paid', payment_method_id: 3 } },
+      { type: 'customerChosen', customerId: 6 },
+    ])
+    expect(state.choice).toEqual({ kind: 'paid', payment_method_id: 3 })
   })
 
   test('choosing owing with no customer is held as is', () => {

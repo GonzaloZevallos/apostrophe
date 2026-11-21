@@ -189,6 +189,7 @@ export const SALES_TEXT = {
   /** The closing Sheet's title: the sale's line count. */
   collectTitle: (n: number) => (n === 1 ? 'The sale · 1 item' : `The sale · ${n} items`),
   howTheyPay: 'How they pay',
+  owesIt: 'Owes it',
   chooseMethod: 'Choose a method',
   noMethodToCollect: 'Choose how they pay to collect.',
   saleNotSaved: SALE_NOT_SAVED,

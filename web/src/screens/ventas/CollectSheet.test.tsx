@@ -6,7 +6,7 @@
  */
 
 import { onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useEffect } from 'react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
@@ -16,7 +16,7 @@ import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import { HOME } from '../../routes'
 import type { PricedSale } from '../../sales/pricing'
 import type { DraftChoice } from '../../sales/saleDraft'
-import { useSaleDraft } from '../../sales/useSaleDraft'
+import { type SaleDraftApi, useSaleDraft } from '../../sales/useSaleDraft'
 import { METHODS_ANSWER } from '../../test-payment-methods'
 import CollectSheet from './CollectSheet'
 
@@ -47,6 +47,9 @@ interface HostProps {
   onSavingChange?: (saving: boolean) => void
 }
 
+/** The draft the host drives, the way the flip part's host will (the Sheet's Customer row is read-only). */
+let driven: SaleDraftApi | null = null
+
 function Host({
   priced,
   customerId = null,
@@ -60,6 +63,9 @@ function Host({
   onSavingChange = () => undefined,
 }: HostProps) {
   const draft = useSaleDraft({ today: '2026-10-02', customerId })
+  useEffect(() => {
+    driven = draft
+  }, [draft])
   const { proposeMethod, setChoice, addProduct, typeQuantity, setShipping, setNote } = draft
   useEffect(() => {
     proposeMethod(proposal)
@@ -191,6 +197,7 @@ async function ready(): Promise<void> {
 
 beforeEach(() => stubFetch())
 afterEach(() => {
+  driven = null
   vi.unstubAllGlobals()
   onlineManager.setOnline(true)
 })
@@ -245,16 +252,6 @@ test('picking a method sends it', async () => {
   await user.click(collect())
   await waitFor(() => expect(sent).toHaveLength(1))
   expect(sent[0]?.body).toMatchObject({ payment: { kind: 'paid', payment_method_id: 1 } })
-})
-
-test('a draft already owing shows an empty field and is refused above $0 like no method', async () => {
-  const user = userEvent.setup()
-  mount({ priced: pricedOf(3000), customerId: 4, customerName: 'Ana', initialChoice: { kind: 'owing' } })
-  await ready()
-  expect(field()).toHaveTextContent('Choose a method')
-  await user.click(collect())
-  expect(await screen.findByText('Choose how they pay to collect.')).toBeInTheDocument()
-  expect(sent).toHaveLength(0)
 })
 
 test('no method above $0 sends nothing, says so with the Attention icon and focuses the field', async () => {
@@ -639,4 +636,200 @@ test('a successful save after a failure clears the not-saved text', async () => 
   await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1))
   expect(screen.queryByText(NOT_SAVED)).not.toBeInTheDocument()
   await expectPosts(2)
+})
+
+const OWING_HINT = 'To leave it owing, pick a customer'
+
+function drive(action: (draft: SaleDraftApi) => void): void {
+  act(() => {
+    if (driven === null) throw new Error('the host is not mounted')
+    action(driven)
+  })
+}
+
+test('Owes it is offered only with a Customer, last in the list, and sends the owing choice', async () => {
+  const user = userEvent.setup()
+  mount({ priced: pricedOf(3000), customerId: 4, customerName: 'Ana' })
+  await ready()
+  await user.click(field())
+  const list = (await screen.findByRole('button', { name: 'Cash' })).parentElement
+  const names = within(list as HTMLElement)
+    .getAllByRole('button')
+    .map((row) => row.textContent)
+  expect(names).toEqual(['Cash', 'Transfer', 'Owes it'])
+  await user.click(screen.getByRole('button', { name: 'Owes it' }))
+  await waitFor(() => expect(field()).toHaveTextContent('Owes it'))
+  await user.click(collect())
+  await waitFor(() => expect(sent).toHaveLength(1))
+  expect(sent[0]?.body).toMatchObject({ customer_id: 4, payment: { kind: 'owing' } })
+})
+
+test('without a Customer Owes it is not offered', async () => {
+  const user = userEvent.setup()
+  mount({ priced: pricedOf(3000) })
+  await ready()
+  await user.click(field())
+  await screen.findByRole('button', { name: 'Cash' })
+  expect(screen.queryByRole('button', { name: 'Owes it' })).not.toBeInTheDocument()
+})
+
+test('pick B, then Owes it, then back to unset: the field shows the proposal, not B, and Collect sends it', async () => {
+  const user = userEvent.setup()
+  mount({ priced: pricedOf(3000), customerId: 4, customerName: 'Ana', proposal: 2 })
+  await ready()
+  await pickMethod(user, 'Cash')
+  await pickMethod(user, 'Owes it')
+  expect(field()).toHaveTextContent('Owes it')
+  // The Selector is required and has no clearing row: unset is reached through the draft.
+  drive((draft) => draft.setChoice({ kind: 'unset' }))
+  await waitFor(() => expect(field()).toHaveTextContent('Transfer'))
+  expect(field()).not.toHaveTextContent('Cash')
+  await user.click(collect())
+  await waitFor(() => expect(sent).toHaveLength(1))
+  expect(sent[0]?.body).toMatchObject({ payment: { kind: 'paid', payment_method_id: 2 } })
+})
+
+test('Owes it, then a method, sends that method', async () => {
+  const user = userEvent.setup()
+  mount({ priced: pricedOf(3000), customerId: 4, customerName: 'Ana' })
+  await ready()
+  await pickMethod(user, 'Owes it')
+  await pickMethod(user, 'Cash')
+  await user.click(collect())
+  await waitFor(() => expect(sent).toHaveLength(1))
+  expect(sent[0]?.body).toMatchObject({ payment: { kind: 'paid', payment_method_id: 1 } })
+})
+
+test('a draft that arrives owing with a Customer shows Owes it and saves', async () => {
+  const user = userEvent.setup()
+  mount({ priced: pricedOf(3000), customerId: 4, customerName: 'Ana', initialChoice: { kind: 'owing' } })
+  await ready()
+  expect(field()).toHaveTextContent('Owes it')
+  await user.click(collect())
+  await waitFor(() => expect(sent).toHaveLength(1))
+  expect(sent[0]?.body).toMatchObject({ payment: { kind: 'owing' } })
+})
+
+test('owing with the Customer cleared: marked, refused with 0 requests, focused; put back it saves; cleared again it is quiet', async () => {
+  const user = userEvent.setup()
+  mount({ priced: pricedOf(3000), customerId: 4, customerName: 'Ana', initialChoice: { kind: 'owing' } })
+  await ready()
+  drive((draft) => draft.removeCustomer())
+  expect(await screen.findByText('no longer available')).toBeInTheDocument()
+  expect(field()).toHaveTextContent('Owes it')
+  await user.click(collect())
+  const refusal = await screen.findByRole('alert')
+  expect(refusal).toHaveTextContent(OWING_HINT)
+  expect(field()).toHaveFocus()
+  expect(field()).toHaveAccessibleDescription(OWING_HINT)
+  expect(sent).toHaveLength(0)
+
+  drive((draft) => draft.chooseCustomer(4))
+  await waitFor(() => expect(screen.queryByText(OWING_HINT)).not.toBeInTheDocument())
+  expect(screen.queryByText('no longer available')).not.toBeInTheDocument()
+
+  drive((draft) => draft.removeCustomer())
+  expect(screen.queryByText(OWING_HINT)).not.toBeInTheDocument()
+
+  drive((draft) => draft.chooseCustomer(4))
+  await user.click(collect())
+  await waitFor(() => expect(sent).toHaveLength(1))
+  expect(sent[0]?.body).toMatchObject({ customer_id: 4, payment: { kind: 'owing' } })
+})
+
+test('two refusals in a row: the method line goes when owing arrives with no Customer, and the field points at the line shown', async () => {
+  const user = userEvent.setup()
+  mount({ priced: pricedOf(3000) })
+  await ready()
+  await user.click(collect())
+  expect(await screen.findByText(NO_METHOD)).toBeInTheDocument()
+  expect(field()).toHaveAccessibleDescription(NO_METHOD)
+
+  drive((draft) => draft.setChoice({ kind: 'owing' }))
+  await waitFor(() => expect(screen.queryByText(NO_METHOD)).not.toBeInTheDocument())
+  expect(field()).not.toHaveAccessibleDescription(NO_METHOD)
+
+  await user.click(collect())
+  expect(await screen.findByText(OWING_HINT)).toBeInTheDocument()
+  expect(field()).toHaveAccessibleDescription(OWING_HINT)
+  expect(sent).toHaveLength(0)
+})
+
+test('methods list failed with a Customer: Owes it is offered, the failure line shows and Collect with it saves', async () => {
+  stubFetch({ methods: 'error' })
+  const user = userEvent.setup()
+  mount({ priced: pricedOf(3000), customerId: 4, customerName: 'Ana' })
+  const failure = await screen.findByRole('alert')
+  expect(failure).toHaveTextContent('Could not load the payment methods. Tap to try again.')
+  expect(field()).toHaveAccessibleDescription('Could not load the payment methods. Tap to try again.')
+  await user.click(field())
+  await user.click(await screen.findByRole('button', { name: 'Owes it' }))
+  await user.click(collect())
+  await waitFor(() => expect(sent).toHaveLength(1))
+  expect(sent[0]?.body).toMatchObject({ payment: { kind: 'owing' } })
+})
+
+test('methods request held: neither empty wording shows; answered with [] the no-methods text is help, not a refusal', async () => {
+  let release: ((response: Response) => void) | null = null
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((path: string) => {
+      if (path === '/api/payment-methods') {
+        return new Promise<Response>((resolve) => {
+          release = resolve
+        })
+      }
+      return Promise.reject(new Error(`unexpected request: ${path}`))
+    }),
+  )
+  mount({ priced: pricedOf(3000), customerId: 4, customerName: 'Ana' })
+  await screen.findByRole('button', { name: /^How they pay/ })
+  expect(screen.queryByText(/No payment methods yet/)).not.toBeInTheDocument()
+  expect(screen.queryByText(/Could not load the payment methods/)).not.toBeInTheDocument()
+  await act(async () => release?.(json(200, [])))
+  expect(await screen.findByText(/No payment methods yet/)).toBeInTheDocument()
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
+test('with no Customer and an empty list the Sheet adds no empty-list line of its own', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((path: string) =>
+      path === '/api/payment-methods' ? Promise.resolve(json(200, [])) : Promise.reject(new Error(path)),
+    ),
+  )
+  mount({ priced: pricedOf(3000) })
+  await waitFor(() => expect(collect()).toBeEnabled())
+  expect(screen.queryByText(/No payment methods yet/)).not.toBeInTheDocument()
+})
+
+test('only method A, refused by the server, the list read again still holding A: the unavailable line shows with no empty-list text, and Owes it clears it', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((path: string, init?: RequestInit) => {
+      if (path === '/api/payment-methods') return Promise.resolve(json(200, [METHODS_ANSWER[0]]))
+      if (init?.method === 'POST' && path === '/sales') {
+        sent.push({ body: JSON.parse(String(init.body)) })
+        return Promise.resolve(
+          sent.length === 1 ? json(404, { code: 'payment_method.unavailable' }) : json(201, { id: 55 }),
+        )
+      }
+      return Promise.reject(new Error(path))
+    }),
+  )
+  sent = []
+  const user = userEvent.setup()
+  mount({ priced: pricedOf(3000), customerId: 4, customerName: 'Ana', proposal: 1 })
+  await ready()
+  await user.click(collect())
+  expect(await screen.findByText('no longer available')).toBeInTheDocument()
+  await waitFor(() => expect(screen.getAllByText('Cash').length).toBeGreaterThan(0))
+  expect(screen.queryByText(/No payment methods yet/)).not.toBeInTheDocument()
+
+  await pickMethod(user, 'Owes it')
+  expect(screen.queryByText('no longer available')).not.toBeInTheDocument()
+  expect(screen.queryByText(/No payment methods yet/)).not.toBeInTheDocument()
+  await user.click(collect())
+  await waitFor(() => expect(sent).toHaveLength(2))
+  expect(sent[1]?.body).toMatchObject({ payment: { kind: 'owing' } })
 })
