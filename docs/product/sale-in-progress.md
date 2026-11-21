@@ -84,7 +84,7 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 - **Received**: un campo de dinero con la etiqueta "Received", con el formato de `useMoney()`, justo debajo de "How they pay", con la línea de ayuda "Type what they hand over to see the change. It isn't saved.". Es opcional, vive en el estado local de la Sheet, arranca vacío y nunca viene precargado.
 - **Change**: una línea con la etiqueta "Change" justo después de Received, con la cifra que da `changeFor(received, priced.totals.total, format)`, en Tabular figures y a los decimales del Money format. Se muestra solo cuando `changeFor` devuelve un valor: con Received igual al total muestra 0, y con uno mayor, la diferencia. Es secundaria al total de Collect y no parece algo que se cobra.
-- En una venta de $0 la ayuda también se muestra: `changeFor` lee un Received de 0 como "sin monto" (no muestra nada) y cualquier monto positivo es todo vuelto (Received 5 → Change 5).
+- En una venta de $0 la ayuda también se muestra: con Received 0 (o 0,00 a los decimales del Money format) `changeFor` da 0 y Change muestra 0; cualquier monto positivo es todo vuelto (Received 5 → Change 5). Por encima de $0, un Received de 0 no muestra nada.
 - Change vive en una región `role="status"` siempre presente mientras la ayuda se muestra; está vacía cuando `changeFor` no da nada.
 - Un Received vacío, menor que el total o ilegible no muestra nada: ni Change, ni aviso, ni error, ni una línea de "todavía se debe". Nunca frena Collect.
 - Se muestra con cualquier Payment method elegido y se oculta entero (campo, ayuda y Change) solo mientras la elección efectiva es owing, leída mediante `effectiveChoice`; nunca se ata al nombre de un medio ni a una marca de efectivo.

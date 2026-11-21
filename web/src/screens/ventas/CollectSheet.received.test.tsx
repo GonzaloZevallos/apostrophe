@@ -182,15 +182,23 @@ describe('the Received/Change helper', () => {
     expect(received()).toHaveAttribute('inputmode', 'numeric')
   })
 
-  test('a $0 sale shows the helper: changeFor reads 0 as no amount, and any amount is all change', async () => {
+  test('a $0 sale shows the helper: Received 0 gives Change 0 and any amount is all change', async () => {
     const user = userEvent.setup()
     mount({ priced: pricedOf(0) })
     await ready()
     await user.type(received(), '0')
-    expect(change()).toBeEmptyDOMElement()
+    expect(change()).toHaveTextContent('Change $ 0')
     await user.clear(received())
     await user.type(received(), '5')
     expect(change()).toHaveTextContent('Change $ 5')
+  })
+
+  test('Received 0 shows no Change on a sale above $0', async () => {
+    const user = userEvent.setup()
+    mount({ priced: pricedOf(3000) })
+    await ready()
+    await user.type(received(), '0')
+    expect(change()).toBeEmptyDOMElement()
   })
 
   test('the helper shows for any chosen method and is gone only while owing', async () => {

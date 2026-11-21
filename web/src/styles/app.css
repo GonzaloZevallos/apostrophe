@@ -6325,8 +6325,9 @@ a.ajustes-tema__opcion {
   color: var(--tinta2);
 }
 
+/* Empty, the status region stays in the accessibility tree but leaves the block's flow, so it adds no gap. */
 .cobro__vuelto:empty {
-  display: none;
+  position: absolute;
 }
 
 /* The Collect label always holds its full text and never wraps or shrinks; when it overflows its
