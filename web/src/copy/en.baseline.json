@@ -609,6 +609,7 @@
   {"source":"sales.ts:SALES_TEXT.howTheyPay","args":null,"text":"How they pay"},
   {"source":"sales.ts:SALES_TEXT.chooseMethod","args":null,"text":"Choose a method"},
   {"source":"sales.ts:SALES_TEXT.noMethodToCollect","args":null,"text":"Choose how they pay to collect."},
+  {"source":"sales.ts:SALES_TEXT.saleNotSaved","args":null,"text":"The sale was not saved. Your lines are kept, so try again."},
   {"source":"sales.ts:SALES_TEXT.collect","args":["$ 11.000"],"text":"Collect $ 11.000"},
   {"source":"sales.ts:SALES_TEXT.saving","args":null,"text":"Saving…"},
   {"source":"sales.ts:SALES_TEXT.back","args":null,"text":"Back"},
