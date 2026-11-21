@@ -20,6 +20,7 @@ export const LONG_REFUSALS: readonly string[] = []
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const CUSTOMERS_TEXT = {
   paymentDeleted: 'Payment deleted',
+  /** The accessible name of the All | Owed to you control's radio group; it is never shown. */
   customersView: 'Customers view',
   owesYou: 'Owes you',
   since: 'since ',
