@@ -72,6 +72,7 @@ import {
   validateSale,
 } from '../../sales/pricing'
 import { paymentMethodName } from '../../sales/paymentMethods'
+import { parseShipping } from '../../sales/shipping'
 import { isMethodUnavailable } from '../../sales/saleRefusal'
 import { type SaleBody, saleBodyOf } from '../../sales/saleBody'
 import { nothingSellable } from '../../sales/nothingSellable'
@@ -116,14 +117,6 @@ function isBlank(line: LineState): boolean {
 /** Both rules off: what prices a line while the switches have not come, or could not be read.
  * A rule that is off never shows, so the safe side is no rule (`pricing-settings.md`). */
 const NO_RULES: PricingSettings = { bulk: false, vip: false }
-
-/** Shipping charged: zero or more, unlike `parseMoneyInput`, which rejects zero — `0` is its default
- * and a valid value to save with. Anything else goes through `parseMoneyInput`. */
-function parseShipping(input: string, format: MoneyFormat): number | null {
-  if ((format.decimals === 0 ? /^0+$/ : /^0+([,.]0*)?$/).test(input.trim())) return 0
-  const parsed = parseMoneyInput(input, format)
-  return parsed.ok ? parsed.value : null
-}
 
 interface SavedSale {
   id: number
