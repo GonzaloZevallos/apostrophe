@@ -5,7 +5,7 @@
 
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, test, vi } from 'vitest'
 import { createMemoryRouter, Link, Outlet, RouterProvider, useNavigate } from 'react-router'
 import FlashProvider, { DEFAULT_TOAST_MS, SALE_SAVED_TOAST_MS } from './FlashProvider'
 import type { Flash } from './flashContext'
@@ -249,6 +249,105 @@ test('a new toast replaces the previous one and takes its own full duration', as
     vi.advanceTimersByTime(100)
   })
   expect(screen.queryByRole('status')).not.toBeInTheDocument()
+})
+
+/** A page that raises each Undo result, each with an action it must ignore. */
+function UndoRaiser() {
+  const flash = useFlash()
+  const withAction = { action: { label: 'Undo', onPress: () => {} } }
+  return (
+    <ContentArea as="main">
+      <h1>Undo raiser</h1>
+      <button onClick={() => flash.showNow({ kind: 'undoResult', result: 'deleted' }, withAction)}>raise deleted</button>
+      <button onClick={() => flash.showNow({ kind: 'undoResult', result: 'gone' }, withAction)}>raise gone</button>
+      <button onClick={() => flash.showNow({ kind: 'undoResult', result: 'offline' }, withAction)}>
+        raise offline
+      </button>
+      <button onClick={() => flash.showNow({ kind: 'undoResult', result: 'failed' }, withAction)}>raise failed</button>
+      <button onClick={() => flash.showNow('Expense deleted')}>raise text</button>
+      <button onClick={() => flash.showNow({ kind: 'saleSaved', name: 'Ana' })}>raise sale</button>
+    </ContentArea>
+  )
+}
+
+function renderUndoRaiser() {
+  const router = createMemoryRouter([{ element: <Layout />, children: [{ path: '/undo', element: <UndoRaiser /> }] }], {
+    initialEntries: ['/undo'],
+  })
+  render(<RouterProvider router={router} />)
+}
+
+const UNDO_RESULTS = [
+  { result: 'deleted', role: 'status', text: 'Sale deleted · the grams go back to stock' },
+  { result: 'gone', role: 'status', text: 'That is gone. The list is up to date.' },
+  { result: 'offline', role: 'status', text: 'Offline: check your internet and try again.' },
+  { result: 'failed', role: 'alert', text: 'Something went wrong. Try again.' },
+] as const
+
+describe('the undoResult toast', () => {
+  it.each(UNDO_RESULTS)('$result shows its element inside the floating area and is gone at 2.5 s', async (row) => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderUndoRaiser()
+    await user.click(screen.getByRole('button', { name: `raise ${row.result}` }))
+
+    act(() => {
+      vi.advanceTimersByTime(DEFAULT_TOAST_MS - 100)
+    })
+    const toast = screen.getByRole(row.role)
+    expect(toast).toHaveTextContent(row.text)
+    expect(toast.closest('.aviso-flotante')).not.toBeNull()
+    expect(screen.queryByRole('button', { name: 'Undo' })).not.toBeInTheDocument()
+    if (row.result !== 'deleted') expect(toast).not.toHaveTextContent('Sale deleted')
+    act(() => {
+      vi.advanceTimersByTime(100)
+    })
+
+    expect(screen.queryByRole(row.role)).not.toBeInTheDocument()
+  })
+
+  it.each(UNDO_RESULTS)('a string toast replaces $result and is the only one visible', async (row) => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderUndoRaiser()
+    await user.click(screen.getByRole('button', { name: `raise ${row.result}` }))
+
+    await user.click(screen.getByRole('button', { name: 'raise text' }))
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(screen.getAllByRole('status')).toHaveLength(1)
+    expect(screen.getByRole('status')).toHaveTextContent('Expense deleted')
+  })
+
+  it('is replaced by a sale-saved toast', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderUndoRaiser()
+    await user.click(screen.getByRole('button', { name: 'raise failed' }))
+
+    await user.click(screen.getByRole('button', { name: 'raise sale' }))
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(screen.getAllByRole('status')).toHaveLength(1)
+    expect(screen.getByRole('status')).toHaveTextContent('Sale to Ana saved')
+  })
+
+  it('replaced at 2400 ms, the new toast takes its own full duration', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    renderUndoRaiser()
+    await user.click(screen.getByRole('button', { name: 'raise deleted' }))
+    act(() => {
+      vi.advanceTimersByTime(2400)
+    })
+
+    await user.click(screen.getByRole('button', { name: 'raise text' }))
+    act(() => {
+      vi.advanceTimersByTime(DEFAULT_TOAST_MS - 100)
+    })
+    expect(screen.getByRole('status')).toHaveTextContent('Expense deleted')
+    act(() => {
+      vi.advanceTimersByTime(100)
+    })
+
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
 })
 
 test('showNow and armAfterLeaving keep one identity across two location changes', async () => {

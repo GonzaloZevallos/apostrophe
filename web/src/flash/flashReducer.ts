@@ -15,11 +15,19 @@ export const FOLLOWED_REDIRECT = { flashFollows: true } as const
 
 import type { SuccessToast } from '../components/AvisoExito'
 
+/** What an Undo ended in: the sale is deleted, was already gone, or the call did not go through. */
+export type UndoResult = 'deleted' | 'gone' | 'offline' | 'failed'
+
+type UndoResultMessage = { kind: 'undoResult'; result: UndoResult }
+
 /** What a caller may raise: a bare string of the closed union, or a kind with its own parts. */
-export type FlashMessage = SuccessToast | { kind: 'saleSaved'; name: string }
+export type FlashMessage = SuccessToast | { kind: 'saleSaved'; name: string } | UndoResultMessage
 
 /** What the reducer holds: a bare string is always `{ kind: 'text' }`, so no caller changes. */
-export type StoredMessage = { kind: 'text'; text: SuccessToast } | { kind: 'saleSaved'; name: string }
+export type StoredMessage =
+  | { kind: 'text'; text: SuccessToast }
+  | { kind: 'saleSaved'; name: string }
+  | UndoResultMessage
 
 /** A button the toast offers; pressing it dismisses the toast, then calls `onPress`. */
 export interface FlashAction {

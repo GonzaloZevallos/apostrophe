@@ -35,6 +35,7 @@ export type SuccessToast =
   | 'common:customerSaved'
   | 'common:entrySaved'
   | 'common:entryDeleted'
+  | 'common:saleDeletedGramsBack'
   | (typeof VARIETIES_TEXT)['variedadGuardada']
   | (typeof VARIETIES_TEXT)['variedadEliminada']
   | (typeof VARIETIES_TEXT)['variedadArchivada']
