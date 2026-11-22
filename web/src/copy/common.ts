@@ -27,6 +27,7 @@ export const ERROR_GENERICO_MENSAJE = 'Something went wrong. Try again.'
 export const LIMITED_COPY: readonly KeyedCopy[] = [
   { kind: 'notice', key: 'common:offline' },
   { kind: 'notice', key: 'common:genericError' },
+  { kind: 'notice', key: 'common:saleSavedTo' },
 ]
 export const LONG_REFUSALS: readonly string[] = []
 

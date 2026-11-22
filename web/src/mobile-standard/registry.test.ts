@@ -255,6 +255,7 @@ describe('walked_as: a row whose screen a walked state proves', () => {
       'ClientesBusquedaResultado',
       'ClientesBusquedaSinResultado',
       'ClientesBusquedaLimpiada',
+      'ClientesAvisoDeudores',
       'VentaVuelve',
     ])
     for (const screen of proved) {

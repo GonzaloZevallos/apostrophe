@@ -45,13 +45,14 @@ export const STILL_OWING_PREFIX = 'Payment saved · still owing '
 
 /**
  * The closed set of success toasts (`SuccessToast`, `components/AvisoExito.tsx`), each copy
- * constant once. The three `common:` members are keys, matched by the English they resolve to;
+ * constant once. The `common:` members are keys, matched by the English they resolve to;
  * `savedStillOwing` is one prefix entry: the balance after the prefix is free.
  */
 export const SUCCESS_TOASTS = [
   { key: 'common:customerSaved' },
   { key: 'common:entrySaved' },
   { key: 'common:entryDeleted' },
+  { key: 'common:saleDeletedGramsBack' },
   VARIETIES_TEXT.variedadGuardada,
   VARIETIES_TEXT.variedadEliminada,
   VARIETIES_TEXT.variedadArchivada,

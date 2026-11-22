@@ -15,7 +15,6 @@ import BotonLink from '../../components/BotonLink'
 import { CUSTOMER_NEW } from '../../routes'
 import { listCustomers } from '../../api/customers'
 import { keys } from '../../api/keys'
-import { debtorsQuery } from '../../api/payments'
 import { useIsVipCustomers } from '../../api/pricingSettings'
 import { useMoney } from '../../format/moneyContext'
 import { COMMON_TEXT } from '../../copy/common'
@@ -23,11 +22,11 @@ import ClienteFila from './ClienteFila'
 import {
   customersListState,
   customersView,
-  debtorsState,
   listKeyQuery,
   segmentCounts,
   typedQuery,
   useCustomerSearch,
+  useDebtors,
 } from './CustomerSearch'
 import CustomerSegments from './CustomerSegments'
 
@@ -43,10 +42,10 @@ export default function CustomersBehind() {
     retry: false,
   })
 
-  const debtors = useQuery(debtorsQuery)
+  const debtors = useDebtors()
 
   if (data === undefined) return null
-  const view = customersView({ query, debtors: debtorsState(debtors), segment })
+  const view = customersView({ query, debtors: debtors.state, segment })
   // It draws only from resolved data, so the read's own flags are settled here: a row is drawn
   // only when the list's one decision says `rows`.
   const listState = customersListState({
@@ -58,7 +57,7 @@ export default function CustomersBehind() {
     isError: false,
     isEmpty: data.length === 0,
   })
-  const owed = view === 'owed' && debtors.data !== undefined && debtors.data.debtor_count !== 0 ? debtors.data : null
+  const owed = view === 'owed' && debtors.data !== null && debtors.data.debtor_count !== 0 ? debtors.data : null
 
   return (
     <div className="pantalla">

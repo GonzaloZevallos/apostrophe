@@ -89,13 +89,14 @@ describe('a state that lists its offenders as a registry row', () => {
     expect(offendersAsProblems(STATES, rows)).toEqual([])
   })
 
-  it('is only the New sale states whose page the walk ends on, as NuevaVenta, and the cleared Customers search, as Clientes', () => {
+  it('is only the New sale states whose page the walk ends on, as NuevaVenta, the cleared Customers search and the Customers notice state, as Clientes', () => {
     const borrowing = STATES.filter((state) => state.offendersAs !== undefined)
     expect(borrowing.map((state) => [state.screen, state.offendersAs])).toEqual([
       ['new-sale/nothing-priced', 'NuevaVenta'],
       ['new-sale/date-change-refetching', 'NuevaVenta'],
       ['sale/expense-returned', 'NuevaVenta'],
       ['customer/search-cleared-to-all', 'Clientes'],
+      ['ClientesSinCifras', 'Clientes'],
     ])
   })
 

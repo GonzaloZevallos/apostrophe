@@ -1,14 +1,13 @@
 /**
  * The "Owed to you" view of Clientes (`payments.md`, "En pantalla"): the Total owed figure and
- * every customer with a balance above $0 are the API's own answer (`GET /payments/debtors`,
- * oldest owing-since first, ties by name): nothing is sorted, added or compared here, so they
- * equal Inicio's block. With `debtor_count` 0 it reads only the fixed "Nobody owes you", with
- * nothing to tap. Either way its place for focus is marked `OWED_PLACE`. It is no screen of its
- * own: the old `/clientes/deben` redirects to `/customers` (ADR-0024).
+ * every customer with a balance above $0 are the API's own answer (`GET /payments/debtors`),
+ * handed in by Clientes only once it answered successfully (oldest owing-since first, ties by
+ * name): nothing is sorted, added or compared here, so they equal Inicio's block. With
+ * `debtor_count` 0 it reads only the fixed "Nobody owes you", with nothing to tap. Either way its place for focus is marked
+ * `OWED_PLACE`. It is no screen of its own: the old `/clientes/deben` redirects to `/customers` (ADR-0024).
  */
 
-import { useQuery } from '@tanstack/react-query'
-import { debtorsQuery } from '../../api/payments'
+import type { Debtors } from '../../api/payments'
 import { useMoney } from '../../format/moneyContext'
 import { OWED_PLACE } from '../../components/useReturnToPlace'
 import ClienteFila from './ClienteFila'
@@ -16,14 +15,9 @@ import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import { COMMON_TEXT } from '../../copy/common'
 
-export default function TeDeben() {
+export default function TeDeben({ data }: { data: Debtors }) {
   const money = useMoney()
   const { t } = useTranslation()
-  const { data } = useQuery(debtorsQuery)
-
-  // Nothing while it loads or when it fails: Clientes' own list already shows its loading and
-  // its errors.
-  if (data === undefined) return null
 
   if (data.debtor_count === 0) {
     return (
