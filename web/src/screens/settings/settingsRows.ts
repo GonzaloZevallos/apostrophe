@@ -3,6 +3,7 @@
  * each row live here and nowhere else. `unaccountedSettingsRoutes` is the rule that keeps it
  * in step with the routes: every `/settings/*` path is at least one row's `to`, or is listed
  * in `NON_ROW_ROUTES` with a reason, never both, and only `SHARED_TO` may repeat a `to`.
+ * A shortcut references a row by key and takes its destination from that row.
  */
 
 import type { NombreIcono } from '../../components/Icono'
@@ -105,6 +106,33 @@ export const SETTINGS_ROWS: readonly SettingsRow[] = [
   row('theme', 'teamAndApp', 'apariencia', SETTINGS_APPEARANCE),
   row('account', 'teamAndApp', 'cuenta', SETTINGS_ACCOUNT),
 ]
+
+/** The rows a shortcut may name: each has a `settings:shortcuts.<row>` text. */
+export type ShortcutRowKey = Extract<SettingsRowKey, 'prices' | 'paymentMethods' | 'integrations'>
+
+export interface Shortcut {
+  readonly row: ShortcutRowKey
+  readonly labelKey: CopyKey
+  readonly icon: NombreIcono
+}
+
+function shortcut(row: ShortcutRowKey, icon: NombreIcono): Shortcut {
+  return { row, labelKey: `settings:shortcuts.${row}`, icon }
+}
+
+/** Exactly three shortcuts: a fourth slot does not compile. */
+export const SHORTCUTS: readonly [Shortcut, Shortcut, Shortcut] = [
+  shortcut('prices', 'precio'),
+  shortcut('paymentMethods', 'tarjeta'),
+  shortcut('integrations', 'telegram'),
+]
+
+/** Where a shortcut opens: its row's `to`. `rows` is only there so a test can feed it a list without the row. */
+export function shortcutTarget(s: Shortcut, rows: readonly SettingsRow[] = SETTINGS_ROWS): string {
+  const found = rows.find((candidate) => candidate.key === s.row)
+  if (found === undefined) throw new Error(`no settings row ${s.row}`)
+  return found.to
+}
 
 export interface NonRowRoute {
   readonly to: string
