@@ -77,6 +77,7 @@ describe('ProductStateBlock', () => {
     const { rows } = block({ kind: 'archived', quantity: 0, price: null, hidden: false })
     expect(rows[1]).toHaveTextContent(NO_PRICE_TODAY)
     expect(rows[2].textContent).toBe('')
+    expect(rows[2].childNodes).toHaveLength(0)
   })
 
   test('a nine-digit price and a large Stock are each whole in one element', () => {
