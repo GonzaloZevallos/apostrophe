@@ -98,7 +98,7 @@
   {"file":"src/screens/varieties/VarietyNew.tsx","imports":["onboarding.ts"],"issue":350},
   {"file":"src/screens/varieties/VarietyNew.tsx","imports":["varieties.ts"],"issue":352},
   {"file":"src/screens/varieties/VarietyPage.tsx","imports":["onboarding.ts"],"issue":350},
-  {"file":"src/screens/varieties/VarietyPage.tsx","imports":["pinnedCatalog.ts","varieties.ts"],"issue":352},
+  {"file":"src/screens/varieties/VarietyPage.tsx","imports":["varieties.ts"],"issue":352},
   {"file":"src/screens/varieties/VarietyPricesSection.tsx","imports":["varieties.ts"],"issue":352},
   {"file":"src/screens/varieties/VarietyRemoval.tsx","imports":["varieties.ts"],"issue":352},
   {"file":"src/screens/varieties/VarietyRows.tsx","imports":["varieties.ts"],"issue":352},

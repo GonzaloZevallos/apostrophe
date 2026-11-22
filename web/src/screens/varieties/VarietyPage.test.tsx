@@ -97,7 +97,7 @@ function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 }
 
-type Answers = Record<string, () => Response>
+type Answers = Record<string, () => Response | Promise<Response>>
 
 function defaults(): Answers {
   return {
@@ -157,7 +157,7 @@ function renderPage(path: string, overrides: Answers = {}, state: unknown = null
         ],
       },
     ],
-    { initialEntries: [VARIETIES, { pathname: path, state }], initialIndex: 1 },
+    { initialEntries: [VARIETIES, { pathname: path.split('#')[0], hash: path.includes('#') ? `#${path.split('#')[1]}` : '', state }], initialIndex: 1 },
   )
   render(<RouterProvider router={router} />)
   return { router, fetchMock }
@@ -184,38 +184,166 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-describe('the summary line', () => {
-  test('tells grams, status by shape and word, days left and today\'s price', async () => {
+/** The state block's three rows, once the page drew it: the list is named after the Product. */
+async function stateRows(): Promise<HTMLElement[]> {
+  const block = await screen.findByRole('list', { name: '24K Gold' })
+  return within(block).getAllByRole('listitem')
+}
+
+describe('the state block', () => {
+  test('tells grams, status by shape and word, today\'s price and days left, in three rows', async () => {
     renderPage(VARIETY_ONE)
 
-    const days = await screen.findByText(/24 days/)
-    expect(days.closest('p')).toHaveTextContent('18 g · low · 24 days · $ 11.000 x g')
+    await screen.findByText(/24 days/)
+    const rows = await stateRows()
+    expect(rows).toHaveLength(3)
+    expect(rows[0]).toHaveTextContent(/^18 g\s*low$/)
+    expect(rows[1]).toHaveTextContent('$ 11.000 x g')
+    expect(rows[2]).toHaveTextContent('24 days')
     expect(screen.getByRole('heading', { name: '24K Gold' })).toBeInTheDocument()
   })
 
   test.each([
-    ['sold_out', { quantity: 0, status: 'sold_out', days_left: null, sold_out_since: '2026-09-30' }, '0 g · sold out'],
-    ['no_entries', { quantity: 0, status: 'no_entries', days_left: null }, '0 g · no entries'],
-    ['ok', { quantity: 90, status: 'ok', days_left: 60 }, '90 g · ok · 60 days'],
-  ])('a %s variety', async (_name, patch, expected) => {
+    ['sold_out', { quantity: 0, status: 'sold_out', days_left: null, sold_out_since: '2026-09-30' }, /^0 g\s*sold out$/, null],
+    ['no_entries', { quantity: 0, status: 'no_entries', days_left: null }, /^0 g\s*no entries$/, null],
+    ['ok', { quantity: 90, status: 'ok', days_left: 60 }, /^90 g\s*ok$/, '60 days'],
+  ])('a %s variety', async (_name, patch, first, third) => {
     renderPage(VARIETY_ONE, { 'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, ...patch })) })
 
-    const line = await screen.findByText(/\$ 11\.000 x g/)
-    expect(line).toHaveTextContent(expected)
+    await screen.findByText(/\$ 11\.000 x g/)
+    const rows = await stateRows()
+    expect(rows).toHaveLength(3)
+    expect(rows[0]).toHaveTextContent(first)
+    expect(rows[2]).toHaveTextContent(third ?? /^$/)
   })
 
-  test('no price in force says it cannot be sold', async () => {
+  test('no price in force says it cannot be sold, in the second row', async () => {
     renderPage(VARIETY_ONE, { 'GET /api/products/1': () => json(200, NO_PRICE_ROW) })
 
-    expect(await screen.findByText(/No price: cannot be sold/)).toBeInTheDocument()
+    await screen.findByText(/No price: cannot be sold/)
+    const rows = await stateRows()
+    expect(rows).toHaveLength(3)
+    expect(rows[1]).toHaveTextContent('No price: cannot be sold')
   })
 
-  test('a variety left out of the catalog is marked "Hidden" beside its status', async () => {
+  test('a variety left out of the catalog is marked "Hidden" beside its days left', async () => {
     const hidden = { ...CATALOG, products: [{ ...CATALOG.products[0], shown: false, state: 'hidden' }] }
     renderPage(VARIETY_ONE, { 'GET /catalog': () => json(200, hidden) })
 
-    const line = (await screen.findByText('Hidden')).closest('p')
-    expect(line).toHaveTextContent('18 g · low · Hidden · 24 days')
+    await screen.findByText('Hidden')
+    const rows = await stateRows()
+    expect(rows).toHaveLength(3)
+    expect(rows[2]).toHaveTextContent('Hidden')
+    expect(rows[2]).toHaveTextContent('24 days')
+  })
+
+  test('with no days left and shown, the third row stays, empty', async () => {
+    renderPage(VARIETY_ONE, {
+      'GET /stock': () => json(200, stockOf({ ...STOCK_ROW, quantity: 0, status: 'sold_out', days_left: null })),
+    })
+
+    await screen.findByText(/\$ 11\.000 x g/)
+    const rows = await stateRows()
+    expect(rows).toHaveLength(3)
+    expect(rows[2]).toBeEmptyDOMElement()
+  })
+
+  test('while the catalog is held the block is busy, has three rows, no digit and no "Hidden"; then it settles', async () => {
+    let release: (response: Response) => void = () => undefined
+    const held = new Promise<Response>((resolve) => {
+      release = resolve
+    })
+    renderPage(VARIETY_ONE, { 'GET /catalog': () => held })
+
+    await screen.findByRole('heading', { name: '24K Gold' })
+    const block = screen.getByRole('list', { name: '24K Gold' })
+    expect(block).toHaveAttribute('aria-busy', 'true')
+    expect(within(block).getAllByRole('listitem')).toHaveLength(3)
+    expect(block.textContent).not.toMatch(/\d/)
+    expect(screen.queryByText('Hidden')).not.toBeInTheDocument()
+
+    release(json(200, { ...CATALOG, products: [{ ...CATALOG.products[0], shown: false, state: 'hidden' }] }))
+    expect(await screen.findByText('Hidden')).toBeInTheDocument()
+    expect(screen.getByRole('list', { name: '24K Gold' })).not.toHaveAttribute('aria-busy')
+  })
+
+  test('a held archived catalog keeps the block busy too, with no "Hidden"', async () => {
+    renderPage(VARIETY_ONE, {
+      'GET /api/products/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+      'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
+      'GET /catalog/archived': () => new Promise<Response>(() => undefined),
+    })
+
+    await screen.findByRole('heading', { name: '24K Gold' })
+    const block = screen.getByRole('list', { name: '24K Gold' })
+    expect(block).toHaveAttribute('aria-busy', 'true')
+    expect(within(block).getAllByRole('listitem')).toHaveLength(3)
+    expect(block.textContent).not.toMatch(/\d/)
+    expect(screen.queryByText('Hidden')).not.toBeInTheDocument()
+  })
+
+  test('a failed catalog shows no "Hidden" for a Product hidden on the server, and the error shows', async () => {
+    renderPage(VARIETY_ONE, { 'GET /catalog': () => json(500, { code: 'boom' }) })
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+    const rows = await stateRows()
+    expect(rows).toHaveLength(3)
+    expect(screen.queryByText('Hidden')).not.toBeInTheDocument()
+  })
+
+  test('a failed archived catalog shows no "Hidden" and the error shows', async () => {
+    renderPage(VARIETY_ONE, {
+      'GET /api/products/1': () => json(200, { ...VARIETY_ROW, archived: true, removal: null }),
+      'GET /stock?archived=true': () => json(200, stockOf(STOCK_ROW)),
+      'GET /catalog/archived': () => json(500, { code: 'boom' }),
+    })
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+    const rows = await stateRows()
+    expect(rows).toHaveLength(3)
+    expect(screen.queryByText('Hidden')).not.toBeInTheDocument()
+  })
+
+  test('a failed Stock row shows the error with no busy list and no figure', async () => {
+    renderPage(VARIETY_ONE, { 'GET /stock': () => json(500, { code: 'boom' }) })
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: '24K Gold' })).not.toBeInTheDocument()
+    expect(document.querySelector('[aria-busy="true"]')).toBeNull()
+    expect(screen.queryByText(/\d+ g/)).not.toBeInTheDocument()
+  })
+})
+
+describe('the removal action and the catalog anchor', () => {
+  test.each([
+    ['delete', 'Delete product', 'Archive product'],
+    ['archive', 'Archive product', 'Delete product'],
+  ])('with removal %s exactly %s shows, not %s', async (removal, shows, absent) => {
+    renderPage(VARIETY_ONE, { 'GET /api/products/1': () => json(200, { ...VARIETY_ROW, removal }) })
+
+    expect(await screen.findByRole('button', { name: shows })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: absent })).not.toBeInTheDocument()
+  })
+
+  test('the catalog hash scrolls to In the catalog once the held catalog arrives, not before', async () => {
+    const scrollIntoView = vi.fn()
+    Object.defineProperty(Element.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView })
+    let release: (response: Response) => void = () => undefined
+    const held = new Promise<Response>((resolve) => {
+      release = resolve
+    })
+    try {
+      renderPage(`${VARIETY_ONE}#en-el-catalogo`, { 'GET /catalog': () => held })
+
+      await screen.findByRole('heading', { name: '24K Gold' })
+      expect(scrollIntoView).not.toHaveBeenCalled()
+      release(json(200, CATALOG))
+      const section = (await screen.findByRole('heading', { name: 'In the catalog' })).closest('section')
+      await waitFor(() => expect(scrollIntoView).toHaveBeenCalledTimes(1))
+      expect(scrollIntoView.mock.contexts[0]).toBe(section)
+    } finally {
+      Reflect.deleteProperty(Element.prototype, 'scrollIntoView')
+    }
   })
 })
 
@@ -331,10 +459,14 @@ describe("an archived variety's summary line and its one action", () => {
   ])('a %s one says Archived, and Hidden only when hidden, with no status mark nor days left', async (_name, shown, hidden) => {
     renderPage(VARIETY_ONE, { ...ARCHIVED, 'GET /catalog/archived': () => json(200, [archivedRow(shown)]) })
 
-    const line = await screen.findByText(/\$ 11\.000 x g/)
-    expect(line).toHaveTextContent(/^18 g · \$ 11\.000 x g$/)
+    await screen.findByText(/\$ 11\.000 x g/)
+    const rows = await stateRows()
+    expect(rows).toHaveLength(3)
+    expect(rows[0]).toHaveTextContent(/^18 g\s*Archived$/)
+    expect(rows[1]).toHaveTextContent('$ 11.000 x g')
     expect(screen.getByText('Archived')).toHaveClass('insignia')
     expect(screen.queryByText('Hidden') !== null).toBe(hidden)
+    expect(rows[2]).toHaveTextContent(hidden ? 'Hidden' : /^$/)
     expect(screen.queryByText(/baja|ok|sold out|no entries/)).not.toBeInTheDocument()
     expect(screen.queryByText(/24 days/)).not.toBeInTheDocument()
   })
@@ -346,7 +478,10 @@ describe("an archived variety's summary line and its one action", () => {
       'GET /stock?archived=true': () => json(200, stockOf({ ...STOCK_ROW, quantity: -4, status: 'sold_out' })),
     })
 
-    expect(await screen.findByText(/No price/)).toHaveTextContent('-4 g · No price: cannot be sold')
+    await screen.findByText(/No price/)
+    const rows = await stateRows()
+    expect(rows[0]).toHaveTextContent('-4 g')
+    expect(rows[1]).toHaveTextContent('No price: cannot be sold')
   })
 
   test('Restore is the only action: no entry, price, withdrawal, archive or delete', async () => {
