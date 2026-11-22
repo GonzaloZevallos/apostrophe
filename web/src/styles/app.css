@@ -4330,10 +4330,15 @@ a.ajustes-tema__opcion {
 
 .variedad-acciones .boton {
   flex: 1 1 auto;
-  white-space: nowrap;
-  height: 52px;
-  font-size: 15px;
+  block-size: auto;
+  min-block-size: var(--alto-tocable);
+  min-inline-size: var(--alto-tocable);
+  padding-block: var(--espacio-sm);
+  padding-inline: var(--espacio-lg);
+  font-size: var(--tamano-fila);
   text-decoration: none;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .variedad-retiro {
