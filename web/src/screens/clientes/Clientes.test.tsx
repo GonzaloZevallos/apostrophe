@@ -975,16 +975,18 @@ test('after a save the return waits for the debtors refetch the save triggers: f
     release = resolve
   })
   let saved = false
-  vi.mocked(fetch).mockImplementation(
-    withPaymentMethods((input: RequestInfo | URL, init?: RequestInit) => {
-      const url = typeof input === 'string' ? input : input.toString()
-      if (init?.method === 'POST' && url === `/customers/${customerFixture.id}/payments`) {
-        saved = true
-        return Promise.resolve(jsonResponse(201, paymentPreviewFixture))
-      }
-      if (saved && url === '/payments/debtors') return held
-      return fetchApp(input)
-    }),
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(
+      withPaymentMethods((url: string, init?: RequestInit) => {
+        if (init?.method === 'POST' && url === `/customers/${customerFixture.id}/payments`) {
+          saved = true
+          return Promise.resolve(jsonResponse(201, paymentPreviewFixture))
+        }
+        if (saved && url === '/payments/debtors') return held
+        return fetchApp(url)
+      }),
+    ),
   )
   vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
   const router = renderApp()
