@@ -5,7 +5,8 @@
     "row": "Payment methods",
     "lead": "How you get paid and what you spend on",
     "paymentsHeading": "Payments",
-    "expensesHeading": "Expenses"
+    "expensesHeading": "Expenses",
+    "expensesLink": "See this month's expenses"
   },
   "list": {
     "add": "Add method",

@@ -7174,6 +7174,11 @@ a.ajustes-tema__opcion {
   color: var(--tinta2);
 }
 
+.ajustes-cobros__gastos-mes {
+  align-self: flex-start;
+  margin: var(--espacio-sm) var(--espacio-xs) 0;
+}
+
 .ajustes-cobros__seccion {
   display: flex;
   flex-direction: column;
