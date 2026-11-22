@@ -1082,3 +1082,17 @@ test('typing a query and clearing it before the debounce never fetches it', asyn
   expect(fetch).not.toHaveBeenCalledWith('/customers?q=ni', expect.anything())
   expect(screen.getByRole('region', { name: 'Owed to you' })).toBeInTheDocument()
 })
+
+test('while the full list is pending on a failed debtors read, the list section is not drawn at all', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => new Promise<Response>(() => {}), () => new Response('boom', { status: 500 })),
+  )
+  const { container } = renderClientes()
+
+  await waitFor(() => expect(fetch).toHaveBeenCalledWith('/payments/debtors', expect.anything()))
+  await act(async () => {})
+
+  expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
+  expect(container.querySelector('.lista-clientes')).toBeNull()
+  expect(screen.queryByText(EMPTY_CUSTOMERS)).not.toBeInTheDocument()
+})

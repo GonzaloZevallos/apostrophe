@@ -143,7 +143,7 @@ export default function Clientes() {
         {view === 'owed' && answered && <TeDeben />}
         {listState === 'failed' && error instanceof NetworkError && <SinConexion />}
         {listState === 'failed' && !(error instanceof NetworkError) && <ErrorGenerico />}
-        {listState !== 'failed' && (view === 'flat' || (view === 'all' && answered)) && (
+        {listState !== 'failed' && listState !== 'loading' && (view === 'flat' || (view === 'all' && answered)) && (
           <section className="clientes__todos">
             <div
               className="lista-clientes"

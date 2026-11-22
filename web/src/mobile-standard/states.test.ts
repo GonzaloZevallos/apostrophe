@@ -5,7 +5,8 @@ import { GONE_NOTICE } from '../api/refusals.ts'
 import { recordExpense } from '../api/expenses.ts'
 import { HOME, SALE_NEW } from '../routes.ts'
 import { STATE_NAMES, WALKABLE } from './registry.ts'
-import { common, refusal } from './copy.ts'
+import { common, emptyState, refusal } from './copy.ts'
+import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { PENDING_TAPS } from './pending.ts'
 import { offendersAsProblems, stateNameProblems, type WalkState } from './states.ts'
 import { isConvertedRow } from '../i18n/step.ts'
@@ -44,10 +45,10 @@ describe('the walked states of the Customers search', () => {
   }
 
   it('ends the no-match state on the existing no-match line, and the cleared state on a customer who owes nothing', () => {
-    expect(state('customer/search-no-match').visible).toBe('You have not added any customers yet.')
+    expect(state('customer/search-no-match').visible).toBe(emptyState('emptyStates:customersList'))
     expect(state('customer/search-cleared-to-all').visible).toBe('Mica Solano')
-    expect(state('customer/search-cleared-to-all').steps).toContainEqual({ click: 'All' })
-    expect(state('customer/search-cleared-to-all').steps.at(-1)).toEqual({ fill: { label: 'Search customer', value: '' } })
+    expect(state('customer/search-cleared-to-all').steps).toContainEqual({ click: common('common:customerSegmentAll') })
+    expect(state('customer/search-cleared-to-all').steps.at(-1)).toEqual({ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: '' } })
   })
 
   it('finds a debtor by search', () => {
@@ -122,7 +123,7 @@ describe('a walked state that holds a refetch after its steps', () => {
     const found = STATES.find((state) => state.screen === 'customer/search-held')
     expect(found?.refetch?.holds.test('/api/customers')).toBe(true)
     expect(found?.refetch?.holds.test('/api/payments/debtors')).toBe(false)
-    expect(found?.refetch?.steps).toEqual([{ fill: { label: 'Search customer', value: 'Nicol' } }])
+    expect(found?.refetch?.steps).toEqual([{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nicol' } }])
     expect(found?.visible).toBe('Nico Parra')
   })
 

@@ -20,7 +20,15 @@ import { useIsVipCustomers } from '../../api/pricingSettings'
 import { useMoney } from '../../format/moneyContext'
 import { COMMON_TEXT } from '../../copy/common'
 import ClienteFila from './ClienteFila'
-import { customersView, debtorsState, listKeyQuery, segmentCounts, useCustomerSearch } from './CustomerSearch'
+import {
+  customersListState,
+  customersView,
+  debtorsState,
+  listKeyQuery,
+  segmentCounts,
+  typedQuery,
+  useCustomerSearch,
+} from './CustomerSearch'
 import CustomerSegments from './CustomerSegments'
 
 export default function CustomersBehind() {
@@ -39,6 +47,17 @@ export default function CustomersBehind() {
 
   if (data === undefined) return null
   const view = customersView({ query, debtors: debtorsState(debtors), segment })
+  // It draws only from resolved data, so the read's own flags are settled here: a row is drawn
+  // only when the list's one decision says `rows`.
+  const listState = customersListState({
+    typed: typedQuery(query),
+    keyQuery,
+    isPending: false,
+    isPlaceholderData: false,
+    isFetching: false,
+    isError: false,
+    isEmpty: data.length === 0,
+  })
   const owed = view === 'owed' && debtors.data !== undefined && debtors.data.debtor_count !== 0 ? debtors.data : null
 
   return (
@@ -78,7 +97,7 @@ export default function CustomersBehind() {
         {(view === 'flat' || view === 'all') && (
         <section className="clientes__todos">
           <div className="lista-clientes">
-            {data.map((customer) => (
+            {listState === 'rows' && data.map((customer) => (
               <ClienteFila
                 key={customer.id}
                 id={customer.id}
