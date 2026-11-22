@@ -25,6 +25,7 @@ Cada capacidad tiene su página en [docs/product/](product/):
 - [Onboarding](product/onboarding.md)
 - [Pagos](product/payments.md)
 - [Payment methods](product/payment-methods.md)
+- [Payment state](product/payment-state.md)
 - [Phone first](product/phone-first.md)
 - [Pinned catalog](product/pinned-catalog.md)
 - [Pricing settings](product/pricing-settings.md)
