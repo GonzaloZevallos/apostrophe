@@ -13,6 +13,7 @@ import { createMemoryRouter, Link, Outlet, RouterProvider, useNavigate } from 'r
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { ApiError, get } from '../api/client'
 import { keys } from '../api/keys'
+import ContentArea from '../components/ContentArea'
 import { panelQuery } from '../api/panel'
 import FlashProvider, { SALE_SAVED_TOAST_MS } from '../flash/FlashProvider'
 import { useUndoSale } from './useUndoSale'
@@ -26,7 +27,7 @@ function NewSale({ name = 'Ana', saleId = 7 }: { name?: string | null; saleId?: 
   const { announceSaved } = useUndoSale()
   const navigate = useNavigate()
   return (
-    <main>
+    <ContentArea as="main">
       <h1>New sale</h1>
       <button
         onClick={() => {
@@ -36,7 +37,7 @@ function NewSale({ name = 'Ana', saleId = 7 }: { name?: string | null; saleId?: 
       >
         save
       </button>
-    </main>
+    </ContentArea>
   )
 }
 
@@ -53,14 +54,14 @@ function Home() {
   useQuery({ queryKey: keys.stock(), queryFn: () => get('/stock-list') })
   useQuery({ queryKey: keys.customerAccount('3'), queryFn: () => get('/customers/3/account') })
   return (
-    <main>
+    <ContentArea as="main">
       <h1>Home</h1>
       <p>renders {renders}</p>
       {showPanel && <Panel />}
       <button onClick={() => setRenders((n) => n + 1)}>re-render</button>
       <button onClick={() => setShowPanel((on) => !on)}>toggle panel</button>
       <Link to="/other">go elsewhere</Link>
-    </main>
+    </ContentArea>
   )
 }
 
