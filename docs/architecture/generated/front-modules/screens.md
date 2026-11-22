@@ -35,6 +35,7 @@ subgraph src["src"]
       src_screens_clientes_CustomerTypeField_tsx["CustomerTypeField.tsx"]
       src_screens_clientes_CustomerTypeLine_tsx["CustomerTypeLine.tsx"]
       src_screens_clientes_CustomersBehind_tsx["CustomersBehind.tsx"]
+      src_screens_clientes_DebtorsUnavailable_tsx["DebtorsUnavailable.tsx"]
       src_screens_clientes_TeDeben_tsx["TeDeben.tsx"]
       src_screens_clientes_accountRows_ts["accountRows.ts"]
       src_screens_clientes_usePhoneCountryField_ts["usePhoneCountryField.ts"]
@@ -248,6 +249,7 @@ src_screens_clientes_ClientesLayout_tsx-->src_screens_clientes_CustomersBehind_t
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_ClienteFila_tsx
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_CustomerSearch_ts
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_CustomerSegments_tsx
+src_screens_clientes_Clientes_tsx-->src_screens_clientes_DebtorsUnavailable_tsx
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_TeDeben_tsx
 src_screens_clientes_CobroPanes_tsx-->src_screens_clientes_ClienteFicha_tsx
 src_screens_clientes_CobroPanes_tsx-->src_screens_clientes_Clientes_tsx
