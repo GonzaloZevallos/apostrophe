@@ -177,15 +177,20 @@ function resolveFacts(template, placeholders) {
 // A step may name a locale key instead of an English text: resolved against the `en` bundle, read once.
 const EN = loadBundle('en')
 
+// A radio option's text may carry an aria-hidden count that is no part of its name: found by role too.
+function textOrRadio(page, name) {
+  return page.getByText(name, { exact: true }).or(page.getByRole('radio', { name, exact: true })).first()
+}
+
 async function run(page, rawStep, placeholders) {
   const step = resolveStep(rawStep, EN)
-  if (step.click) await page.getByText(step.click, { exact: true }).first().click()
+  if (step.click) await textOrRadio(page, step.click).click()
   // An icon-only control has an accessible name and no text: found by role and exact name,
   // and strict, so zero matches or two fail the row instead of picking one.
   else if (step.press) await page.getByRole('button', { name: step.press, exact: true }).click()
   else if (step.fill) await page.getByLabel(step.fill.label, { exact: true }).fill(resolveFacts(step.fill.value, placeholders))
   else if (step.select) await page.getByLabel(step.select.label, { exact: true }).selectOption({ index: step.select.index })
-  else if (step.wait) await page.getByText(step.wait, { exact: true }).first().waitFor()
+  else if (step.wait) await textOrRadio(page, step.wait).waitFor()
   // Puts back to 0 the one scroller that holds the text (`scrollTopInPage`), so the shot starts
   // unscrolled whatever the earlier clicks scrolled. It advances no clock itself: only the loop's
   // standard settle (SETTLE_ADVANCE_MS) runs after it. Toast budget: TOAST_MS is 2500 and the
