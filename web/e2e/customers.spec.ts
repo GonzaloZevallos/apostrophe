@@ -18,6 +18,7 @@
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import type { Locator, Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
+import { openAllCustomers } from './helpers/openScreens.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -64,6 +65,8 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   await expect(page.getByText('Customer saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
+  // Nobody owes yet: she is on the full list.
+  await openAllCustomers(page)
   // Found by name, in the list: no phone line, no dash, no placeholder.
   const row = page.getByRole('link', { name: /Noe Sinnumero/ })
   await expect(row).toBeVisible()

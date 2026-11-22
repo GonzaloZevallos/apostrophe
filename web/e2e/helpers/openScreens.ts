@@ -71,3 +71,12 @@ export async function openCatalog(page: Page): Promise<void> {
     await expect(page.getByRole('heading', { name: 'Catalog', level: 1 })).toBeVisible()
   })
 }
+
+/** Customers' "All" segment: the screen opens on "Owed to you", and a customer who owes nothing, or has
+ * credit, is only on the full list. Call it once the screen is reached; it waits for the segment to
+ * be the chosen one. */
+export async function openAllCustomers(page: Page): Promise<void> {
+  const all = page.getByRole('radiogroup', { name: 'Customers view' }).getByRole('radio', { name: 'All', exact: true })
+  await all.click()
+  await expect(all).toBeChecked()
+}

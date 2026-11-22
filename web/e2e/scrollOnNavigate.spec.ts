@@ -20,6 +20,7 @@ import { seedLongExpenses, seedLongLists, seedLongVarieties } from './helpers/sc
 import { newSaleEntry } from './helpers/chrome.js'
 import { expectToast } from './helpers/toast.js'
 import { expectPath } from './helpers/url.js'
+import { openAllCustomers } from './helpers/openScreens.js'
 
 const VIEWPORTS = [
   { name: '320 px phone', width: 320, height: 640 },
@@ -122,6 +123,7 @@ test.describe.serial('Scroll al cambiar de pantalla', () => {
 
       test('a tab, a list row and "+ New sale" open the new screen at the top', async () => {
         await page.goto(CUSTOMERS)
+        await openAllCustomers(page)
         await expect(page.getByRole('link', { name: /Zeta 40/ }).first()).toBeVisible()
         await scrollDown(page)
         await tab(page, 'Sales').click()
@@ -135,6 +137,7 @@ test.describe.serial('Scroll al cambiar de pantalla', () => {
         await expectAtTop(page)
 
         await page.goto(CUSTOMERS)
+        await openAllCustomers(page)
         await expect(page.getByRole('link', { name: /Zeta 40/ }).first()).toBeVisible()
         await scrollDown(page)
         await tap(newSale(page, computer))
@@ -184,6 +187,7 @@ test.describe.serial('Scroll al cambiar de pantalla', () => {
 
       test('"Close" of New sale, opened from a scrolled Customers list, returns to that offset', async () => {
         await page.goto(CUSTOMERS)
+        await openAllCustomers(page)
         await expect(page.getByRole('link', { name: /Zeta 40/ }).first()).toBeVisible()
         const offset = await scrollDown(page)
         await tap(newSale(page, computer))
