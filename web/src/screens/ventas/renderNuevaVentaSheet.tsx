@@ -12,18 +12,31 @@ import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import type { CompleteSale } from '../../sales/newSalePricing'
 import type { CustomerView } from '../../sales/newSaleView'
 import { type SaleDraftApi, useSaleDraft } from '../../sales/useSaleDraft'
+import type { Variety } from '../Variedades'
 import NuevaVentaSheet from './NuevaVentaSheet'
 
 export const TODAY = '2026-10-02'
 export const LATER = '2026-10-05'
 export const FORMAT = { symbol: '$', decimals: 0 }
 
-type Price = { id: number; effective_from: string; list_price: number; bulk_price: number | null; bulk_minimum: number | null }
-const price = (list: number): Price => ({ id: 1, effective_from: '2026-09-01', list_price: list, bulk_price: null, bulk_minimum: null })
-const product = (id: number, name: string, current_price: Price | null) => ({ id, name, archived: false, current_price })
+type PriceEntry = NonNullable<Variety['current_price']>
+const price = (list: number): PriceEntry => ({
+  id: 1,
+  effective_from: '2026-09-01',
+  list_price: list,
+  bulk_price: null,
+  bulk_minimum: null,
+  vip_price: null,
+})
+const product = (id: number, name: string, current_price: PriceEntry | null): Variety => ({
+  id,
+  name,
+  archived: false,
+  current_price,
+})
 
 /** Rosa and Árbol are priced; "Sin precio" has no price on any date. */
-export const PRODUCTS = [product(1, 'Rosa', price(1000)), product(2, 'Árbol', price(500)), product(3, 'Sin precio', null)]
+export const PRODUCTS: Variety[] = [product(1, 'Rosa', price(1000)), product(2, 'Árbol', price(500)), product(3, 'Sin precio', null)]
 
 export type Read = 'products' | 'settings' | 'suggestions' | 'stock'
 
@@ -87,7 +100,7 @@ export interface RenderedSheet {
 
 /** Mounts the Sheet as a phone sheet (`computer` false) with the lines of `spec` typed in the draft. */
 export function renderNuevaVentaSheet(spec: SheetCase = {}): RenderedSheet {
-  const { customer = { kind: 'none' }, lines = [], shipping = '', vip = true, held = [], broken = [] } = spec
+  const { customer = { kind: 'none' }, lines = [], shipping = '0', vip = true, held = [], broken = [] } = spec
   const holding = new Set<Read>(held)
   const gates = new Map<Read, () => void>()
   vi.stubGlobal(
@@ -119,7 +132,9 @@ export function renderNuevaVentaSheet(spec: SheetCase = {}): RenderedSheet {
       }
       setShipping(shipping)
     }, [addProduct, typeQuantity, setShipping])
-    current = draft
+    useEffect(() => {
+      current = draft
+    }, [draft])
     return (
       <NuevaVentaSheet
         draft={draft}

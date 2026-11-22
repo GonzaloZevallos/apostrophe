@@ -73,9 +73,9 @@ function nameOf(customer: CustomerView): string | null {
 function PriceLineText({ line }: { line: PriceLine }) {
   switch (line.kind) {
     case 'list':
-      return <span className="cliente-fila__linea">{TEXT.listPrices}</span>
+      return <span className="nv-cliente__linea">{TEXT.listPrices}</span>
     case 'type':
-      return <span className="cliente-fila__linea">{TEXT.pricesFor(line.name)}</span>
+      return <span className="nv-cliente__linea">{TEXT.pricesFor(line.name)}</span>
     case 'loading':
       return <Loading compacto />
     case 'none':
@@ -162,9 +162,9 @@ export default function NuevaVentaSheet({
         </span>
         <Boton variant="icon" action="close" ariaLabel={t('common:close')} onClick={onClose} />
       </div>
-      <div className="cliente-fila">
-        <div className="cliente-fila__texto">
-          <span className="cliente-fila__nombre">{name ?? <Loading compacto />}</span>
+      <div className="nv-cliente">
+        <div className="nv-cliente__texto">
+          <span className="nv-cliente__nombre">{name ?? <Loading compacto />}</span>
           <PriceLineText line={line} />
         </div>
         <Boton variant="link" onClick={onChangeCustomer}>
@@ -187,7 +187,7 @@ export default function NuevaVentaSheet({
             />
           </div>
           {bar.kind === 'total' && (
-            <Boton textOnly="submit" type="button" onClick={() => onCollect(bar.sale)}>
+            <Boton textOnly="submit" type="submit" onClick={() => onCollect(bar.sale)}>
               {SALES_TEXT.collectShort}
             </Boton>
           )}
