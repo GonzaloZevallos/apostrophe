@@ -18,6 +18,8 @@
 
 **Cuando** entrego un pedido en el teléfono, **quiero** ver de un vistazo para quién es la venta, qué precios le corresponden y el total hasta ahora, con una sola forma clara de ir a cobrar, **para** cobrar el monto justo y nunca cotizar de memoria. (Parte 2 de GH-864: la sirve la **Sheet de New sale**, el marco con la fila de Customer y la barra de la venta alrededor de la lista de Products. Afina la misma primera historia de sales.md; elegir Products y cobrar siguen en sus propias partes).
 
+**Cuando** entrego un pedido y una línea va gratis o a un precio acordado, **quiero** marcar esa línea como Gift o tipear su total, corregir su cantidad o sacarla, todo sin salir de New sale, **para** registrar la venta tal como pasó: el total correcto, el Stock correcto (un Gift igual sale del Stock) y la Pricing rule correcta guardada en la línea, sin nada que corregir después. (Parte 1 de GH-868, GH-496 parte 9a: la sirven las líneas con Gift y Special price de la Sale in progress, la guarda de la fecha y el cuerpo de la venta. La New sale nueva tiene que ser al menos tan completa como el formulario que reemplaza, que ya registra Gifts y Special prices; la fecha es parte del mismo trabajo porque una Sale cuenta en su propia fecha. Afina la primera historia de sales.md; no es un trabajo nuevo).
+
 ## Qué es
 
 La **Sale in progress** es la venta que se está armando en New sale antes de guardarla: cliente, líneas, fecha, **Shipping charged**, **Note** y cómo se paga. Es solo del front (`web/src/sales/useSaleDraft.ts`) y vive en memoria durante una apertura de New sale: nunca se guarda en el dispositivo y una recarga la pierde (igual que lo que dice sales.md, criterio 43). Lo que se guarda es la **Sale**, con las reglas de sales.md.
@@ -26,7 +28,7 @@ Hasta la parte de GH-496 que la monta en pantalla (el flip), ninguna pantalla la
 
 Nota: el criterio 34 de sales.md ("el medio nunca viene puesto") sigue vigente hasta la parte del flip de GH-496, porque la New sale en vivo todavía arranca sin medio. La propuesta de medio de esta capacidad no llega a la vendedora hasta entonces.
 
-Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clientes, productos y medio de pago, y tipea las cantidades a mano, de a un Product por vez y sin ver de una sola vez lo que ya está en la venta ni lo que suele vender. El costo principal son las elecciones repetidas, y el segundo es tipear cantidades. Cuando el Product pedido no está en la venta ni en "Most sold", hoy se recorre la lista entera a ojo; la búsqueda (#940) reemplaza ese recorrido. Hoy dice cómo le pagaron en el mismo formulario de New sale; la Collect Sheet pasa esa elección a un paso de cierre sin cambiar qué significan Payment, On-the-spot payment, Balance, Settlement ni Owing since. Un pago parcial sigue siendo un Payment posterior registrado con Record payment. El vuelto hoy se calcula de cabeza o con la calculadora del teléfono en medio de la entrega; la planilla nunca registró lo que el cliente entregó, así que no guardarlo no pierde nada. Qué precios le tocan a un Customer hoy se revisa a mano cuando no está claro; la fila de Customer de la Sheet de New sale lo dice antes de agregar nada.
+Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clientes, productos y medio de pago, y tipea las cantidades a mano, de a un Product por vez y sin ver de una sola vez lo que ya está en la venta ni lo que suele vender. El costo principal son las elecciones repetidas, y el segundo es tipear cantidades. Cuando el Product pedido no está en la venta ni en "Most sold", hoy se recorre la lista entera a ojo; la búsqueda (#940) reemplaza ese recorrido. Hoy dice cómo le pagaron en el mismo formulario de New sale; la Collect Sheet pasa esa elección a un paso de cierre sin cambiar qué significan Payment, On-the-spot payment, Balance, Settlement ni Owing since. Un pago parcial sigue siendo un Payment posterior registrado con Record payment. El vuelto hoy se calcula de cabeza o con la calculadora del teléfono en medio de la entrega; la planilla nunca registró lo que el cliente entregó, así que no guardarlo no pierde nada. Qué precios le tocan a un Customer hoy se revisa a mano cuando no está claro; la fila de Customer de la Sheet de New sale lo dice antes de agregar nada. El formulario de venta actual ya registra Gifts y Special prices; la Sale in progress los guarda desde la parte 1 de GH-868 para que pasarse a la New sale nueva no obligue a registrar el precio de la regla y corregirlo después.
 
 En la planilla, una venta sin pagar era una fila sin pago, y saldarla después pisaba la deuda (BRIEF, Problema). "Owes it" existe para que la vendedora nunca necesite inventar un Payment, ni uno de $0, para que los libros den bien: eso falsearía el Cash y el Money in y dejaría mal el Owing since. Es un supuesto decidido en la entrevista de #944, no verificado.
 
@@ -34,13 +36,21 @@ En la planilla, una venta sin pagar era una fila sin pago, y saldarla después p
 
 ### Líneas
 
-- Una línea es un **Product** y una cantidad, nada más. El **Gift** y el **Special price** llegan con la parte del detalle de línea.
+- Una línea es un **Product**, una cantidad, `gift` (booleano) y `specialPrice` (un monto ya leído, o `null`) (parte 1 de GH-868). Una línea nueva, creada por `productAdded`, arranca con `gift` en false y `specialPrice` en null. El **Special price** es el total de la línea tipeado a mano, nunca un precio por unidad.
 - A lo sumo una línea por Product: agregar un Product que ya está en la venta le suma una unidad entera a su línea y nunca crea otra. La API sigue aceptando el mismo Product en varias líneas (sales.md, "Línea"); esta regla es solo de New sale.
 - + y − suben o bajan una unidad entera.
 - − desde 1 o menos saca la línea. Se mira la cantidad actual, no el resultado: 1,5 − 1 da 0,5, que queda, y un − posterior desde 0,5 saca la línea.
 - Una cantidad tipeada se acepta solo si es mayor que 0 y tiene a lo sumo dos decimales (ADR-0056). Cualquier otra cosa (0, vacío, algo que no es un número, más de dos decimales) se rechaza, nunca se redondea, y la línea conserva su última cantidad válida. Tipear nunca saca una línea.
 - Una cantidad no puede superar 13 dígitos enteros (más los dos decimales): el front rechaza lo tipeado que la pase y + o agregar un Product no la sobrepasan. El límite se mira sobre los dígitos tipeados, sin ceros a la izquierda.
 - La cantidad es neutra: nunca dice gramos ni asume una Unit.
+- Cambiar la cantidad nunca cambia ni borra el Gift ni el Special price: + (`stepUp`), − (`stepDown`), agregar un Product que ya está (`productAdded`) y la cantidad tipeada (`quantityTyped`) conservan los dos. Un Special price acordado de $5.000 sigue en $5.000 si la cantidad pasa de 10 a 11; para otro total, la vendedora lo vuelve a tipear en el detalle de línea.
+- `lineEdited {productId, quantityHundredths, gift, specialPrice}` es la única acción que cambia el Gift o el Special price, y también fija la cantidad. Deja el estado igual cuando vienen gift y un Special price a la vez, cuando el Special price es 0 o menos (una línea gratis es un Gift, nunca un Special price de $0) o cuando la cantidad rompe la regla de `typedQuantity`. Para un Product que no está en la venta tampoco hace nada: editar nunca crea una línea, solo `productAdded` lo hace.
+- `lineRemoved {productId}` saca la línea; para un Product que no está en la venta no hace nada. Sacar la última línea deja la venta sin cambios sin guardar (ver Sin guardar) y no toca el cliente, la fecha, el Shipping charged, la Note ni `choice`, owing sin cliente incluido; esa combinación la sigue frenando la Collect Sheet mediante `collectStateOf`, no esta acción.
+- `lineEditOf(buffer {quantityText, gift, specialText}, format)`, pura y en `web/src/sales/saleDraft.ts`, convierte lo tipeado en el detalle de línea en una edición o en un solo tipo de rechazo. Valida solo con `typedQuantity` y `parseMoneyInput`, en este orden:
+  1. `quantity`: la cantidad rompe la regla de `typedQuantity`;
+  2. `giftWithSpecial`: gift con cualquier texto de Special price no vacío, antes de leer su valor (un Gift con "0" tipeado es `giftWithSpecial`);
+  3. `specialZero`: un texto de Special price no vacío que no se lee como dinero, o que da 0 o menos.
+  Un texto de Special price vacío es ningún Special price (`null`), no un rechazo. Qué lee la vendedora para cada rechazo es de la parte que dibuja el detalle de línea.
 
 ### Sin guardar
 
@@ -69,9 +79,17 @@ En la planilla, una venta sin pagar era una fila sin pago, y saldarla después p
 - Cada apertura de New sale empieza sin líneas, con `choice` en unset, sin Shipping charged ni Note y con la fecha de hoy en el día del Business.
 - El cliente arranca vacío, salvo que la apertura traiga uno (New sale desde la ficha de un cliente).
 
+### Fecha
+
+- `dateSet {date, today}` acepta solo un día real en formato YYYY-MM-DD (`isIsoDate` en `web/src/format/dates.ts`, así que 2026-02-30 se rechaza) que no sea posterior a `maxSaleDate(today)` (parte 1 de GH-868).
+- No hay límite inferior: registrar tarde la venta de ayer es normal y se acepta cualquier día real anterior. Atajar un error de tipeo como 2016 es de la parte que dibuja el control de fecha.
+- Una fecha vacía, mal formada, imposible o posterior a hoy se rechaza en silencio en el reducer y la venta conserva su última fecha válida, igual que `quantityTyped` con una cantidad inválida. No hay tipo de rechazo para la fecha.
+- `today` es el día del Business, de la misma fuente que la fecha inicial de `initialDraft`; `setDate` de `useSaleDraft` lo pasa por su cuenta. `useSaleDraft` también expone `editLine` y `removeLine` para `lineEdited` y `lineRemoved`.
+
 ### Dinero
 
 - Ni la Sale in progress, ni el cliente de sugerencias, ni la Sheet de New sale, ni la lista de Products, ni la Collect Sheet calculan dinero. Toda cifra de la venta (precio de la fila, total de la línea, total de la barra, total de Collect, fila Total, aviso de recotización) sale de `priceSale`/`rowPrices`/`priceLine` en `web/src/sales/pricing.ts` (en la Sheet de New sale, mediante `pricedSaleOf`), calculada por la pantalla anfitriona. El Received se lee y el Change se calcula solo con `changeFor` del mismo módulo, mediante `parseMoneyInput`, como enteros a los decimales del Money format. El Shipping charged y la Note se guardan tal como se ingresaron.
+- `saleLineInputsOf` (precio) y `bodyLinesOf` (cuerpo) leen el Gift y el Special price de los mismos campos de la línea, `gift` y `specialPrice`, así que lo que se muestra y lo que se manda no pueden discrepar. Una línea no tiene precio solo cuando su `PricedSaleLine.pricing` es null; ningún componente ni helper mira `gift` o `specialPrice` por su cuenta para decidirlo.
 
 ## Sheet de New sale
 
@@ -202,7 +220,7 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 - Si `priced` trae una línea sin precio para la fecha de la venta, el toque no manda nada (0 pedidos), no muestra "Saving…" ni ningún texto nuevo y no llama a `onSavingChange`. Es solo una guarda: se lee lo que `priced` ya dice de la línea, nunca se calcula un precio, y la vendedora no llega a ese estado porque la pantalla anfitriona no abre la Sheet.
 - Sin medio por encima de $0 no se manda nada: se muestra "Choose how they pay to collect." en el `FieldRefusal` debajo del Selector, con el **Attention icon** y ligado por `describedBy`, y se enfoca el campo. Si el campo todavía está cargando (y por eso deshabilitado), el foco va al grupo que lo envuelve, el mismo destino que usa el Selector al pasar a carga. Elegir un medio borra el rechazo.
 - Una venta de $0 sin medio se guarda con `payment: null`; una de $0 con un medio elegido lo manda.
-- Si no, el botón muestra "Saving…" de inmediato, los toques siguientes no mandan nada (una guarda que se activa antes del pedido, así que dos toques seguidos hacen un solo pedido), llama a `onSavingChange(true)` y hace `POST /api/sales` con el cuerpo armado solo por `saleBodyOf`: líneas desde la Sale in progress con `bodyLinesOf` (que usa `quantityOfHundredths`, sin Gift ni Special price); fecha y Note desde la Sale in progress (una Note en blanco va como null) y el Shipping charged desde `priced.totals.shippingCharged`, para que la etiqueta y el cuerpo no puedan discrepar. Ni Received ni Change van en el cuerpo.
+- Si no, el botón muestra "Saving…" de inmediato, los toques siguientes no mandan nada (una guarda que se activa antes del pedido, así que dos toques seguidos hacen un solo pedido), llama a `onSavingChange(true)` y hace `POST /api/sales` con el cuerpo armado solo por `saleBodyOf`: líneas desde la Sale in progress con `bodyLinesOf` (que usa `quantityOfHundredths` y manda, por línea, `gift` y `special_price` tal como los tiene la línea, en los campos que `POST /api/sales` ya acepta; parte 1 de GH-868); fecha y Note desde la Sale in progress (una Note en blanco va como null) y el Shipping charged desde `priced.totals.shippingCharged`, para que la etiqueta y el cuerpo no puedan discrepar. Ni Received ni Change van en el cuerpo.
 - El guardado nunca queda en pausa sin conexión (`networkMode: 'always'`): sin red el pedido falla y el guardado termina, en lugar de dejar la Sheet bloqueada.
 - Mientras guarda, el Close propio de la Sheet no hace nada y nada más lo señala: "Saving…" es la única señal. El campo queda bloqueado (`inert`) y Collect no toma toques. Un 401 llega al límite de sesión compartido.
 
@@ -392,13 +410,23 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Textos propios de la Collect Sheet para rechazos que no son el del medio ni el de owing sin cliente, y devolverlos a la pantalla anfitriona (lo decide el flip).
 - Cualquier cambio al Selector, a `usePaymentMethodOptions` o al cargador compartido de la lista de medios, al Attention icon o a la Icon and text rule por los caminos de fallo de la Collect Sheet o por "Owes it", incluida la línea de fallo sin conexión antes de la primera carga.
 - Un texto propio de la Collect Sheet para una línea sin precio.
-- Gift, Special price y la Sheet del detalle de línea.
+- La Sheet del detalle de línea, el control de fecha, los textos de los rechazos de `lineEditOf` y de la fecha, y cualquier pantalla que muestre o deje marcar el Gift o el Special price de una línea (partes posteriores de GH-868). Un límite inferior para la fecha de la venta.
 - Conservar la venta en curso tras una recarga.
 - Cualquier cambio en el servidor, incluida la protección contra el doble registro.
 
 ## Métricas
 
-- Cada regla de Líneas, Sin guardar, Cómo se paga, Cliente y owing, y Apertura tiene su test unitario de la Sale in progress, y pasa; incluye que sacar el cliente conserva owing y paid(id), que cambiar el cliente conserva la elección y que unset después de owing queda unset (#944).
+- Cada regla de Líneas, Sin guardar, Cómo se paga, Cliente y owing, Apertura y Fecha tiene su test unitario de la Sale in progress, y pasa; incluye que sacar el cliente conserva owing y paid(id), que cambiar el cliente conserva la elección y que unset después de owing queda unset (#944).
+- Líneas con Gift y Special price y guarda de la fecha (parte 1 de GH-868), en tests unitarios sin dibujar, cada caso con su test que pasa en el Gate (vitest):
+  - `lineEdited` con gift y Special price a la vez, con Special price 0 y con una cantidad inválida deja el estado igual; `lineEdited` y `lineRemoved` sobre un Product que no está en la venta no cambian nada;
+  - sacar la última línea deja `isDirty` en false, con cliente, fecha, Shipping charged y Note sin cambios;
+  - +, −, agregar de nuevo y la cantidad tipeada conservan Gift y Special price;
+  - `dateSet` con fecha vacía, mal formada, 2026-02-30 y mañana conserva la fecha anterior, y con hoy y un día anterior la cambia;
+  - `lineEditOf` da cada rechazo y respeta el orden `quantity` → `giftWithSpecial` → `specialZero`, con un texto de Special price vacío como `null`;
+  - una venta pasa por `pricedSaleOf` y `saleBodyOf` con `gift` y `special_price` iguales por línea a los de la Sale in progress.
+- Líneas de la Sale in progress con Gift y Special price a la vez, o con un Special price de 0 o menos: 0. Gifts o Special prices perdidos al cambiar la cantidad: 0. Fechas vacías, mal formadas, imposibles o posteriores al día del Business aceptadas por el reducer: 0. Líneas cuyo `gift` o `special_price` en el cuerpo de `POST /api/sales` difiere de lo que tiene la línea: 0. Lugares que deciden "sin precio" mirando `gift` o `specialPrice` por su cuenta: 0.
+- Claves del Copy module agregadas por la parte 1 de GH-868: 0; `en.baseline.json` sin cambios.
+- Vara de la parte 1 de GH-868, que se juzga cuando una parte posterior de GH-868 lo muestre: una venta con un Gift o un Special price se registra desde el teléfono en menos de un minuto (sales.md, criterio 1), sin corregir nada después.
 - Cliente de sugerencias, a nivel de fetch: exactamente 1 pedido por apertura, con `on` igual a la fecha de apertura; 0 pedidos nuevos después de editar la fecha o volver a dibujar; 1 pedido nuevo en una apertura de otro día; una lectura fallida da ninguna sugerencia y 0 errores lanzados.
 - Lista de Products, en tests de componente a nivel de fetch: cada caso de la lista (pasos, cantidades tipeadas, una línea por Product, "No price", línea que pierde su precio, línea cuyo Product ya no vuelve, sugerencias filtradas y con tope, Stock, bulk a 10, recotización por Customer y por fecha, aviso, símbolo y decimales del Money format) tiene su test y pasa; 0 pedidos nuevos de sugerencias tras cambiar la fecha; 0 cambios en los totales de la venta al mostrar más filas.
 - Búsqueda, en `NuevaVentaProductos.test.tsx` con el arnés de #924: mayúsculas, acentos, coincidencia en cualquier parte, orden por nombre (con orden fijo entre nombres que solo difieren por acento o mayúscula), "Results · 0" sin nada más, resaltado de la primera coincidencia sobre los caracteres originales, texto solo de espacios como vacío, aviso y secciones ocultos mientras se busca, Product de la venta con su línea en los resultados, Product con precio fuera de "Most sold" con su "+", Product sin precio con "No price" y sin "+", el texto que queda y el foco en los pasos tras tocar "+" en un resultado, y el campo a la vista sin conteo ni resultados mientras las lecturas no llegaron; cada caso tiene su test y pasa.
