@@ -10,7 +10,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import App from '../../App'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
-import { EXPENSE_CATEGORIES, HOME, SETTINGS_PAYMENTS } from '../../routes'
+import { EXPENSE_CATEGORIES, EXPENSES, HOME, SETTINGS_PAYMENTS } from '../../routes'
 import { stubViewport } from '../../test-viewport'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
@@ -143,4 +143,47 @@ test('no request names a business', async () => {
   expect(categoryCalls.length).toBeGreaterThan(0)
   for (const url of served.urls) expect(url).not.toMatch(/business/i)
   for (const body of served.bodies) expect(body === undefined || !/business/i.test(String(body))).toBe(true)
+})
+
+const EXPENSES_LINK = "See this month's expenses"
+
+test('the link to this month\'s expenses opens plain Expenses, with no month in the address', async () => {
+  serve(() => Promise.resolve(json([])))
+  await open()
+
+  const link = await screen.findByRole('link', { name: EXPENSES_LINK })
+  expect(link).toHaveAttribute('href', EXPENSES)
+})
+
+test('the nav keeps its two rows and the link to the expenses sits outside it', async () => {
+  serve(() => Promise.resolve(json([])))
+  await open()
+
+  const link = await screen.findByRole('link', { name: EXPENSES_LINK })
+  const nav = screen.getByRole('navigation', { name: 'Payments and expenses' })
+  expect(within(nav).getAllByRole('link')).toHaveLength(2)
+  expect(nav).not.toContainElement(link)
+})
+
+test('the link shows while the reads are pending', async () => {
+  const held = new Promise<Response>(() => undefined)
+  serve(
+    () => held,
+    () => held,
+  )
+  await open()
+
+  expect(await screen.findByRole('link', { name: EXPENSES_LINK })).toBeVisible()
+})
+
+test('the link shows after both reads fail', async () => {
+  serve(
+    () => Promise.resolve(json({ detail: 'boom' }, 500)),
+    () => Promise.resolve(json({ detail: 'boom' }, 500)),
+  )
+  await open()
+
+  const main = (await screen.findByRole('heading', { name: 'Payments' })).closest('main') as HTMLElement
+  await waitFor(() => expect(main).not.toHaveAttribute('aria-busy'))
+  expect(screen.getByRole('link', { name: EXPENSES_LINK })).toBeVisible()
 })

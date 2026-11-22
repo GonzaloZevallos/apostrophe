@@ -59,6 +59,7 @@
     { "screen": "Clientes", "route": "/customers", "path": "/customers" },
     { "screen": "ClientesTeDeben", "design": "Clientes", "route": "/customers", "path": "/customers", "walked_as": "customers/segment-owed", "steps": [{ "wait": "Owed to you" }] },
     { "screen": "ClientesTodos", "design": "Clientes", "route": "/customers", "path": "/customers", "walked_as": "customers/segment-all", "steps": [{ "click": "All" }, { "wait": "VIP" }] },
+    { "screen": "ClientesAvisoDeudores", "design": "Clientes", "route": "/customers", "path": "/customers", "walked_as": "ClientesSinCifras", "steps": [{ "wait": "Owed amounts did not load: tap to try again" }] },
     { "screen": "ClientesCompu", "route": "/customers/{debtor}", "path": "/customers/{debtor}", "viewport": [1280, 920] },
     { "screen": "ClienteFicha", "route": "/customers/{debtor}", "path": "/customers/{debtor}" },
     { "screen": "ClienteNuevo", "design": "ClienteNuevo", "section": "Nuevo cliente", "route": "/customers/new", "path": "/customers/new" },

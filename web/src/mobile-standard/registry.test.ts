@@ -254,6 +254,7 @@ describe('walked_as: a row whose screen a walked state proves', () => {
       'VentaEnCurso',
       'ClientesTeDeben',
       'ClientesTodos',
+      'ClientesAvisoDeudores',
       'ClientesTeDebenOscuro',
       'ClientesTodosOscuro',
       'VentaVuelve',

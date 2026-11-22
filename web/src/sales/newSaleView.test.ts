@@ -7,7 +7,9 @@ import { describe, expect, test } from 'vitest'
 import type { Variety } from '../screens/Variedades'
 import { pricedSaleOf, type NewSaleInputs, type NewSalePricing } from './newSalePricing'
 import {
+  customerPriceLineOf,
   customerTypeIdOf,
+  customerViewOf,
   priceLineOf,
   saleBarState,
   type CustomerView,
@@ -47,7 +49,7 @@ const NAME_ONLY: CustomerView = { kind: 'known', name: 'Ana', typeId: null, type
 const ID_ONLY: CustomerView = { kind: 'known', name: 'Ana', typeId: 7, typeName: null }
 const NAME_PENDING: CustomerView = { kind: 'namePending' }
 const TYPE_PENDING: CustomerView = { kind: 'typePending', name: 'Ana' }
-const FAILED: CustomerView = { kind: 'failed' }
+const FAILED: CustomerView = { kind: 'failed', name: null }
 
 describe('the fixtures', () => {
   test('are the price results the table needs', () => {
@@ -132,5 +134,47 @@ describe('customerTypeIdOf', () => {
     ['failed', FAILED, 'pending'],
   ])('%s', (_name, view, expected) => {
     expect(customerTypeIdOf(view)).toBe(expected)
+  })
+})
+
+describe('customerPriceLineOf', () => {
+  const SWITCHES_ON = { bulk: false, vip: true }
+  const SWITCHES_OFF = { bulk: false, vip: false }
+  const FAILED_NAMED: CustomerView = { kind: 'failed', name: 'Ana' }
+
+  test.each<[string, CustomerView, NewSaleStatus, typeof SWITCHES_ON | null, unknown]>([
+    ['settings pending with a typed Customer', KNOWN, 'refreshing', null, { kind: 'loading' }],
+    ['settings failed with a typed Customer', KNOWN, 'failed', null, { kind: 'none' }],
+    ['products failed with the settings in', KNOWN, 'failed', SWITCHES_ON, { kind: 'none' }],
+    ['failed Customer read with settings pending', FAILED, 'loading', null, { kind: 'none' }],
+    ['failed Customer read with a name and the settings in', FAILED_NAMED, 'ready', SWITCHES_ON, { kind: 'none' }],
+    ['typed Customer with the switch on', KNOWN, 'ready', SWITCHES_ON, { kind: 'type', name: 'Mayorista' }],
+    ['typed Customer with the switch off', KNOWN, 'ready', SWITCHES_OFF, { kind: 'list' }],
+    ['no Customer with the settings in', NONE, 'ready', SWITCHES_ON, { kind: 'list' }],
+    ['no Customer with settings pending', NONE, 'loading', null, { kind: 'loading' }],
+    ['name pending with the settings in', NAME_PENDING, 'ready', SWITCHES_ON, { kind: 'loading' }],
+    ['type pending with the settings in', TYPE_PENDING, 'ready', SWITCHES_ON, { kind: 'loading' }],
+  ])('%s', (_name, customer, status, settings, expected) => {
+    expect(customerPriceLineOf({ customer, status, settings })).toEqual(expected)
+  })
+})
+
+describe('customerViewOf', () => {
+  const CHOSEN = { id: 7, name: 'Ana', typeId: 3, typeName: 'Mayorista' }
+
+  test('no customer id is none, whatever record is held', () => {
+    expect(customerViewOf(null, CHOSEN)).toEqual({ kind: 'none' })
+  })
+
+  test('a record whose id is the draft id is known, with its type', () => {
+    expect(customerViewOf(7, CHOSEN)).toEqual({ kind: 'known', name: 'Ana', typeId: 3, typeName: 'Mayorista' })
+  })
+
+  test('an id with no record is name pending', () => {
+    expect(customerViewOf(7, null)).toEqual({ kind: 'namePending' })
+  })
+
+  test('a record of another id is name pending, never shown for this id', () => {
+    expect(customerViewOf(8, CHOSEN)).toEqual({ kind: 'namePending' })
   })
 })

@@ -21,7 +21,6 @@ import BotonLink from '../../components/BotonLink'
 import SettingsAvatar from '../../components/SettingsAvatar'
 import { NetworkError } from '../../api/client'
 import { listCustomers } from '../../api/customers'
-import { debtorsQuery } from '../../api/payments'
 import { keys } from '../../api/keys'
 import { useIsVipCustomers } from '../../api/pricingSettings'
 import ErrorGenerico from '../../components/ErrorGenerico'
@@ -31,13 +30,14 @@ import { owedPlace, useReturnToPlace } from '../../components/useReturnToPlace'
 import { GONE_NOTICE } from '../../api/refusals'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
-import { customersView, debtorsState, segmentCounts, useCustomerSearch } from './CustomerSearch'
+import { customersView, segmentCounts, useCustomerSearch, useDebtors } from './CustomerSearch'
 import CustomerSegments from './CustomerSegments'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import ClienteFila from './ClienteFila'
 import TeDeben from './TeDeben'
+import { DEBTORS_NOTICE_PLACE, DebtorsSlot } from './DebtorsUnavailable'
 import { COMMON_TEXT } from '../../copy/common'
 import ContentArea from '../../components/ContentArea'
 import { LoadingWhile } from '../../components/Loading'
@@ -47,13 +47,16 @@ export const SEARCH_PLACEHOLDER = COMMON_TEXT.phoneOrName
 export const SEARCHING = CUSTOMERS_TEXT.searching
 
 /**
- * Where focus lands when the customer's "Collect" is gone: the "Owed to you" block, else the
- * selected segment option (the "All" view has no block), else the search field (a typed query or
- * a failed debtors read draws the flat list with no segments).
+ * Where focus lands when the customer's "Collect" is gone: the "Owed to you" block, the debtors
+ * notice (its button once shown, else its slot), the selected segment option (the "All" view has
+ * no block), else the search field (a typed query draws the flat list with no segments).
  */
 function segmentPlace(root: HTMLElement): HTMLElement | null {
+  const notice = root.querySelector<HTMLElement>(`[data-place="${DEBTORS_NOTICE_PLACE}"]`)
   return (
     owedPlace(root) ??
+    notice?.querySelector<HTMLElement>('button') ??
+    notice ??
     root.querySelector<HTMLElement>('.segmentos-clientes [aria-checked="true"]') ??
     root.querySelector<HTMLElement>('input[type="search"]')
   )
@@ -87,13 +90,23 @@ export default function Clientes() {
 
   // Back from Record payment the list returns to its place (PM option a). Beside a customer's
   // card the card is where the seller returns to, so the list leaves it to the card.
-  const debtors = useQuery(debtorsQuery)
-  const view = customersView({ query, isPlaceholderData, debtors: debtorsState(debtors), segment })
-  const answered = debtors.data !== undefined
+  const debtors = useDebtors()
+  const view = customersView({ query, isPlaceholderData, debtors: debtors.state, segment })
+  const answered = debtors.state === 'ready'
+  // A read that fails and then answers lands on "Owed to you", whatever was chosen before.
+  const previousState = useRef(debtors.state)
+  useEffect(() => {
+    if (previousState.current === 'failed' && debtors.state === 'ready' && query === '') setSegment('owed')
+    previousState.current = debtors.state
+  }, [debtors.state, query, setSegment])
+  // The notice stands only over a flat list that answered: a typed query hides it, and a failed
+  // list read has its own panel and retry.
+  const noticeDrawn =
+    view === 'flat' && debtors.state === 'failed' && query === '' && data !== undefined && !isPlaceholderData && !isError
   const root = useRef<HTMLElement>(null)
   useReturnToPlace({
     root,
-    ready: data !== undefined && !isPlaceholderData && !isFetching && !debtors.isFetching,
+    ready: data !== undefined && !isPlaceholderData && !isFetching && !debtors.fetching,
     owns: !besideCard,
     fallback: segmentPlace,
   })
@@ -101,7 +114,7 @@ export default function Clientes() {
   return (
     <ContentArea as="main" className="pantalla" ref={root}>
       {/* The first answer only: a new search over the list already shown is not the area loading. */}
-      <LoadingWhile active={isPending || debtors.isPending} />
+      <LoadingWhile active={isPending || debtors.state === 'pending'} />
       <div className="cuerpo">
         <div className="clientes__encabezado cabecera-fila">
           <span className="encabezado__titulo">{COMMON_TEXT.customers}</span>
@@ -123,10 +136,17 @@ export default function Clientes() {
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
+        <DebtorsSlot
+          drawn={noticeDrawn}
+          busy={debtors.busy}
+          sentence={CUSTOMERS_TEXT.debtorsUnavailable}
+          errorUpdatedAt={debtors.errorUpdatedAt}
+          onRetry={debtors.retry}
+        />
         {view !== 'flat' && (
           <CustomerSegments segment={segment} onChange={setSegment} {...segmentCounts(debtors.data)} />
         )}
-        {view === 'owed' && answered && <TeDeben />}
+        {view === 'owed' && debtors.data !== null && <TeDeben data={debtors.data} />}
         {isError && error instanceof NetworkError && <SinConexion />}
         {isError && !(error instanceof NetworkError) && <ErrorGenerico />}
         {!isError && (view === 'flat' || (view === 'all' && answered)) && (

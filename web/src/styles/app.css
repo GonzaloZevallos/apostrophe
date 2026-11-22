@@ -413,6 +413,69 @@ body {
   color: var(--acento);
 }
 
+/* The sale-saved toast: one row that takes the panel look, the status sentence inside it, then a
+ * separator and the Undo button, which sit outside the status. The sentence's three spans are
+ * flex items (no meaning rides on the whitespace between them): "Sale to" and "saved" never
+ * shrink, the name takes what is left and ends in an ellipsis. */
+.aviso-exito__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  background: var(--acento-suave);
+  border-radius: var(--radio-panel-grande);
+  padding: var(--espacio-xs) var(--espacio-sm) var(--espacio-xs) var(--espacio-lg);
+  color: var(--acento);
+}
+
+.aviso-exito__fila > .aviso-exito {
+  display: flex;
+  flex: 1 1 auto;
+  gap: var(--espacio-xs);
+  min-width: 0;
+  padding: 0;
+  background: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--acento);
+}
+
+.aviso-exito__inicio,
+.aviso-exito__fin {
+  flex: none;
+}
+
+.aviso-exito__nombre {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aviso-exito__separador {
+  flex: none;
+  font-weight: 600;
+}
+
+/* Text only, on the toast's own fill. The layer it floats in has no pointer events, so the button
+ * asks for them back. At least 44 x 44 from its padding and min-height. */
+.aviso-exito__deshacer {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--espacio-md);
+  border: 0;
+  border-radius: var(--radio-panel-grande);
+  background: var(--acento-suave);
+  color: var(--acento);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  pointer-events: auto;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 .ayuda-fija {
   font-size: 14px;
   color: var(--tinta2);
@@ -5436,7 +5499,7 @@ a.ajustes-tema__opcion {
  *   filled, so a --papel ring is the fill cue (it differs from the resting fill in both
  *   themes): .boton (with .boton--suave, .boton--destructivo and .boton-nueva-venta),
  *   .boton-icono, .pildora, .gastos__cargar, .aviso-ambar,
- *   .cobrar, .interruptor, .boton-aviso;
+ *   .cobrar, .interruptor, .boton-aviso, .aviso-exito__deshacer (the sale-saved toast's Undo);
  *   transparent, so --superficie is the fill cue: .boton--enlace,
  *   .boton--fila, .enlace-texto, .bar-inferior__item, .riel-lateral__item,
  *   .riel-lateral__ajustes, .mas__item, .ajustes__item, .mas-info__boton, .fila-venta,
@@ -5463,7 +5526,8 @@ a.ajustes-tema__opcion {
     .aviso-ambar,
     .cobrar,
     .interruptor,
-    .boton-aviso
+    .boton-aviso,
+    .aviso-exito__deshacer
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   box-shadow: inset 0 0 0 3px var(--papel);
@@ -5580,6 +5644,7 @@ a.ajustes-tema__opcion {
     .cobrar,
     .interruptor,
     .boton-aviso,
+    .aviso-exito__deshacer,
     .boton--enlace,
     .boton--fila,
     .enlace-texto,
@@ -6039,6 +6104,34 @@ a.ajustes-tema__opcion {
   text-align: left;
   text-decoration: none;
   cursor: pointer;
+}
+
+/* A tappable notice whose action is in flight keeps its card, icon and sentence and takes the
+ * app's disabled look (`.boton:disabled`), with no native `disabled`, so focus stays on it. */
+.boton-aviso[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* The always-mounted polite slot of Customers' debtors notice (`DebtorsSlot`). Empty, it cancels
+ * the one flex gap its own box adds to `.cuerpo`, so no Customers state moves; drawn, it reserves
+ * the notice's 44 px in the commit the rows arrive, so the notice never pushes them down. */
+.clientes__sin-cifras {
+  margin-top: calc(-1 * var(--espacio-xl));
+}
+
+.clientes__sin-cifras--reservado {
+  margin-top: 0;
+  min-height: var(--alto-tocable);
+}
+
+.clientes__sin-cifras .boton-aviso {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espacio-xs);
+  /* Scoped to this notice, so no other screen's listed touch-action offender changes: the retry
+   * takes no tap delay or double-tap zoom. */
+  touch-action: manipulation;
 }
 
 /* On a computer the card stops at 560px (GH-188; the drawing that showed it left with the
@@ -7181,6 +7274,11 @@ a.ajustes-tema__opcion {
   color: var(--tinta2);
 }
 
+.ajustes-cobros__gastos-mes {
+  align-self: flex-start;
+  margin: var(--espacio-sm) var(--espacio-xs) 0;
+}
+
 .ajustes-cobros__seccion {
   display: flex;
   flex-direction: column;
@@ -7351,4 +7449,74 @@ button:has(> .venta-en-curso) {
 /* A count's dot and figure stay one unit; the colour is the option's own. */
 .selector-pago__cuenta {
   display: inline-block;
+}
+
+/* New sale's Sheet (`NuevaVentaSheet`, drawings NuevaVenta and NuevaVentaOscuro): the Customer row and the
+ * sale bar. The text column may shrink (`min-width: 0`) and each line is one line with an ellipsis; Change
+ * keeps its label and a thumb-sized target. The bar sits in `.sheet__actions` (sticky on a phone only):
+ * a static row at the end of the form on a computer. */
+.nv-cliente {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: var(--espacio-md) 0;
+}
+
+.nv-cliente__texto {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.nv-cliente__nombre,
+.nv-cliente__linea {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.nv-cliente__nombre {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.nv-cliente__linea {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.nv-cliente > .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: var(--alto-tocable);
+  min-height: var(--alto-tocable);
+  white-space: nowrap;
+}
+
+.sale-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.sale-bar__estado {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 15px;
+  color: var(--tinta);
+}
+
+.sale-bar__cifra {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.sale-bar > button {
+  flex: none;
+  min-width: var(--alto-tocable);
+  min-height: var(--alto-tocable);
 }
