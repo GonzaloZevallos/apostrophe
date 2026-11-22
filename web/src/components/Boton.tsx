@@ -50,6 +50,8 @@ interface BotonCommon {
   ariaControls?: string
   /** For a button whose action is waiting on data: it reads as busy to assistive technology. */
   ariaBusy?: boolean
+  /** For a control that must stay in the tab order and keep its look while it does nothing (a notice whose retry is in flight): never the native `disabled`. */
+  ariaDisabled?: boolean
 }
 
 interface BotonWithText extends BotonCommon {
@@ -130,6 +132,7 @@ export default function Boton(props: BotonProps) {
       aria-expanded={props.ariaExpanded}
       aria-controls={props.ariaControls}
       aria-busy={props.ariaBusy}
+      aria-disabled={props.ariaDisabled}
     >
       {content}
     </button>

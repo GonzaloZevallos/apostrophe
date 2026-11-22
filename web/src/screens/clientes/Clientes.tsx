@@ -37,6 +37,7 @@ import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import ClienteFila from './ClienteFila'
 import TeDeben from './TeDeben'
+import { DEBTORS_NOTICE_PLACE, DebtorsSlot } from './DebtorsUnavailable'
 import { COMMON_TEXT } from '../../copy/common'
 import ContentArea from '../../components/ContentArea'
 import { LoadingWhile } from '../../components/Loading'
@@ -45,9 +46,13 @@ export const SEARCH_LABEL = CUSTOMERS_TEXT.searchCustomer
 export const SEARCH_PLACEHOLDER = COMMON_TEXT.phoneOrName
 export const SEARCHING = CUSTOMERS_TEXT.searching
 
-/** Where focus lands when the customer's "Collect" is gone: the "Owed to you" block, or the search while it filters. */
+/**
+ * Where focus lands when the customer's "Collect" is gone: the "Owed to you" block, the debtors
+ * notice (its button once shown, else its slot) or the search while it filters.
+ */
 function owedOrSearch(root: HTMLElement): HTMLElement | null {
-  return owedPlace(root) ?? root.querySelector<HTMLElement>('input[type="text"]')
+  const notice = root.querySelector<HTMLElement>(`[data-place="${DEBTORS_NOTICE_PLACE}"]`)
+  return owedPlace(root) ?? notice?.querySelector<HTMLElement>('button') ?? notice ?? root.querySelector<HTMLElement>('input[type="text"]')
 }
 
 export default function Clientes() {
@@ -87,6 +92,10 @@ export default function Clientes() {
     if (previousState.current === 'failed' && debtors.state === 'ready' && query === '') setSegment('owed')
     previousState.current = debtors.state
   }, [debtors.state, query, setSegment])
+  // The notice stands only over a flat list that answered: a typed query hides it, and a failed
+  // list read has its own panel and retry.
+  const noticeDrawn =
+    view === 'flat' && debtors.state === 'failed' && query === '' && data !== undefined && !isPlaceholderData && !isError
   const root = useRef<HTMLElement>(null)
   useReturnToPlace({
     root,
@@ -120,6 +129,12 @@ export default function Clientes() {
             onChange={(event) => setQuery(event.target.value)}
           />
         </label>
+        <DebtorsSlot
+          drawn={noticeDrawn}
+          busy={debtors.busy}
+          errorUpdatedAt={debtors.errorUpdatedAt}
+          onRetry={debtors.retry}
+        />
         {view !== 'flat' && (
           <CustomerSegments segment={segment} onChange={setSegment} {...segmentCounts(debtors.data)} />
         )}

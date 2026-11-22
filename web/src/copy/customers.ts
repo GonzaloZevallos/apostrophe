@@ -17,6 +17,8 @@ export const LONG_REFUSALS: readonly string[] = []
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const CUSTOMERS_TEXT = {
   paymentDeleted: 'Payment deleted',
+  /** The notice above the flat list when the owed figures did not load; its name is this sentence. */
+  debtorsUnavailable: 'Owed amounts did not load: tap to try again',
   /** The accessible name of the All | Owed to you control's radio group; it is never shown. */
   customersView: 'Customers view',
   owesYou: 'Owes you',
@@ -133,6 +135,7 @@ export function phoneLengthsText(lengths: readonly number[]): string {
 /** The ledger's fixed words, registered with the filled placeholder the screen shows
  * (`SAMPLES`' worst cases), so `copy/copyLimits.test.ts` measures them. */
 export const LIMITED_COPY: readonly LimitedCopy[] = [
+  { kind: 'notice', text: CUSTOMERS_TEXT.debtorsUnavailable },
   { kind: 'help', text: CUSTOMERS_TEXT.saleTitle },
   { kind: 'help', text: CUSTOMERS_TEXT.nothingToPay },
   { kind: 'help', text: CUSTOMERS_TEXT.accountHeading },

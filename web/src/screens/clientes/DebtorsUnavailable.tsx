@@ -1,0 +1,50 @@
+/**
+ * `DebtorsSlot`: the one always-mounted polite status region of Customers' debtors notice, drawn
+ * above the flat list when the owed figures did not load (`customers.md`). The sentence is the
+ * button's only text and its accessible name, so a screen reader hears it once, as the slot's
+ * content changes: the button is inserted by a passive effect, after `ContentArea`'s layout
+ * effect has removed `aria-busy`, and a new failure replaces only the keyed text span, never the
+ * button, so its focus stays. While the slot is drawn it reserves the notice's height in the same
+ * commit as the rows, so nothing below it moves when the button arrives. A retry in flight keeps
+ * the card and the sentence, adding `aria-busy` and `aria-disabled` and nothing else.
+ */
+
+import { useEffect, useState } from 'react'
+import Boton from '../../components/Boton'
+import Icono from '../../components/Icono'
+import { CUSTOMERS_TEXT } from '../../copy/customers'
+
+/** The value of `data-place` while the notice is drawn: where focus lands when a customer's row is gone. */
+export const DEBTORS_NOTICE_PLACE = 'debtors-notice'
+
+export interface DebtorsSlotProps {
+  /** The screen's whole condition for showing the notice. */
+  drawn: boolean
+  /** A retry is in flight: the notice stays and reads as busy. */
+  busy: boolean
+  /** The time of the latest failure: a new one re-announces the sentence. */
+  errorUpdatedAt: number
+  onRetry: () => void
+}
+
+export function DebtorsSlot({ drawn, busy, errorUpdatedAt, onRetry }: DebtorsSlotProps) {
+  const [filled, setFilled] = useState(false)
+  useEffect(() => setFilled(drawn), [drawn])
+  return (
+    <div
+      role="status"
+      className={drawn ? 'clientes__sin-cifras clientes__sin-cifras--reservado' : 'clientes__sin-cifras'}
+      data-place={drawn ? DEBTORS_NOTICE_PLACE : undefined}
+      tabIndex={drawn ? -1 : undefined}
+    >
+      {drawn && filled && (
+        <Boton variant="notice" onClick={onRetry} ariaBusy={busy ? true : undefined} ariaDisabled={busy ? true : undefined}>
+          <span className="clientes__sin-cifras__icono">
+            <Icono nombre="atencion" />
+          </span>
+          <span key={errorUpdatedAt}>{CUSTOMERS_TEXT.debtorsUnavailable}</span>
+        </Boton>
+      )}
+    </div>
+  )
+}

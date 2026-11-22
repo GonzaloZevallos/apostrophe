@@ -942,3 +942,236 @@ test('with no hand-off the list moves nothing and focuses nothing', async () => 
   expect(collect).not.toHaveFocus()
   expect(scrollTo).not.toHaveBeenCalled()
 })
+
+// The debtors notice (`DebtorsSlot`): shown over the flat list when the owed figures did not load.
+const DEBTORS_NOTICE = baselineText('customers.ts:CUSTOMERS_TEXT.debtorsUnavailable')
+
+function requestsTo(path: string): number {
+  return vi.mocked(fetch).mock.calls.filter(([input]) => (typeof input === 'string' ? input : String(input)) === path).length
+}
+
+/** A debtors read that fails until `answer` gives it a body. */
+function flakyDebtors(): { fail: () => void; answer: (body: unknown) => void; respond: () => Response } {
+  let body: unknown = null
+  return {
+    fail: () => {
+      body = null
+    },
+    answer: (next) => {
+      body = next
+    },
+    respond: () => (body === null ? new Response('boom', { status: 500 }) : jsonResponse(200, body)),
+  }
+}
+
+test('a failing debtors read shows the notice over the flat list, and no segments, counts, card or Nobody owes you', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [customerFixture, LU_SETTLED]), () => new Response('boom', { status: 500 })),
+  )
+  renderClientes()
+
+  const notice = await screen.findByRole('button', { name: DEBTORS_NOTICE })
+  expect(screen.getAllByText(DEBTORS_NOTICE)).toHaveLength(1)
+  expect(within(screen.getByRole('status')).getByRole('button', { name: DEBTORS_NOTICE })).toBe(notice)
+  expect(await screen.findByText('Lu')).toBeInTheDocument()
+  expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
+  expect(screen.queryByText(NOBODY_OWES)).not.toBeInTheDocument()
+  expect(screen.queryByText(/Total owed/)).not.toBeInTheDocument()
+  expect(document.body.textContent).not.toMatch(/·|\$ ?0(?!\d)/)
+})
+
+test('tapping the notice re-reads only the debtors, and on success the segments and counts return on Owed to you', async () => {
+  const debtors = flakyDebtors()
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture, LU_SETTLED]), debtors.respond))
+  renderClientes()
+  await userEvent.click(await screen.findByRole('button', { name: DEBTORS_NOTICE }))
+  await waitFor(() => expect(requestsTo('/payments/debtors')).toBe(2))
+  expect(requestsTo('/customers')).toBe(1)
+
+  debtors.answer(DEBTORS_FIXTURE)
+  await userEvent.click(await screen.findByRole('button', { name: DEBTORS_NOTICE }))
+
+  const owed = await screen.findByRole('radio', { name: /Owed to you/ })
+  expect(owed).toBeChecked()
+  expect(owed).toHaveTextContent(/\d/)
+  expect(requestsTo('/payments/debtors')).toBe(3)
+  expect(requestsTo('/customers')).toBe(1)
+  expect(screen.queryByRole('button', { name: DEBTORS_NOTICE })).not.toBeInTheDocument()
+})
+
+test('while a first-read retry is in flight the list stays, there is no skeleton, the notice is busy and a second tap sends nothing', async () => {
+  let release: ((value: Response) => void) | undefined
+  let calls = 0
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      () => jsonResponse(200, [LU_SETTLED]),
+      () => {
+        calls += 1
+        if (calls === 1) return new Response('boom', { status: 500 })
+        return new Promise<Response>((resolve) => {
+          release = resolve
+        })
+      },
+    ),
+  )
+  renderClientes()
+  const notice = await screen.findByRole('button', { name: DEBTORS_NOTICE })
+
+  await userEvent.click(notice)
+  await waitFor(() => expect(notice).toHaveAttribute('aria-busy', 'true'))
+  expect(notice).toHaveAttribute('aria-disabled', 'true')
+  expect(screen.getByText('Lu')).toBeInTheDocument()
+  expect(document.querySelector('main')).not.toHaveAttribute('aria-busy', 'true')
+  await userEvent.click(notice)
+
+  expect(requestsTo('/payments/debtors')).toBe(2)
+  release?.(jsonResponse(200, DEBTORS_FIXTURE))
+  expect(await screen.findByRole('radio', { name: /Owed to you/ })).toBeChecked()
+})
+
+test('a retry that fails keeps the same button, replaces only its text and can be tapped again', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [LU_SETTLED]), () => new Response('boom', { status: 500 })))
+  renderClientes()
+  const notice = await screen.findByRole('button', { name: DEBTORS_NOTICE })
+  const text = screen.getByText(DEBTORS_NOTICE)
+
+  await userEvent.click(notice)
+  await waitFor(() => expect(screen.getByText(DEBTORS_NOTICE)).not.toBe(text))
+
+  expect(screen.getByRole('button', { name: DEBTORS_NOTICE })).toBe(notice)
+  expect(notice).not.toHaveAttribute('aria-busy')
+  expect(notice).not.toHaveAttribute('aria-disabled')
+  await userEvent.click(notice)
+  await waitFor(() => expect(requestsTo('/payments/debtors')).toBe(3))
+})
+
+test('from the keyboard: focus, Enter, a 500 and focus is still on the same notice', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [LU_SETTLED]), () => new Response('boom', { status: 500 })))
+  renderClientes()
+  const notice = await screen.findByRole('button', { name: DEBTORS_NOTICE })
+  const text = screen.getByText(DEBTORS_NOTICE)
+
+  notice.focus()
+  await userEvent.keyboard('{Enter}')
+  await waitFor(() => expect(screen.getByText(DEBTORS_NOTICE)).not.toBe(text))
+
+  expect(document.activeElement).toBe(notice)
+  expect(requestsTo('/payments/debtors')).toBe(2)
+})
+
+test('a typed query hides the notice, and a success arriving meanwhile leaves the chosen segment alone', async () => {
+  const debtors = flakyDebtors()
+  debtors.answer(DEBTORS_FIXTURE)
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture, LU_SETTLED]), debtors.respond))
+  const queryClient = renderClientes()
+  await showAll()
+  debtors.fail()
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+  await screen.findByRole('button', { name: DEBTORS_NOTICE })
+
+  const input = screen.getByLabelText('Search customer')
+  await userEvent.type(input, 'lu')
+  await waitFor(() => expect(screen.queryByRole('button', { name: DEBTORS_NOTICE })).not.toBeInTheDocument())
+  debtors.answer(DEBTORS_FIXTURE)
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+  await userEvent.clear(input)
+
+  expect(await screen.findByRole('radio', { name: /All/ })).toBeChecked()
+})
+
+test('a failed refresh after figures were shown drops to the flat list with the notice', async () => {
+  const debtors = flakyDebtors()
+  debtors.answer(DEBTORS_FIXTURE)
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture, LU_SETTLED]), debtors.respond))
+  const queryClient = renderClientes()
+  expect(await screen.findByRole('radio', { name: /Owed to you/ })).toBeChecked()
+
+  debtors.fail()
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+
+  expect(await screen.findByRole('button', { name: DEBTORS_NOTICE })).toBeInTheDocument()
+  expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
+  expect(await screen.findByText('Lu')).toBeInTheDocument()
+})
+
+test('with both reads failing only the generic panel shows, and no node holds the notice sentence', async () => {
+  vi.mocked(fetch).mockResolvedValue(new Response('boom', { status: 500 }))
+  renderClientes()
+
+  expect(await screen.findByText('Something went wrong. Try again.')).toBeInTheDocument()
+  expect(screen.queryByText(DEBTORS_NOTICE)).not.toBeInTheDocument()
+})
+
+test('with no customers the notice shows above the list\'s empty state, and Nobody owes you does not', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, []), () => new Response('boom', { status: 500 })))
+  renderClientes()
+
+  const notice = await screen.findByRole('button', { name: DEBTORS_NOTICE })
+  const empty = await screen.findByText(EMPTY_CUSTOMERS)
+  expect(notice.compareDocumentPosition(empty) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(screen.queryByText(NOBODY_OWES)).not.toBeInTheDocument()
+})
+
+test('the notice button is added only once the main area has stopped being busy', async () => {
+  const busyWhenAdded: (string | null)[] = []
+  const watch = new MutationObserver((records) => {
+    for (const record of records) {
+      for (const node of Array.from(record.addedNodes)) {
+        if (node instanceof HTMLButtonElement) busyWhenAdded.push(document.querySelector('main')?.getAttribute('aria-busy') ?? null)
+      }
+    }
+  })
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [LU_SETTLED]), () => new Response('boom', { status: 500 })))
+  renderClientes()
+  const main = document.querySelector('main')
+  if (main === null) throw new Error('no main')
+  watch.observe(main, { childList: true, subtree: true })
+
+  await screen.findByRole('button', { name: DEBTORS_NOTICE })
+  watch.disconnect()
+
+  expect(busyWhenAdded.length).toBeGreaterThan(0)
+  expect(busyWhenAdded.every((busy) => busy !== 'true')).toBe(true)
+})
+
+test('after a save and a failed debtors read focus lands on the notice when the customer row is gone', async () => {
+  let paid = false
+  vi.mocked(fetch).mockImplementation((input) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    if (paid && url === '/payments/debtors') return Promise.resolve(new Response('boom', { status: 500 }))
+    if (paid && url === '/customers') return Promise.resolve(jsonResponse(200, [{ ...customerFixture, balance: 0, owing_since: null, standing: 'settled' }]))
+    return fetchApp(input)
+  })
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  const router = renderApp()
+
+  await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
+  await screen.findByRole('button', { name: 'Save' })
+  paid = true
+  setPaymentReturn(customerFixture.id)
+  await act(() => router.navigate(-1))
+
+  const notice = await screen.findByRole('button', { name: DEBTORS_NOTICE })
+  await waitFor(() => expect(notice).toHaveFocus())
+})
+
+test('after a save and a failed debtors read focus lands on the customer\'s Collect in the flat list', async () => {
+  let paid = false
+  vi.mocked(fetch).mockImplementation((input) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    if (paid && url === '/payments/debtors') return Promise.resolve(new Response('boom', { status: 500 }))
+    return fetchApp(input)
+  })
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  const router = renderApp()
+
+  await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
+  await screen.findByRole('button', { name: 'Save' })
+  paid = true
+  setPaymentReturn(customerFixture.id)
+  await act(() => router.navigate(-1))
+
+  await screen.findByRole('button', { name: DEBTORS_NOTICE })
+  const collect = (await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!
+  await waitFor(() => expect(collect).toHaveFocus())
+})

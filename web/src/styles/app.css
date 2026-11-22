@@ -6034,6 +6034,37 @@ a.ajustes-tema__opcion {
   cursor: pointer;
 }
 
+/* A tappable notice whose action is in flight keeps its card, icon and sentence and takes the
+ * app's disabled look (`.boton:disabled`), with no native `disabled`, so focus stays on it. */
+.boton-aviso[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* The always-mounted polite slot of Customers' debtors notice (`DebtorsSlot`). Empty, it cancels
+ * the one flex gap its own box adds to `.cuerpo`, so no Customers state moves; drawn, it reserves
+ * the notice's 44 px in the commit the rows arrive, so the notice never pushes them down. */
+.clientes__sin-cifras {
+  margin-top: calc(-1 * var(--espacio-xl));
+}
+
+.clientes__sin-cifras--reservado {
+  margin-top: 0;
+  min-height: var(--alto-tocable);
+}
+
+.clientes__sin-cifras__icono {
+  display: flex;
+  flex: none;
+  color: var(--deuda);
+}
+
+.clientes__sin-cifras .boton-aviso {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espacio-xs);
+}
+
 /* On a computer the card stops at 560px (GH-188; the drawing that showed it left with the
  * first-use notices); it applies to every tappable notice, today Inicio's "Your Telegram
  * catalog is out of date". The same literal is `NOTICE_CAP` in

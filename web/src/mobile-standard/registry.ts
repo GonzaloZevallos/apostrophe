@@ -78,6 +78,7 @@ export const STATE_NAMES: readonly string[] = [
   'InvitacionMuerta',
   'ResetMuerto',
   'EstadosReintento',
+  'ClientesSinCifras',
   'EstadosGoneAviso',
   // Records areas (`states-records`).
   'ClientesBusqueda',

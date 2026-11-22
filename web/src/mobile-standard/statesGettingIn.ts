@@ -9,8 +9,9 @@
 
 import { GONE_NOTICE as GONE_NOTICE_REFUSAL } from '../api/refusals.ts'
 import { AUTH_TEXT, BRAKE_MESSAGE, DEAD_LINK_MESSAGE, FORGOT_SHEET_TEXT, NOT_USABLE_TITLE } from '../copy/auth.ts'
+import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { SALES_TEXT } from '../copy/sales.ts'
-import { INVITATION, LOGIN, RESET, SALE, SALES } from '../routes.ts'
+import { CUSTOMERS, INVITATION, LOGIN, RESET, SALE, SALES } from '../routes.ts'
 import { common, refusal } from './copy.ts'
 import type { WalkState } from './states.ts'
 
@@ -64,6 +65,13 @@ export const GETTING_IN_STATES: readonly WalkState[] = [
     steps: [],
     visible: RETRY,
     reads: [{ path: /^\/sales$/, status: 500 }],
+  },
+  {
+    screen: 'ClientesSinCifras',
+    route: CUSTOMERS,
+    steps: [],
+    visible: CUSTOMERS_TEXT.debtorsUnavailable,
+    reads: [{ path: /^\/payments\/debtors$/, status: 500 }],
   },
   {
     screen: 'EstadosGoneAviso',
