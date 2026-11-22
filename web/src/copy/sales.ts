@@ -72,6 +72,11 @@ const NEW_SALE_TEXT = {
   productsResults: (n: number) => `Results · ${n}`,
   productSearchLabel: 'Search products',
   productSearchPlaceholder: 'Search by name',
+  listPrices: 'List prices',
+  pricesFor: (type: string) => `Prices for ${type}`,
+  itemsCount: (n: number) => (n === 1 ? '1 item' : `${n} items`),
+  itemsTotal: (n: number, total: string) => (n === 1 ? `1 item · ${total}` : `${n} items · ${total}`),
+  addProductToCollect: 'Add a product to collect',
 }
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
@@ -93,6 +98,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: NEW_SALE_TEXT.productsResults(Number(SAMPLES.count)) },
   { kind: 'help', text: NEW_SALE_TEXT.productSearchLabel },
   { kind: 'help', text: NEW_SALE_TEXT.productSearchPlaceholder },
+  { kind: 'help', text: NEW_SALE_TEXT.addProductToCollect },
   { kind: 'help', text: RECEIVED_HELP },
 ]
 
@@ -130,6 +136,9 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.newSale.productDecrease': [['Rosa']],
   // A new key's en.baseline.json entry is inserted in sorted order: `i18n:baseline --update` never adds one.
   'SALES_TEXT.newSale.productsResults': [[2]],
+  'SALES_TEXT.newSale.pricesFor': [['Regulars']],
+  'SALES_TEXT.newSale.itemsCount': counted((n) => [n]),
+  'SALES_TEXT.newSale.itemsTotal': counted((n) => [n, M]),
   'SALE_BILL_TEXT.header': [['Flores Test', 'Sale #1284', D]],
   'SALE_BILL_TEXT.item': [['Rosa', '3,5', 'g', M]],
   'SALE_BILL_TEXT.bulk': [['Rosa', '10', 'g', M, M]],

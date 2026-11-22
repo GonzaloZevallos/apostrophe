@@ -4,6 +4,7 @@
  * this module before then.
  */
 
+import type { PricingSettings } from './pricing'
 import type { CompleteSale, NewSalePricing } from './newSalePricing'
 import type { NewSaleStatus } from './useNewSaleReads'
 
@@ -14,7 +15,7 @@ export type CustomerView =
   | { kind: 'known'; name: string; typeId: number | null; typeName: string | null }
   | { kind: 'namePending' }
   | { kind: 'typePending'; name: string }
-  | { kind: 'failed' }
+  | { kind: 'failed'; name: string | null }
 
 /** The one place the Customer's type is read: only a `known` Customer with both its id and its name has one. */
 function appliedTypeOf(view: CustomerView): { id: number; name: string } | null {
@@ -62,6 +63,22 @@ export function priceLineOf(view: CustomerView, customerTypesOn: boolean): Price
       return unreachable
     }
   }
+}
+
+/**
+ * The Customer row's price line, from what the screen holds: a failed Customer read or a failed status
+ * shows nothing (never a list or type label), settings still pending is the loading mark, and otherwise
+ * `priceLineOf` with the Customer types switch (`settings.vip`).
+ */
+export function customerPriceLineOf(input: {
+  customer: CustomerView
+  status: NewSaleStatus
+  settings: PricingSettings | null
+}): PriceLine {
+  const { customer, status, settings } = input
+  if (customer.kind === 'failed' || status === 'failed') return { kind: 'none' }
+  if (settings === null) return { kind: 'loading' }
+  return priceLineOf(customer, settings.vip)
 }
 
 export type SaleBarState =

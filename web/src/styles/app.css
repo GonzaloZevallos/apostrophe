@@ -7345,3 +7345,73 @@ button:has(> .venta-en-curso) {
 .selector-pago__cuenta {
   display: inline-block;
 }
+
+/* New sale's Sheet (`NuevaVentaSheet`, drawings NuevaVenta and NuevaVentaOscuro): the Customer row and the
+ * sale bar. The text column may shrink (`min-width: 0`) and each line is one line with an ellipsis; Change
+ * keeps its label and a thumb-sized target. The bar sits in `.sheet__actions` (sticky on a phone only):
+ * a static row at the end of the form on a computer. */
+.nv-cliente {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: var(--espacio-md) 0;
+}
+
+.nv-cliente__texto {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.nv-cliente__nombre,
+.nv-cliente__linea {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.nv-cliente__nombre {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.nv-cliente__linea {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.nv-cliente > .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: var(--alto-tocable);
+  min-height: var(--alto-tocable);
+  white-space: nowrap;
+}
+
+.sale-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.sale-bar__estado {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 15px;
+  color: var(--tinta);
+}
+
+.sale-bar__cifra {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.sale-bar > button {
+  flex: none;
+  min-width: var(--alto-tocable);
+  min-height: var(--alto-tocable);
+}
