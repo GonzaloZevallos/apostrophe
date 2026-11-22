@@ -4,29 +4,53 @@
 
 ## Packages
 
+Edges between layers are not drawn.
+
+#### domain
+
 ```mermaid
 classDiagram
-  class adapters {
-  }
-  class application {
+  class cost_and_margins {
   }
   class domain {
   }
-  class errors {
+  class product {
   }
-  class import_port {
+```
+
+#### application
+
+```mermaid
+classDiagram
+  class application {
+  }
+  class cost_and_margins {
+  }
+  class errors {
   }
   class manage_prices {
   }
   class manage_products {
   }
-  class onboarding_facts {
-  }
   class ports {
   }
-  class product {
+  cost_and_margins --> ports
+  manage_prices --> errors
+  manage_prices --> manage_products
+  manage_prices --> ports
+  manage_products --> errors
+  manage_products --> ports
+```
+
+#### adapters
+
+```mermaid
+classDiagram
+  class adapters {
   }
-  class products {
+  class import_port {
+  }
+  class onboarding_facts {
   }
   class router {
   }
@@ -38,35 +62,15 @@ classDiagram
   }
   class vip_type_prices {
   }
-  errors --> product
-  import_port --> manage_prices
-  import_port --> manage_products
-  import_port --> ports
-  import_port --> product
   import_port --> sql_products
   import_port --> tables
   import_port --> vip_type_prices
-  manage_prices --> errors
-  manage_prices --> manage_products
-  manage_prices --> ports
-  manage_prices --> product
-  manage_products --> errors
-  manage_products --> ports
-  manage_products --> product
   onboarding_facts --> sql_products
-  ports --> product
-  router --> application
-  router --> errors
-  router --> ports
-  router --> product
   router --> schemas
   router --> sql_products
   router --> vip_type_prices
-  schemas --> product
-  sql_products --> product
   sql_products --> tables
   sql_products --> vip_type_prices
-  tables --> product
 ```
 
 ## domain
@@ -77,11 +81,21 @@ classDiagram
     minimum : Quantity
     price : int
   }
+  class CostAndMargins {
+    cost : int #124; None
+    margins : tuple~PriceMargin, ...~
+  }
+  class CostedPurchase {
+    quantity : Quantity
+    total_cost : int
+  }
   class CustomerTypePriceNotBelowList {
     code : ClassVar~str~
   }
   class DuplicateEffectiveDate {
     code : ClassVar~str~
+  }
+  class InvalidCostedPurchase {
   }
   class InvalidName {
     code : ClassVar~str~
@@ -99,6 +113,13 @@ classDiagram
     list_price : int
     vip_price : int #124; None
     of(effective_from: date, list_price: int, bulk_price: int #124; None, bulk_minimum: Quantity #124; None, id: int #124; None, vip_price: int #124; None) PriceEntry
+  }
+  class PriceMargin {
+    percent : int
+    rule
+  }
+  class PriceRule {
+    name
   }
   class Product {
     archived_at : datetime #124; None
@@ -133,6 +154,7 @@ classDiagram
   DuplicateEffectiveDate --|> ProductRuleBroken
   InvalidName --|> ProductRuleBroken
   InvalidPriceEntry --|> ProductRuleBroken
+  PriceMargin --> PriceRule : rule
   Product --> ProductName : name
   UnknownPriceEntry --|> ProductRuleBroken
 ```
@@ -141,6 +163,9 @@ classDiagram
 
 ```mermaid
 classDiagram
+  class LatestCostedPurchase {
+    latest_on(product_id: int, day: date) CostedPurchase #124; None
+  }
   class MoneyFormatReader {
     current() MoneyFormat
   }
