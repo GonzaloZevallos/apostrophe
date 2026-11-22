@@ -9,20 +9,26 @@ import { customersView, debtorsState, segmentCounts } from './CustomerSearch'
 
 const DATA = debtorsOf()
 
+const NONE = { data: undefined, isError: false, errorUpdatedAt: 0 }
+
 test('no data and no error is pending', () => {
-  expect(debtorsState({ data: undefined, isError: false })).toBe('pending')
+  expect(debtorsState(NONE)).toBe('pending')
 })
 
 test('data present is ready', () => {
-  expect(debtorsState({ data: DATA, isError: false })).toBe('ready')
+  expect(debtorsState({ ...NONE, data: DATA })).toBe('ready')
 })
 
-test('data present after a failed refetch stays ready', () => {
-  expect(debtorsState({ data: DATA, isError: true })).toBe('ready')
+test('data present after a failed latest read is failed', () => {
+  expect(debtorsState({ data: DATA, isError: true, errorUpdatedAt: 5 })).toBe('failed')
 })
 
 test('no data and an error is failed', () => {
-  expect(debtorsState({ data: undefined, isError: true })).toBe('failed')
+  expect(debtorsState({ ...NONE, isError: true, errorUpdatedAt: 5 })).toBe('failed')
+})
+
+test('a retry in flight with no data (status back to pending, an error time kept) is still failed', () => {
+  expect(debtorsState({ ...NONE, errorUpdatedAt: 5 })).toBe('failed')
 })
 
 const BASE = { query: '', isPlaceholderData: false, debtors: 'ready', segment: 'owed' } as const
@@ -51,5 +57,5 @@ test('segment counts come from the answer, and a missing answer is the skeleton'
     debtorCount: 6,
     pending: false,
   })
-  expect(segmentCounts(undefined).pending).toBe(true)
+  expect(segmentCounts(null).pending).toBe(true)
 })

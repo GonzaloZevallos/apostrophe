@@ -10,9 +10,10 @@
  * which answers exist, never a count, a bucket or a money amount.
  */
 
+import { useQuery } from '@tanstack/react-query'
 import { createContext, useContext } from 'react'
 import type { CUSTOMER_SEGMENTS, FixedValue } from '../../components/fixedSets'
-import type { Debtors } from '../../api/payments'
+import { debtorsQuery, type Debtors } from '../../api/payments'
 
 export type CustomerSegment = FixedValue<typeof CUSTOMER_SEGMENTS>
 
@@ -25,10 +26,49 @@ export interface CustomerSearchValue {
 
 export type DebtorsState = 'pending' | 'ready' | 'failed'
 
-/** `ready` while data is present (even refetching or after a failed refetch), `failed` with none and an error. */
-export function debtorsState(read: { data: Debtors | undefined; isError: boolean }): DebtorsState {
-  if (read.data !== undefined) return 'ready'
-  return read.isError ? 'failed' : 'pending'
+/**
+ * `failed` when the latest read errored (even with older data, which is then never shown) or when
+ * there is no data and an error time exists: TanStack puts a no-data retry back to `pending` with
+ * `error` null, but `errorUpdatedAt` survives. `ready` is data with no error; `pending` otherwise.
+ */
+export function debtorsState(read: {
+  data: Debtors | undefined
+  isError: boolean
+  errorUpdatedAt: number
+}): DebtorsState {
+  if (read.isError || (read.data === undefined && read.errorUpdatedAt > 0)) return 'failed'
+  return read.data !== undefined ? 'ready' : 'pending'
+}
+
+export interface DebtorsRead {
+  state: DebtorsState
+  /** The answer, non-null only when `state` is `ready`: every figure Customers draws comes from here. */
+  data: Debtors | null
+  /** A retry is in flight on a failed read. */
+  busy: boolean
+  /** Any fetch of the debtors query is in flight, first read or refresh. */
+  fetching: boolean
+  errorUpdatedAt: number
+  /** Re-reads the debtors only, never the customer list; nothing while a retry is in flight. */
+  retry: () => void
+}
+
+/** The one reading of the debtors query in Customers. */
+export function useDebtors(): DebtorsRead {
+  const { data, isError, errorUpdatedAt, fetchStatus, isFetching, refetch } = useQuery(debtorsQuery)
+  const state = debtorsState({ data, isError, errorUpdatedAt })
+  const busy = state === 'failed' && fetchStatus === 'fetching'
+  return {
+    state,
+    data: state === 'ready' && data !== undefined ? data : null,
+    busy,
+    fetching: isFetching,
+    errorUpdatedAt,
+    retry: () => {
+      if (busy) return
+      void refetch({ cancelRefetch: false })
+    },
+  }
 }
 
 export type CustomersView = 'flat' | CustomerSegment
@@ -49,12 +89,12 @@ export function customersView(input: {
  * otherwise. The merged control takes `customerCount`, `debtorCount` and `pending`, not a single
  * `counts`, and the control's file is not this task's to change; this maps one to the other.
  */
-export function segmentCounts(data: Debtors | undefined): {
+export function segmentCounts(data: Debtors | null): {
   customerCount: number
   debtorCount: number
   pending: boolean
 } {
-  if (data === undefined) return { customerCount: 0, debtorCount: 0, pending: true }
+  if (data === null) return { customerCount: 0, debtorCount: 0, pending: true }
   return { customerCount: data.customer_count, debtorCount: data.debtor_count, pending: false }
 }
 
