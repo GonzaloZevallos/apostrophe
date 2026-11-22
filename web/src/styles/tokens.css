@@ -53,6 +53,8 @@
   /* cifra-m: la única clase de texto que lee su tamaño de acá (el pie de Nueva venta también) */
   --cifra-m-tamano: 25px;
   --cifra-m-interlineado: 1.1;
+  /* La fila del bloque de estado de un Product: su alto mínimo, y el de su barra mientras carga */
+  --interlineado-fila: 1.5;
   /* La marca (BrandMark): su tamaño y el de la palabra "apostrophe" junto a ella */
   --marca-lockup-tamano: 40px;
   --marca-palabra-tamano: 34px;

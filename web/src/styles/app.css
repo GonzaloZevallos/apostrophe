@@ -4242,6 +4242,66 @@ a.ajustes-tema__opcion {
 
 /* ===== end auth-layout ===== */
 
+/* A Product's state block (ProductoDetalle.dc.html): three rows that wrap and grow, never
+ * clipped. Ink is neutral; MarcaEstado brings its own state shape. The loading shape is the same
+ * rows with a neutral bar each, at the row's own line height. */
+.product-state {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  color: var(--tinta);
+}
+
+.product-state__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-xs) var(--espacio-md);
+  min-block-size: calc(var(--interlineado-fila) * 1em);
+  line-height: var(--interlineado-fila);
+  overflow-wrap: anywhere;
+}
+
+.product-state__row:nth-child(n + 2) {
+  color: var(--tinta2);
+}
+
+.product-state__row .marca-estado {
+  gap: var(--espacio-xs);
+  margin-inline-start: var(--espacio-sm);
+}
+
+.product-state__row .marca-estado__palabra {
+  position: static;
+  inline-size: auto;
+  block-size: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+.product-state__row .insignia {
+  margin-inline-start: var(--espacio-sm);
+}
+
+.product-state__oculta {
+  font-style: italic;
+}
+
+.product-state__bar {
+  display: block;
+  inline-size: 40%;
+  min-block-size: calc(var(--interlineado-fila) * 1em);
+  border-radius: var(--radio-campo);
+  background: var(--linea);
+}
+
+
 /* A variety's page (VariedadDetalle.dc.html): one summary line, two equal actions and the
  * four sections, all from the tokens. */
 .variedad-resumen {
