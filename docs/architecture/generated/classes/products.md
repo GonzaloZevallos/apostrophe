@@ -249,7 +249,17 @@ classDiagram
     variety_id : Mapped~int~
     vip_price : Mapped~int #124; None~
   }
+  class PriceMarginOut {
+    percent : int
+    rule : Literal~'list', 'bulk', 'vip'~
+  }
+  class ProductCostOut {
+    amount : MoneyOut #124; None
+    margins : list~PriceMarginOut~
+    of(result: CostAndMargins #124; None) 'ProductCostOut #124; None'
+  }
   class ProductDetailOut {
+    cost : ProductCostOut #124; None
     removal : Literal~'delete', 'archive'~ #124; None
   }
   class ProductIn {
