@@ -17,6 +17,24 @@ export type CustomerView =
   | { kind: 'typePending'; name: string }
   | { kind: 'failed'; name: string | null }
 
+/** The Customer the seller chose in this opening, kept by the host only for what it draws. */
+export interface ChosenCustomer {
+  id: number
+  name: string
+  typeId: number | null
+  typeName: string | null
+}
+
+/**
+ * The Customer row's view from the one id in the draft: a held record counts only while its id is the
+ * draft's, so a record of another Customer is never drawn for this one.
+ */
+export function customerViewOf(customerId: number | null, chosen: ChosenCustomer | null): CustomerView {
+  if (customerId === null) return { kind: 'none' }
+  if (chosen === null || chosen.id !== customerId) return { kind: 'namePending' }
+  return { kind: 'known', name: chosen.name, typeId: chosen.typeId, typeName: chosen.typeName }
+}
+
 /** The one place the Customer's type is read: only a `known` Customer with both its id and its name has one. */
 function appliedTypeOf(view: CustomerView): { id: number; name: string } | null {
   if (view.kind !== 'known' || view.typeId === null || view.typeName === null) return null
