@@ -10,6 +10,7 @@ import type { LanguageTag } from '../../api/language'
 import type { CopyKey } from '../../i18n/resources.generated'
 import {
   EXPENSE_CATEGORIES,
+  SETTINGS,
   SETTINGS_ACCOUNT,
   SETTINGS_APPEARANCE,
   SETTINGS_BUSINESS,
@@ -130,7 +131,7 @@ export interface SettingsRouteProblem {
 
 const KIND_ORDER: readonly SettingsRouteProblemKind[] = ['unlisted', 'both', 'notAPath', 'sharedUnnamed']
 
-const SETTINGS_PREFIX = '/settings/'
+const SETTINGS_PREFIX = `${SETTINGS}/`
 
 function sameKeys(left: readonly string[], right: readonly string[]): boolean {
   const leftSet = new Set(left)

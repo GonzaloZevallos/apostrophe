@@ -4,6 +4,7 @@ import { testT } from '../../i18n/testing'
 import { ROUTE_REGISTRY } from '../../mobile-standard/registry'
 import {
   EXPENSE_CATEGORIES,
+  SETTINGS,
   SETTINGS_ACCOUNT,
   SETTINGS_APPEARANCE,
   SETTINGS_BUSINESS,
@@ -44,20 +45,20 @@ describe('unaccountedSettingsRoutes', () => {
   })
 
   test('reports an added settings path nobody accounts for', () => {
-    expect(unaccountedSettingsRoutes([...PATHS, '/settings/x'], SETTINGS_ROWS, NON_ROW_ROUTES, SHARED_TO)).toEqual([
-      { kind: 'unlisted', to: '/settings/x' },
+    expect(unaccountedSettingsRoutes([...PATHS, `${SETTINGS}/x`], SETTINGS_ROWS, NON_ROW_ROUTES, SHARED_TO)).toEqual([
+      { kind: 'unlisted', to: `${SETTINGS}/x` },
     ])
   })
 
   test('reports an added settings path with a parameter', () => {
     expect(
-      unaccountedSettingsRoutes([...PATHS, '/settings/x/:id'], SETTINGS_ROWS, NON_ROW_ROUTES, SHARED_TO),
-    ).toEqual([{ kind: 'unlisted', to: '/settings/x/:id' }])
+      unaccountedSettingsRoutes([...PATHS, `${SETTINGS}/x/:id`], SETTINGS_ROWS, NON_ROW_ROUTES, SHARED_TO),
+    ).toEqual([{ kind: 'unlisted', to: `${SETTINGS}/x/:id` }])
   })
 
   test('never reports the bare settings path or a path outside settings', () => {
     expect(
-      unaccountedSettingsRoutes([...PATHS, '/settings', '/other'], SETTINGS_ROWS, NON_ROW_ROUTES, SHARED_TO),
+      unaccountedSettingsRoutes([...PATHS, SETTINGS, '/other'], SETTINGS_ROWS, NON_ROW_ROUTES, SHARED_TO),
     ).toEqual([])
   })
 
@@ -70,11 +71,11 @@ describe('unaccountedSettingsRoutes', () => {
 
   test('reports a row to that is not exactly a path, trailing slash included', () => {
     const rows = SETTINGS_ROWS.map((candidate) =>
-      candidate.key === 'users' ? { ...candidate, to: '/settings/users/' } : candidate,
+      candidate.key === 'users' ? { ...candidate, to: `${SETTINGS_USERS}/` } : candidate,
     )
     expect(unaccountedSettingsRoutes(PATHS, rows, NON_ROW_ROUTES, SHARED_TO)).toEqual([
       { kind: 'unlisted', to: SETTINGS_USERS },
-      { kind: 'notAPath', to: '/settings/users/' },
+      { kind: 'notAPath', to: `${SETTINGS_USERS}/` },
     ])
   })
 
@@ -97,19 +98,19 @@ describe('unaccountedSettingsRoutes', () => {
 
   test('reports each problem once and sorts by kind, then by to', () => {
     const rows = SETTINGS_ROWS.map((candidate) =>
-      candidate.key === 'users' ? { ...candidate, to: '/settings/users/' } : candidate,
+      candidate.key === 'users' ? { ...candidate, to: `${SETTINGS_USERS}/` } : candidate,
     )
     const problems = unaccountedSettingsRoutes(
-      [...PATHS, '/settings/z', '/settings/z', '/settings/a'],
+      [...PATHS, `${SETTINGS}/z`, `${SETTINGS}/z`, `${SETTINGS}/a`],
       rows,
       NON_ROW_ROUTES,
       SHARED_TO,
     )
     expect(problems).toEqual([
-      { kind: 'unlisted', to: '/settings/a' },
+      { kind: 'unlisted', to: `${SETTINGS}/a` },
       { kind: 'unlisted', to: SETTINGS_USERS },
-      { kind: 'unlisted', to: '/settings/z' },
-      { kind: 'notAPath', to: '/settings/users/' },
+      { kind: 'unlisted', to: `${SETTINGS}/z` },
+      { kind: 'notAPath', to: `${SETTINGS_USERS}/` },
     ])
   })
 
