@@ -113,6 +113,7 @@
   {"file":"src/screens/ventas/NuevaVentaCliente.tsx","imports":["sales.ts"],"issue":351},
   {"file":"src/screens/ventas/NuevaVentaLinea.tsx","imports":["sales.ts"],"issue":351},
   {"file":"src/screens/ventas/NuevaVentaProductos.tsx","imports":["sales.ts"],"issue":351},
+  {"file":"src/screens/ventas/NuevaVentaSheet.tsx","imports":["sales.ts"],"issue":351},
   {"file":"src/screens/ventas/SaleBillButton.tsx","imports":["sales.ts"],"issue":351},
   {"file":"src/screens/ventas/VentaDetalle.tsx","imports":["sales.ts"],"issue":351},
   {"file":"src/screens/ventas/Ventas.tsx","imports":["sales.ts"],"issue":351},
