@@ -281,11 +281,11 @@ export const RECORDS_STATES: readonly WalkState[] = [
     visible: common('common:owedToYou'),
   },
   {
-    // One tap on 'All': a customer who owes nothing (Lu) is listed, which 'Owed to you' never does.
+    // One tap on 'All': Mica, a VIP who owes nothing, is listed with her mark; 'Owed to you' never lists her.
     screen: 'customers/segment-all',
     route: CUSTOMERS,
     steps: [{ click: common('common:customerSegmentAll') }],
-    visible: 'Lu Fernández',
+    visible: common('common:vip'),
   },
   {
     // Nobody owes: the debtors read answers `debtor_count` 0 (the sample always has debtors), with the

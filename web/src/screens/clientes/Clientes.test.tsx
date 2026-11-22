@@ -17,6 +17,8 @@ import { inAppState } from '../../components/inAppState'
 import { consumePaymentReturn, peekPaymentReturn, setPaymentReturn } from '../../paymentReturn'
 import { toast } from '../../components/feedback'
 import { LIMITS, SAMPLES } from '../../copy/limits'
+import { choosePaymentMethod } from '../../components/selectorTestKit'
+import { withPaymentMethods } from '../../test-payment-methods'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { stubViewport } from '../../test-viewport'
 import { Outlet, createMemoryRouter, RouterProvider } from 'react-router'
@@ -967,25 +969,31 @@ test('leaving with a query typed, the return lands on the search field with its 
   expect(search).toHaveValue('ana')
 })
 
-test('while the debtors read is fetching again the return waits: focus stays put and the hand-off is kept, then it lands', async () => {
+test('after a save the return waits for the debtors refetch the save triggers: focus stays put and the hand-off is kept, then it lands', async () => {
   let release: (response: Response) => void = () => undefined
   const held = new Promise<Response>((resolve) => {
     release = resolve
   })
-  let hold = false
-  vi.mocked(fetch).mockImplementation((input) => {
-    const url = typeof input === 'string' ? input : input.toString()
-    if (hold && url === '/payments/debtors') return held
-    return fetchApp(input)
-  })
+  let saved = false
+  vi.mocked(fetch).mockImplementation(
+    withPaymentMethods((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (init?.method === 'POST' && url === `/customers/${customerFixture.id}/payments`) {
+        saved = true
+        return Promise.resolve(jsonResponse(201, paymentPreviewFixture))
+      }
+      if (saved && url === '/payments/debtors') return held
+      return fetchApp(input)
+    }),
+  )
   vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
   const router = renderApp()
 
   await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
   await screen.findByRole('button', { name: 'Save' })
-  hold = true
-  setPaymentReturn(customerFixture.id)
-  await act(() => router.navigate(-1))
+  await choosePaymentMethod(userEvent, 'Cash')
+  await userEvent.click(screen.getByRole('button', { name: 'Save' }))
+  await waitFor(() => expect(router.state.location.pathname).toBe(CUSTOMERS))
 
   const collect = (await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!
   await new Promise((resolve) => setTimeout(resolve, 50))
