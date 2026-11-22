@@ -899,3 +899,121 @@ test('with no hand-off the list moves nothing and focuses nothing', async () => 
   expect(collect).not.toHaveFocus()
   expect(scrollTo).not.toHaveBeenCalled()
 })
+
+// GH-942: where the return lands. The customer's "Collect" is the first place; once that row
+// owes nothing any more (the customer paid), focus falls to the owed block, else the selected
+// segment option, else the search field.
+const SETTLED_ANA = { ...customerFixture, balance: 0, owing_since: null, standing: 'settled' }
+
+/** The app after a payment: the debtors read and the customers list answer as if Ana had paid. */
+function fetchAfterPayment(state: { paid: boolean }, debtors: () => Promise<Response> = () => Promise.resolve(jsonResponse(200, EMPTY_DEBTORS))) {
+  return (input: RequestInfo | URL): Promise<Response> => {
+    const url = typeof input === 'string' ? input : input.toString()
+    if (state.paid && url === '/payments/debtors') return debtors()
+    if (state.paid && url.startsWith('/customers') && !url.includes('/preview') && !/^\/customers\/\d/.test(url)) {
+      return Promise.resolve(jsonResponse(200, [SETTLED_ANA]))
+    }
+    return fetchApp(input)
+  }
+}
+
+/** Leaves Customers through Ana's "Collect", records that she paid, and comes back with the hand-off. */
+async function collectAndReturn(router: ReturnType<typeof renderApp>, state: { paid: boolean }) {
+  await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
+  await screen.findByRole('button', { name: 'Save' })
+  state.paid = true
+  setPaymentReturn(customerFixture.id)
+  await act(() => router.navigate(-1))
+}
+
+test('leaving from Owed to you, the return lands on the owed block with the segment unchanged', async () => {
+  const state = { paid: false }
+  vi.mocked(fetch).mockImplementation(fetchAfterPayment(state))
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  const router = renderApp()
+
+  await collectAndReturn(router, state)
+
+  const nobody = await screen.findByText(NOBODY_OWES)
+  await waitFor(() => expect(nobody).toHaveFocus())
+  expect(screen.getByRole('radio', { name: /^Owed to you/ })).toBeChecked()
+})
+
+test('leaving from All, the return lands on the All option, still selected', async () => {
+  const state = { paid: false }
+  vi.mocked(fetch).mockImplementation(fetchAfterPayment(state))
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  const router = renderApp()
+  await showAll()
+
+  await collectAndReturn(router, state)
+
+  const all = await screen.findByRole('radio', { name: /^All/ })
+  await waitFor(() => expect(all).toHaveFocus())
+  expect(all).toBeChecked()
+})
+
+test('leaving with a query typed, the return lands on the search field with its text', async () => {
+  const state = { paid: false }
+  vi.mocked(fetch).mockImplementation(fetchAfterPayment(state))
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  const router = renderApp()
+  await userEvent.type(await screen.findByLabelText('Search customer'), 'ana')
+
+  await collectAndReturn(router, state)
+
+  const search = await screen.findByLabelText('Search customer')
+  await waitFor(() => expect(search).toHaveFocus())
+  expect(search).toHaveValue('ana')
+})
+
+test('while the debtors read is fetching again the return waits: focus stays put and the hand-off is kept, then it lands', async () => {
+  let release: (response: Response) => void = () => undefined
+  const held = new Promise<Response>((resolve) => {
+    release = resolve
+  })
+  let hold = false
+  vi.mocked(fetch).mockImplementation((input) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    if (hold && url === '/payments/debtors') return held
+    return fetchApp(input)
+  })
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  const router = renderApp()
+
+  await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
+  await screen.findByRole('button', { name: 'Save' })
+  hold = true
+  setPaymentReturn(customerFixture.id)
+  await act(() => router.navigate(-1))
+
+  const collect = (await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!
+  await new Promise((resolve) => setTimeout(resolve, 50))
+  expect(collect).not.toHaveFocus()
+  expect(peekPaymentReturn()).not.toBeNull()
+
+  await act(async () => {
+    release(jsonResponse(200, DEBTORS_FIXTURE))
+    await held
+  })
+  await waitFor(() => expect(collect).toHaveFocus())
+  expect(peekPaymentReturn()).toBeNull()
+})
+
+test('with the debtors read failing the return lands on the search field and the hand-off is consumed', async () => {
+  const state = { paid: false }
+  vi.mocked(fetch).mockImplementation((input) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    if (url === '/payments/debtors') return Promise.resolve(jsonResponse(500, {}))
+    return fetchAfterPayment(state)(input)
+  })
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  const router = renderApp()
+
+  await collectAndReturn(router, state)
+
+  const search = await screen.findByLabelText('Search customer')
+  await waitFor(() => expect(search).toHaveFocus())
+  expect(peekPaymentReturn()).toBeNull()
+  expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
+})

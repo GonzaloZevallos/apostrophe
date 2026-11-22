@@ -46,9 +46,17 @@ export const SEARCH_LABEL = CUSTOMERS_TEXT.searchCustomer
 export const SEARCH_PLACEHOLDER = COMMON_TEXT.phoneOrName
 export const SEARCHING = CUSTOMERS_TEXT.searching
 
-/** Where focus lands when the customer's "Collect" is gone: the "Owed to you" block, or the search while it filters. */
-function owedOrSearch(root: HTMLElement): HTMLElement | null {
-  return owedPlace(root) ?? root.querySelector<HTMLElement>('input[type="text"]')
+/**
+ * Where focus lands when the customer's "Collect" is gone: the "Owed to you" block, else the
+ * selected segment option (the "All" view has no block), else the search field (a typed query or
+ * a failed debtors read draws the flat list with no segments).
+ */
+function segmentPlace(root: HTMLElement): HTMLElement | null {
+  return (
+    owedPlace(root) ??
+    root.querySelector<HTMLElement>('.segmentos-clientes [role="radio"][aria-checked="true"]') ??
+    root.querySelector<HTMLElement>('input[type="search"]')
+  )
 }
 
 export default function Clientes() {
@@ -87,7 +95,7 @@ export default function Clientes() {
     root,
     ready: data !== undefined && !isPlaceholderData && !isFetching && !debtors.isFetching,
     owns: !besideCard,
-    fallback: owedOrSearch,
+    fallback: segmentPlace,
   })
 
   return (
