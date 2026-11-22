@@ -651,3 +651,7 @@ _Avoid_: tendered, cash given, amount paid, pago, Payment
 **Change**:
 El vuelto que la vendedora devuelve: Received menos el total de la Sale, calculado solo por `changeFor` a los decimales del Money format y mostrado solo cuando Received alcanza el total (0 si son iguales). Es una ayuda para la entrega: nunca se guarda, nunca se manda y no es un Credit ni un Payment. _In the app_: Change.
 _Avoid_: refund, Credit, vuelto, balance, difference
+
+**Customer search**:
+La Sheet de New sale con la que se elige el Customer de la Sale in progress, entre los Customers a los que se les vendió más recientemente o tipeando parte del nombre o del Phone number, sin importar acentos ni mayúsculas. Ofrece "Create «query»" y "No customer" como salidas, y nunca elige a nadie sin un toque en una fila. Hasta la parte flip de GH-496 no la monta ninguna ruta. En la app: Customer (título) y Choose a customer (nombre de la Sheet).
+_Avoid_: customer picker, customer selector, lookup, autocomplete, contact search
