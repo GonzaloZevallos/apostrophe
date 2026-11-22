@@ -123,6 +123,22 @@ const ARCHIVED_ENTRY = {
 const ARCHIVED_ENTRY_READ = { path: /^\/stock\/entries\/1$/, status: 200, body: ARCHIVED_ENTRY }
 const ARCHIVED_ONLY = /^\?archived=true$/
 
+/** The debtors read the two Customers states below answer or hold. */
+const DEBTORS_PATH = /\/payments\/debtors$/
+
+/** The sample's customers: Nico, Tincho, Mica and Lu (`scripts/design/sample_app.py`). */
+const SAMPLE_CUSTOMER_COUNT = 4
+
+/** A `Debtors` (web/src/api/payments.ts) with nobody owing; the customers are still counted. */
+const NO_DEBTORS_BODY = {
+  total_owed: 0,
+  sales_owing_count: 0,
+  customer_count: SAMPLE_CUSTOMER_COUNT,
+  debtor_count: 0,
+  buckets: { this_week: 0, days_8_30: 0, over_30: 0 },
+  debtors: [],
+}
+
 export const RECORDS_STATES: readonly WalkState[] = [
   {
     // Twelve reasons, one of 60 characters: the phone list is open and its search shows.
@@ -256,6 +272,37 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: CUSTOMERS,
     steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nico' } }],
     visible: 'Nico Parra',
+  },
+  {
+    // The screen opens on 'Owed to you': the segment control is on it and the owed block draws.
+    screen: 'customers/segment-owed',
+    route: CUSTOMERS,
+    steps: [],
+    visible: common('common:owedToYou'),
+  },
+  {
+    // One tap on 'All': a customer who owes nothing (Lu) is listed, which 'Owed to you' never does.
+    screen: 'customers/segment-all',
+    route: CUSTOMERS,
+    steps: [{ click: common('common:customerSegmentAll') }],
+    visible: 'Lu Fernández',
+  },
+  {
+    // Nobody owes: the debtors read answers `debtor_count` 0 (the sample always has debtors), with the
+    // sample's four customers still counted under 'All'.
+    screen: 'customers/nobody-owing',
+    route: CUSTOMERS,
+    steps: [],
+    visible: emptyState('emptyStates:nobodyOwes'),
+    reads: [{ path: DEBTORS_PATH, status: 200, body: NO_DEBTORS_BODY }],
+  },
+  {
+    // The debtors read held: the segments show as a skeleton with nothing below (the walk's held pass).
+    screen: 'customers/debtors-loading',
+    route: CUSTOMERS,
+    steps: [],
+    visible: common('common:owedToYou'),
+    holds: DEBTORS_PATH,
   },
 
   {
