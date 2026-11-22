@@ -1,0 +1,70 @@
+{
+  "home": {
+    "title": "Settings"
+  },
+  "card": {
+    "users_one": "{{count}} user",
+    "users_other": "{{count}} users"
+  },
+  "groups": {
+    "business": "Business",
+    "catalog": "Catalog",
+    "paymentsAndStock": "Payments and stock",
+    "channels": "Channels",
+    "teamAndApp": "Team and app"
+  },
+  "rows": {
+    "businessName": {
+      "label": "Business name",
+      "description": "Name of your business"
+    },
+    "currency": {
+      "label": "Currency and decimals",
+      "description": "Symbol and decimals for money"
+    },
+    "language": {
+      "label": "Language",
+      "description": "Language of the app texts"
+    },
+    "prices": {
+      "label": "Prices",
+      "description": "Turn bulk price and customer types on or off"
+    },
+    "customerTypes": {
+      "label": "Customer types",
+      "description": "Groups of customers"
+    },
+    "paymentMethods": {
+      "label": "Payment methods",
+      "description": "Add, rename, reorder or archive"
+    },
+    "expenseCategories": {
+      "label": "Expense categories",
+      "description": "Headings to file your expenses under"
+    },
+    "withdrawalReasons": {
+      "label": "Withdrawal reasons",
+      "description": "Why stock leaves without a sale"
+    },
+    "integrations": {
+      "label": "Integrations",
+      "description": "Telegram bot and channel"
+    },
+    "catalogMessage": {
+      "label": "Catalog message",
+      "description": "Header and footer of the catalog"
+    },
+    "users": {
+      "label": "Users and Invitations",
+      "description": "People in your business and invitation links"
+    },
+    "theme": {
+      "label": "Theme",
+      "description": "Automatic, light or dark"
+    },
+    "account": {
+      "label": "Your account",
+      "description": "Change your password or sign out"
+    }
+  }
+}
