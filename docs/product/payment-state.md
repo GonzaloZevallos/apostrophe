@@ -46,7 +46,7 @@ Hasta que #928 lo ponga en una pantalla, el chip no lo ve nadie y no tiene **Scr
   - `sales:card.payment.paid`: "Paid".
   - `sales:card.payment.unpaid`: "Unpaid".
   - `sales:card.payment.partPaid`: "Part-paid · {{amount}} owed".
-  - `sales:card.payment.unknown`: "Payment cannot be shown".
+  - `sales:card.payment.unknown`: "Payment cannot be shown". Sin contracción, porque es un aviso con el Attention icon y un aviso no lleva contracciones (confirmado por PM en la validación final).
 
   Ninguno nombra una unidad, una moneda ni un tipo de producto (**Assume nothing**). "Paid · <método>" es del **On-the-spot payment**, no de este chip.
 - **Ayuda de tests**: `saleWith(state, overrides?)` (`web/src/screens/ventas/saleWith.ts`, solo para tests) devuelve una `Sale` tipada con `payment_state` y `still_owed` puestos como par. Los `overrides` se aplican al final.
