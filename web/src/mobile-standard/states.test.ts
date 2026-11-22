@@ -37,6 +37,9 @@ describe('a walked state that holds a read', () => {
   })
 })
 
+/** The path a read goes to, as the walk matches it: the request URL's pathname. */
+const pathOf = (url: string): string => new URL(url).pathname
+
 describe('the walked states of the Customers search', () => {
   const state = (screen: string): WalkState => {
     const found = STATES.find((candidate) => candidate.screen === screen)
@@ -121,19 +124,19 @@ describe('a walked state that holds a refetch after its steps', () => {
 
   it('holds GET /customers across a longer search, after the first search answered', () => {
     const found = STATES.find((state) => state.screen === 'customer/search-held')
-    expect(found?.refetch?.holds.test('/customers')).toBe(true)
-    expect(found?.refetch?.holds.test('/payments/debtors')).toBe(false)
-    expect(found?.refetch?.holds.test('/customers/1')).toBe(false)
+    expect(found?.refetch?.holds.test(pathOf('http://api.test/customers'))).toBe(true)
+    expect(found?.refetch?.holds.test(pathOf('http://api.test/payments/debtors'))).toBe(false)
+    expect(found?.refetch?.holds.test(pathOf('http://api.test/customers/1'))).toBe(false)
     expect(found?.refetch?.steps).toEqual([{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nicol' } }])
     expect(found?.visible).toBe('Nico Parra')
   })
 
   it('holds the customers and debtors reads of the first Customers load, and nothing else', () => {
     const holds = STATES.find((state) => state.screen === 'ClientesBusqueda')?.holds
-    expect(holds?.test('/customers')).toBe(true)
-    expect(holds?.test('/payments/debtors')).toBe(true)
-    expect(holds?.test('/customers/1')).toBe(false)
-    expect(holds?.test('/payments')).toBe(false)
+    expect(holds?.test(pathOf('http://api.test/customers'))).toBe(true)
+    expect(holds?.test(pathOf('http://api.test/payments/debtors'))).toBe(true)
+    expect(holds?.test(pathOf('http://api.test/customers/1'))).toBe(false)
+    expect(holds?.test(pathOf('http://api.test/payments'))).toBe(false)
   })
 
   it('holds GET /api/products and not /api/settings, and changes the date to the day before the pin', () => {
