@@ -61,7 +61,7 @@ Criterios de éxito:
 
 - Aislamiento (ADR-0004): el adaptador filtra por el `business_id` de la sesión; ninguna respuesta ni error revela datos de otro Business.
 - No se guarda nada: ni el costo ni los márgenes tienen columna ni tabla.
-- Un ADR en español con `summary:` registra la elección del costo de reposición desde la última Purchase con costo a través de un puerto de productos que implementa stock, el monto en la unidad de los decimales del Business, el filtro `total_cost > 0` al leer, el redondeo compartido en `app/shared/ratio.py` y que nada se guarda.
+- El ADR [20261122](../adr/20261122-el-costo-y-los-margenes-de-un-product-salen-de-la-ultima-purchase-con-costo-a-traves-de-un-puerto-de-products.md), en español con `summary:`, registra la elección del costo de reposición desde la última Purchase con costo a través de un puerto de productos que implementa stock, el monto en la unidad de los decimales del Business, el filtro `total_cost > 0` al leer, el redondeo compartido en `app/shared/ratio.py` y que nada se guarda.
 
 ## Métricas
 
