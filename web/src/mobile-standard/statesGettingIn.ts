@@ -71,6 +71,9 @@ export const GETTING_IN_STATES: readonly WalkState[] = [
     route: CUSTOMERS,
     steps: [],
     visible: CUSTOMERS_TEXT.debtorsUnavailable,
+    // The page is Clientes' own with the notice above its list: the search field's listed
+    // placeholder contrast (issue 46) is Clientes' offender, not a new one under this name.
+    offendersAs: 'Clientes',
     reads: [{ path: /^\/payments\/debtors$/, status: 500 }],
   },
   {

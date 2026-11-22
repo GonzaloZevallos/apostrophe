@@ -6057,6 +6057,9 @@ a.ajustes-tema__opcion {
   flex-direction: row;
   align-items: center;
   gap: var(--espacio-xs);
+  /* Scoped to this notice, so no other screen's listed touch-action offender changes: the retry
+   * takes no tap delay or double-tap zoom. */
+  touch-action: manipulation;
 }
 
 /* On a computer the card stops at 560px (GH-188; the drawing that showed it left with the
