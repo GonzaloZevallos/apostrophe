@@ -107,6 +107,33 @@ export const SETTINGS_ROWS: readonly SettingsRow[] = [
   row('account', 'teamAndApp', 'cuenta', SETTINGS_ACCOUNT),
 ]
 
+/** The heading text of each group, as a literal key so the key type checks it. */
+export const SETTINGS_GROUP_LABEL_KEYS: Readonly<Record<SettingsGroup, CopyKey>> = {
+  business: 'settings:groups.business',
+  catalog: 'settings:groups.catalog',
+  paymentsAndStock: 'settings:groups.paymentsAndStock',
+  channels: 'settings:groups.channels',
+  teamAndApp: 'settings:groups.teamAndApp',
+}
+
+export interface ShownGroup {
+  readonly group: SettingsGroup
+  readonly labelKey: CopyKey
+  readonly rows: readonly SettingsRow[]
+}
+
+/** The groups in `SETTINGS_GROUPS` order, each with its rows that `isShown(ctx)` lets through; an empty group is left out. */
+export function shownRowsByGroup(
+  ctx: SettingsRowContext,
+  rows: readonly SettingsRow[] = SETTINGS_ROWS,
+): readonly ShownGroup[] {
+  return SETTINGS_GROUPS.map((group) => ({
+    group,
+    labelKey: SETTINGS_GROUP_LABEL_KEYS[group],
+    rows: rows.filter((candidate) => candidate.group === group && candidate.isShown(ctx)),
+  })).filter((entry) => entry.rows.length > 0)
+}
+
 /** The rows a shortcut may name: each has a `settings:shortcuts.<row>` text. */
 export type ShortcutRowKey = Extract<SettingsRowKey, 'prices' | 'paymentMethods' | 'integrations'>
 
