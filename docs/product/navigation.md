@@ -112,6 +112,8 @@ GH-480 afina el mismo job para la página en sí: una pantalla a la que llego em
 
 Elegir qué reglas de precio usa el Business (pricing-settings.md) también es de Settings, como el grupo Prices.
 
+Las filas de Settings, sus tres shortcuts y la búsqueda futura salen de un solo registro tipado, sin cambiar ninguna dirección (ADR [20261119-settings-rows-live-in-one-registry-read-by-the-list-the-shortcuts-and-the-search](../adr/20261119-settings-rows-live-in-one-registry-read-by-the-list-the-shortcuts-and-the-search.md)).
+
 Antes de esta estructura: la barra era Home · Sales · Customers · Stock · More; un producto estaba repartido entre Stock, Products y Catalog; cobrar una deuda llevaba cuatro toques desde Customers; las configuraciones estaban repartidas entre Business, Catalog y Expenses → Expense categories, y el bot se configuraba dentro de Catalog. No se conserva nada de eso salvo, hasta que existan Integrations y Catalog message de Settings, el lugar provisorio para el bot y el Catalog header and footer al que se llega desde la pantalla del Catalog (catalog.md); las redirecciones desde sus paths se borraron en la parte 1 de GH-780 y esos paths son Retired addresses. Después, la barra fue Home · Sales · Customers · Products · More hasta que GH-651 retiró More y la parte 5 de GH-495 sacó del celular la pestaña y la pantalla `/more`; desde la parte 3 de GH-727 es Home · Sales · + · Customers · Products, con el + en el lugar del "+ New sale" flotante.
 
 # Navigation
