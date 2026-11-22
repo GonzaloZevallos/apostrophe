@@ -124,5 +124,7 @@
   "recordExpense": "⟦Řèçöřđ èẋṗèňšè·~·~·⟧",
   "newSaleFabDescription": "⟦Öṗèňš Ňèŵ šåłè. Ýöû çåň åłšö řèçöřđ åň èẋṗèňšè ḟřöṁ ťĥèřè.·~·~·~·~·~·~·~·~·~·~·⟧",
   "newSaleFabName": "⟦Ṽèňđèř·~·⟧",
-  "customerSegmentAll": "⟦Åłł·~⟧"
+  "customerSegmentAll": "⟦Åłł·~⟧",
+  "saleSavedTo": "⟦<lead>Šåłè ťö</lead> <name>{{name}}</name> <tail>šåṽèđ</tail>·~·~·⟧",
+  "undo": "⟦Ûňđö·~⟧"
 }
