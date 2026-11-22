@@ -7549,6 +7549,7 @@ button:has(> .venta-en-curso) {
   gap: var(--espacio-sm);
   min-height: var(--alto-tocable);
   padding: var(--espacio-md) var(--espacio-sm);
+  border-bottom: 0;
   background-color: var(--superficie);
   border-radius: var(--radio-panel);
   color: var(--tinta);
@@ -7605,6 +7606,7 @@ button:has(> .venta-en-curso) {
   gap: var(--espacio-md);
   min-height: var(--alto-tocable);
   padding: var(--espacio-md) var(--espacio-lg);
+  border-bottom: 0;
   background-color: var(--superficie);
   color: var(--tinta);
   text-decoration: none;
@@ -7647,5 +7649,12 @@ button:has(> .venta-en-curso) {
 .ajustes-inicio__fila:active {
   background-color: var(--papel);
   transition: none;
+}
+
+/* They also wear `.ajustes__item`, whose shared pressed rule fills with --superficie (the card's own
+ * colour here): the pressed fill of this list stays --papel, named with a stronger selector. */
+.ajustes-inicio__atajo.ajustes__item:active:not(:disabled):not([aria-disabled='true']),
+.ajustes-inicio__fila.ajustes__item:active:not(:disabled):not([aria-disabled='true']) {
+  background-color: var(--papel);
 }
 /* ===== end ajustes-inicio ===== */

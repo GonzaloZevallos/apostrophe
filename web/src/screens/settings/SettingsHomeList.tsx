@@ -6,10 +6,14 @@
  * The strip always reads the full registry (`shortcutTarget` with no rows), whatever `rows`
  * the groups are given. Keys are the row key, the shortcut's row and the group id, never `to`:
  * the business name and the language share one address.
+ *
+ * Each link also wears `ajustes__item`, the entry class `closingGuards` exempts for the rows of the
+ * settings (an icon and a word on a link that opens a page); the `ajustes-inicio__*` rules after it
+ * restate what differs.
  */
 
 import { useTranslation } from 'react-i18next'
-import Icono, { type NombreIcono } from '../../components/Icono'
+import Icono from '../../components/Icono'
 import InAppLink from '../../components/InAppLink'
 import {
   SETTINGS_ROWS,
@@ -27,15 +31,6 @@ interface SettingsHomeListProps {
 
 const ENTERED_FROM_SETTINGS = { enteredFrom: 'settings' }
 
-/**
- * The registry's icon, drawn once here. These links go somewhere (a page), they are not an action
- * with an icon and a word, so they do not go through `BotonLink`; the closing guard reads a bare
- * `<Icono` inside a link as an action.
- */
-function Glyph({ name }: { readonly name: NombreIcono }) {
-  return <Icono nombre={name} />
-}
-
 export default function SettingsHomeList({ ctx, rows = SETTINGS_ROWS }: SettingsHomeListProps) {
   const { t } = useTranslation()
 
@@ -47,10 +42,10 @@ export default function SettingsHomeList({ ctx, rows = SETTINGS_ROWS }: Settings
             <InAppLink
               to={shortcutTarget(shortcut)}
               state={ENTERED_FROM_SETTINGS}
-              className="ajustes-inicio__atajo"
+              className="ajustes__item ajustes-inicio__atajo"
             >
               <span className="ajustes-inicio__ficha">
-                <Glyph name={shortcut.icon} />
+                <Icono nombre={shortcut.icon} />
               </span>
               <span className="ajustes-inicio__atajo-rotulo">{t(shortcut.labelKey)}</span>
             </InAppLink>
@@ -63,16 +58,16 @@ export default function SettingsHomeList({ ctx, rows = SETTINGS_ROWS }: Settings
           <ul className="ajustes-inicio__tarjeta">
             {entry.rows.map((row) => (
               <li key={row.key} className="ajustes-inicio__fila-celda">
-                <InAppLink to={row.to} state={ENTERED_FROM_SETTINGS} className="ajustes-inicio__fila">
+                <InAppLink to={row.to} state={ENTERED_FROM_SETTINGS} className="ajustes__item ajustes-inicio__fila">
                   <span className="ajustes-inicio__icono">
-                    <Glyph name={row.icon} />
+                    <Icono nombre={row.icon} />
                   </span>
                   <span className="ajustes-inicio__textos">
                     <span className="ajustes-inicio__rotulo">{t(row.labelKey)}</span>{' '}
                     <span className="ajustes-inicio__detalle">{t(row.descriptionKey)}</span>
                   </span>
                   <span className="ajustes-inicio__flecha" aria-hidden="true">
-                    <Glyph name="chevron" />
+                    <Icono nombre="chevron" />
                   </span>
                 </InAppLink>
               </li>
