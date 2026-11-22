@@ -105,7 +105,7 @@ function renderApp(newSale: React.ReactElement = <NewSale />) {
 }
 
 function calls(method: string, path: string): number {
-  return fetchMock.mock.calls.filter(([url, init]) => url === path && (init?.method ?? 'GET') === method).length
+  return fetchMock.mock.calls.filter(([url, init]) => url === `/${path}` && (init?.method ?? 'GET') === method).length
 }
 
 /** The sale's DELETE answers `answer`; every other read answers an empty list. */
@@ -142,7 +142,7 @@ test('Undo sends one DELETE for the sale and shows that it was deleted', async (
   await user.click(undo)
 
   expect(await screen.findByText(/Sale deleted/)).toBeInTheDocument()
-  expect(calls('DELETE', '/sales/7')).toBe(1)
+  expect(calls('DELETE', 'sales/7')).toBe(1)
 })
 
 test('a sale with no customer is announced with the existing No customer text', async () => {
@@ -210,7 +210,7 @@ test('two taps in one act send one DELETE and show deleted, never gone', async (
   })
 
   expect(await screen.findByText(/Sale deleted/)).toBeInTheDocument()
-  expect(calls('DELETE', '/sales/7')).toBe(1)
+  expect(calls('DELETE', 'sales/7')).toBe(1)
   expect(screen.queryByText(/That is gone/)).not.toBeInTheDocument()
 })
 
@@ -256,17 +256,17 @@ test('after success the mounted sales, stock and account reads are fetched again
   deleteAnswers(() => Promise.resolve(json(200, { returned: [] })))
   renderApp()
   const { user, undo } = await saveAndOpenUndo()
-  await waitFor(() => expect(calls('GET', '/sales-list')).toBe(1))
-  await waitFor(() => expect(calls('GET', '/stock-list')).toBe(1))
-  await waitFor(() => expect(calls('GET', '/customers/3/account')).toBe(1))
+  await waitFor(() => expect(calls('GET', 'sales-list')).toBe(1))
+  await waitFor(() => expect(calls('GET', 'stock-list')).toBe(1))
+  await waitFor(() => expect(calls('GET', 'customers/3/account')).toBe(1))
   client.setQueryData(keys.saleFormSuggestions('2026-11-19'), { recent_customer_ids: [] })
   expect(client.getQueryState(keys.saleFormSuggestions('2026-11-19'))?.isInvalidated).toBe(false)
 
   await user.click(undo)
 
-  await waitFor(() => expect(calls('GET', '/sales-list')).toBe(2))
-  await waitFor(() => expect(calls('GET', '/stock-list')).toBe(2))
-  await waitFor(() => expect(calls('GET', '/customers/3/account')).toBe(2))
+  await waitFor(() => expect(calls('GET', 'sales-list')).toBe(2))
+  await waitFor(() => expect(calls('GET', 'stock-list')).toBe(2))
+  await waitFor(() => expect(calls('GET', 'customers/3/account')).toBe(2))
   expect(client.getQueryState(keys.saleFormSuggestions('2026-11-19'))?.isInvalidated).toBe(true)
 })
 
@@ -274,18 +274,18 @@ test("Home's panel keeps its figures through Undo and a re-render, and is fetche
   deleteAnswers(() => Promise.resolve(json(200, { returned: [] })))
   renderApp()
   const { user, undo } = await saveAndOpenUndo()
-  await waitFor(() => expect(calls('GET', '/panel')).toBe(1))
+  await waitFor(() => expect(calls('GET', 'panel')).toBe(1))
 
   await user.click(undo)
   expect(await screen.findByText(/Sale deleted/)).toBeInTheDocument()
-  await waitFor(() => expect(calls('GET', '/sales-list')).toBe(2))
+  await waitFor(() => expect(calls('GET', 'sales-list')).toBe(2))
   await user.click(screen.getByRole('button', { name: 're-render' }))
 
-  expect(calls('GET', '/panel')).toBe(1)
+  expect(calls('GET', 'panel')).toBe(1)
   expect(client.getQueryState(keys.panel())?.isInvalidated).toBe(false)
 
   await user.click(screen.getByRole('button', { name: 'toggle panel' }))
   await user.click(screen.getByRole('button', { name: 'toggle panel' }))
 
-  await waitFor(() => expect(calls('GET', '/panel')).toBe(2))
+  await waitFor(() => expect(calls('GET', 'panel')).toBe(2))
 })
