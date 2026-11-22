@@ -24,10 +24,17 @@ import {
   SETTINGS_GROUPS,
   SETTINGS_ROWS,
   SHARED_TO,
+  SHORTCUTS,
+  shortcutTarget,
   unaccountedSettingsRoutes,
   type SettingsRow,
   type SettingsRowContext,
 } from './settingsRows'
+
+// WRITING_STANDARDS.md, "Límites de largo por tipo de texto", Botón: 20 characters, 3 words.
+// A shortcut cell is one link whose accessible name is its visible label, so it counts as a Botón.
+const BUTTON_MAX_CHARS = 20
+const BUTTON_MAX_WORDS = 3
 
 const PATHS = ROUTE_REGISTRY.map((route) => route.path)
 
@@ -197,6 +204,71 @@ describe('SETTINGS_ROWS', () => {
     for (const candidate of SETTINGS_ROWS) {
       if (candidate.key === 'language' || candidate.key === 'customerTypes') continue
       for (const ctx of contexts) expect(candidate.isShown(ctx)).toBe(true)
+    }
+  })
+})
+
+describe('SHORTCUTS', () => {
+  const CONTEXTS: SettingsRowContext[] = [
+    NO_CONTEXT,
+    ...[true, false].flatMap((isCustomerTypesOn) =>
+      [['en'], ['en', 'es']].map((selectableLanguages) => ({ selectableLanguages, isCustomerTypesOn })),
+    ),
+  ]
+
+  test('names the three rows of the brief, in order, with their icons', () => {
+    expect(SHORTCUTS.map((shortcut) => [shortcut.row, shortcut.icon])).toEqual([
+      ['prices', 'precio'],
+      ['paymentMethods', 'tarjeta'],
+      ['integrations', 'telegram'],
+    ])
+  })
+
+  test('every shortcut names a row that exists, and no row twice', () => {
+    for (const shortcut of SHORTCUTS) expect(SETTINGS_ROWS.map((candidate) => candidate.key)).toContain(shortcut.row)
+    expect(new Set(SHORTCUTS.map((shortcut) => shortcut.row)).size).toBe(SHORTCUTS.length)
+  })
+
+  test('the three icons are distinct', () => {
+    expect(new Set(SHORTCUTS.map((shortcut) => shortcut.icon)).size).toBe(SHORTCUTS.length)
+  })
+
+  test('the label key is derived from the row key', () => {
+    for (const shortcut of SHORTCUTS) expect(shortcut.labelKey).toBe(`settings:shortcuts.${shortcut.row}`)
+  })
+
+  test('every label resolves to text that fits the button limit', () => {
+    expect(SHORTCUTS.map((shortcut) => testT(shortcut.labelKey))).toEqual([
+      'Prices',
+      'Payment methods',
+      'Telegram catalog',
+    ])
+    for (const shortcut of SHORTCUTS) {
+      const label = testT(shortcut.labelKey)
+      expect(label).not.toBe(shortcut.labelKey)
+      expect(measure(label)).toBeLessThanOrEqual(BUTTON_MAX_CHARS)
+      expect(label.split(/\s+/).filter((word) => word !== '').length).toBeLessThanOrEqual(BUTTON_MAX_WORDS)
+    }
+  })
+
+  test('the target is the row to, with no address of its own', () => {
+    expect(SHORTCUTS.map((shortcut) => shortcutTarget(shortcut))).toEqual([
+      SETTINGS_PRICES,
+      SETTINGS_PAYMENT_METHODS,
+      SETTINGS_INTEGRATIONS,
+    ])
+    for (const shortcut of SHORTCUTS) expect(shortcutTarget(shortcut)).toBe(row(shortcut.row).to)
+  })
+
+  test('refuses a shortcut whose row is not in the rows it is given', () => {
+    const [prices] = SHORTCUTS
+    const without = SETTINGS_ROWS.filter((candidate) => candidate.key !== prices.row)
+    expect(() => shortcutTarget(prices, without)).toThrow('no settings row prices')
+  })
+
+  test('every shortcut row shows under every context', () => {
+    for (const shortcut of SHORTCUTS) {
+      for (const ctx of CONTEXTS) expect(row(shortcut.row).isShown(ctx)).toBe(true)
     }
   })
 })

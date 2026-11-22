@@ -6,6 +6,11 @@
     "users_one": "⟦{{count}} ûšèř·~⟧",
     "users_other": "⟦{{count}} ûšèřš·~·⟧"
   },
+  "shortcuts": {
+    "prices": "⟦Ṗřìçèš·~·⟧",
+    "paymentMethods": "⟦Ṗåýṁèňť ṁèťĥöđš·~·~·~⟧",
+    "integrations": "⟦Ťèłèĝřåṁ çåťåłöĝ·~·~·~⟧"
+  },
   "groups": {
     "business": "⟦ßûšìňèšš·~·⟧",
     "catalog": "⟦Çåťåłöĝ·~·⟧",

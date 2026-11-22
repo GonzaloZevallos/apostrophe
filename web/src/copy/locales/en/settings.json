@@ -6,6 +6,11 @@
     "users_one": "{{count}} user",
     "users_other": "{{count}} users"
   },
+  "shortcuts": {
+    "prices": "Prices",
+    "paymentMethods": "Payment methods",
+    "integrations": "Telegram catalog"
+  },
   "groups": {
     "business": "Business",
     "catalog": "Catalog",
