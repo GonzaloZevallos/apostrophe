@@ -10,7 +10,7 @@
  * typo or an invented message fails `tsc` instead of rendering silently.
  */
 
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import type { CUSTOMERS_TEXT } from '../copy/customers'
 import type { EXPENSES_TEXT } from '../copy/expenses'
 import type { PAYMENTS_TEXT } from '../copy/payments'
@@ -35,6 +35,7 @@ export type SuccessToast =
   | 'common:customerSaved'
   | 'common:entrySaved'
   | 'common:entryDeleted'
+  | 'common:saleDeletedGramsBack'
   | (typeof VARIETIES_TEXT)['variedadGuardada']
   | (typeof VARIETIES_TEXT)['variedadEliminada']
   | (typeof VARIETIES_TEXT)['variedadArchivada']
@@ -63,6 +64,41 @@ export type SuccessToast =
   | (typeof PINNED_CATALOG_TEXT)['catalogPublished']
   | (typeof STOCK_TEXT)['retiroGuardado']
   | (typeof STOCK_TEXT)['retiroEliminado']
+
+/**
+ * The sale-saved toast: "Sale to <name> saved" as a status, then a separator and an Undo button
+ * outside the status (so the announcement is only the sentence). The one key holds three tags so
+ * each part is its own flex item: the name shrinks with an ellipsis, "Sale to" and "saved" never.
+ * The button shows only when the caller gave an action (`onUndo`).
+ */
+export function SaleSavedToast({ name, onUndo }: { name: string; onUndo?: (() => void) | undefined }) {
+  const { t } = useTranslation()
+  return (
+    <div className="aviso-exito__fila">
+      <div className="aviso-exito" role="status">
+        <Trans
+          i18nKey="common:saleSavedTo"
+          values={{ name }}
+          components={{
+            lead: <span className="aviso-exito__inicio" />,
+            name: <span className="aviso-exito__nombre" />,
+            tail: <span className="aviso-exito__fin" />,
+          }}
+        />
+      </div>
+      {onUndo !== undefined && (
+        <>
+          <span className="aviso-exito__separador" aria-hidden="true">
+            ·
+          </span>
+          <button type="button" className="aviso-exito__deshacer" onClick={onUndo}>
+            {t('common:undo')}
+          </button>
+        </>
+      )}
+    </div>
+  )
+}
 
 export default function AvisoExito({ texto }: { texto: SuccessToast }) {
   const { t } = useTranslation()

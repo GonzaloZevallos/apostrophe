@@ -9,6 +9,7 @@ import { pricedSaleOf, type NewSaleInputs, type NewSalePricing } from './newSale
 import {
   customerPriceLineOf,
   customerTypeIdOf,
+  customerViewOf,
   priceLineOf,
   saleBarState,
   type CustomerView,
@@ -155,5 +156,25 @@ describe('customerPriceLineOf', () => {
     ['type pending with the settings in', TYPE_PENDING, 'ready', SWITCHES_ON, { kind: 'loading' }],
   ])('%s', (_name, customer, status, settings, expected) => {
     expect(customerPriceLineOf({ customer, status, settings })).toEqual(expected)
+  })
+})
+
+describe('customerViewOf', () => {
+  const CHOSEN = { id: 7, name: 'Ana', typeId: 3, typeName: 'Mayorista' }
+
+  test('no customer id is none, whatever record is held', () => {
+    expect(customerViewOf(null, CHOSEN)).toEqual({ kind: 'none' })
+  })
+
+  test('a record whose id is the draft id is known, with its type', () => {
+    expect(customerViewOf(7, CHOSEN)).toEqual({ kind: 'known', name: 'Ana', typeId: 3, typeName: 'Mayorista' })
+  })
+
+  test('an id with no record is name pending', () => {
+    expect(customerViewOf(7, null)).toEqual({ kind: 'namePending' })
+  })
+
+  test('a record of another id is name pending, never shown for this id', () => {
+    expect(customerViewOf(8, CHOSEN)).toEqual({ kind: 'namePending' })
   })
 })
