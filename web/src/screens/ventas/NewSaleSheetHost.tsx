@@ -17,6 +17,7 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import type { Customer } from '../../api/customers'
 import { customerTypesQueryOptions } from '../../api/customerTypes'
@@ -24,8 +25,7 @@ import type { Me } from '../../api/me'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import { isInApp } from '../../components/useBackOr'
 import { useLeaveGuard } from '../../components/useLeaveGuard'
-import { SheetStackProvider, useSheet, useSheetDepthReader } from '../../components/useSheetStack'
-import { COMMON_TEXT } from '../../copy/common'
+import { SheetLevel, SheetStackProvider, useSheet, useSheetDepthReader } from '../../components/useSheetStack'
 import type { CompleteSale } from '../../sales/newSalePricing'
 import { type ChosenCustomer, customerViewOf } from '../../sales/newSaleView'
 import { isDirty } from '../../sales/saleDraft'
@@ -59,6 +59,7 @@ export default function NewSaleSheetHost(props: NewSaleSheetHostProps) {
 }
 
 function NewSaleSheetBody({ onSaved }: NewSaleSheetHostProps) {
+  const { t } = useTranslation()
   const me = useOutletContext<Me>()
   const navigate = useNavigate()
   const location = useLocation()
@@ -177,6 +178,8 @@ function NewSaleSheetBody({ onSaved }: NewSaleSheetHostProps) {
       />
       {over.kind === 'customer' && sheet.isOpen && <NuevaVentaCliente allowNone onChosen={onChosen} />}
       {over.kind === 'collect' && sheet.isOpen && (
+        // Collect is the first Sheet over the form: its method Selector opens one entry over it.
+        <SheetLevel.Provider value={1}>
         <CollectSheet
           draft={draft}
           priced={over.priced}
@@ -192,14 +195,15 @@ function NewSaleSheetBody({ onSaved }: NewSaleSheetHostProps) {
           }}
           {...frame}
         />
+        </SheetLevel.Provider>
       )}
       {words !== null && (
         <LeaveConfirm
           blocker={blocker}
           question={words.question}
           detail={words.detail}
-          keepLabel={COMMON_TEXT.noKeepEntering}
-          discardLabel={COMMON_TEXT.yesDiscard}
+          keepLabel={t('common:noKeepEntering')}
+          discardLabel={t('common:yesDiscard')}
         />
       )}
     </>

@@ -10,8 +10,11 @@ import userEvent from '@testing-library/user-event'
 import { Outlet, createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
+import { inAppState } from '../../components/inAppState'
 import { SheetRouterProvider, sheetDepth } from '../../components/useSheetStack'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+import { SALE_NEW, SALES } from '../../routes'
+import { stubViewport } from '../../test-viewport'
 import { METHODS_ANSWER } from '../../test-payment-methods'
 import NewSaleSheetHost, { type NewSaleSheetHostProps } from './NewSaleSheetHost'
 import { FORMAT, PRODUCTS, TODAY } from './renderNuevaVentaSheet'
@@ -42,8 +45,8 @@ function stubFetch(holdSave: boolean): void {
   answerSave = null
   vi.stubGlobal(
     'fetch',
-    vi.fn((path: string, init?: RequestInit) => {
-      if (path === '/sales' && init?.method === 'POST') {
+    vi.fn((url: string, init?: RequestInit) => {
+      if (url === SALES && init?.method === 'POST') {
         posts.push(JSON.parse(String(init.body)))
         if (holdSave) {
           return new Promise<Response>((resolve) => {
@@ -52,15 +55,15 @@ function stubFetch(holdSave: boolean): void {
         }
         return Promise.resolve(json(201, { id: 55 }))
       }
-      if (path === '/pricing-settings') return Promise.resolve(json(200, { is_bulk_pricing: true, is_vip_customers: false }))
-      if (path === '/stock') return Promise.resolve(json(200, { total: 0, entries: [], products: [] }))
-      if (path.startsWith('/api/sales/suggestions')) {
+      if (url === '/pricing-settings') return Promise.resolve(json(200, { is_bulk_pricing: true, is_vip_customers: false }))
+      if (url === '/stock') return Promise.resolve(json(200, { total: 0, entries: [], products: [] }))
+      if (url.startsWith('/api/sales/suggestions')) {
         return Promise.resolve(json(200, { recent_customer_ids: [], most_sold_product_ids: [1, 2, 3], last_payment_method_id: null }))
       }
-      if (path.startsWith('/api/products')) return Promise.resolve(json(200, PRODUCTS))
-      if (path === '/api/payment-methods') return Promise.resolve(json(200, METHODS_ANSWER))
-      if (path === '/api/customer-types') return Promise.resolve(json(200, []))
-      if (path.startsWith('/customers')) return Promise.resolve(json(200, [ANA]))
+      if (url.startsWith('/api/products')) return Promise.resolve(json(200, PRODUCTS))
+      if (url === '/api/payment-methods') return Promise.resolve(json(200, METHODS_ANSWER))
+      if (url === '/api/customer-types') return Promise.resolve(json(200, []))
+      if (url.startsWith('/customers')) return Promise.resolve(json(200, [ANA]))
       return Promise.resolve(json(404, {}))
     }),
   )
@@ -73,7 +76,7 @@ interface Mounted {
   changes: () => number
 }
 
-const IN_APP = ['/sales', { pathname: '/sales/new', state: { inApp: true } }] as const
+const IN_APP = [SALES, { pathname: SALE_NEW, state: inAppState({ pathname: SALES }) }] as const
 
 function mount({
   entries = IN_APP,
@@ -83,10 +86,10 @@ function mount({
   stubFetch(holdSave)
   const router = createMemoryRouter(
     [
-      { path: '/sales', element: <h1>Sales list</h1> },
+      { path: SALES, element: <h1>Sales list</h1> },
       {
         element: <Outlet context={ME} />,
-        children: [{ path: '/sales/new', element: <NewSaleSheetHost onSaved={onSaved} /> }],
+        children: [{ path: SALE_NEW, element: <NewSaleSheetHost onSaved={onSaved} /> }],
       },
     ],
     { initialEntries: [...entries] as never, initialIndex: entries.length - 1 },
@@ -146,7 +149,7 @@ describe('with no lines', () => {
     const m = mount()
     await screen.findByRole('heading', { name: 'Most sold' })
     await exit(m)
-    await waitFor(() => expect(path(m)).toBe('/sales'))
+    await waitFor(() => expect(path(m)).toBe(SALES))
     expect(question()).toBeNull()
   })
 
@@ -156,7 +159,7 @@ describe('with no lines', () => {
     await m.user.click(screen.getByRole('button', { name: /Ana/ }))
     await waitFor(() => expect(within(sheet()).getByText('Ana')).toBeInTheDocument())
     await m.user.click(closeButton())
-    await waitFor(() => expect(path(m)).toBe('/sales'))
+    await waitFor(() => expect(path(m)).toBe(SALES))
     expect(question()).toBeNull()
   })
 })
@@ -168,7 +171,7 @@ describe('with a line', () => {
     await exit(m)
     expect(await screen.findByText('Discard the sale?')).toBeInTheDocument()
     expect(screen.queryByText(/expense/i)).toBeNull()
-    expect(path(m)).toBe('/sales/new')
+    expect(path(m)).toBe(SALE_NEW)
   })
 
   test('"No, keep entering" keeps the line, and Close asks again', async () => {
@@ -187,7 +190,7 @@ describe('with a line', () => {
     await addLine(m)
     await m.user.click(closeButton())
     await m.user.click(await screen.findByRole('button', { name: 'Yes, discard it' }))
-    await waitFor(() => expect(path(m)).toBe('/sales'))
+    await waitFor(() => expect(path(m)).toBe(SALES))
     expect(m.changes()).toBe(1)
   })
 
@@ -198,7 +201,7 @@ describe('with a line', () => {
       closeButton().click()
       closeButton().click()
     })
-    await waitFor(() => expect(path(m)).toBe('/sales'))
+    await waitFor(() => expect(path(m)).toBe(SALES))
     expect(m.changes()).toBe(1)
   })
 })
@@ -215,7 +218,7 @@ describe('stacked Sheets', () => {
     await exit(m)
     await waitFor(() => expect(screen.queryByRole('dialog', { name: /^The sale/ })).toBeNull())
     expect(question()).toBeNull()
-    expect(path(m)).toBe('/sales/new')
+    expect(path(m)).toBe(SALE_NEW)
     expect(sheetDepth(m.router.state.location.state)).toBe(0)
     expect(screen.getByRole('group', { name: 'Rosa' })).toBeInTheDocument()
   })
@@ -271,7 +274,7 @@ describe('stacked Sheets', () => {
       expect(screen.queryByText('Pick a customer')).toBeNull()
     })
     expect(await screen.findByText('Pick a customer')).toBeInTheDocument()
-    expect(path(m)).toBe('/sales/new')
+    expect(path(m)).toBe(SALE_NEW)
   })
 
   test('Escape during a held save leaves Collect open', async () => {
@@ -279,12 +282,14 @@ describe('stacked Sheets', () => {
     await addLine(m)
     await openCollect(m)
     await m.user.click(await screen.findByRole('button', { name: /^How they pay/ }))
-    await m.user.click(await screen.findByRole('option', { name: 'Cash' }))
-    await m.user.click(screen.getByRole('button', { name: /^Collect/ }))
+    await m.user.click(await screen.findByRole('button', { name: 'Cash' }))
+    await m.user.click(within(screen.getByRole('dialog', { name: /^The sale/ })).getByRole('button', { name: /^Collect/ }))
     await waitFor(() => expect(posts).toHaveLength(1))
     await m.user.keyboard('{Escape}')
     expect(screen.getByRole('dialog', { name: /^The sale/ })).toBeInTheDocument()
     expect(sheetDepth(m.router.state.location.state)).toBe(1)
+    await act(async () => answerSave?.(json(201, { id: 55 })))
+    await waitFor(() => expect(path(m)).toBe(SALES))
   })
 
   test('Escape inside an open Selector list closes only the list', async () => {
@@ -292,34 +297,38 @@ describe('stacked Sheets', () => {
     await addLine(m)
     await openCollect(m)
     await m.user.click(await screen.findByRole('button', { name: /^How they pay/ }))
-    await screen.findByRole('option', { name: 'Cash' })
+    await screen.findByRole('button', { name: 'Cash' })
     await m.user.keyboard('{Escape}')
-    await waitFor(() => expect(screen.queryByRole('option', { name: 'Cash' })).toBeNull())
+    await waitFor(() => expect(screen.queryByRole('button', { name: 'Cash' })).toBeNull())
     expect(screen.getByRole('dialog', { name: /^The sale/ })).toBeInTheDocument()
     expect(question()).toBeNull()
   })
 })
 
 describe('a save', () => {
-  async function saveWithLine(m: Mounted): Promise<void> {
+  /** Returns the location changes counted before the save is tapped. */
+  async function saveWithLine(m: Mounted): Promise<number> {
     await addLine(m)
     await openCollect(m)
     await m.user.click(await screen.findByRole('button', { name: /^How they pay/ }))
-    await m.user.click(await screen.findByRole('option', { name: 'Cash' }))
-    await m.user.click(screen.getByRole('button', { name: /^Collect/ }))
+    await m.user.click(await screen.findByRole('button', { name: 'Cash' }))
+    await waitFor(() => expect(sheetDepth(m.router.state.location.state)).toBe(1))
+    const before = m.changes()
+    await m.user.click(within(screen.getByRole('dialog', { name: /^The sale/ })).getByRole('button', { name: /^Collect/ }))
+    return before
   }
 
   test('with a line never asks and makes exactly one location change, landing on the list', async () => {
     const m = mount()
-    await saveWithLine(m)
-    await waitFor(() => expect(path(m)).toBe('/sales'))
+    const before = await saveWithLine(m)
+    await waitFor(() => expect(path(m)).toBe(SALES))
     await act(async () => {
       await new Promise((resolve) => setTimeout(resolve, 50))
     })
     expect(posts).toHaveLength(1)
     expect(question()).toBeNull()
-    // The opening's two sheet entries are walked back in one traversal.
-    expect(m.changes()).toBe(2)
+    // The Collect entry and the Sheet's own are walked back in one traversal.
+    expect(m.changes() - before).toBe(1)
   })
 
   test('a custom onSaved receives the id and the customer name, and the host does not leave', async () => {
@@ -330,18 +339,18 @@ describe('a save', () => {
     await waitFor(() => expect(within(sheet()).getByText('Ana')).toBeInTheDocument())
     await saveWithLine(m)
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith(55, 'Ana'))
-    expect(path(m)).toBe('/sales/new')
+    expect(path(m)).toBe(SALE_NEW)
   })
 })
 
 describe('a direct address', () => {
-  const DIRECT = ['/sales/new'] as const
+  const DIRECT = [SALE_NEW] as const
 
   test('with no lines Close replaces with the parent and asks nothing', async () => {
     const m = mount({ entries: DIRECT })
     await screen.findByRole('heading', { name: 'Most sold' })
     await m.user.click(closeButton())
-    await waitFor(() => expect(path(m)).toBe('/sales'))
+    await waitFor(() => expect(path(m)).toBe(SALES))
     expect(question()).toBeNull()
     expect(m.router.state.historyAction).toBe('REPLACE')
   })
@@ -352,7 +361,7 @@ describe('a direct address', () => {
     await m.user.click(closeButton())
     expect(await screen.findByText('Discard the sale?')).toBeInTheDocument()
     await m.user.click(screen.getByRole('button', { name: 'Yes, discard it' }))
-    await waitFor(() => expect(path(m)).toBe('/sales'))
+    await waitFor(() => expect(path(m)).toBe(SALES))
     expect(m.changes()).toBe(1)
   })
 
@@ -363,6 +372,20 @@ describe('a direct address', () => {
 })
 
 describe('one source of truth', () => {
+  test('on a computer the backdrop does nothing once a line is added, and works again after stepDown', async () => {
+    stubViewport('computer')
+    const m = mount()
+    await addLine(m)
+    const backdrop = sheet().parentElement as HTMLElement
+    await m.user.click(backdrop)
+    expect(path(m)).toBe(SALE_NEW)
+    expect(question()).toBeNull()
+    await m.user.click(within(screen.getByRole('group', { name: 'Rosa' })).getByRole('button', { name: 'Remove one Rosa' }))
+    await waitFor(() => expect(screen.queryByRole('group', { name: 'Rosa' })).toBeNull())
+    await m.user.click(backdrop)
+    await waitFor(() => expect(path(m)).toBe(SALES))
+  })
+
   test('the guard and the Sheet follow one line added, and both clear after stepDown', async () => {
     const m = mount()
     await screen.findByRole('heading', { name: 'Most sold' })
@@ -375,7 +398,7 @@ describe('one source of truth', () => {
     await m.user.click(within(screen.getByRole('group', { name: 'Rosa' })).getByRole('button', { name: 'Remove one Rosa' }))
     await waitFor(() => expect(screen.queryByRole('group', { name: 'Rosa' })).toBeNull())
     await m.user.click(closeButton())
-    await waitFor(() => expect(path(m)).toBe('/sales'))
+    await waitFor(() => expect(path(m)).toBe(SALES))
     expect(question()).toBeNull()
   })
 })
