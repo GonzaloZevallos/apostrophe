@@ -33,7 +33,7 @@ Build `SettingsHomeList`, the list part of the phone Settings home, as a compone
 - A group with no shown rows renders no heading.
   - Reason: a heading never stands over nothing if a later registry change empties a group.
 - Tests set `ctx` explicitly for Customer types and languages.
-  - Reason: the registry hides Customer types while its switch is off or unknown (ADR-20261119), so row counts depend on the context.
+  - Reason: the registry hides Customer types while its switch is off or unknown (ADR 20261119-settings-rows-live-in-one-registry-read-by-the-list-the-shortcuts-and-the-search), so row counts depend on the context.
 - The component goes into `web/scripts/docs/front-exclude.json` until #927 wires it.
   - Reason: the owner's rule D-62e6dc23 allows an unwired module there without permission.
 
