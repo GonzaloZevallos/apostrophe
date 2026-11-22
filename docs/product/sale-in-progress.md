@@ -75,66 +75,75 @@ En la planilla, una venta sin pagar era una fila sin pago, y saldarla después p
 
 ## Sheet de New sale
 
-El contenedor `web/src/screens/ventas/NuevaVentaSheet.tsx` (parte 2 de GH-864), dibujado dentro de la Sheet compartida (`web/src/components/Sheet.tsx`) a partir de los dibujos NuevaVenta y NuevaVentaOscuro. Es el marco de New sale: la fila de Customer arriba, la lista de Products en el medio y la barra de la venta abajo. Elegir Products es de la lista y cobrar es de la Collect Sheet. Hasta el flip de GH-496 ninguna ruta ni entrada de navegación lo monta: figura en `web/scripts/docs/front-exclude.json` (D-62e6dc23) y el flip saca esa entrada. No tiene entrada en WalkState ni en `scripts/design/screens.json`, ni hook de test, así que no tiene Design capture lado a lado ni Screen image. Para la vendedora no cambia nada en pantalla hasta el flip.
+El contenedor `web/src/screens/ventas/NuevaVentaSheet.tsx` (parte 2 de GH-864), dibujado dentro de la Sheet compartida (`web/src/components/Sheet.tsx`), igual que la Collect Sheet. Es el marco de New sale: la fila de Customer arriba, la lista de Products en el medio y la barra de la venta abajo. Elegir Products es de la lista y cobrar es de la Collect Sheet. La pantalla anfitriona se encarga de Escape, del volver del sistema, del Customer (un `CustomerView`), de elegir otro después de Change y de lo que pasa después de Collect. Hasta el flip de GH-496 ninguna ruta ni entrada de navegación lo monta: figura en `web/scripts/docs/front-exclude.json` (D-62e6dc23) y el flip saca esa entrada. No tiene entrada en WalkState ni en `scripts/design/screens.json`, ni hook de test, así que no tiene Design capture lado a lado ni Screen image. Para la vendedora no cambia nada en pantalla hasta el flip.
 
 ### Props
 
 - `draft` (`SaleDraftApi`), `customer` (`CustomerView`), `onClose()`, `onChangeCustomer()` y `onCollect(sale: CompleteSale)`.
 - `computer`, `computerClass` y `computerDialog` pasan tal cual a la Sheet compartida, igual que en la Collect Sheet.
+- `CustomerView` tiene cinco formas: sin cliente (`none`), conocido (`known`, con su nombre y, si tiene, su Customer type), nombre pendiente (`namePending`), tipo pendiente (`typePending`, con el nombre) y lectura fallida (`failed`, con el nombre si llegó o `null`).
 
 ### Lecturas y cifras
 
 - Lee con `useNewSaleReads({ date: draft.state.date, openedOn: draft.state.openedOn })`, las mismas lecturas que la lista de Products (ver "Lista de Products de New sale").
-- Corre `pricedSaleOf` una sola vez por render, en un `useMemo`, con el Money format de `useMoney`. Toda cifra que muestra sale de ahí; el componente no hace ninguna operación de dinero.
+- Corre `pricedSaleOf` una sola vez por render, en un `useMemo`, con el Money format de `useMoney`. Toda cifra que muestra sale de ahí; el componente no hace ninguna operación de dinero ni llama a `priceSale`.
+- El estado de la barra lo decide solo `saleBarState`, y la línea de precios de la fila solo `customerPriceLineOf`, las dos funciones puras de `web/src/sales/newSaleView.ts`.
 - La Sheet cuenta como tocada (`touched`) exactamente cuando `isDirty(draft.state)`, es decir con al menos una línea, y por ningún otro motivo.
 
 ### Encabezado
 
-- Título "New sale" (`COMMON_TEXT.newSale`).
-- El Close propio de la Sheet llama a `onClose` sin confirmación y sin ningún diálogo.
+- Título "New sale" (`t('common:newSale')`, el mismo texto que `COMMON_TEXT.newSale`), ligado a la Sheet por su `titleId`.
+- El Close propio de la Sheet (un botón redondo de ícono) llama a `onClose` sin confirmación y sin ningún diálogo, aunque la Sheet esté tocada.
 
 ### Fila de Customer
 
-- Muestra el nombre del Customer, o "No customer" (`SALES_TEXT.noCustomer`) cuando la Sale in progress no tiene cliente, y debajo una sola línea, que decide `priceLineOf`:
-  - "List prices" para un Customer sin Customer type, y siempre que el interruptor Customer types está apagado, aunque el Customer tenga un tipo (una regla desactivada queda oculta, pricing-settings.md);
-  - "Prices for {type}", con el nombre del Customer type, para un Customer con tipo;
-  - la marca compacta de carga (`Loading compacto`) mientras el tipo está pendiente;
-  - nada cuando una lectura falló.
-- Mientras el nombre está pendiente, la marca compacta de carga ocupa su lugar.
-- **Lectura del Customer fallida:** la fila muestra lo que ya tiene para el nombre (el nombre si llegó; si no, la marca de carga se queda). Nunca muestra "List prices", "Prices for {type}" ni una cifra de dinero. Para la lista cuenta como pendiente: sus marcas de precio siguen cargando y no se muestra ninguna cifra. No hay reintento en esta parte; cerrar y volver a abrir la Sheet hace una lectura nueva.
-- **Change** (`COMMON_TEXT.change`) llama a `onChangeCustomer`. Dice "Change" en todo estado, "No customer" incluido: una sola etiqueta con un solo sentido, elegir para quién es la venta. Es `flex: none`, mide al menos 44x44 px y conserva su etiqueta.
-- **Disposición:** la columna de texto tiene `min-width: 0` y cada línea queda en una sola línea con puntos suspensivos; el nombre completo es el nombre accesible, así que un nombre de 60 caracteres lo conserva entero.
+- La primera línea muestra el nombre del Customer, o "No customer" (`SALES_TEXT.noCustomer`) cuando la Sale in progress no tiene cliente. Mientras el nombre está pendiente, o tras una lectura fallida que no trajo nombre, la marca compacta de carga (`Loading compacto`) ocupa su lugar.
+- Debajo va una sola línea de precios, que decide `customerPriceLineOf`, en este orden:
+  1. nada cuando la lectura del Customer falló o la lectura de la lista falló (`status` en `failed`);
+  2. la marca compacta de carga mientras los Pricing settings todavía no llegaron;
+  3. si no, `priceLineOf` con el interruptor Customer types: "List prices" para un Customer sin Customer type o sin cliente, y siempre que el interruptor está apagado, aunque el Customer tenga un tipo (una regla desactivada queda oculta, pricing-settings.md); "Prices for {type}", con el nombre del Customer type, para un Customer con tipo; la marca compacta de carga mientras el nombre o el tipo están pendientes.
+- La línea de precios es una línea de estado, nunca un control, y nombra la fila, nunca la regla de precio de una línea.
+- **Lectura del Customer fallida:** la fila muestra lo que ya tiene para el nombre (el nombre si llegó; si no, la marca de carga se queda). Nunca muestra "List prices", "Prices for {type}" ni una cifra de dinero. Para la lista cuenta como pendiente (`customerTypeIdOf` da `'pending'`): sus marcas de precio siguen cargando y no se muestra ninguna cifra. No hay reintento ni aviso de falla en esta parte; Change sigue disponible, y cerrar y volver a abrir la Sheet hace una lectura nueva.
+- **Change** (`t('common:change')`, el mismo texto que `COMMON_TEXT.change`) es el botón de texto secundario del producto y llama a `onChangeCustomer`. Dice "Change" en todo estado, "No customer" incluido: una sola etiqueta con un solo sentido, elegir para quién es la venta. Es la única parte de la fila que se puede tocar, es `flex: none`, mide al menos 44x44 px, no se parte y conserva su etiqueta.
+- **Disposición:** la columna de texto tiene `min-width: 0`; el nombre va en peso 600 en tinta y la línea de precios más chica en el gris apagado; cada línea queda en una sola línea con puntos suspensivos y el texto visible es el nombre completo, recortado solo por CSS, así que un nombre de 60 caracteres conserva entero su nombre accesible.
 - Si una Sale without a customer se puede guardar lo decide Collect (solo pagada por completo en el momento), nunca esta fila.
 
 ### Lista
 
-- La lista de Products de New sale (ver abajo), con `customerTypeId = customerTypeIdOf(customer)` y el precio calculado por la Sheet.
+- La lista de Products de New sale (ver abajo), con las lecturas, el borrador, `customerTypeId = customerTypeIdOf(customer)` y el precio calculado por la Sheet.
 
 ### Barra de la venta
 
-- Es el último hijo de `SheetActions`, fija abajo solo en el teléfono.
-- Una región `role="status"` muestra uno de cuatro estados:
-  - **total:** `itemsTotal(n, money(total))`, "1 item · {total}" o "{n} items · {total}", con el total en un elemento de cifra que nunca se parte;
-  - **conteo:** `itemsCount(n)`, "1 item" o "{n} items";
-  - **contando:** `itemsCount(n)` más la marca compacta de carga;
-  - **vacío:** "Add a product to collect".
+- Es el último hijo de `SheetActions`: queda fija abajo en el teléfono mediante el envoltorio `.sheet__actions`, sin una regla fija propia, y en una computadora es una fila estática al final del formulario.
+- Es una sola fila: a la izquierda una región `role="status"` (que se estira, con `min-width: 0`) y a la derecha Collect, cuando se muestra, como hermano de la región y nunca dentro de ella.
+- La región muestra uno de cuatro estados, el primero que corresponda:
+  - **vacío** (sin líneas): "Add a product to collect", sin ningún botón Collect;
+  - **contando** (con líneas, y la lista carga o recarga, o el nombre o el tipo del Customer está pendiente): `itemsCount(n)`, "1 item" o "{n} items", más la marca compacta de carga;
+  - **conteo** (con líneas, y la lectura de la lista o la del Customer falló, o alguna línea no tiene precio): `itemsCount(n)` sin marca de carga, para no dar a entender que algo todavía está llegando;
+  - **total** (si no): `itemsTotal(n, money(total))`, "1 item · {total}" o "{n} items · {total}", con la cifra en un elemento `cifra-m` que nunca se parte (en Tabular figures y peso 600); el texto de la región es exactamente el texto del Copy module.
 - n cuenta líneas, no unidades.
-- **Collect** (`SALES_TEXT.collectShort`) se dibuja solo en el estado total y llama a `onCollect(state.sale)`. En cualquier otro estado no hay ningún botón Collect, de ningún tipo: nunca se muestra `disabled` ni `aria-disabled`.
-- La barra nunca está en el estado total mientras la lista carga o recarga, el Customer está pendiente, la lectura de la lista o la del Customer falló, o alguna línea no tiene precio.
+- **Collect** (`SALES_TEXT.collectShort`, el botón principal relleno) se dibuja solo en el estado total y llama a `onCollect` con la `CompleteSale` del precio calculado. En cualquier otro estado no hay ningún botón Collect, de ningún tipo, ni nada en su lugar: nunca se muestra `disabled` ni `aria-disabled`.
 - El total es `totals.total` del precio calculado, con el Shipping charged incluido cuando es mayor que 0.
 - No hay texto de promoción ni de ahorro (desviación 1, decidida en GH-864).
 
 ### Textos
 
-- En `web/src/copy/sales.ts`, `NEW_SALE_TEXT`, en inglés y sin palabras de Unit, moneda ni tipo de producto: `listPrices` "List prices"; `pricesFor(type)` "Prices for {type}" (BASELINE_ARGS `[['Regulars']]`); `itemsCount(n)` "1 item" / "{n} items" (BASELINE_ARGS counted); `itemsTotal(n, total)` "1 item · {total}" / "{n} items · {total}" (BASELINE_ARGS counted con el monto); `addProductToCollect` "Add a product to collect" (LIMITED_COPY, ayuda). "Product" es el término del glosario, así que pasa el chequeo productWord.
-- Se reutilizan "New sale" (`COMMON_TEXT.newSale`), "No customer", "Change" (`COMMON_TEXT.change`) y `collectShort`.
-- Las entradas nuevas se insertan en su lugar ordenado en `en.baseline.json` (y en el JSON del idioma si replica el grupo) con el texto que emite el script, y después corre `npm --prefix web run i18n:baseline -- --update`; el chequeo, copyLimits y productWord pasan.
+- En `web/src/copy/sales.ts`, `NEW_SALE_TEXT` (`SALES_TEXT.newSale`), en inglés y sin palabras de Unit, moneda ni tipo de producto: `listPrices` "List prices"; `pricesFor(type)` "Prices for {type}" (BASELINE_ARGS `[['Regulars']]`); `itemsCount(n)` "1 item" / "{n} items" (BASELINE_ARGS counted); `itemsTotal(n, total)` "1 item · {total}" / "{n} items · {total}" (BASELINE_ARGS counted con el monto); `addProductToCollect` "Add a product to collect" (LIMITED_COPY, ayuda). "Product" es el término del glosario, así que pasa el chequeo productWord; "Regulars" es solo un argumento de muestra.
+- Se reutilizan "New sale" (`common:newSale`), "No customer", "Change" (`common:change`) y `collectShort`.
+- Las entradas nuevas se insertan en su lugar ordenado en `en.baseline.json` con el texto que emite el script (no hay entrada en el JSON del idioma, porque `locales/en` no tiene el grupo de ventas), y después corre `npm --prefix web run i18n:baseline -- --update`; el chequeo, copyLimits y productWord pasan.
 
 ### Diseño
 
-- Solo tokens, comparado a ojo con NuevaVenta y NuevaVentaOscuro, claro y oscuro.
-- El título y el singular "1 item" salen del pedido, no de una definición escrita anterior, así que no ganan solos sobre el dibujo. Si alguno difiere de un modo que el dueño leería distinto en el teléfono, el PR lo plantea como desviación del dibujo y lo decide el dueño, nunca el PR ni un rol. Una diferencia de espacio o de peso no es un hallazgo. El dibujo todavía no se revisó.
-- Mientras la Sheet no tenga ruta, la captura lado a lado no es posible y queda "not compared".
+- Solo tokens (colores, tipografía, espacios y `--alto-tocable`), así que el tema oscuro sigue a los tokens oscuros. Los dibujos que muestran la fila de Customer y la barra son NuevaVentaProductos, NuevaVentaCliente y NuevaVentaCobrar; NuevaVenta y NuevaVentaOscuro son una Sheet anterior sin fila de Customer.
+- Diferencias con el dibujo planteadas al dueño en el PR, que decide el dueño y nunca el PR ni un rol: el título "New sale", el singular "1 item" y el sustantivo "item(s)" donde el dibujo dice "artículos"; la barra vacía como texto de estado donde el dibujo tiene un botón deshabilitado; el resumen de la barra como región de estado simple donde el dibujo tiene un "Ver la venta" tocable con chevron; y solo Change tocable en la fila de Customer donde el dibujo hace de toda la fila un botón.
+- Diferencias que se leen igual y quedan como observaciones: la fila sin tarjeta con borde ni avatar redondo de 32 px; Change con el botón de texto del producto en lugar del de 14 px en el color principal; el total en una sola línea a un solo tamaño (`cifra-m`) en lugar de un conteo chico sobre un total grande; Collect con el botón principal por defecto en lugar de 56 px y radio 16; sin sombra suave en la barra.
+- Mientras la Sheet no tenga ruta, la captura lado a lado no es posible y queda "not compared"; la comparación con la pantalla dibujada, en ambos temas, queda para el flip.
+
+### Huecos conocidos
+
+- Con la lectura del Customer fallida y sin nombre, la marca de carga de la fila no termina nunca y nada le señala a la vendedora Change o Close. No es un callejón sin salida; el flip debería agregar un aviso o un reintento con el Attention icon y un Tappable notice.
+- Con la lectura de la lista fallida, Close es la única salida y puede perder las líneas ya agregadas. Aceptado para esta parte; queda para el flip.
+- En un teléfono angosto con un total largo, "{n} items ·" puede pasar a una segunda línea en lugar de recortarse antes de la cifra (la cifra nunca se parte). Las reglas del teléfono de la barra (`figure-split`, `h-scroll`, toque, `chrome-shift`) quedan sin verificar hasta que el flip agregue la entrada de WalkState y corra el Mobile check.
 
 ## Collect Sheet
 
@@ -364,7 +373,7 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 ## Fuera de esta capacidad (por ahora)
 
 - Cualquier ruta, entrada de navegación o pantalla que monte la Sheet de New sale, la Sale in progress o la lista de Products, y el flip que las monta; también la entrada de WalkState y de `screens.json` de la Sheet de New sale.
-- Un botón de reintento en los avisos de falla o en la fila de Customer de la Sheet de New sale, o cualquier reintento más allá de la lectura de nuevo al reconectar o al recuperar el foco; cambios a SinConexion o a ErrorGenerico.
+- Un botón de reintento o un aviso de falla en la fila de Customer de la Sheet de New sale, un botón de reintento en los avisos de falla de la lista, o cualquier reintento más allá de la lectura de nuevo al reconectar o al recuperar el foco; cambios a SinConexion o a ErrorGenerico.
 - Cualquier texto de promoción o de ahorro en la barra de la venta (desviación 1 de GH-864).
 - Pulido de la Sheet de New sale en la computadora (Phone first).
 - La cantidad tipeada en la lista (flip). Un control para limpiar la búsqueda, que el dibujo no muestra.
@@ -408,13 +417,14 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Claves del Copy module de la lista de Products: 10 (7 de #924 y 3 de #940), en inglés y sin palabras de Unit ni de tipo de producto; agregadas por los estados de carga y de falla: 0. Pedidos de red nuevos causados por la búsqueda: 0.
 - Gate (pytest, vitest, e2e) pasa, y tsc strict y oxlint pasan sin nada silenciado.
 - Vara del trabajo, que se juzga cuando el flip la monte: una venta se registra desde el teléfono en menos de un minuto (sales.md, criterio 1), y un Product habitual se encuentra, se agrega y se ajusta sin salir de la lista (1 toque para un Product habitual a 1 unidad desde "Most sold"), y uno que no está en "Most sold" se agrega en 2 toques (el campo y el "+" de su resultado) tipeando parte de su nombre. No hay medición de uso en la app hasta el flip de GH-496.
-- Sheet de New sale (parte 2 de GH-864), con Testing Library y fetch stubbeado (los stubs de `NuevaVentaProductos.test.tsx` y `stubFetchWithSettings.ts`), cada caso con su test que pasa en el Gate (vitest):
-  - **Fila:** sin cliente ("No customer"); Customer sin tipo ("List prices"); Customer con tipo ("Prices for {type}"); interruptor Customer types apagado ("List prices"); nombre pendiente y tipo pendiente (marca compacta); lectura fallida sin línea de precio; un nombre de 60 caracteres conserva su nombre accesible completo; Change llama a `onChangeCustomer`.
+- `customerPriceLineOf`, con test unitario en `newSaleView.test.ts`: Pricing settings pendientes con un Customer con tipo da la marca de carga; lectura de la lista fallida con un Customer con tipo da nada; lectura del Customer fallida con los Pricing settings pendientes da nada; un Customer con tipo da "Prices for {type}" con el interruptor encendido y "List prices" con el interruptor apagado.
+- Sheet de New sale (parte 2 de GH-864), con Testing Library y fetch stubbeado (los stubs de `NuevaVentaProductos.test.tsx` y `stubFetchWithSettings.ts`, en `NuevaVentaSheet.row.test.tsx` y `NuevaVentaSheet.bar.test.tsx` con un solo helper de render), cada caso con su test que pasa en el Gate (vitest):
+  - **Fila:** sin cliente ("No customer"); Customer sin tipo ("List prices"); Customer con tipo ("Prices for {type}"); interruptor Customer types apagado ("List prices"); nombre pendiente y tipo pendiente (marca compacta); lectura fallida, con nombre y sin nombre, sin línea de precio; un nombre de 60 caracteres conserva su nombre accesible completo; Change llama a `onChangeCustomer`.
   - **Barra:** el conteo para una línea ("1 item") y para varias; el total es igual a `totals.total` de `priceSale` en el Money format con envío mayor que 0; la barra vacía no tiene ningún botón Collect; Collect llama a `onCollect` con la venta; carga, recarga, Customer pendiente, lista fallida, lectura del Customer fallida (las marcas de la lista siguen cargando y no se ve ninguna cifra) y una línea sin precio: cada uno sin Collect y sin total; el texto de la región de estado en cada uno de los cuatro estados.
-  - **Close:** llama a `onClose` y no muestra ningún diálogo.
+  - **Close:** llama a `onClose` y no muestra ningún diálogo, también con la Sheet tocada.
 - Sheet de New sale: Collect fuera del estado total: 0, y Collect `disabled` o `aria-disabled`: 0. "List prices", "Prices for {type}" o cifras de dinero con la lectura del Customer fallida: 0. Fuentes de `touched` distintas de `isDirty(draft.state)`: 0. Cifras que no salen de `pricedSaleOf`: 0. Textos fuera de `web/src/copy/`: 0.
 - Claves del Copy module agregadas por la parte 2 de GH-864: 5 (`listPrices`, `pricesFor`, `itemsCount`, `itemsTotal`, `addProductToCollect`), en inglés y sin palabras de Unit, moneda ni tipo de producto; el baseline, copyLimits y productWord pasan.
-- Vara de la Sheet de New sale, que se juzga cuando el flip la monte: la vendedora ve qué precios le tocan al Customer antes de agregar nada, y nunca ve un total ni un Collect que no estén calculados por completo; suma a la vara de menos de un minuto de sales.md, criterio 1.
+- Vara de la Sheet de New sale, que se juzga cuando el flip la monte: la vendedora ve qué precios le tocan al Customer antes de agregar nada, y nunca ve un total ni un Collect que no estén calculados por completo; la Sheet suma un solo toque al trabajo (Collect), y leer el Customer, los precios y el total no lleva ninguno; suma a la vara de menos de un minuto de sales.md, criterio 1.
 - Collect Sheet, con Testing Library a nivel de fetch: sin medio por encima de $0, 0 pedidos y el campo enfocado; con una línea sin precio en `priced`, 0 pedidos, ningún texto nuevo y ninguna llamada a `onSavingChange`; mientras guarda, toques extra y Close dan 0 pedidos adicionales; tras un pedido rechazado, `onSavingChange` termina en false y Close vuelve a funcionar; la etiqueta de Collect es igual a `priced.totals.total` formateado y `onSaved` recibe la respuesta sin tocar.
 - Received y Change, en un segundo archivo de tests de la Collect Sheet con Testing Library a nivel de fetch: con Received vacío, menor o inválido, 0 líneas de Change y 0 avisos o errores; con Received igual al total, Change 0; con uno mayor, la diferencia exacta, a 0 y a 2 decimales del Money format; en una venta de $0 con Received 0, Change 0; 0 apariciones de Received o Change en el cuerpo de `POST /api/sales`; Received conservado tras cambiar de medio, pasar a owing y volver, y tras un guardado fallido; ayuda oculta con owing; al ancho angosto donde el botón dice "Collect", la fila Total muestra el total; etiqueta acortada a "Collect" con `scrollWidth` > `clientWidth` (definido con `Object.defineProperty`), nombre accesible con el "Collect {total}" completo, y la etiqueta completa de vuelta cuando vuelve a entrar.
 - "Owes it" (#944), con Testing Library a nivel de fetch y en el mismo host que los tests de #918:
