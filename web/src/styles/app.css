@@ -4302,24 +4302,13 @@ a.ajustes-tema__opcion {
 }
 
 
-/* A variety's page (VariedadDetalle.dc.html): one summary line, two equal actions and the
- * four sections, all from the tokens. */
-.variedad-resumen {
-  margin: 0;
-  font-size: 15px;
-  color: var(--deuda);
-}
-
+/* A variety's page (ProductoDetalle.dc.html): the state block (`.product-state`), the actions and
+ * the sections, all from the tokens. */
 .variedad-resumen__oculta {
   font-weight: 600;
 }
 
-/* An archived variety's summary (VariedadArchivada.dc.html): the figures in the quiet ink, then
- * the marks on their own line, "Archivada" as the neutral Insignia and "Oculta" in words. */
-.variedad-resumen--archivada {
-  color: var(--tinta2);
-}
-
+/* The archived list's marks (ArchivedVarieties): "Archivada" as the neutral Insignia and "Oculta" in words. */
 .variedad-marcas {
   display: flex;
   align-items: center;
@@ -4464,20 +4453,6 @@ a.ajustes-tema__opcion {
   height: 20px;
   border-radius: var(--radio-pildora);
   background: var(--papel);
-}
-
-/* On a variety's page the status word is read, not hidden: shape and word together. */
-.variedad-resumen .marca-estado {
-  gap: var(--espacio-xs);
-}
-
-.variedad-resumen .marca-estado__palabra {
-  position: static;
-  width: auto;
-  height: auto;
-  margin: 0;
-  overflow: visible;
-  clip: auto;
 }
 
 .seccion-variedad__cabecera a,

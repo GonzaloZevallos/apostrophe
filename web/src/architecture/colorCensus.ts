@@ -157,7 +157,6 @@ export const COLOR_CENSUS: readonly CensusEntry[] = [
   { selector: '.catalogo__publicar--desactualizado', component: 'PinPublish', carries: '"Out of date"', tests: at('screens/PinPublish.test.tsx') },
   { selector: '.catalogo__publicar--desactualizado .catalogo__publicar-titulo', component: 'PinPublish', carries: '"Out of date"', tests: at('screens/PinPublish.test.tsx') },
   { selector: '.catalogo__publicar--desactualizado .catalogo__publicar-detalle', component: 'PinPublish', carries: 'the reason sentence under "Out of date"', tests: at('screens/PinPublish.test.tsx') },
-  { selector: '.variedad-resumen', component: 'VarietyPage summary line', carries: 'the grams and the stock word ("low") from MarcaEstado', tests: at('screens/varieties/VarietyPage.test.tsx') },
   { selector: '.seccion-variedad__valor--aviso', component: 'VarietyThresholdSection', carries: '"Warning: 18 g left"', tests: at('screens/varieties/VarietyPage.test.tsx') },
   { selector: '.ficha-deuda', component: 'ClienteFicha, CustomerCardBehind', carries: '"Owes you" and "since dd/mm"', tests: at('screens/clientes/ClienteFicha.test.tsx', 'screens/clientes/ClienteSheet.test.tsx') },
 ]
