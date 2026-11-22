@@ -7088,3 +7088,46 @@ button:has(> .venta-en-curso) {
   font-weight: 600;
 }
 /* ===== end venta-gasto-telefono ===== */
+
+/* The Sale payment chip: the word says the state, never the colour alone (part-paid also draws a
+ * half-filled circle, the unknown line the Attention icon). Tokens only. It wraps onto a second
+ * line on a narrow phone and never cuts, shortens or hides the amount. Each modifier sits on its
+ * own class so the colour census can key it; the modifiers win over `.rotulo`'s colour because
+ * this file loads after tokens.css and both are single-class selectors. */
+.payment-chip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.payment-chip--paid {
+  color: var(--tinta2);
+  background: var(--superficie);
+}
+
+.payment-chip--unpaid {
+  color: var(--deuda);
+  background: var(--deuda-fondo);
+}
+
+.payment-chip--part-paid {
+  color: var(--deuda2);
+  background: var(--deuda-fondo);
+}
+
+.payment-chip__half {
+  flex: none;
+  width: 0.8em;
+  height: 0.8em;
+  border-radius: 50%;
+  border: 1px solid var(--deuda);
+  background: linear-gradient(90deg, var(--deuda) 50%, transparent 50%);
+}
+
+.payment-chip--unknown {
+  color: var(--critico);
+  background: var(--superficie);
+}

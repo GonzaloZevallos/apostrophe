@@ -1,0 +1,10 @@
+{
+  "card": {
+    "payment": {
+      "paid": "Paid",
+      "unpaid": "Unpaid",
+      "partPaid": "Part-paid · {{amount}} owed",
+      "unknown": "Payment can't be shown"
+    }
+  }
+}
