@@ -18,6 +18,12 @@ afterEach(() => {
 const dialog = () => screen.getByRole('dialog', { name: 'New sale' })
 /** Resolves once the Products read is in, so the price line has its settings. */
 const listed = () => screen.findByRole('heading', { name: 'Most sold' })
+/** The row's text column: the compact Loading mark is its one `aria-hidden` element (no role, no text). */
+const columnOf = (name: string): HTMLElement => {
+  const column = within(dialog()).getByText(name).parentElement
+  if (column === null) throw new Error('the name has no column')
+  return column
+}
 const KNOWN_NO_TYPE: CustomerView = { kind: 'known', name: 'Ana', typeId: null, typeName: null }
 const KNOWN_TYPED: CustomerView = { kind: 'known', name: 'Ana', typeId: 7, typeName: 'Mayorista' }
 
@@ -51,6 +57,7 @@ test('while the settings are pending the price line is only the Loading mark', a
   expect(within(dialog()).getByText('Ana')).toBeInTheDocument()
   const text = dialog().textContent ?? ''
   expect(text).not.toMatch(/List prices|Prices for/)
+  expect(columnOf('Ana').querySelectorAll('[aria-hidden="true"]')).toHaveLength(1)
 })
 
 test('while the name is pending the Loading mark takes its place and no price line shows', async () => {
@@ -59,6 +66,9 @@ test('while the name is pending the Loading mark takes its place and no price li
   expect(within(dialog()).queryByText('No customer')).toBeNull()
   expect(within(dialog()).queryByText(/List prices|Prices for/)).toBeNull()
   expect(within(dialog()).getByRole('button', { name: 'Change' })).toBeInTheDocument()
+  const row = within(dialog()).getByRole('button', { name: 'Change' }).parentElement
+  // One mark in the name's place and one for the price line.
+  expect(row?.querySelectorAll('[aria-hidden="true"]')).toHaveLength(2)
 })
 
 test('while the type is pending the name shows and the price line is the Loading mark', async () => {
@@ -66,6 +76,7 @@ test('while the type is pending the name shows and the price line is the Loading
   await listed()
   expect(within(dialog()).getByText('Ana')).toBeInTheDocument()
   expect(within(dialog()).queryByText(/List prices|Prices for/)).toBeNull()
+  expect(columnOf('Ana').querySelectorAll('[aria-hidden="true"]')).toHaveLength(1)
 })
 
 test.each<[string, SheetCase]>([

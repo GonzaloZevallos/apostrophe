@@ -31,6 +31,8 @@ const ARBOL: LineSpec = { productId: 2, quantity: '3' }
 const UNPRICED: LineSpec = { productId: 3, quantity: '1' }
 const money = moneyFormatter(FORMAT)
 
+/** The compact Loading mark is the one `aria-hidden` element: it has no role and no text. */
+const loadingMarks = (within: HTMLElement) => within.querySelectorAll('[aria-hidden="true"]')
 const status = () => screen.getByRole('status')
 const collect = () => screen.queryAllByRole('button', { name: /Collect/ })
 const listed = () => screen.findByRole('heading', { name: 'In the sale · 1' })
@@ -55,6 +57,13 @@ test.each<[string, readonly LineSpec[], string]>([
   await settle()
   expect(status()).toHaveTextContent(new RegExp(`^${text}$`))
   expect(collect()).toHaveLength(0)
+  expect(loadingMarks(status())).toHaveLength(1)
+})
+
+test('loading is counting: the count with the Loading mark', async () => {
+  renderNuevaVentaSheet({ customer: KNOWN, lines: [ROSA], held: ['products'] })
+  await waitFor(() => expect(loadingMarks(status())).toHaveLength(1))
+  expect(status().textContent).toBe('1 item')
 })
 
 test.each<[string, readonly LineSpec[], string]>([
@@ -114,22 +123,23 @@ test('touched follows the draft: a line makes the Sheet touched, and Close still
 })
 
 /** Each case has one line and must show neither Collect nor a figure. */
-const NO_TOTAL: [string, SheetCase, string][] = [
-  ['loading', { customer: KNOWN, lines: [ROSA], held: ['products'] }, '1 item'],
-  ['the Customer pending', { customer: { kind: 'typePending', name: 'Ana' }, lines: [ROSA] }, '1 item'],
-  ['a failed list', { customer: KNOWN, lines: [ROSA], broken: ['products'] }, '1 item'],
-  ['a failed Customer read', { customer: { kind: 'failed', name: 'Ana' }, lines: [ROSA] }, '1 item'],
-  ['a failed Customer read with no name', { customer: { kind: 'failed', name: null }, lines: [ROSA] }, '1 item'],
-  ['an unreadable shipping charged', { customer: KNOWN, lines: [ROSA], shipping: 'abc' }, '1 item'],
-  ['an unpriced line', { customer: KNOWN, lines: [ROSA, UNPRICED] }, '2 items'],
+const NO_TOTAL: [string, SheetCase, string, number][] = [
+  ['loading', { customer: KNOWN, lines: [ROSA], held: ['products'] }, '1 item', 1],
+  ['the Customer pending', { customer: { kind: 'typePending', name: 'Ana' }, lines: [ROSA] }, '1 item', 1],
+  ['a failed list', { customer: KNOWN, lines: [ROSA], broken: ['products'] }, '1 item', 0],
+  ['a failed Customer read', { customer: { kind: 'failed', name: 'Ana' }, lines: [ROSA] }, '1 item', 0],
+  ['a failed Customer read with no name', { customer: { kind: 'failed', name: null }, lines: [ROSA] }, '1 item', 0],
+  ['an unreadable shipping charged', { customer: KNOWN, lines: [ROSA], shipping: 'abc' }, '1 item', 0],
+  ['an unpriced line', { customer: KNOWN, lines: [ROSA, UNPRICED] }, '2 items', 0],
 ]
 
-test.each(NO_TOTAL)('%s: the status region has the count only, and there is no Collect', async (_name, spec, count) => {
+test.each(NO_TOTAL)('%s: the status region has the count only, and there is no Collect', async (_name, spec, count, marks) => {
   renderNuevaVentaSheet(spec)
   await waitFor(() => expect(status()).toHaveTextContent(new RegExp(`^${count}$`)))
   await settle()
   expect(status().textContent).toBe(count)
   expect(status().textContent).not.toContain('$')
+  expect(loadingMarks(status())).toHaveLength(marks)
   expect(collect()).toHaveLength(0)
 })
 
