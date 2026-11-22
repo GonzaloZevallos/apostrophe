@@ -1164,6 +1164,13 @@ a.ajustes-tema__opcion {
   opacity: 1;
 }
 
+/* The customer search's example: the secondary ink, fully opaque, as the phone field's above (the
+   browser's own placeholder grey fails contrast on the dark surface). */
+.clientes__buscar::placeholder {
+  color: var(--tinta2);
+  opacity: 1;
+}
+
 /* The Phone country control: the same options, stacked, one per row (nine do not fit across). */
 .ajustes-tema--columna {
   flex-direction: column;

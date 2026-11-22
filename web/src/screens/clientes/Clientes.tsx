@@ -114,7 +114,7 @@ export default function Clientes() {
         <label className="campo">
           <span className="visualmente-oculto">{SEARCH_LABEL}</span>
           <input
-            className="campo__input"
+            className="campo__input clientes__buscar"
             type="search"
             enterKeyHint="search"
             autoComplete="off"

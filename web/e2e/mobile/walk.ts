@@ -17,11 +17,13 @@ export interface WalkScreen extends Omit<RegistryScreen, 'steps' | 'walkedAs' | 
 
 export type Facts = Readonly<Record<string, string | number>>
 
-/**
- * What the seller reads: its text, or, for an icon-only button or link, its accessible name, or a
- * radio option's (its text may carry an aria-hidden count that is no part of the name). Waits for any.
- */
-function target(page: Page, name: string): Locator {
+/** What the seller reads: its text, or a radio option's name (its text may carry an aria-hidden count that is no part of the name). */
+function textOrRadio(page: Page, name: string): Locator {
+  return page.getByText(name, { exact: true }).or(page.getByRole('radio', { name, exact: true })).first()
+}
+
+/** A click names what the seller reads: its text or radio, or, for an icon-only button or link, its accessible name. Waits for any. */
+function clickTarget(page: Page, name: string): Locator {
   return page
     .getByText(name, { exact: true })
     .or(page.getByRole('button', { name, exact: true }))
@@ -47,13 +49,13 @@ async function run(page: Page, step: WalkStep, facts: Facts): Promise<void> {
       .or(page.getByLabel(step.activate, { exact: true }))
       .first()
     await control.dispatchEvent('click', undefined, options)
-  } else if ('click' in step) await target(page, step.click).click(options)
+  } else if ('click' in step) await clickTarget(page, step.click).click(options)
   else if ('press' in step) await page.getByRole('button', { name: step.press, exact: true }).click(options)
   else if ('select' in step) {
     await page.getByLabel(step.select.label, { exact: true }).selectOption({ index: step.select.index }, options)
   } else if ('fill' in step) {
     await fill(page, step.fill.label, resolvePlaceholders(step.fill.value, facts), STEP_TIMEOUT_MS)
-  } else if ('wait' in step) await target(page, step.wait).waitFor(options)
+  } else if ('wait' in step) await textOrRadio(page, step.wait).waitFor(options)
   else await page.context().setOffline(true)
 }
 

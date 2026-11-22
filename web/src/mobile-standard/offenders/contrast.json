@@ -1,14 +1,5 @@
 [
   {
-    "screen": "Clientes",
-    "rule": "contrast",
-    "target": "textbox:Search customer::placeholder",
-    "issue": 46,
-    "themes": [
-      "oscuro"
-    ]
-  },
-  {
     "screen": "DescartarVenta",
     "rule": "contrast",
     "target": "textbox:Date",
