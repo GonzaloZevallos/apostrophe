@@ -11,6 +11,7 @@
 import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SETTINGS_BUSINESS } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
+import { openAllCustomers } from './helpers/openScreens.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -107,6 +108,7 @@ test('a Uruguayan device saves a local Uruguayan number, an Argentine one by pic
     ['Rosa Santiago', chile.label],
   ] as const) {
     await page.goto(CUSTOMERS)
+    await openAllCustomers(page)
     await page.getByRole('link', { name: new RegExp(name) }).first().click()
     await page.getByRole('link', { name: 'Edit' }).click()
     await expect(countryField(page)).toContainText(country)

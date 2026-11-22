@@ -281,11 +281,11 @@ Un Balance menor que cero, que queda solo cuando se elimina una Sale que unos Pa
 _Avoid_: refund, saldo a favor, overpayment
 
 **Sales still owing**:
-Toda Sale de un Business que no está pagada por completo una vez que se aplica el Settlement, las pagadas en parte incluidas, cada una contada una sola vez. _In the app_: owes you (en Sales) y la línea del conteo de la sección "Owed to you" de Customers y del bloque "Owed to you" de Home.
+Toda Sale de un Business que no está pagada por completo una vez que se aplica el Settlement, las pagadas en parte incluidas, cada una contada una sola vez. Desde la parte 1 de GH-831 su conteo se muestra solo en el bloque "Owed to you" de Home y como "owes you" en Sales; Customers ya no lo muestra. _In the app_: owes you (en Sales) y la línea del conteo del bloque "Owed to you" de Home.
 _Avoid_: unpaid orders, pending sales, open invoices
 
 **Total owed**:
-La suma del Balance de cada Customer mayor que $0 en un Business; los Credits nunca la restan. _In the app_: el título de la sección "Owed to you" de Customers y del bloque "Owed to you" de Home.
+La suma del Balance de cada Customer mayor que $0 en un Business; los Credits nunca la restan. Se muestra en la vista "Owed to you" de Customers cuando alguien debe, y en el bloque "Owed to you" de Home. _In the app_: la cifra de la vista "Owed to you" de Customers y el título del bloque "Owed to you" de Home.
 _Avoid_: receivables, outstanding
 
 **Margin**:

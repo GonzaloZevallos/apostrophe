@@ -12,9 +12,6 @@ import { SHELL_TEXT } from './shell.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-/** Heads everyone A–Z, under "Owed to you" (`Clientes.dc.html`). */
-export const EVERYONE = 'Everyone · A–Z'
-
 export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */

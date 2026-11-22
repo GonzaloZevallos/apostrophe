@@ -83,29 +83,34 @@ test("heads with the total owed and lists debtors in the API's own order", async
   ])
 })
 
-test('one sale still owing reads "1 sale owing", singular', async () => {
-  // `sales_owing_count` is overridden in memory, never read off the fixture
-  // (plan invariant: "A test of a count line fakes the count it asserts and
-  // compares against a literal string, never one derived from a fixture value").
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, debtorsOf({ sales_owing_count: 1 })))
-  renderTeDeben()
-
-  expect(await screen.findByText('1 sale owing')).toBeInTheDocument()
-})
-
-test('three sales still owing read "3 sales owing", plural', async () => {
+test('the view carries no "N sales owing" line and no section header, whatever the count', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, debtorsOf({ sales_owing_count: 3 })))
   renderTeDeben()
 
-  expect(await screen.findByText('3 sales owing')).toBeInTheDocument()
+  await screen.findByText(`$ ${DEBTORS_FIXTURE.total_owed.toLocaleString('es-AR')}`)
+  expect(screen.queryByText(/sales? owing/)).not.toBeInTheDocument()
+  expect(screen.queryByText('Owed to you')).not.toBeInTheDocument()
+})
+
+test('the debtor rows sit in a focusable place marked for the return to place', async () => {
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, DEBTORS_FIXTURE))
+  renderTeDeben()
+
+  const first = (await screen.findAllByRole('link', { name: /Ana Pérez/ }))[0]!
+  const place = first.closest('[data-place]')
+  expect(place).toHaveAttribute('data-place', 'owed')
+  expect(place).toHaveAttribute('tabindex', '-1')
 })
 
 test('nobody owing shows the fixed "Nobody owes you"', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, NO_DEBTORS))
   renderTeDeben()
 
-  expect(await screen.findByText(NOBODY_OWES)).toBeInTheDocument()
-  expect(screen.getByRole('region', { name: 'Owed to you' })).toBeInTheDocument()
+  const nobody = await screen.findByText(NOBODY_OWES)
+  expect(nobody).toHaveAttribute('data-place', 'owed')
+  expect(nobody).toHaveAttribute('tabindex', '-1')
+  expect(screen.queryByRole('link')).not.toBeInTheDocument()
+  expect(screen.queryByText(/\$ /)).not.toBeInTheDocument()
 })
 
 test('a dropped network shows nothing here: Clientes shows Sin conexión on its own list', async () => {

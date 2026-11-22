@@ -265,7 +265,6 @@
   {"source":"customers.ts:CUSTOMERS_TEXT.typeNotice","args":null,"text":"Add a customer type"},
   {"source":"customers.ts:CUSTOMERS_TEXT.yes","args":null,"text":"Yes"},
   {"source":"customers.ts:EMPTY_CUSTOMERS","args":null,"text":"You have not added any customers yet."},
-  {"source":"customers.ts:EVERYONE","args":null,"text":"Everyone · A–Z"},
   {"source":"customers.ts:LANGUAGE","args":null,"text":"en"},
   {"source":"customers.ts:NOBODY_OWES","args":null,"text":"Nobody owes you"},
   {"source":"customers.ts:phoneAdjective","args":["AR"],"text":"an Argentine"},

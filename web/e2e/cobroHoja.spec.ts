@@ -216,11 +216,8 @@ async function moreSalesFor(page: Page, name: string, count: number): Promise<vo
 
 const scrollY = (page: Page): Promise<number> => page.evaluate(() => window.scrollY)
 
-/** The control the seller taps on the origin; on Customers, the one in the A–Z section, far down a long page. */
+/** The control the seller taps on the origin; on Customers, the one in the "Owed to you" view the screen opens on. */
 function openerOn(page: Page, origin: Origin) {
-  if (origin === 'customers') {
-    return page.getByRole('region', { name: 'Everyone · A–Z' }).getByRole('link', { name: OPENER.customers })
-  }
   return page.getByRole('link', { name: OPENER[origin] }).first()
 }
 
@@ -254,15 +251,11 @@ for (const viewport of VIEWPORTS) {
           await goToOrigin(page, origin)
           const opener = openerOn(page, origin)
           await expect(opener).toBeVisible()
-          if (origin === 'customers') {
-            await opener.scrollIntoViewIfNeeded()
-          } else {
-            // Home and the card keep the control near the top; scroll so it sits 100 px below it, or as far as the page goes.
-            await opener.evaluate((element) => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY - 100))
-            await expect(opener).toBeInViewport()
-          }
+          // The origins keep the control near the top; scroll so it sits 100 px below it, or as far as the page goes.
+          await opener.evaluate((element) => window.scrollTo(0, element.getBoundingClientRect().top + window.scrollY - 100))
+          await expect(opener).toBeInViewport()
           const before = await scrollY(page)
-          expect(before).toBeGreaterThan(origin === 'customers' ? 500 : 50)
+          expect(before).toBeGreaterThan(50)
           await opener.click()
           await expect(page.getByRole('dialog', { name: 'Record payment' })).toBeVisible()
 
@@ -282,10 +275,10 @@ for (const viewport of VIEWPORTS) {
           if (how !== 'full') {
             await expect(openerOn(page, origin)).toBeFocused()
           } else if (origin === 'customers') {
-            // Twelve more customers still owe, so the block stays and its heading takes focus.
-            await expect(page.locator(':focus')).toHaveText('Owed to you')
+            // Twelve more customers still owe, so the list stays and takes focus.
+            await expect(page.locator(':focus')).toHaveAttribute('data-place', 'owed')
             await expect(page.getByRole('link', { name: OPENER.customers })).toHaveCount(0)
-            await expect(page.getByRole('link', { name: /^Collect from Zeta/ })).toHaveCount(24)
+            await expect(page.getByRole('link', { name: /^Collect from Zeta/ })).toHaveCount(12)
           } else if (origin === 'home') {
             // Twelve customers still owe: the block stays, with its heading focused and Carla gone from it.
             await expect(page.locator(':focus')).toHaveText('Owed to you')

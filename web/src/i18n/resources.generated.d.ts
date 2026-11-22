@@ -8,6 +8,7 @@ export type Resources = {
   "emptyStates": typeof import('../copy/locales/en/emptyStates.json')
   "paymentMethods": typeof import('../copy/locales/en/paymentMethods.json')
   "refusals": typeof import('../copy/locales/en/refusals.json')
+  "settings": typeof import('../copy/locales/en/settings.json')
   "shell": typeof import('../copy/locales/en/shell.json')
 }
 
