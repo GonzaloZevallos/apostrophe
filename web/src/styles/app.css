@@ -423,7 +423,7 @@ body {
   gap: var(--espacio-sm);
   background: var(--acento-suave);
   border-radius: var(--radio-panel-grande);
-  padding: var(--espacio-xs) var(--espacio-sm) var(--espacio-xs) 18px;
+  padding: var(--espacio-xs) var(--espacio-sm) var(--espacio-xs) var(--espacio-lg);
   color: var(--acento);
 }
 
