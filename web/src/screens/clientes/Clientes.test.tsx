@@ -950,6 +950,11 @@ function requestsTo(path: string): number {
   return vi.mocked(fetch).mock.calls.filter(([input]) => (typeof input === 'string' ? input : String(input)) === path).length
 }
 
+function customerListRequests(): number {
+  const url = '/customers'
+  return requestsTo(url)
+}
+
 /** A debtors read that fails until `answer` gives it a body. */
 function flakyDebtors(): { fail: () => void; answer: (body: unknown) => void; respond: () => Response } {
   let body: unknown = null
@@ -986,7 +991,7 @@ test('tapping the notice re-reads only the debtors, and on success the segments 
   renderClientes()
   await userEvent.click(await screen.findByRole('button', { name: DEBTORS_NOTICE }))
   await waitFor(() => expect(requestsTo('/payments/debtors')).toBe(2))
-  expect(requestsTo('/customers')).toBe(1)
+  expect(customerListRequests()).toBe(1)
 
   debtors.answer(DEBTORS_FIXTURE)
   await userEvent.click(await screen.findByRole('button', { name: DEBTORS_NOTICE }))
@@ -995,7 +1000,7 @@ test('tapping the notice re-reads only the debtors, and on success the segments 
   expect(owed).toBeChecked()
   expect(owed).toHaveTextContent(/\d/)
   expect(requestsTo('/payments/debtors')).toBe(3)
-  expect(requestsTo('/customers')).toBe(1)
+  expect(customerListRequests()).toBe(1)
   expect(screen.queryByRole('button', { name: DEBTORS_NOTICE })).not.toBeInTheDocument()
 })
 
