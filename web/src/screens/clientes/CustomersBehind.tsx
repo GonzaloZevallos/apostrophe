@@ -20,23 +20,25 @@ import { useIsVipCustomers } from '../../api/pricingSettings'
 import { useMoney } from '../../format/moneyContext'
 import { COMMON_TEXT } from '../../copy/common'
 import ClienteFila from './ClienteFila'
-import { customersView, debtorsState, segmentCounts, useCustomerSearch } from './CustomerSearch'
+import { customersView, debtorsState, listKeyQuery, segmentCounts, useCustomerSearch } from './CustomerSearch'
 import CustomerSegments from './CustomerSegments'
 
 export default function CustomersBehind() {
   const money = useMoney()
   const { query, segment } = useCustomerSearch()
   const vipCustomers = useIsVipCustomers()
+  // The list's own key: a query of only spaces is the full list's, as on the screen.
+  const keyQuery = listKeyQuery(query, query)
   const { data } = useQuery({
-    queryKey: keys.customers(query),
-    queryFn: () => listCustomers(query),
+    queryKey: keys.customers(keyQuery),
+    queryFn: () => listCustomers(keyQuery),
     retry: false,
   })
 
   const debtors = useQuery(debtorsQuery)
 
   if (data === undefined) return null
-  const view = customersView({ query, isPlaceholderData: false, debtors: debtorsState(debtors), segment })
+  const view = customersView({ query, debtors: debtorsState(debtors), segment })
   const owed = view === 'owed' && debtors.data !== undefined && debtors.data.debtor_count !== 0 ? debtors.data : null
 
   return (
