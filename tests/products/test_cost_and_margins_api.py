@@ -12,7 +12,6 @@ from sqlalchemy.engine import Engine
 
 from app.clock import business_day
 from tests.conftest import MovableClock
-from tests.pricing_switches import set_switches
 from tests.vip_type import make_type
 
 PENDING: dict[str, Any] = {"amount": None, "margins": []}
@@ -231,8 +230,8 @@ def test_a_price_dated_tomorrow_gives_no_margin_today(
     assert _cost(client, product_id) == {"amount": 40, "margins": []}
 
 
-def test_the_bulk_margin_follows_the_bulk_price_setting(client: TestClient, engine: Engine) -> None:
-    set_switches(engine, bulk=True, vip=False)
+def test_the_bulk_margin_follows_the_bulk_price_setting(client: TestClient) -> None:
+    _switches(client, bulk=True, vip=False)
     product_id = _product(client)
     _price(client, product_id, 100, bulk_price=80, bulk_minimum=10)
     _record(client, product_id, "1", 40)
@@ -251,7 +250,7 @@ def test_the_vip_margin_comes_last_and_follows_the_switch_and_the_type(
 ) -> None:
     # A VIP type comes only from the upgrade or the import, never from a route (docs/adr/0070):
     # this is the one hand-built row of these tests.
-    set_switches(engine, bulk=True, vip=True)
+    _switches(client, bulk=True, vip=True)
     vip_type = make_type(engine, is_vip=True)
     product_id = _product(client)
     _price(client, product_id, 100, bulk_price=80, bulk_minimum=10, vip_price=70)
@@ -269,10 +268,8 @@ def test_the_vip_margin_comes_last_and_follows_the_switch_and_the_type(
     assert _rules(_cost(client, product_id)) == [("list", 60), ("bulk", 50)]
 
 
-def test_a_type_named_vip_made_through_the_api_gives_no_vip_margin(
-    client: TestClient, engine: Engine
-) -> None:
-    set_switches(engine, bulk=False, vip=True)
+def test_a_type_named_vip_made_through_the_api_gives_no_vip_margin(client: TestClient) -> None:
+    _switches(client, bulk=False, vip=True)
     created = client.post("/api/customer-types", json={"name": "VIP", "icon": "star"})
     assert created.status_code == 201, created.text
     product_id = _product(client)
