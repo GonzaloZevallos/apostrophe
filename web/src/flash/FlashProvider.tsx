@@ -12,6 +12,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, t
 import { useLocation } from 'react-router'
 import AvisoExito, { SaleSavedToast } from '../components/AvisoExito'
 import { FlashContext, type Flash } from './flashContext'
+import UndoResultToast from './UndoResultToast'
 import { FOLLOWED_REDIRECT, flashReducer, type FlashMessage, type FlashOptions } from './flashReducer'
 
 function isFollowedRedirect(historyState: unknown): boolean {
@@ -80,6 +81,11 @@ export default function FlashProvider({ children }: { children: ReactNode }) {
       {message?.kind === 'saleSaved' && (
         <div className="aviso-flotante">
           <SaleSavedToast name={message.name} onUndo={onPress} />
+        </div>
+      )}
+      {message?.kind === 'undoResult' && (
+        <div className="aviso-flotante">
+          <UndoResultToast result={message.result} />
         </div>
       )}
     </FlashContext.Provider>
