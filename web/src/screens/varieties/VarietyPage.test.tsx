@@ -304,6 +304,15 @@ describe('the state block', () => {
     expect(screen.queryByText('Hidden')).not.toBeInTheDocument()
   })
 
+  test('a Stock row that cannot be reached shows No connection, with no busy list and no figure', async () => {
+    renderPage(VARIETY_ONE, { 'GET /stock': () => Promise.reject(new TypeError('Failed to fetch')) })
+
+    expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
+    expect(screen.queryByRole('list', { name: '24K Gold' })).not.toBeInTheDocument()
+    expect(document.querySelector('[aria-busy="true"]')).toBeNull()
+    expect(screen.queryByText(/\d+ g/)).not.toBeInTheDocument()
+  })
+
   test('a failed Stock row shows the error with no busy list and no figure', async () => {
     renderPage(VARIETY_ONE, { 'GET /stock': () => json(500, { code: 'boom' }) })
 
