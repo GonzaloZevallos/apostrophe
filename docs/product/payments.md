@@ -20,9 +20,11 @@ Es el mismo job de "manejar mi negocio desde el celular" que el de cualquier otr
 
 **Cuando** un cliente me pregunta cuánto me debe o me dice que ya me pagó, y tengo el celular en la mano y poco tiempo, **quiero** ver su cuenta como una sola lista de Sales y Payments con el saldo después de cada una, **para poder** contestarle, y mostrarle, cómo se llegó a esa cifra sin hacer la cuenta yo. (Parte 1 de GH-829, dentro de la parte 2 de GH-498: acá lo sirve la cuenta de la ficha del Customer como libro corrido, con una fila por Payment. Antes, un mismo Payment aparecía partido en varias líneas "On account of the sale of dd/mm" y una fila Credit aparecía de la nada al eliminar una Sale, así que el vendedor no podía conciliar las filas con el Balance de la cabecera.)
 
+**Cuando** abro Customers en el celular con poco tiempo, **quiero** ver de entrada si alguien me debe, y cuántos, y pasar a todos a los que les vendo cuando necesito a otra persona, **para poder** perseguir o cobrar lo que me deben sin scrollear entre gente que no debe nada. (Parte 1 de GH-831, entregada en GH-934: acá lo sirven la vista "Owed to you" de Customers, con que se abre la pantalla, la cantidad de deudores del control "Owed to you · N" y el estado "Nobody owes you"; las vistas están en customers.md.)
+
 # Pagos
 
-El dinero que un **Customer** entrega, y lo que cada Customer debe por eso: su **Balance**, su **Owing since** y la cuenta de sus **Sales** y **Payments**. Lo ve solo su **Business** (ADR-0004). Lee las Sales y sus **On-the-spot payments** de sales (ADR-0007), los Customers de customers y los **Payment methods** de payment-methods (ADR-20261111-payment-methods-by-id). **Cash** (#7) cuenta los Payments en sus propias fechas, sea cual sea su medio. Qué Sale salda un Payment se calcula en el momento y nunca se guarda, igual que el **Cost of goods sold** (ADR-0009, ADR-0010), mientras que los precios de una Sale quedan congelados (ADR-0003). Quién debe se muestra como la sección Owed to you arriba de Customers y como el bloque "Owed to you" de Home; no hay una pantalla Owed to you aparte.
+El dinero que un **Customer** entrega, y lo que cada Customer debe por eso: su **Balance**, su **Owing since** y la cuenta de sus **Sales** y **Payments**. Lo ve solo su **Business** (ADR-0004). Lee las Sales y sus **On-the-spot payments** de sales (ADR-0007), los Customers de customers y los **Payment methods** de payment-methods (ADR-20261111-payment-methods-by-id). **Cash** (#7) cuenta los Payments en sus propias fechas, sea cual sea su medio. Qué Sale salda un Payment se calcula en el momento y nunca se guarda, igual que el **Cost of goods sold** (ADR-0009, ADR-0010), mientras que los precios de una Sale quedan congelados (ADR-0003). Quién debe se muestra como la vista "Owed to you" de Customers, con la que se abre la pantalla, y como el bloque "Owed to you" de Home; no hay una pantalla Owed to you aparte.
 
 Criterios de éxito:
 
@@ -32,7 +34,7 @@ Criterios de éxito:
    - El Balance es igual a lo que se compró y no se pagó, menos los Payments, al peso.
    - El Owing since es la fecha de la Sale más vieja que no está pagada por completo.
    - Los dos son correctos inmediatamente después de registrar o eliminar cualquier Sale o Payment, y nunca dependen del orden en que se cargaron las cosas.
-4. **Quién debe, de un vistazo**: todo Customer que debe, con la deuda más vieja primero, cada uno con su Balance y su Owing since, arriba de Customers. También el **Total owed** y la cantidad de **Sales still owing**, sin calcularlos a partir de las Sales. En Sales, una Sale que todavía se debe aparece marcada como tal.
+4. **Quién debe, de un vistazo**: todo Customer que debe, con la deuda más vieja primero, cada uno con su Balance y su Owing since, en la vista "Owed to you" con que se abre Customers, junto con el **Total owed** y la cantidad de Customers que deben ("Owed to you · N"). La cantidad de **Sales still owing** se muestra en el bloque "Owed to you" de Home, no en Customers. Nada de eso se calcula a partir de las Sales en el navegador. En Sales, una Sale que todavía se debe aparece marcada como tal.
 5. **Una cuenta que se lee de una pasada** (parte 1 de GH-829):
    - La cuenta de cada Customer es un libro corrido: sus Sales y Payments en orden de fecha, cada Sale sumando, cada Payment restando y el saldo después de cada fila.
    - El saldo de la fila más nueva es siempre igual al Balance de la cabecera de la ficha, sin excepción: también con un Payment de fecha anterior a su Sale, una Sale y un Payment del mismo día, un Credit que quedó al eliminar una Sale y una Sale sin Customer a la que después se le asigna uno.
@@ -55,7 +57,7 @@ Criterios de éxito:
     - Sin el flag, la respuesta conserva su contenido de antes y `still_owing` está presente con valor null, así que ningún llamador existente se ve afectado.
 14. **Un orden estable de deudores** (GH-828): el Owing since más viejo primero, después el Balance mayor, después el nombre sin distinguir mayúsculas ni acentos, después el orden de registro. Los mismos datos dan siempre el mismo orden.
 15. **La antigüedad en días del Business** (GH-828): se cuenta en días de hora argentina y cambia solo a la medianoche local. Una deuda de 30 días sigue en 8-30; pasada la próxima medianoche argentina tiene 31 y está en over 30. Una Sale con fecha posterior a hoy tiene 0 días y está en this week.
-16. **"N de M clientes me deben"** (GH-828): la cantidad de Customers incluye a los que no tienen Sales y a los que tienen un Credit; la cantidad de deudores no incluye a ninguno de los dos.
+16. **"N de M clientes me deben"** (GH-828): la cantidad de Customers incluye a los que no tienen Sales y a los que tienen un Credit; la cantidad de deudores no incluye a ninguno de los dos. Desde GH-934 Customers muestra las dos, "All · N" y "Owed to you · N" (customers.md).
 17. **Nada de otro Business** (GH-828, #899): ninguna cifra, cantidad, Sale ni **Sale number** de otro Business aparece en la lista de deudores ni en sus líneas, y nada revela que exista.
 18. **La marca de Payment parcial, solo en la API** (parte 1 de GH-829): cada fila de Payment de la cuenta lleva `is_partial`, verdadero solo cuando el saldo corrido después de ese Payment es mayor que 0, y falso en exactamente 0 y por debajo. La calcula solo `account_of()`. La ficha todavía no la muestra; una parte posterior la muestra como una palabra en la fila, nunca solo por color, con su propio chequeo contra el dibujo.
 
@@ -111,18 +113,18 @@ Criterios de éxito:
 
 ### La lista de deudores (`GET /api/payments/debtors`)
 
-La lectura de la que salen la sección "Owed to you" de Customers y el bloque de Home. Todo se calcula en el momento a partir del Settlement (`settle()`) y de la antigüedad de la deuda (`debt_age`); nada se guarda. Los campos que ya existían conservan su nombre y su significado.
+La lectura de la que salen la vista "Owed to you" de Customers, las cantidades de su control "All | Owed to you" y el bloque de Home. Todo se calcula en el momento a partir del Settlement (`settle()`) y de la antigüedad de la deuda (`debt_age`); nada se guarda. Los campos que ya existían conservan su nombre y su significado.
 
 - **Totales de la respuesta**:
   - `total_owed` y la cantidad de Sales still owing, como antes.
-  - `customer_count`: todos los Customers del Business, los que no tienen Sales y los que tienen un Credit incluidos. Sale de un conteo directo de los Customers del Business, nunca del Settlement.
-  - `debtor_count`: los Customers cuyo Balance es mayor que $0. Nunca cuenta un Customer sin Sales ni uno con Credit.
+  - `customer_count`: todos los Customers del Business, los que no tienen Sales y los que tienen un Credit incluidos. Sale de un conteo directo de los Customers del Business, nunca del Settlement. Customers lo muestra como "All · N".
+  - `debtor_count`: los Customers cuyo Balance es mayor que $0. Nunca cuenta un Customer sin Sales ni uno con Credit. Customers lo muestra como "Owed to you · N" y, cuando vale 0, muestra "Nobody owes you".
   - `buckets`: un objeto `{this_week, days_8_30, over_30}` con lo que todavía se debe de cada Sale still owing, sumado según la antigüedad de esa Sale. Solo lo alimentan los Customers que deben, así que un Credit nunca entra y los tres suman el Total owed. Sin deudores, los tres están presentes y valen 0.
 - **Por deudor**, además del nombre, el Balance y el Owing since:
   - `age_days` y `bucket`: la antigüedad de su Owing since, es decir de su deuda más vieja, y su tramo. Como `buckets` suma por Sale, las Sales de un deudor pueden caer en más de un tramo mientras el deudor lleva un solo `bucket`.
   - `customer_type_id`: el **Customer type** guardado del Customer, o null. Es null siempre que el interruptor Customer types de las **Pricing settings** está desactivado; el valor guardado nunca cambia. Solo el caso de uso lo oculta.
   - `still_owing` (#899): siempre presente. Vale `null` salvo que el pedido lleve `with_lines=true`; entonces es la lista de las Sales still owing de ese Customer, una línea por Sale.
-- **El parámetro `with_lines`** (#899): opcional, booleano y desactivado por defecto. Un valor que no es booleano recibe la misma respuesta 422 de validación que cualquier otro parámetro inválido, sin código de rechazo propio. La sección "Owed to you" de Customers y el bloque de Home no lo mandan en esta parte, así que su respuesta no cambia.
+- **El parámetro `with_lines`** (#899): opcional, booleano y desactivado por defecto. Un valor que no es booleano recibe la misma respuesta 422 de validación que cualquier otro parámetro inválido, sin código de rechazo propio. La vista "Owed to you" de Customers y el bloque de Home no lo mandan en esta parte, así que su respuesta no cambia.
 - **Cada línea de `still_owing`**: `{sale_number, date, remaining}`.
   - `sale_number` es el **Sale number** propio de la Sale en su Business (Sale #N en pantalla), nunca un id.
   - `date` es la fecha de la Sale.
@@ -151,16 +153,18 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
 
 ### En pantalla: la vista "Owed to you" de Customers
 
-- **Dónde**: la vista "Owed to you" de Customers (customers.md), una de las dos del control "All | Owed to you"; es la vista con que Customers se abre. Reemplaza a la antigua pantalla Owed to you, que ya no existe; su ruta vieja responde como una dirección desconocida (navigation.md, Direcciones retiradas). El título Owed to you de Home abre Customers en esta vista (results.md).
+- **Dónde**: la vista "Owed to you" de Customers (customers.md), una de las dos del control "All | Owed to you"; es la vista con que Customers se abre, también cuando nadie debe. Reemplaza a la antigua pantalla Owed to you, que ya no existe; su ruta vieja responde como una dirección desconocida (navigation.md, Direcciones retiradas). El título Owed to you de Home abre Customers en esta vista (results.md).
 - **Su cabecera**: el Total owed, sin título de sección y sin la línea "N sales owing"; esa cantidad sigue en el bloque "Owed to you" de Home (results.md). La cantidad de Customers que deben está en el control, "Owed to you · N".
 - **Sus filas**: solo los Customers cuyo Balance es mayor que $0, en el orden de la lista de deudores: por Owing since (el más viejo primero), después el Balance mayor, después el nombre sin distinguir mayúsculas ni acentos, después el orden de registro.
   - Cada fila muestra el Balance en ámbar y "since dd/mm", nunca como chip.
-  - Cada fila lleva **"Collect"** (nombre accesible "Collect from <name>"), que abre Record payment con ese Customer ya elegido. Tocar el resto de la fila abre la ficha del Customer. En el celular, "Collect" y "Owed to you" son blancos táctiles de al menos 44×44 (navigation.md, "Disposición en el celular").
-- **Nadie debe**: la vista dice solo un "Nobody owes you" fijo, sin nada para tocar, sin Total owed y sin lista vacía.
+  - Cada fila lleva **"Collect"** (nombre accesible "Collect from <name>"), que abre Record payment con ese Customer ya elegido. Tocar el resto de la fila abre la ficha del Customer. En el celular, "Collect" y las opciones del control son blancos táctiles de al menos 44×44 (navigation.md, "Disposición en el celular").
+  - El contenedor de las filas lleva `tabIndex=-1` y `data-place={OWED_PLACE}`: es el lugar de la vista para el foco.
+- **Nadie debe** (`debtor_count` 0): la vista dice solo un "Nobody owes you" fijo, sin nada para tocar, sin Total owed y sin lista vacía; esa línea es entonces el lugar para el foco (`tabIndex=-1`, `data-place={OWED_PLACE}`).
+- **Mientras la lectura está pendiente** no se muestra el Total owed, ninguna fila ni "Nobody owes you"; si falla, Customers muestra la lista plana de todos, con "Collect" en cada fila de quien debe (customers.md).
 - **La cabecera de Customers** no lleva ninguna cifra de deuda tocable: la vista misma está en pantalla.
 - **Búsqueda**: mientras se escribe una consulta, Customers deja el control de vistas y muestra una sola lista plana por nombre (customers.md); un Customer que debe conserva ahí su Balance, "owes you since dd/mm" y "Collect".
-- **Los Customers con Credit** nunca aparecen en la sección y no cuentan en ninguna cifra. En todos de la A a la Z muestran "Credit $ X" con el tratamiento neutro/azul, nunca verde ni ámbar.
-- Los tramos de antigüedad, las cantidades de Customers y deudores, el Customer type y las líneas por Sale todavía no se muestran: los mostrarán partes posteriores.
+- **Los Customers con Credit** nunca aparecen en la vista "Owed to you" y no cuentan en ninguna cifra. En la vista "All" muestran "Credit $ X" con el tratamiento neutro/azul, nunca verde ni ámbar.
+- Los tramos de antigüedad, el Customer type y las líneas por Sale todavía no se muestran: los mostrarán partes posteriores de GH-831. Las cantidades de Customers y de deudores sí se muestran, en el control de vistas.
 
 ### En pantalla: la ficha del cliente (`ClienteFicha`)
 
@@ -193,7 +197,7 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
 
 ![Record payment en el teléfono](../assets/screens/Cobro.webp)
 
-- **Se abre desde**: "Collect" en una fila de deudor de Customers (cualquiera de las dos secciones, o los resultados de búsqueda) o del bloque "Owed to you" de Home, y "Record payment" en la ficha del Customer. Cada uno lo abre con ese Customer ya elegido.
+- **Se abre desde**: "Collect" en una fila de deudor de Customers (cualquiera de las dos vistas, los resultados de búsqueda o la lista plana) o del bloque "Owed to you" de Home, y "Record payment" en la ficha del Customer. Cada uno lo abre con ese Customer ya elegido.
 - **Una Sheet en el celular, un modal en la computadora** (navigation.md):
   - En el celular es una Sheet de pantalla completa dibujada con el único `Sheet` compartido (ADR-0062), sobre la pantalla desde la que se abrió (la ficha del Customer, Customers o Home), nunca una página propia. Esa pantalla queda debajo. No tiene manija ni deja asomar la pantalla de atrás.
   - En el celular la Sheet no tiene afuera: "Close" arriba y el gesto de volver del celular, que son la misma acción, son sus únicas salidas. Un toque en la franja de área segura junto a la barra de estado no hace nada.
@@ -206,7 +210,7 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
 - **Volver donde estabas**: al cerrar, con "Close" o al guardar, la pantalla de abajo queda en la posición de scroll que tenía cuando se tocó "Collect" o "Record payment", en el celular y en la computadora.
   - El refresco posterior al guardado actualiza las filas en su lugar y nunca reinicia el scroll.
   - El foco vuelve al "Collect" (o "Record payment") que se tocó.
-  - Cuando el Payment salda todo el Balance y la fila del Customer sale de "Owed to you", la lista queda en el mismo desplazamiento y las filas se cierran; nada salta arriba de todo. El foco va al título "Owed to you", o a "Nobody owes you" cuando la sección quedó vacía.
+  - Cuando el Payment salda todo el Balance y la fila del Customer sale de "Owed to you", la lista queda en el mismo desplazamiento y las filas se cierran; nada salta arriba de todo. En Customers el foco va a la lista de la vista "Owed to you", o a "Nobody owes you" cuando ya nadie debe; en Home, a su título "Owed to you". Desde la vista "All", el foco cae en el campo de búsqueda hasta que #942 lo lleve a la opción elegida del control.
   - Esto vale solo para este flujo; la restauración del scroll en el resto de la app no es parte de los pagos.
 - **La Sheet**:
   - "All: $ X" completa el monto con todo el Balance en un toque;
@@ -283,8 +287,8 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
   - independencia del orden de registro;
   - recalcular después de un registro tardío o de la eliminación de una Sale o de un Payment.
 - **Identidad del Balance (criterio 3)**: Balance = comprado e impago − Payments, al peso, después de cada alta y eliminación de Sales y Payments.
-- **Credit**: después de eliminar una Sale saldada, la cabecera muestra el Credit como "Credit", queda fuera de la sección Owed to you, del Total owed y de la cantidad, se aplica a la próxima Sale que quede debiendo, y en la cuenta se ve como un saldo corrido "In your favor $ X", nunca como una fila propia.
-- **Totales de quién debe (criterio 4)**: el Total owed, la cantidad de Sales still owing, la sección "Owed to you" de Customers, el bloque de Home y la marca de Sales son iguales a un cálculo directo sobre las Sales y los Payments. 0 diferencias. La línea de cantidad dice "1 sale owing" para una Sale y "N sales owing" para dos o más, las dos cubiertas por los tests del front.
+- **Credit**: después de eliminar una Sale saldada, la cabecera muestra el Credit como "Credit", queda fuera de la vista "Owed to you", del Total owed y de las cantidades, se aplica a la próxima Sale que quede debiendo, y en la cuenta se ve como un saldo corrido "In your favor $ X", nunca como una fila propia.
+- **Totales de quién debe (criterio 4)**: el Total owed, la cantidad de Sales still owing, la vista "Owed to you" de Customers, el bloque de Home y la marca de Sales son iguales a un cálculo directo sobre las Sales y los Payments. 0 diferencias. La línea de cantidad de Home dice "1 sale owing" para una Sale y "N sales owing" para dos o más, las dos cubiertas por los tests del front; Customers no la muestra, y sus tests lo comprueban.
 - **La cuenta cierra con el Balance (criterio 5)**: en cada caso de la matriz de dominio (`tests/payments/test_account.py`) el saldo de la última fila es igual a `settle().balance`, 0 diferencias. La matriz cubre: un Payment del mismo día registrado antes de una Sale y otro registrado después; un Payment con fecha anterior a su Sale (una fila negativa, no parcial); un empate de fecha y `recorded_at` (la Sale va primero, sin fila negativa); un Credit después de una Sale eliminada; marcas parciales, exactamente 0 incluido. Un test de propiedad con semilla fija (`random.Random`) sobre libros mezclados afirma la misma igualdad e `is_partial == (running_balance > 0)` en cada fila de Payment.
 - **La cuenta por la API (criterio 5)**: tests por TestClient con el reloj movible: un Payment de una deuda vieja registrado antes de una Sale del mismo día va primero; el orden inverso pone la Sale primero; una Sale sin Customer a la que después se le asigna uno conserva su lugar. En cada uno la fila más nueva es igual al Balance.
 - **La cuenta en pantalla (criterio 5)**: los tests del front (`accountRows.test.ts`, `ClienteFicha.test.tsx`) muestran la etiqueta "Account · running balance"; "Sale #N" sobre "Paid · <medio>", "Left owing" o, para una Sale de $0, "Nothing to pay"; una sola fila "Payment · <medio>" por Payment, con su monto completo y sin sublínea, eliminable una sola vez; "In your favor $ X" sin sublínea cuando el saldo corrido es menor que cero; el nombre actual del medio después de renombrarlo (por ejemplo "Paid · Cash" y después "Paid · Mercado Pago"); "Paid" a secas solo para una fila sin medio y nunca una palabra cash o transfer; el monto sobre "balance $ X" sin corte dentro de un monto; ningún Product ni gramos en la fila de una Sale; y las aserciones de "Credit" de la cabecera sin cambios. `ledgerRowView` es exhaustivo (`assertNever`, sin `default`).
@@ -298,7 +302,7 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
   - salda todo con "All";
   - registra un Payment parcial;
   - elimina un Payment;
-  - lee la vista "Owed to you" de Customers y su Total owed.
+  - lee la vista "Owed to you" de Customers y su Total owed, y elige la vista "All" para encontrar a un Customer que no debe.
 
   Los controles del estado de guardado en curso siguen como estaban.
 - **Sheet en el celular (criterio 9)**: una corrida end-to-end en un viewport de celular abre Record payment desde "Collect" en Customers, "Collect" en Home y el "Record payment" de la ficha. Verifica cuatro cosas:
@@ -307,7 +311,7 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
   - un guardado vuelve ahí con el Balance leído más bajo;
   - en un viewport de computadora, los mismos accesos abren un modal.
 - **Foco y texto escrito (GH-319)**: un test del front muestra el foco en el primer campo cuando se abre la Sheet del celular; un test de cambio de viewport (de celular a computadora y de vuelta) conserva el monto escrito; los tests de cambios sin guardar de Record payment pasan sin editarse sus aserciones; la lista de infractores del **Mobile check** no nombra ningún estado de Sheet recorrido de Record payment.
-- **Lugar conservado (criterio 9)**: una corrida end-to-end desplaza Customers y Home de modo que la fila de deudor tocada quede debajo de la primera pantalla, después abre Record payment y lo cierra, una vez con "Close" y una vez con un guardado parcial. Cada vez el desplazamiento queda sin cambios y el foco está en el "Collect" tocado. Después de un guardado que salda todo el Balance, el desplazamiento queda sin cambios y el foco está en el título "Owed to you" (o "Nobody owes you").
+- **Lugar conservado (criterio 9)**: una corrida end-to-end desplaza Customers y Home de modo que la fila de deudor tocada quede debajo de la primera pantalla, después abre Record payment y lo cierra, una vez con "Close" y una vez con un guardado parcial. Cada vez el desplazamiento queda sin cambios y el foco está en el "Collect" tocado. Después de un guardado que salda todo el Balance, el desplazamiento queda sin cambios y el foco está en la lista de "Owed to you" (o en "Nobody owes you") en Customers, y en el título "Owed to you" en Home.
 - **Acuerdo con el diseño (criterio 9)**: la Design capture de Record payment en el celular muestra que el dibujo y la app construida son los dos una Sheet, con el campo "Payment method" cerrado como el Selector dibujado en Registrar cobro (`Cobro`, `CobroOscuro` y `CobroCompu` en `docs/product/design-system/pantallas/`). La nota de evidencia no deja ninguna diferencia abierta; la manija y el asomo del dibujo son una diferencia conocida, descartada a propósito (ADR-0062).
 - **Acuerdo con el diseño de la cuenta (criterio 5)**: la Design capture de `ClienteFicha` compara con el dibujo la fila de Payment, la fila "In your favor" y el título "Sale #N". Toda diferencia con el dibujo aprobado va al dueño como desvío.
 - **El medio es un Selector con la lista propia (criterio 10)**: un test del front muestra en Record payment el campo "Payment method" con exactamente los medios ofrecidos del Business en su orden (con los valores por defecto, Cash y Transfer), ningún medio archivado, ningún grupo de radio ni botón `aria-pressed` con los medios, ninguna fila para borrar, y el estado `loading` mientras carga. Otros tests cubren el error del servidor con reintento, el aviso sin conexión y un 404 `payment_method.unavailable` que conserva lo escrito y marca el campo.
@@ -329,7 +333,7 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
   - el orden de los deudores, los totales, las cantidades y los tramos son iguales con el flag activado y desactivado.
 - **Orden (criterio 14)**: tres tests de empate pasan: mismo Owing since con distinto Balance; mismo Balance con distinto nombre plegado; mismo nombre plegado, que cae al orden de registro. Ninguna spec e2e ni vitest afirma ya un empate ordenado por nombre (D-69509906).
 - **Días del Business (criterio 15)**: una Sale con fecha posterior a hoy tiene `age_days` 0 y está en `this_week`; mover el reloj de 30 días a pasada la próxima medianoche argentina pasa de `days_8_30` / 30 a `over_30` / 31.
-- **Cantidades (criterio 16)**: `customer_count` incluye un Customer sin Sales y uno con Credit, y `debtor_count` no incluye a ninguno de los dos.
+- **Cantidades (criterio 16)**: `customer_count` incluye un Customer sin Sales y uno con Credit, y `debtor_count` no incluye a ninguno de los dos. Los tests del front de Customers muestran las dos tal como llegan, en el control de vistas.
 - **Customer type (GH-828)**: `customer_type_id` es null con el interruptor Customer types desactivado y es el id guardado con el interruptor activado.
 - **Aislamiento de deudores (criterio 17)**: con un deudor, un Credit y un Customer sin Sales sembrados en otro Business, ninguna de sus cifras ni cantidades aparece; con `with_lines=true` (`client` y `other_client`), las líneas de cada Business tienen solo sus propias Sales y Sale numbers, y nada de las del otro.
 - **Marca parcial (criterio 18)**: en la matriz de dominio y en el test de propiedad, `is_partial` es verdadero exactamente cuando el saldo corrido después del Payment es mayor que 0, y falso en 0 y por debajo; ningún archivo del front calcula un saldo ni una marca, y el Copy module no tiene clave de "Partial payment".
@@ -351,7 +355,7 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
 - Administrar la lista de Payment methods: payment-methods.md.
 - Recordar el último medio usado, o proponer uno por defecto.
 - Límites de antigüedad configurables por Business (supuesto conocido, #330).
-- Mostrar en pantalla los tramos, las cantidades de Customers y deudores, el Customer type o las líneas por Sale: partes posteriores.
+- Mostrar en pantalla los tramos, el Customer type o las líneas por Sale: partes posteriores de GH-831.
 - Un tope de líneas por deudor, campos extra en una línea (el total de la Sale, su Note) o un endpoint aparte por Customer para las líneas.
 - Mostrar en la ficha a qué Sales fue un Payment: eso queda solo en Record payment y su vista previa.
 - Mostrar en pantalla la marca de Payment parcial: una parte posterior de GH-498 la muestra como palabra, con su propio chequeo contra el dibujo.
