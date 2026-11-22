@@ -18,15 +18,17 @@
 
 **Cuando** entrego un pedido en el teléfono, **quiero** ver de un vistazo para quién es la venta, qué precios le corresponden y el total hasta ahora, con una sola forma clara de ir a cobrar, **para** cobrar el monto justo y nunca cotizar de memoria. (Parte 2 de GH-864: la sirve la **Sheet de New sale**, el marco con la fila de Customer y la barra de la venta alrededor de la lista de Products. Afina la misma primera historia de sales.md; elegir Products y cobrar siguen en sus propias partes).
 
+**Cuando** estoy armando una venta en el teléfono y la cierro, aprieto Escape o vuelvo atrás por error, **quiero** que la app me pregunte antes de tirar las líneas que agregué, **para** no tener que armar la venta de nuevo. (Parte 2 de GH-869: la sirve el **Anfitrión de New sale** con su única guarda de salida. Afina la misma primera historia de sales.md, "una venta se registra desde el teléfono en menos de un minuto": perder las líneas sin una pregunta rompe ese minuto. No es un trabajo nuevo).
+
 ## Qué es
 
 La **Sale in progress** es la venta que se está armando en New sale antes de guardarla: cliente, líneas, fecha, **Shipping charged**, **Note** y cómo se paga. Es solo del front (`web/src/sales/useSaleDraft.ts`) y vive en memoria durante una apertura de New sale: nunca se guarda en el dispositivo y una recarga la pierde (igual que lo que dice sales.md, criterio 43). Lo que se guarda es la **Sale**, con las reglas de sales.md.
 
-Hasta la parte de GH-496 que la monta en pantalla (el flip), ninguna pantalla la usa: no hay ruta, constante de build, parámetro de consulta, bandera de ventana ni hook `data-*` para llegar a ella ni a la Sheet de New sale, la lista de Products o la Collect Sheet, y se prueban solo con tests unitarios, de componente y del cliente a nivel de fetch.
+Hasta la parte de GH-496 que la monta en pantalla (el flip), ninguna pantalla la usa: no hay ruta, constante de build, parámetro de consulta, bandera de ventana ni hook `data-*` para llegar a ella ni al Anfitrión de New sale, la Sheet de New sale, la lista de Products o la Collect Sheet, y se prueban solo con tests unitarios, de componente y del cliente a nivel de fetch.
 
 Nota: el criterio 34 de sales.md ("el medio nunca viene puesto") sigue vigente hasta la parte del flip de GH-496, porque la New sale en vivo todavía arranca sin medio. La propuesta de medio de esta capacidad no llega a la vendedora hasta entonces.
 
-Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clientes, productos y medio de pago, y tipea las cantidades a mano, de a un Product por vez y sin ver de una sola vez lo que ya está en la venta ni lo que suele vender. El costo principal son las elecciones repetidas, y el segundo es tipear cantidades. Cuando el Product pedido no está en la venta ni en "Most sold", hoy se recorre la lista entera a ojo; la búsqueda (#940) reemplaza ese recorrido. Hoy dice cómo le pagaron en el mismo formulario de New sale; la Collect Sheet pasa esa elección a un paso de cierre sin cambiar qué significan Payment, On-the-spot payment, Balance, Settlement ni Owing since. Un pago parcial sigue siendo un Payment posterior registrado con Record payment. El vuelto hoy se calcula de cabeza o con la calculadora del teléfono en medio de la entrega; la planilla nunca registró lo que el cliente entregó, así que no guardarlo no pierde nada. Qué precios le tocan a un Customer hoy se revisa a mano cuando no está claro; la fila de Customer de la Sheet de New sale lo dice antes de agregar nada.
+Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clientes, productos y medio de pago, y tipea las cantidades a mano, de a un Product por vez y sin ver de una sola vez lo que ya está en la venta ni lo que suele vender. El costo principal son las elecciones repetidas, y el segundo es tipear cantidades. Cuando el Product pedido no está en la venta ni en "Most sold", hoy se recorre la lista entera a ojo; la búsqueda (#940) reemplaza ese recorrido. Hoy dice cómo le pagaron en el mismo formulario de New sale; la Collect Sheet pasa esa elección a un paso de cierre sin cambiar qué significan Payment, On-the-spot payment, Balance, Settlement ni Owing since. Un pago parcial sigue siendo un Payment posterior registrado con Record payment. El vuelto hoy se calcula de cabeza o con la calculadora del teléfono en medio de la entrega; la planilla nunca registró lo que el cliente entregó, así que no guardarlo no pierde nada. Qué precios le tocan a un Customer hoy se revisa a mano cuando no está claro; la fila de Customer de la Sheet de New sale lo dice antes de agregar nada. Hoy la guarda de `NuevaVenta.tsx` protege la pantalla en vivo de una salida por error; el Anfitrión de New sale le da la misma protección a la Sheet antes de que el flip reemplace esa pantalla.
 
 En la planilla, una venta sin pagar era una fila sin pago, y saldarla después pisaba la deuda (BRIEF, Problema). "Owes it" existe para que la vendedora nunca necesite inventar un Payment, ni uno de $0, para que los libros den bien: eso falsearía el Cash y el Money in y dejaría mal el Owing since. Es un supuesto decidido en la entrevista de #944, no verificado.
 
@@ -44,7 +46,8 @@ En la planilla, una venta sin pagar era una fila sin pago, y saldarla después p
 
 ### Sin guardar
 
-- `isDirty` es `lines.length > 0`: la venta cuenta como sin guardar solo con al menos una línea.
+- `isDirty` es `lines.length > 0`: la venta cuenta como sin guardar solo con al menos una línea. Un cliente, un Shipping charged o una Note sin líneas no es trabajo sin guardar.
+- Es la única regla de "sin guardar": la usan el `touched` de la Sheet de New sale y la guarda de salida del Anfitrión de New sale, y ninguno de los dos tiene otra fuente.
 
 ### Cómo se paga
 
@@ -71,11 +74,38 @@ En la planilla, una venta sin pagar era una fila sin pago, y saldarla después p
 
 ### Dinero
 
-- Ni la Sale in progress, ni el cliente de sugerencias, ni la Sheet de New sale, ni la lista de Products, ni la Collect Sheet calculan dinero. Toda cifra de la venta (precio de la fila, total de la línea, total de la barra, total de Collect, fila Total, aviso de recotización) sale de `priceSale`/`rowPrices`/`priceLine` en `web/src/sales/pricing.ts` (en la Sheet de New sale, mediante `pricedSaleOf`), calculada por la pantalla anfitriona. El Received se lee y el Change se calcula solo con `changeFor` del mismo módulo, mediante `parseMoneyInput`, como enteros a los decimales del Money format. El Shipping charged y la Note se guardan tal como se ingresaron.
+- Ni la Sale in progress, ni el cliente de sugerencias, ni el Anfitrión de New sale, ni la Sheet de New sale, ni la lista de Products, ni la Collect Sheet calculan dinero. Toda cifra de la venta (precio de la fila, total de la línea, total de la barra, total de Collect, fila Total, aviso de recotización) sale de `priceSale`/`rowPrices`/`priceLine` en `web/src/sales/pricing.ts` (en la Sheet de New sale, mediante `pricedSaleOf`), calculada por la pantalla anfitriona. El Received se lee y el Change se calcula solo con `changeFor` del mismo módulo, mediante `parseMoneyInput`, como enteros a los decimales del Money format. El Shipping charged y la Note se guardan tal como se ingresaron.
+
+## Anfitrión de New sale
+
+El contenedor `web/src/screens/ventas/NewSaleSheetHost.tsx` (parte 2 de GH-869) monta la Sheet de New sale, sin ruta, y tiene la única guarda de salida de New sale en la Sheet. Hasta el flip de GH-496 ninguna ruta ni entrada de navegación lo monta: figura en `web/scripts/docs/front-exclude.json` (D-62e6dc23) y el flip saca esa entrada. La guarda vieja de `NuevaVenta.tsx` no cambia y sigue sirviendo a la pantalla en vivo. No tiene entrada en WalkState ni en `scripts/design/screens.json`, así que no tiene Design capture ni Screen image. Para la vendedora no cambia nada en pantalla hasta el flip.
+
+### Lo que tiene
+
+- `useSaleDraft`, con `const dirty = isDirty(draft.state)` de `web/src/sales/saleDraft.ts`. No agrega ningún campo a `SaleDraftApi`; la Sheet de New sale sigue calculando su propio `touched={isDirty(state)}`, así que la guarda y `touched` siguen una sola regla (ver Sin guardar).
+- La única `useLeaveGuard(dirty, {sheetFloor: <la profundidad propia de la Sheet>, sheetDirty: dirty})`.
+- La confirmación existente "Discard the sale?" con "No, keep entering" y "Yes, discard it", con las palabras de `leaveQuestion` y sin la franja de Expense. No agrega ninguna clave al Copy module ni cambia ningún texto, disposición o dibujo; cualquier cambio de cómo se ve o se lee la pregunta va al dueño como desviación.
+- El montaje de la Sheet de New sale y de las Sheets que apila y que ya existen (búsqueda de cliente, Create customer, Collect y, cuando exista, el detalle de línea), con las props que piden `NuevaVentaSheet` y `CollectSheet`. Una Sheet apilada que todavía no existe no se construye acá.
+- La Sheet de New sale no recibe ningún diálogo propio: su Close sigue llamando a `onClose` sin confirmación.
+
+### Salidas
+
+- `close()` es el `onClose` de la Sheet y su Escape: hace un solo recorrido del historial hacia atrás, por debajo del piso (`navigate(-n)`), que juzga el bloqueador. El gesto de volver del teléfono lo juzga el mismo bloqueador.
+- `leave()` llama a `disarm()` y después hace el mismo recorrido único.
+- Sin una entrada anterior de la app (una dirección directa), las dos usan `navigate(<path padre>, {replace:true})`. El padre es el que la Navigation (navigation.md) le da a New sale, la misma pantalla sobre la que se dibuja la Sheet en una dirección directa; el anfitrión no elige uno propio.
+- Sin líneas, Close, Escape y el volver del teléfono cierran sin preguntar. Con al menos una línea, los tres preguntan "Discard the sale?": "No, keep entering" se queda en la Sheet con la Sale in progress sin cambios, y "Yes, discard it" sale como `leave()`.
+- Cerrar una Sheet apilada (Collect, búsqueda de cliente, Create customer, detalle de línea cuando exista) vuelve un nivel, a la Sheet de New sale: nunca pregunta, nunca sale de New sale y nunca cambia la Sale in progress.
+- El anfitrión expone `onSaved(saleId, name)`, que se llama cuando el guardado de Collect sale bien. Por defecto llama a `leave()`, así que un guardado nunca pregunta y hace exactamente un cambio de lugar; una parte posterior inserta el toast antes de `leave()`.
+- No hay ruta, bandera, parámetro ni hook `data-*` solo para tests.
+
+### Huecos conocidos
+
+- Mientras Collect guarda, el anfitrión todavía no ignora el volver del sistema ni Escape; lo hace el flip (ver Fuera de esta capacidad).
+- El anfitrión no tiene ruta, así que la guarda no se recorrió en la app en marcha; queda sin verificar, no fallada, hasta el flip.
 
 ## Sheet de New sale
 
-El contenedor `web/src/screens/ventas/NuevaVentaSheet.tsx` (parte 2 de GH-864), dibujado dentro de la Sheet compartida (`web/src/components/Sheet.tsx`), igual que la Collect Sheet. Es el marco de New sale: la fila de Customer arriba, la lista de Products en el medio y la barra de la venta abajo. Elegir Products es de la lista y cobrar es de la Collect Sheet. La pantalla anfitriona se encarga de Escape, del volver del sistema, del Customer (un `CustomerView`), de elegir otro después de Change y de lo que pasa después de Collect. Hasta el flip de GH-496 ninguna ruta ni entrada de navegación lo monta: figura en `web/scripts/docs/front-exclude.json` (D-62e6dc23) y el flip saca esa entrada. No tiene entrada en WalkState ni en `scripts/design/screens.json`, ni hook de test, así que no tiene Design capture lado a lado ni Screen image. Para la vendedora no cambia nada en pantalla hasta el flip.
+El contenedor `web/src/screens/ventas/NuevaVentaSheet.tsx` (parte 2 de GH-864), dibujado dentro de la Sheet compartida (`web/src/components/Sheet.tsx`), igual que la Collect Sheet. Es el marco de New sale: la fila de Customer arriba, la lista de Products en el medio y la barra de la venta abajo. Elegir Products es de la lista y cobrar es de la Collect Sheet. La pantalla anfitriona (desde la parte 2 de GH-869, el Anfitrión de New sale) se encarga de Escape, del volver del sistema, del Customer (un `CustomerView`), de elegir otro después de Change y de lo que pasa después de Collect. Hasta el flip de GH-496 ninguna ruta ni entrada de navegación lo monta: figura en `web/scripts/docs/front-exclude.json` (D-62e6dc23) y el flip saca esa entrada. No tiene entrada en WalkState ni en `scripts/design/screens.json`, ni hook de test, así que no tiene Design capture lado a lado ni Screen image. Para la vendedora no cambia nada en pantalla hasta el flip.
 
 ### Props
 
@@ -93,7 +123,7 @@ El contenedor `web/src/screens/ventas/NuevaVentaSheet.tsx` (parte 2 de GH-864), 
 ### Encabezado
 
 - Título "New sale" (`t('common:newSale')`, el mismo texto que `COMMON_TEXT.newSale`), ligado a la Sheet por su `titleId`.
-- El Close propio de la Sheet (un botón redondo de ícono) llama a `onClose` sin confirmación y sin ningún diálogo, aunque la Sheet esté tocada.
+- El Close propio de la Sheet (un botón redondo de ícono) llama a `onClose` sin confirmación y sin ningún diálogo, aunque la Sheet esté tocada. La pregunta antes de tirar las líneas es del Anfitrión de New sale, nunca de la Sheet.
 
 ### Fila de Customer
 
@@ -142,7 +172,7 @@ El contenedor `web/src/screens/ventas/NuevaVentaSheet.tsx` (parte 2 de GH-864), 
 ### Huecos conocidos
 
 - Con la lectura del Customer fallida y sin nombre, la marca de carga de la fila no termina nunca y nada le señala a la vendedora Change o Close. No es un callejón sin salida; el flip debería agregar un aviso o un reintento con el Attention icon y un Tappable notice.
-- Con la lectura de la lista fallida, Close es la única salida y puede perder las líneas ya agregadas. Aceptado para esta parte; queda para el flip.
+- Con la lectura de la lista fallida, Close es la única salida. Desde la parte 2 de GH-869, con al menos una línea el Anfitrión de New sale pregunta antes de tirarlas; el reintento sigue quedando para el flip.
 - En un teléfono angosto con un total largo, "{n} items ·" puede pasar a una segunda línea en lugar de recortarse antes de la cifra (la cifra nunca se parte). Las reglas del teléfono de la barra (`figure-split`, `h-scroll`, toque, `chrome-shift`) quedan sin verificar hasta que el flip agregue la entrada de WalkState y corra el Mobile check.
 
 ## Collect Sheet
@@ -152,7 +182,7 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 ### Props
 
 - `draft` (`SaleDraftApi`), `priced` (`PricedSale`, la única fuente de precios de la pantalla anfitriona, que nunca se vuelve a calcular: ninguna llamada a `priceSale` ni `priceLine` ni consulta de precios), `customerName` (`string | null`), `onClose()`, `onSaved(sale)` y `onSavingChange(saving)`, más las props de marco de la Sheet para la computadora, que pasan tal cual.
-- La pantalla anfitriona maneja Escape y el volver del sistema; la Sheet no agrega ningún listener de Escape ni de popstate.
+- La pantalla anfitriona maneja Escape y el volver del sistema; la Sheet no agrega ningún listener de Escape ni de popstate. Desde la parte 2 de GH-869, cerrar la Collect Sheet vuelve a la Sheet de New sale sin preguntar y sin perder las líneas, y su guardado exitoso llega al `onSaved(saleId, name)` del Anfitrión de New sale.
 - La pantalla anfitriona no abre la Collect Sheet mientras alguna línea no tenga precio para la fecha de la venta (sin Current price, y que no sea Gift ni Special price); lo señala en la propia línea. Esa regla es del flip de GH-496.
 
 ### Lo que ve la vendedora
@@ -372,7 +402,10 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 
 ## Fuera de esta capacidad (por ahora)
 
-- Cualquier ruta, entrada de navegación o pantalla que monte la Sheet de New sale, la Sale in progress o la lista de Products, y el flip que las monta; también la entrada de WalkState y de `screens.json` de la Sheet de New sale.
+- Cualquier ruta, entrada de navegación o pantalla que monte el Anfitrión de New sale, la Sheet de New sale, la Sale in progress o la lista de Products, y el flip que las monta; también la entrada de WalkState y de `screens.json` de la Sheet de New sale.
+- Cualquier cambio a la guarda de `NuevaVenta.tsx`, que sigue sirviendo a la pantalla en vivo hasta el flip.
+- Cualquier cambio de texto, disposición o dibujo de la pregunta "Discard the sale?"; va al dueño como desviación.
+- El toast después de un guardado exitoso, que una parte posterior inserta antes de `leave()`.
 - Un botón de reintento o un aviso de falla en la fila de Customer de la Sheet de New sale, un botón de reintento en los avisos de falla de la lista, o cualquier reintento más allá de la lectura de nuevo al reconectar o al recuperar el foco; cambios a SinConexion o a ErrorGenerico.
 - Cualquier texto de promoción o de ahorro en la barra de la venta (desviación 1 de GH-864).
 - Pulido de la Sheet de New sale en la computadora (Phone first).
@@ -381,7 +414,7 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Filtros de la lista por Stock, precio, Hidden product o Catalog attributes.
 - El guardado de New sale fuera de la Collect Sheet, incluido qué pasa al guardar una línea cuyo Product ya no está disponible.
 - Código de barras, categoría y elementos de promoción en la lista de Products.
-- La pantalla anfitriona de New sale que monta la Collect Sheet, el flip que la monta y su regla de no abrirla con una línea sin precio; también, ya en el flip: que la anfitriona ignore el volver del sistema y Escape mientras `onSavingChange(true)`, un test que monte la barra de la venta y la Sheet juntas y muestre el total guardado igual al de la barra y a `SaleOut.total`, y que tras `onSaved` la anfitriona muestre las cifras de la respuesta con el aviso de recotización (`linesRepriced`) cuando el total cambió.
+- Ya en el flip: la regla de no abrir la Collect Sheet con una línea sin precio; que el anfitrión ignore el volver del sistema y Escape mientras `onSavingChange(true)`; un test que monte la barra de la venta y la Sheet juntas y muestre el total guardado igual al de la barra y a `SaleOut.total`; y que tras `onSaved` la pantalla muestre las cifras de la respuesta con el aviso de recotización (`linesRepriced`) cuando el total cambió.
 - Reescribir el criterio 34 de sales.md ("el medio nunca viene puesto"), que le corresponde al flip, cuando la preselección llegue a la vendedora.
 - Un pago parcial en el momento de la venta: las opciones son pagada por completo con un medio o "Owes it" sin nada pagado ahora; un pago parcial es un Payment posterior por Record payment y el Settlement.
 - Guardar, mandar o mostrar Received o Change en cualquier otro lugar que la Collect Sheet.
@@ -412,7 +445,7 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
   6. **Recuperación:** una lectura después de una falla muestra el esqueleto; una reconexión o una vuelta del foco tras una falla vuelve a pedir y devuelve la lista con las cantidades cargadas y los precios nuevos; una lista cargada hace 0 pedidos nuevos al recuperar el foco o al reconectar; otro observador de la misma consulta conserva sus propias opciones.
 - Líneas perdidas por una acción de la lista, una recarga de Products o una falla: 0. Ids internos mostrados en pantalla: 0.
 - Cifras mostradas antes de que lleguen todas las lecturas, mientras el Customer está pendiente o durante una falla (dígitos, símbolo de moneda, "No price", aviso, encabezados): 0.
-- Operaciones de dinero en `useSaleDraft`, en el cliente de sugerencias, en la Sheet de New sale y en la lista de Products: 0 (todo pasa por `pricing.ts`).
+- Operaciones de dinero en `useSaleDraft`, en el cliente de sugerencias, en el Anfitrión de New sale, en la Sheet de New sale y en la lista de Products: 0 (todo pasa por `pricing.ts`).
 - Rutas, constantes, parámetros, banderas, props, exports o hooks `data-*` solo para tests: 0.
 - Claves del Copy module de la lista de Products: 10 (7 de #924 y 3 de #940), en inglés y sin palabras de Unit ni de tipo de producto; agregadas por los estados de carga y de falla: 0. Pedidos de red nuevos causados por la búsqueda: 0.
 - Gate (pytest, vitest, e2e) pasa, y tsc strict y oxlint pasan sin nada silenciado.
@@ -425,6 +458,15 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Sheet de New sale: Collect fuera del estado total: 0, y Collect `disabled` o `aria-disabled`: 0. "List prices", "Prices for {type}" o cifras de dinero con la lectura del Customer fallida: 0. Fuentes de `touched` distintas de `isDirty(draft.state)`: 0. Cifras que no salen de `pricedSaleOf`: 0. Textos fuera de `web/src/copy/`: 0.
 - Claves del Copy module agregadas por la parte 2 de GH-864: 5 (`listPrices`, `pricesFor`, `itemsCount`, `itemsTotal`, `addProductToCollect`), en inglés y sin palabras de Unit, moneda ni tipo de producto; el baseline, copyLimits y productWord pasan.
 - Vara de la Sheet de New sale, que se juzga cuando el flip la monte: la vendedora ve qué precios le tocan al Customer antes de agregar nada, y nunca ve un total ni un Collect que no estén calculados por completo; la Sheet suma un solo toque al trabajo (Collect), y leer el Customer, los precios y el total no lleva ninguno; suma a la vara de menos de un minuto de sales.md, criterio 1.
+- Anfitrión de New sale (parte 2 de GH-869), con Testing Library sobre `createMemoryRouter` y fetch falso (los falsos de `renderNuevaVentaSheet` se pueden reutilizar), un grupo de tests por caso, que pasa en el Gate (vitest):
+  - **Sin líneas:** Close, Escape y el volver del sistema cierran sin preguntar; un cliente, un Shipping charged o una Note solos no preguntan.
+  - **Con una línea:** los tres muestran "Discard the sale?"; "No, keep entering" conserva las líneas y "Yes, discard it" sale.
+  - **Sheets apiladas:** con una línea, cerrar una Collect o una búsqueda de cliente apiladas nunca pregunta y conserva las líneas.
+  - **Guardado:** un guardado con líneas nunca pregunta y hace exactamente un cambio de lugar.
+  - **Dirección directa:** Close cae en el padre de la Navigation y pregunta solo con líneas.
+  - **Una sola fuente:** la guarda y el `touched` de la Sheet siguen el agregado de una línea y se limpian los dos después de `stepDown`.
+- Anfitrión de New sale: preguntas mostradas sin líneas: 0. Líneas perdidas tras "No, keep entering" o al cerrar una Sheet apilada: 0. Cambios de lugar por guardado exitoso: exactamente 1. Fuentes de "sin guardar" distintas de `isDirty(draft.state)`: 0. Campos agregados a `SaleDraftApi`: 0. Diálogos en la Sheet de New sale: 0. Claves del Copy module agregadas: 0. Guardas de salida en el anfitrión: exactamente 1.
+- Vara del Anfitrión de New sale, que se juzga cuando el flip lo monte: ninguna línea agregada se pierde por una salida por error, y una venta sin líneas se cierra sin ningún toque extra; suma a la vara de menos de un minuto de sales.md, criterio 1.
 - Collect Sheet, con Testing Library a nivel de fetch: sin medio por encima de $0, 0 pedidos y el campo enfocado; con una línea sin precio en `priced`, 0 pedidos, ningún texto nuevo y ninguna llamada a `onSavingChange`; mientras guarda, toques extra y Close dan 0 pedidos adicionales; tras un pedido rechazado, `onSavingChange` termina en false y Close vuelve a funcionar; la etiqueta de Collect es igual a `priced.totals.total` formateado y `onSaved` recibe la respuesta sin tocar.
 - Received y Change, en un segundo archivo de tests de la Collect Sheet con Testing Library a nivel de fetch: con Received vacío, menor o inválido, 0 líneas de Change y 0 avisos o errores; con Received igual al total, Change 0; con uno mayor, la diferencia exacta, a 0 y a 2 decimales del Money format; en una venta de $0 con Received 0, Change 0; 0 apariciones de Received o Change en el cuerpo de `POST /api/sales`; Received conservado tras cambiar de medio, pasar a owing y volver, y tras un guardado fallido; ayuda oculta con owing; al ancho angosto donde el botón dice "Collect", la fila Total muestra el total; etiqueta acortada a "Collect" con `scrollWidth` > `clientWidth` (definido con `Object.defineProperty`), nombre accesible con el "Collect {total}" completo, y la etiqueta completa de vuelta cuando vuelve a entrar.
 - "Owes it" (#944), con Testing Library a nivel de fetch y en el mismo host que los tests de #918:
