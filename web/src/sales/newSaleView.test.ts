@@ -13,7 +13,7 @@ import {
   saleBarState,
   type CustomerView,
 } from './newSaleView'
-import type { DraftLine } from './saleDraft'
+import { draftLineOf, type DraftLine } from './saleDraft'
 import type { NewSaleStatus } from './useNewSaleReads'
 
 const FORMAT = { symbol: '$', decimals: 0 }
@@ -29,8 +29,8 @@ const READY: NewSaleInputs = {
   mostSoldIds: [1],
   customerTypeId: null,
 }
-const PRICED_LINES: DraftLine[] = [{ productId: 1, quantityHundredths: 200 }]
-const WITH_UNPRICED: DraftLine[] = [...PRICED_LINES, { productId: 2, quantityHundredths: 100 }]
+const PRICED_LINES: DraftLine[] = [draftLineOf(1, 200)]
+const WITH_UNPRICED: DraftLine[] = [...PRICED_LINES, draftLineOf(2, 100)]
 
 function pricing(lines: DraftLine[], shipping: string, reads: NewSaleInputs = READY): NewSalePricing {
   return pricedSaleOf({ ...reads, lines, shipping, format: FORMAT })

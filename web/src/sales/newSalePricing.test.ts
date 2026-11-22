@@ -7,7 +7,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { Variety } from '../screens/Variedades'
 import { newSaleReady, pricedSaleOf, type NewSaleInputs } from './newSalePricing'
 import * as pricing from './pricing'
-import type { DraftLine } from './saleDraft'
+import { draftLineOf, type DraftLine } from './saleDraft'
 
 const FORMAT = { symbol: '$', decimals: 0 }
 const price = { id: 1, effective_from: '2026-09-01', list_price: 1000, bulk_price: null, bulk_minimum: null, vip_price: null }
@@ -22,8 +22,8 @@ const READY: NewSaleInputs = {
   mostSoldIds: [1],
   customerTypeId: null,
 }
-const PRICED_LINES: DraftLine[] = [{ productId: 1, quantityHundredths: 200 }]
-const WITH_UNPRICED: DraftLine[] = [...PRICED_LINES, { productId: 2, quantityHundredths: 100 }]
+const PRICED_LINES: DraftLine[] = [draftLineOf(1, 200)]
+const WITH_UNPRICED: DraftLine[] = [...PRICED_LINES, draftLineOf(2, 100)]
 
 function pricedOf(lines: DraftLine[], shipping: string, reads: NewSaleInputs = READY) {
   const result = pricedSaleOf({ ...reads, lines, shipping, format: FORMAT })
