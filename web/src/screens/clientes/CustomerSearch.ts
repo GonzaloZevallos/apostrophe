@@ -6,8 +6,12 @@
  * survives a trip to a card and back, and is never kept on the device, in the URL or on the server.
  * `setQuery` never writes it.
  *
- * `debtorsState` and `customersView` are the one decision of what Customers draws: they read
- * which answers exist, never a count, a bucket or a money amount.
+ * `typedQuery`, `listKeyQuery`, `customersListState`, `debtorsState` and `customersView` are the
+ * one decision of what Customers draws: they read which answers exist and the typed query, never
+ * a count, a bucket or a money amount. The collapse and the list follow the typed `query`, not the
+ * debounced value: a query of only spaces is no query, and a cleared one is the held segment at
+ * once. The one query `useQuery` receives is `listKeyQuery`, so a clear keys the full list ('')
+ * at once and "All" never shows the old query's matches as the full list.
  */
 
 import { createContext, useContext } from 'react'
@@ -33,15 +37,56 @@ export function debtorsState(read: { data: Debtors | undefined; isError: boolean
 
 export type CustomersView = 'flat' | CustomerSegment
 
-/** The flat list for a typed query, for the window where a cleared query still shows the old answer, and for a failed read. */
+/** The flat list for a typed query and for a failed debtors read; otherwise the held segment. */
 export function customersView(input: {
   query: string
-  isPlaceholderData: boolean
   debtors: DebtorsState
   segment: CustomerSegment
 }): CustomersView {
-  if (input.query !== '' || input.isPlaceholderData || input.debtors === 'failed') return 'flat'
+  if (typedQuery(input.query) !== '' || input.debtors === 'failed') return 'flat'
   return input.segment
+}
+
+/** The query as the screen reads it: '' for no text or only spaces, otherwise exactly what was typed. */
+export function typedQuery(query: string): string {
+  return query.trim() === '' ? '' : query
+}
+
+/**
+ * The only query the customers list read receives, for its key and its fetch: '' while nothing is
+ * typed (a clear switches at once), otherwise the debounced value, '' when that is blank.
+ */
+export function listKeyQuery(query: string, debounced: string): string {
+  if (typedQuery(query) === '') return ''
+  return debounced.trim() === '' ? '' : debounced
+}
+
+export type CustomersListState = 'loading' | 'searching' | 'failed' | 'no-match' | 'empty' | 'rows'
+
+/**
+ * What the customers list draws, from the state of its read and never from a row's contents:
+ * `rows` is the only state that draws a row. Under a typed query anything not yet the answer to
+ * that exact query (the key behind it, pending, placeholder or fetching) is `searching`.
+ */
+export function customersListState(input: {
+  typed: string
+  keyQuery: string
+  isPending: boolean
+  isPlaceholderData: boolean
+  isFetching: boolean
+  isError: boolean
+  isEmpty: boolean
+}): CustomersListState {
+  if (input.typed !== '') {
+    if (input.keyQuery !== input.typed || input.isPending || input.isPlaceholderData || input.isFetching) {
+      return 'searching'
+    }
+    if (input.isError) return 'failed'
+    return input.isEmpty ? 'no-match' : 'rows'
+  }
+  if (input.isPending) return 'loading'
+  if (input.isError) return 'failed'
+  return input.isEmpty ? 'empty' : 'rows'
 }
 
 /**

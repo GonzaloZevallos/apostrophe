@@ -4,17 +4,19 @@
  * never in the URL (plan, invariants: "No customer search query ... in a front
  * URL"). Debounced at 150 ms before it becomes the query key
  * (`keys.customers(q)`), so a result that is still catching up to a newer
- * keystroke stays marked `aria-busy` with "Searching…" instead of ever being shown
- * as the answer to the query currently typed (`keepPreviousData`). A dropped
- * network or a server error on the list itself shows the matching state instead
- * of a misleading "no customers yet" (PRD, "Feedback"). Over the list sit the All | Owed to you
- * segments; a typed query, or a debtors read that failed, draws the flat list alone with no
- * segments (`customersView`), and while the debtors read is pending the segments show as a
- * skeleton with nothing below.
+ * keystroke is only "Searching…" under `aria-busy`, never the previous rows shown as the answer
+ * to the query currently typed. A dropped network or a server error on the list itself shows the
+ * matching state instead of a misleading "no customers yet" (PRD, "Feedback"). Over the list sit
+ * the All | Owed to you segments; the typed `query` (not the debounced value), or a debtors read
+ * that failed, draws the flat list alone with no segments (`customersView`), and while the debtors
+ * read is pending the segments show as a skeleton with nothing below. What the list itself draws
+ * is one decision, `customersListState`; a row is drawn only in `rows`. Clearing the query
+ * returns at once to the held segment, and the read keys the full list (`listKeyQuery`) without
+ * ever keeping the old query's matches as its placeholder.
  */
 
 import { CUSTOMER, CUSTOMER_NEW } from '../../routes'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useMatch } from 'react-router'
 import BotonLink from '../../components/BotonLink'
@@ -31,7 +33,15 @@ import { owedPlace, useReturnToPlace } from '../../components/useReturnToPlace'
 import { GONE_NOTICE } from '../../api/refusals'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
-import { customersView, debtorsState, segmentCounts, useCustomerSearch } from './CustomerSearch'
+import {
+  customersListState,
+  customersView,
+  debtorsState,
+  listKeyQuery,
+  segmentCounts,
+  typedQuery,
+  useCustomerSearch,
+} from './CustomerSearch'
 import CustomerSegments from './CustomerSegments'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { useTranslation } from 'react-i18next'
@@ -69,10 +79,13 @@ export default function Clientes() {
     return () => clearTimeout(id)
   }, [query])
 
+  const keyQuery = listKeyQuery(query, debounced)
   const { data, isPending, isPlaceholderData, isFetching, isError, error } = useQuery({
-    queryKey: keys.customers(debounced),
-    queryFn: () => listCustomers(debounced),
-    placeholderData: keepPreviousData,
+    queryKey: keys.customers(keyQuery),
+    queryFn: () => listCustomers(keyQuery),
+    // The previous answer stands in only while a query is typed; the full list ('') never wears
+    // the old query's matches, so after a clear "All" shows its own answer or the loading.
+    placeholderData: (previous) => (keyQuery === '' ? undefined : previous),
   })
 
   const customers = data ?? []
@@ -80,7 +93,16 @@ export default function Clientes() {
   // Back from Record payment the list returns to its place (PM option a). Beside a customer's
   // card the card is where the seller returns to, so the list leaves it to the card.
   const debtors = useQuery(debtorsQuery)
-  const view = customersView({ query, isPlaceholderData, debtors: debtorsState(debtors), segment })
+  const view = customersView({ query, debtors: debtorsState(debtors), segment })
+  const listState = customersListState({
+    typed: typedQuery(query),
+    keyQuery,
+    isPending,
+    isPlaceholderData,
+    isFetching,
+    isError,
+    isEmpty: customers.length === 0,
+  })
   const answered = debtors.data !== undefined
   const root = useRef<HTMLElement>(null)
   useReturnToPlace({
@@ -119,33 +141,34 @@ export default function Clientes() {
           <CustomerSegments segment={segment} onChange={setSegment} {...segmentCounts(debtors.data)} />
         )}
         {view === 'owed' && answered && <TeDeben />}
-        {isError && error instanceof NetworkError && <SinConexion />}
-        {isError && !(error instanceof NetworkError) && <ErrorGenerico />}
-        {!isError && (view === 'flat' || (view === 'all' && answered)) && (
+        {listState === 'failed' && error instanceof NetworkError && <SinConexion />}
+        {listState === 'failed' && !(error instanceof NetworkError) && <ErrorGenerico />}
+        {listState !== 'failed' && (view === 'flat' || (view === 'all' && answered)) && (
           <section className="clientes__todos">
             <div
               className="lista-clientes"
-              aria-busy={isPlaceholderData}
-              aria-label={isPlaceholderData ? SEARCHING : undefined}
+              aria-busy={listState === 'searching'}
+              aria-label={listState === 'searching' ? SEARCHING : undefined}
             >
-              {isPlaceholderData && <span className="campo__rotulo">{SEARCHING}</span>}
-              {!isPlaceholderData && customers.length === 0 && (
+              {listState === 'searching' && <span className="campo__rotulo">{SEARCHING}</span>}
+              {(listState === 'no-match' || listState === 'empty') && (
                 <span className="campo__rotulo" data-copy="emptyTitle">
                   {t(EMPTY_STATE_KEYS.customersList)}
                 </span>
               )}
-              {customers.map((customer) => (
-                <ClienteFila
-                  key={customer.id}
-                  id={customer.id}
-                  name={customer.name}
-                  phoneDisplay={customer.phone_display}
-                  vip={vipCustomers && customer.vip}
-                  balance={customer.balance}
-                  owingSince={customer.owing_since}
-                  standing={customer.standing}
-                />
-              ))}
+              {listState === 'rows' &&
+                customers.map((customer) => (
+                  <ClienteFila
+                    key={customer.id}
+                    id={customer.id}
+                    name={customer.name}
+                    phoneDisplay={customer.phone_display}
+                    vip={vipCustomers && customer.vip}
+                    balance={customer.balance}
+                    owingSince={customer.owing_since}
+                    standing={customer.standing}
+                  />
+                ))}
             </div>
           </section>
         )}
