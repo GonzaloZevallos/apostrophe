@@ -25,7 +25,10 @@ import { parseRegistry, STATE_NAMES } from '../mobile-standard/registry'
 import registryJson from '../../../scripts/design/screens.json' with { type: 'json' }
 import { queryClient } from '../queryClient'
 import { router } from '../router'
-import { HOME, LOGIN, ONBOARDING_STOCK, ONBOARDING_VARIETY, SALE_NEW } from '../routes'
+import { CUSTOMERS, HOME, LOGIN, ONBOARDING_STOCK, ONBOARDING_VARIETY, SALE_NEW } from '../routes'
+import { NO_DEBTORS } from '../test/debtors'
+import ClientesLayout from '../screens/clientes/ClientesLayout'
+import Clientes from '../screens/clientes/Clientes'
 import Listo from '../screens/onboarding/Listo'
 import OnboardingLayout from '../screens/onboarding/OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from '../screens/onboarding/OnboardingRoutes'
@@ -160,6 +163,34 @@ async function renderOnboarding(path: string, stockTarget: boolean): Promise<voi
   await screen.findByRole('button', { name: /^(Save the product|Save the entry)$/ })
 }
 
+// ---- Customers: the search rows (answered, no match, cleared back to All) ----
+
+async function renderClientesSearch(): Promise<void> {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url === '/payments/debtors') return Promise.resolve(json(NO_DEBTORS))
+      return Promise.resolve(json(url.startsWith('/customers') ? [] : {}))
+    }),
+  )
+  const routes: RouteObject[] = [
+    {
+      element: <Outlet context={ME} />,
+      children: [{ element: <ClientesLayout />, children: [{ path: CUSTOMERS, element: <Clientes /> }] }],
+    },
+  ]
+  const memory = createMemoryRouter(routes, { initialEntries: [CUSTOMERS] })
+  render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <MoneyFormatProvider format={ME.money}>
+        <RouterProvider router={memory} />
+      </MoneyFormatProvider>
+    </QueryClientProvider>,
+  )
+  await screen.findByLabelText('Search customer')
+}
+
 /** One entry per row with a `fill` or `select`, keyed by the row's `screen`: how that row's screen is rendered. */
 const ENTRIES: Record<string, () => Promise<void>> = {
   Entrar: renderEntrar,
@@ -170,6 +201,9 @@ const ENTRIES: Record<string, () => Promise<void>> = {
   VentaEnCursoOscuro: renderNuevaVenta,
   VentaVuelve: renderVentaVuelve,
   VentaVuelveOscuro: renderVentaVuelve,
+  ClientesBusquedaResultado: renderClientesSearch,
+  ClientesBusquedaSinResultado: renderClientesSearch,
+  ClientesBusquedaLimpiada: renderClientesSearch,
   OnboardingVariedad: () => renderOnboarding(ONBOARDING_STOCK, true),
   OnboardingPrecio: () => renderOnboarding(ONBOARDING_VARIETY, false),
 }
