@@ -31,6 +31,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
+import { keys } from '../../api/keys'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import paymentPreviewFixture from '../../api/fixtures/payment-preview.json'
 import customerFixture from '../../api/fixtures/customer.json'
@@ -90,6 +91,7 @@ function renderClientes() {
     </MoneyFormatProvider>
 </QueryClientProvider>,
   )
+  return queryClient
 }
 
 /** The screen opens on 'Owed to you'; the full list is one tap away on 'All'. */
@@ -282,6 +284,47 @@ test('a failed debtors read with the customers answering shows the flat list, wi
   expect(await screen.findByText('Lu')).toBeInTheDocument()
   expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
   expect(screen.queryByText(NOBODY_OWES)).not.toBeInTheDocument()
+})
+
+test('figures shown and then a newer failed read drop to the flat list, with none of them', async () => {
+  let failing = false
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      () => jsonResponse(200, [LU_SETTLED]),
+      () => (failing ? new Response('boom', { status: 500 }) : jsonResponse(200, DEBTORS_FIXTURE)),
+    ),
+  )
+  const queryClient = renderClientes()
+  await showAll()
+  expect(await screen.findByText('Lu')).toBeInTheDocument()
+  expect(screen.getByRole('radiogroup', { name: 'Customers view' })).toHaveTextContent(/\d/)
+
+  failing = true
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+
+  await waitFor(() => expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument())
+  expect(screen.getByText('Lu')).toBeInTheDocument()
+  expect(screen.queryByText(NOBODY_OWES)).not.toBeInTheDocument()
+})
+
+test('a failed debtors read that then answers lands on Owed to you, even after All was chosen', async () => {
+  let failing = false
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      () => jsonResponse(200, [customerFixture, LU_SETTLED]),
+      () => (failing ? new Response('boom', { status: 500 }) : jsonResponse(200, DEBTORS_FIXTURE)),
+    ),
+  )
+  const queryClient = renderClientes()
+  await showAll()
+  failing = true
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+  await waitFor(() => expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument())
+
+  failing = false
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+
+  expect(await screen.findByRole('radio', { name: 'Owed to you' })).toBeChecked()
 })
 
 test('clearing a typed query returns to the segment chosen before typing', async () => {
