@@ -7549,7 +7549,7 @@ button:has(> .venta-en-curso) {
   gap: var(--espacio-sm);
   min-height: var(--alto-tocable);
   padding: var(--espacio-md) var(--espacio-sm);
-  background: var(--superficie);
+  background-color: var(--superficie);
   border-radius: var(--radio-panel);
   color: var(--tinta);
   text-decoration: none;
@@ -7590,7 +7590,7 @@ button:has(> .venta-en-curso) {
 }
 
 .ajustes-inicio__tarjeta {
-  background: var(--superficie);
+  background-color: var(--superficie);
   border-radius: var(--radio-panel);
   overflow: hidden;
 }
@@ -7605,6 +7605,7 @@ button:has(> .venta-en-curso) {
   gap: var(--espacio-md);
   min-height: var(--alto-tocable);
   padding: var(--espacio-md) var(--espacio-lg);
+  background-color: var(--superficie);
   color: var(--tinta);
   text-decoration: none;
   user-select: none;
@@ -7638,9 +7639,13 @@ button:has(> .venta-en-curso) {
   text-overflow: ellipsis;
 }
 
-.ajustes-inicio__atajo:active,
+.ajustes-inicio__atajo:active {
+  background-color: var(--papel);
+  transition: none;
+}
+
 .ajustes-inicio__fila:active {
-  background: var(--papel);
+  background-color: var(--papel);
   transition: none;
 }
 /* ===== end ajustes-inicio ===== */
