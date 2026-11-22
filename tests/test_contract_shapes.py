@@ -108,6 +108,10 @@ def test_account_rows_are_matched_by_their_own_kind_not_by_position() -> None:
         "balance": 11000,
         "owing_since": "2026-09-14",
         "standing": "owes",
+        "age_days": 18,
+        "still_owing": [],
+        "sales_by_month": [{"month": "2026-09", "total": 11000}],
+        "average_sale": 5500,
         "rows": [
             {
                 "kind": "sale",

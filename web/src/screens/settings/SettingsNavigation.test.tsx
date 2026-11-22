@@ -67,9 +67,9 @@ test('Payments and expenses lists Payment methods, then Expense categories, and 
 
   const group = await screen.findByRole('navigation', { name: 'Payments and expenses' })
   const links = within(group).getAllByRole('link')
-  expect(links.map((link) => link.textContent)).toEqual([expect.stringContaining('Payment methods'), 'Expense categories'])
+  expect(links.map((link) => link.textContent)).toEqual([expect.stringContaining('Payment methods'), expect.stringContaining('Expense categories')])
 
-  await userEvent.click(within(group).getByRole('link', { name: 'Expense categories' }))
+  await userEvent.click(within(group).getByRole('link', { name: /^Expense categories/ }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(EXPENSE_CATEGORIES))
 })
@@ -85,7 +85,7 @@ test('Close on Expense categories, opened with nothing in history, lands on Paym
 test('Close on Expense categories, opened from the group, goes back through history to the group', async () => {
   await open(SETTINGS_PAYMENTS)
   const group = await screen.findByRole('navigation', { name: 'Payments and expenses' })
-  await userEvent.click(within(group).getByRole('link', { name: 'Expense categories' }))
+  await userEvent.click(within(group).getByRole('link', { name: /^Expense categories/ }))
   await waitFor(() => expect(router.state.location.pathname).toBe(EXPENSE_CATEGORIES))
 
   await userEvent.click(await screen.findByRole('button', { name: 'Close' }))

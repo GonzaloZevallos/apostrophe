@@ -454,13 +454,21 @@ export function lineValidationsOf(priced: PricedSale): LineValidation[] {
   )
 }
 
+/** A typed zero (`0`, or `0,00` at the format's decimals): `parseMoneyInput` refuses it as an amount, but
+ * for a $0 sale it is exactly what was handed over. */
+function isZeroAmount(text: string, format: MoneyFormat): boolean {
+  const trimmed = text.trim()
+  if (/^0+$/.test(trimmed)) return true
+  return format.decimals > 0 && new RegExp(`^0+[.,]0{1,${format.decimals}}$`).test(trimmed)
+}
+
 /** The change owed for what the Customer handed over: `null` when `receivedText` is empty or refused
- * by `parseMoneyInput`, or is below `total`; otherwise the difference in currency units (0 when equal).
+ * by `parseMoneyInput` (a typed zero counts on a $0 sale), or is below `total`; otherwise the difference in currency units (0 when equal).
  * Both amounts become integers at the format's decimals and are subtracted as integers. For display
  * only: it never goes into a request body. */
 export function changeFor(receivedText: string, total: number, format: MoneyFormat): number | null {
   const parsed = parseMoneyInput(receivedText, format)
-  if (!parsed.ok) return null
+  if (!parsed.ok) return total === 0 && isZeroAmount(receivedText, format) ? 0 : null
   const scale = 10 ** format.decimals
   const difference = Math.round(parsed.value * scale) - Math.round(total * scale)
   return difference < 0 ? null : difference / scale

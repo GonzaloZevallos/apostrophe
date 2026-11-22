@@ -4,6 +4,8 @@
 
 **Cuando** un cliente me paga, con una venta o a cuenta de una deuda, **quiero** decir cómo me pagó con el mismo control que uso para cualquier elección que puede crecer, **para** registrar el medio a propósito y nunca por un valor que quedó de antes; y cuando los Payment methods pasen a ser mi propia lista, registrar un pago se tiene que sentir igual. (El job de la parte 5 de GH-581, payments.md y sales.md: esta capacidad cumple su segunda mitad.)
 
+**Cuando** cambian las formas en que me pagan o las cosas en que gasto (empiezo a aceptar un medio nuevo, renombro o retiro uno, cambio su orden, o necesito una Expense category que no tengo), **quiero** encontrar las dos listas en un solo lugar de Settings y cambiarlas en pocos toques desde el teléfono, **para** que la próxima venta o el próximo gasto que registre ya ofrezca el medio y la categoría correctos. (Parte 9 de GH-499.)
+
 # Payment methods
 
 La lista propia de cada **Business** de las formas en que le pagan sus **Customers**. Es un **Growable set**, así que se elige solo con el **Selector** y nunca se declara en `fixedSets.ts` (ADR-0074). Cada **Payment** apunta a un medio por su id (`payment_method_id`); la columna vieja `payment.method` queda congelada con el valor que tenía y ya no se lee ni se escribe (ADR-20261111-payment-methods-by-id). La configuración se guarda por Business en su propio hexágono `payment_methods` (ADR-0055). Hasta esta parte los medios eran Cash y Transfer, incorporados en la app; eso fallaba **Assume nothing**, que nombra a los Payment methods como algo que la app no puede fijar en el código. Parte 24 de GH-318.
@@ -17,6 +19,7 @@ Criterios de éxito:
 3. **Los mismos toques**: registrar una venta o un pago en el teléfono lleva los mismos pocos toques que antes, y una venta sigue llevando menos de un minuto. Elegir el medio cuesta como máximo un paso (abrir el campo, tocar la opción) y nunca viene puesto.
 4. **Dejar de ofrecer sin perder historia**: un medio que la vendedora ya no acepta deja de ofrecerse para Payments nuevos, y los Payments pasados lo siguen mostrando.
 5. **Los Businesses nunca se mezclan**: los medios de un Business nunca se ven ni se usan desde otro (ADR-0004).
+6. **Las dos listas en un solo lugar** (parte 9 de GH-499): la página del grupo Payments and expenses se lee como el dibujo `ConfiguracionCobros` / `ConfiguracionCobrosOscuro`, en claro y en oscuro, con los mismos 3 toques desde cualquier pantalla principal hasta cada lista y sin ningún comportamiento nuevo.
 
 ## Comportamiento
 
@@ -71,13 +74,25 @@ Criterios de éxito:
 
 ### En pantalla: Settings → Payments and expenses → Payment methods
 
-- Camino (decisión 21 del humano, como el dibujo `ConfiguracionCobros`): Settings → **Payments and expenses** → **Payment methods**, 3 toques desde cualquier pantalla principal (avatar → Payments and expenses → Payment methods). No está dentro de Business.
-- **Payments and expenses** es un grupo de Settings (`/settings/payments`) con dos filas, "Payment methods" (`/settings/payments/methods`) y, debajo, "Expense categories" (`/settings/expense-categories`, sin subtítulo). Payment methods tiene como subtítulo los nombres ofrecidos unidos por ", " y cortados con puntos suspensivos. Archived está en `/settings/payments/methods/archived`. La página del grupo no lleva todavía el encabezado grande, el título de sección ni la tarjeta del dibujo; se lee como la misma pantalla.
+- Camino (decisión 21 del humano, como el dibujo `ConfiguracionCobros`): Settings → **Payments and expenses** → **Payment methods**, 3 toques desde cualquier pantalla principal (avatar → Payments and expenses → Payment methods). No está dentro de Business. Lo mismo vale para Expense categories (avatar → Payments and expenses → Expense categories).
+- **Payments and expenses** es un grupo de Settings (`/settings/payments`, `PaymentsGroup.tsx` sobre el marco compartido `SettingsGroup`), dibujado como `ConfiguracionCobros` / `ConfiguracionCobrosOscuro` desde la parte 9 de GH-499. De arriba hacia abajo, en el teléfono:
+  - el título de hoy, "Payments and expenses", con "Close"; Close y el gesto de volver del teléfono son las salidas;
+  - una línea debajo del título, "How you get paid and what you spend on" (`paymentMethods:group.lead`), que es solo texto y no un control;
+  - el encabezado "Payments" (`paymentMethods:group.paymentsHeading`) sobre una tarjeta propia con la fila "Payment methods" (`/settings/payments/methods`), ícono `tarjeta`, cuyo subtítulo son los nombres de los medios ofrecidos en su orden, unidos por ", " y cortados en una línea con puntos suspensivos;
+  - el encabezado "Expenses" (`paymentMethods:group.expensesHeading`) sobre una segunda tarjeta con la fila "Expense categories" (`/settings/expense-categories`), ícono `categorias`, cuyo subtítulo son los nombres de las Expense categories del Business en el orden en que los devuelve el servidor (por nombre; el front nunca los ordena), unidos y cortados igual que el otro.
+  - Las dos filas quedan dentro de un solo `<nav>` con el nombre accesible "Payments and expenses". El subtítulo forma parte del nombre accesible de su fila, así que los localizadores la buscan por un nombre que empieza con "Expense categories".
+- **El subtítulo de Expense categories** usa la misma lectura de categorías que la lista (`expenseCategoriesQueryOptions()`, `GET /api/expense-categories`), así que no agrega ninguna ruta ni campo, y muestra solo las categorías del Business de la sesión; ningún pedido nombra un Business. No hay subtítulo mientras carga, si la lectura falla (sin texto de error ni Attention icon) o cuando el Business no tiene categorías. En todos esos casos la fila sigue siendo un link que se puede tocar, nunca deshabilitado. El texto de muestra del dibujo ("Alquiler, servicios, sueldos…") no se incluye.
+- **Carga**: mientras alguna de las dos lecturas está pendiente, `<main>` lleva `aria-busy`, y se quita cuando las dos terminan, aunque sea con error. Los rótulos, íconos y flechas de las filas se dibujan desde el primer momento.
+- En oscuro, la misma estructura con los tokens oscuros; nada se distingue solo por color. La computadora conserva su marco actual, sin pulido dedicado.
+- **Diferencia aceptada con el dibujo** (dueño, decisión 1 de la parte 9 de GH-499: "Drawing 1: accept"): el link final del dibujo a los gastos del mes en Analysis no se construye. Es otro cambio, con su propio issue. Mientras tanto, los gastos del mes se ven por el segmento Home | Analysis de Home.
+- **Diferencias con el dibujo planteadas al dueño, sin decidir**: el encabezado "‹ Ajustes" con título grande del dibujo (la página conserva su título y "Close"), y los conteos ("3", "5") antes de cada flecha, que no se construyen; con el subtítulo cortado, el conteo de categorías no se ve.
 - Expense categories se mudó a este grupo como su segunda fila, como lo dibuja la pantalla; Withdrawal reasons se queda en Business, porque el dibujo no la incluye (decisión de PM de GH-707).
-- **La lista** muestra los medios ofrecidos en su orden, cada uno con su ícono y su nombre. Cada fila tiene "Move up" y "Move down" (en el teléfono, sin arrastrar; el "Move up" del primero y el "Move down" del último quedan deshabilitados) y, según el medio, "Delete" cuando no tiene Payments o "Archive" cuando los tiene, cada una con su confirmación. Tocar la fila abre su edición. Tiene "Add method" y la entrada "Archived". Mientras carga muestra la forma de la lista; si falla, "Try again"; sin conexión, el aviso de Estados.
+- **La lista** muestra los medios ofrecidos en su orden, cada uno con su ícono y su nombre. Cada fila tiene "Move up" y "Move down" (en el teléfono, sin arrastrar; el "Move up" del primero y el "Move down" del último quedan deshabilitados) y, según el medio, "Delete" cuando no tiene Payments o "Archive" cuando los tiene, cada una con su confirmación. Tocar la fila abre su edición. Tiene "Add method" y la entrada "Archived" (`/settings/payments/methods/archived`). Mientras carga muestra la forma de la lista; si falla, "Try again"; sin conexión, el aviso de Estados.
 - **Agregar** y **editar** se hacen en un formulario (una **Sheet** en el teléfono, con "Close" arriba y Save fijo abajo) con nombre e ícono, el ícono por defecto ya elegido. Los rechazos del nombre (en blanco, más de 60 caracteres, repetido, reservado por un archivado con "Restore it from Archived.") se muestran junto al campo y conservan lo escrito. La edición avisa "Past payments will show the new name." y, al volver a abrirla después de guardar, muestra lo guardado (decisión 1 del humano). Salir con cambios sin guardar pide confirmación.
 - **Archived**: muestra los medios archivados, cada uno con "Restore"; vacío dice "No archived payment methods."
-- Todo texto sale del **Copy module**; ningún valor por defecto nuevo lleva una palabra propia de un solo tipo de negocio.
+- Todo texto sale del **Copy module**; ningún valor por defecto nuevo lleva una palabra propia de un solo tipo de negocio, y ningún texto en español del dibujo se incluye.
+
+![Settings → Payments and expenses en el teléfono](../assets/screens/ConfiguracionCobros.webp)
 
 ### API y restricciones
 
@@ -96,6 +111,7 @@ Criterios de éxito:
 - Los rechazos llevan su código en `contract.json` (ADR-0008), son fijos y nunca repiten el nombre tipeado (ADR-0005).
 - Toda ruta nueva entra en el barrido de aislamiento y en el test de rutas con acceso restringido.
 - Las migraciones siguen la única cadena lineal, cada una con su `down_revision` en la anterior.
+- La página del grupo Payments and expenses no agrega ninguna ruta ni campo: lee `GET /api/payment-methods` y `GET /api/expense-categories`, compartiendo la caché de cada lista.
 
 ## Métricas
 
@@ -106,6 +122,7 @@ Criterios de éxito:
 - **Dejar de ofrecer (criterio 4)**: un test de API archiva un medio con Payments y comprueba que no aparece entre los ofrecidos, que un Payment nuevo con él responde 404 `payment_method.unavailable`, que los Payments pasados siguen mostrando su nombre y que restaurarlo lo devuelve igual; uno sin Payments se elimina; el último ofrecido no se archiva ni se elimina; un nombre archivado no se reutiliza. El spec e2e de teléfono `paymentMethods.spec.ts` cubre agregar, editar y volver a abrir, archivar, restaurar y eliminar.
 - **Aislamiento (criterio 5)**: toda ruta de medios está en el barrido y responde 404 o vacío desde otro Business; un Payment o una venta con el medio de otro Business responde 404.
 - **Assume nothing**: ningún literal "cash" o "transfer" decide comportamiento en el código nuevo; ningún medio aparece en `fixedSets.ts`.
+- **Las dos listas en un solo lugar (criterio 6)**: las Design captures de `ConfiguracionCobros` y `ConfiguracionCobrosOscuro` a 390 px dan ok (evidencia fijada por la decisión 2 del dueño), y la única diferencia aceptada es el link a Analysis. `PaymentsGroup.test.tsx` comprueba los encabezados y la línea bajo el título, el subtítulo de Expense categories en el orden del servidor, que no hay subtítulo con la lista vacía ni con un 500 (y que la fila igual abre `/settings/expense-categories`), el `aria-busy` de `<main>` mientras las dos lecturas están pendientes y que ningún pedido nombra un Business. Se mantienen los 3 toques hasta cada lista y no se agregó ningún infractor al Mobile check: se quitó la entrada `aria-busy` de `ConfiguracionCobros`.
 
 ## Fuera de alcance
 
@@ -115,3 +132,5 @@ Criterios de éxito:
 - Arrastrar para ordenar.
 - Íconos subidos o de texto libre.
 - El ícono del medio dentro del Selector de New sale y Record payment.
+- El link de la página Payments and expenses a los gastos del mes en Analysis: es otro cambio, con su propio issue (decisión 1 del dueño, parte 9 de GH-499).
+- Pulido dedicado para la computadora de la página Payments and expenses.

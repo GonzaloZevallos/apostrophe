@@ -14,6 +14,12 @@
  * `collectableChoice(effectiveChoice(...))` and refused only through `validateSale`; the body is
  * built only by `saleBodyOf`.
  *
+ * Received and Change are a helper only: Received is text in this Sheet's own state, Change is what
+ * `changeFor` says of it, and neither reaches the body. The helper is hidden by one predicate, the
+ * effective choice being owing; what was typed outlives that, a method change and a failed save.
+ * The Collect label always holds the full "Collect {total}"; when it overflows, the short word is
+ * drawn over it, and the button's name stays the full text.
+ *
  * "Owes it" arrives with GH-944. A save that fails always releases the Sheet (`onSavingChange(false)`,
  * Close works again) and keeps the method and the lines. A 401 is left to the session boundary and
  * shows nothing. The refusal that the chosen method is no longer available (`isMethodUnavailable`,
@@ -25,12 +31,23 @@
  */
 
 import { onlineManager, useMutation, useQueryClient } from '@tanstack/react-query'
-import { type FormEvent, useEffect, useId, useRef, useState, useSyncExternalStore } from 'react'
+import {
+  Fragment,
+  type FormEvent,
+  type ReactNode,
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 import { ApiError, post } from '../../api/client'
 import { keys } from '../../api/keys'
 import Boton from '../../components/Boton'
 import FieldRefusal from '../../components/FieldRefusal'
 import Loading from '../../components/Loading'
+import MoneyInput from '../../components/MoneyInput'
 import Selector from '../../components/Selector'
 import Sheet, { SheetActions } from '../../components/Sheet'
 import { useTranslation } from 'react-i18next'
@@ -40,12 +57,13 @@ import { useMoney } from '../../format/moneyContext'
 import {
   choiceOfValue,
   collectableChoice,
+  howTheyPayView,
   paymentMethodName,
-  selectorValueOf,
   usePaymentMethodOptions,
 } from '../../sales/paymentMethods'
 import {
   lineValidationsOf,
+  changeFor,
   paymentChoiceOf,
   payStateOfEffective,
   type PricedSale,
@@ -92,11 +110,18 @@ export default function CollectSheet({
   const queryClient = useQueryClient()
   const titleId = useId()
   const refusalId = useId()
+  const listLineId = useId()
   const notSavedId = useId()
   const methodOptions = usePaymentMethodOptions()
+  const receivedId = useId()
+  const receivedHelpId = useId()
   const online = useSyncExternalStore(onlineManager.subscribe, () => onlineManager.isOnline())
   const fieldRef = useRef<HTMLButtonElement>(null)
-  const [refused, setRefused] = useState(false)
+  const labelRef = useRef<HTMLSpanElement>(null)
+  const [received, setReceived] = useState('')
+  const [short, setShort] = useState(false)
+  // What stopped the last Collect, and the one cause that set it: it shows only while that cause holds.
+  const [refusal, setRefusal] = useState<'method' | 'customer' | null>(null)
   // The method the server said is no longer available: kept in the field with the mark, never offered.
   const [methodGone, setMethodGone] = useState<{ id: number; name: string } | null>(null)
   // Every id this Sheet was refused for, kept for its whole life: never offered and never sent again,
@@ -117,6 +142,29 @@ export default function CollectSheet({
   const save = useMutation({ mutationFn: (body: SaleBody) => post<SavedSale>('/sales', body), networkMode: 'always' })
 
   const { state } = draft
+  const totalText = money.money(priced.totals.total)
+  const owing = effectiveChoice(state.choice, state.proposedMethodId, methodOptions.offeredIds)?.kind === 'owing'
+  const change = changeFor(received, priced.totals.total, money.format)
+
+  // The label is measured on mount, when the total or the saving state changes, and on every resize.
+  // The full text is always in it, so the label can come back to it.
+  useLayoutEffect(() => {
+    const label = labelRef.current
+    if (saving || label === null) return undefined
+    const measure = () => setShort(label.scrollWidth > label.clientWidth)
+    measure()
+    if (typeof ResizeObserver === 'undefined') return undefined
+    const observer = new ResizeObserver(measure)
+    observer.observe(label)
+    return () => observer.disconnect()
+  }, [totalText, saving])
+
+  // A refusal never outlives a change of Customer or of choice kind: reset while rendering, with no effect.
+  const [seen, setSeen] = useState({ customerId: state.customerId, kind: state.choice.kind })
+  if (seen.customerId !== state.customerId || seen.kind !== state.choice.kind) {
+    setSeen({ customerId: state.customerId, kind: state.choice.kind })
+    setRefusal(null)
+  }
 
   /** Focuses the method field, or the group around it while the field is disabled (the list is loading). */
   function focusMethodField(): void {
@@ -177,14 +225,15 @@ export default function CollectSheet({
       lines: lineValidationsOf(priced),
     })
     if (errors.some((error) => error.field.startsWith('line:'))) return
-    if (errors.some((error) => error.field === 'method')) {
-      setRefused(true)
+    const stopping = errors.find((error) => error.field === 'method' || error.field === 'customer')
+    if (stopping !== undefined) {
+      setRefusal(stopping.field === 'customer' ? 'customer' : 'method')
       focusMethodField()
       return
     }
     savingRef.current = true
     setSaving(true)
-    setRefused(false)
+    setRefusal(null)
     setNotSaved(false)
     onSavingChange(true)
     void send(
@@ -200,7 +249,48 @@ export default function CollectSheet({
     )
   }
 
-  const shownValue = selectorValueOf(state.choice, state.proposedMethodId, methodOptions.offeredIds)
+  const view = howTheyPayView({
+    choice: state.choice,
+    customerId: state.customerId,
+    proposedMethodId: state.proposedMethodId,
+    offeredIds: methodOptions.offeredIds,
+    methodOptions: methodOptions.selector.options,
+    refusedIds,
+    methodGone,
+    owesItLabel: SALES_TEXT.owesIt,
+  })
+  // The lines under the field: each has an id, and the field points at exactly the ones drawn.
+  // A refusal of this Collect replaces the "no longer available" line, as it always did.
+  const lines: { id: string; node: ReactNode }[] = []
+  if (refusal === 'customer' && owing && state.customerId === null) {
+    lines.push({ id: refusalId, node: <FieldRefusal id={refusalId}>{SALES_TEXT.owingNeedsCustomer}</FieldRefusal> })
+  } else if (refusal === 'method' && !owing) {
+    lines.push({ id: refusalId, node: <FieldRefusal id={refusalId}>{SALES_TEXT.noMethodToCollect}</FieldRefusal> })
+  } else if (methodGone !== null) {
+    lines.push({
+      id: refusalId,
+      node: <FieldRefusal id={refusalId}>{t('common:paymentMethodUnavailable')}</FieldRefusal>,
+    })
+  }
+  // With "Owes it" in the list the Selector's own empty/failed message never shows (the list is not
+  // empty), so the Sheet says it. An empty list is read on the server's list, before the refused ids go.
+  if (
+    !methodOptions.selector.loading &&
+    state.customerId !== null &&
+    (methodOptions.failure !== null || methodOptions.offeredIds?.length === 0)
+  ) {
+    lines.push({
+      id: listLineId,
+      node:
+        methodOptions.failure !== null ? (
+          <FieldRefusal id={listLineId}>{methodOptions.selector.emptySetMessage}</FieldRefusal>
+        ) : (
+          <span id={listLineId} className="campo__ayuda" data-copy="help">
+            {methodOptions.selector.emptySetMessage}
+          </span>
+        ),
+    })
+  }
 
   return (
     <Sheet
@@ -229,39 +319,61 @@ export default function CollectSheet({
       <span className="cobro__cliente">
         {state.customerId === null ? SALES_TEXT.noCustomer : (customerName ?? <Loading compacto />)}
       </span>
-      <form className="formulario" onSubmit={collect}>
-        <div inert={saving}>
+      <form className="formulario cobro__formulario" onSubmit={collect}>
+        <div className="cobro__total">
+          <span>{SALES_TEXT.totalLabel}</span> <span className="cifra-n cobro__importe">{totalText}</span>
+        </div>
+        <div className="cobro__bloque" inert={saving}>
           {/* A tap on a field whose list failed reads the list again; the Selector shows its own failure line. */}
           <div onClickCapture={methodOptions.failure === null ? undefined : methodOptions.reload}>
             <Selector
               {...methodOptions.selector}
-              options={methodOptions.selector.options.filter((option) => !refusedIds.includes(Number(option.value)))}
+              options={view.options}
               placeholder={SALES_TEXT.chooseMethod}
               label={SALES_TEXT.howTheyPay}
-              value={
-                methodGone === null
-                  ? shownValue !== null && refusedIds.includes(Number(shownValue))
-                    ? null
-                    : shownValue
-                  : String(methodGone.id)
-              }
-              selected={methodGone === null ? undefined : { value: String(methodGone.id), label: methodGone.name }}
+              value={view.value}
+              selected={view.selected}
               onChange={(value) => {
                 draft.setChoice(choiceOfValue(value))
-                setRefused(false)
+                setRefusal(null)
                 setNotSaved(false)
                 if (methodGone !== null && value !== String(methodGone.id)) setMethodGone(null)
               }}
               fieldRef={fieldRef}
-              describedBy={refused || methodGone !== null ? refusalId : undefined}
+              describedBy={lines.length === 0 ? undefined : lines.map((line) => line.id).join(' ')}
             />
           </div>
+          {lines.map((line) => (
+            <Fragment key={line.id}>{line.node}</Fragment>
+          ))}
+          {!owing && (
+            <>
+              <div className="campo">
+                <label htmlFor={receivedId} className="campo__rotulo">
+                  {SALES_TEXT.receivedLabel}
+                </label>
+                <MoneyInput
+                  id={receivedId}
+                  className="campo__input"
+                  autoComplete="off"
+                  aria-describedby={receivedHelpId}
+                  value={received}
+                  onChange={setReceived}
+                />
+                <span id={receivedHelpId} className="campo__ayuda">
+                  {SALES_TEXT.receivedHelp}
+                </span>
+              </div>
+              <div role="status" className="cobro__vuelto">
+                {change !== null && (
+                  <>
+                    <span>{SALES_TEXT.changeLabel}</span> <span className="cifra-n cobro__importe">{money.money(change)}</span>
+                  </>
+                )}
+              </div>
+            </>
+          )}
         </div>
-        {refused ? (
-          <FieldRefusal id={refusalId}>{SALES_TEXT.noMethodToCollect}</FieldRefusal>
-        ) : (
-          methodGone !== null && <FieldRefusal id={refusalId}>{t('common:paymentMethodUnavailable')}</FieldRefusal>
-        )}
         {notSaved && <FieldRefusal id={notSavedId}>{SALES_TEXT.saleNotSaved}</FieldRefusal>}
         <SheetActions>
           <Boton
@@ -269,8 +381,18 @@ export default function CollectSheet({
             type="submit"
             disabled={methodOptions.selector.loading && online && priced.totals.total > 0}
             ariaBusy={saving}
+            ariaLabel={saving ? undefined : SALES_TEXT.collect(totalText)}
           >
-            {saving ? SALES_TEXT.saving : SALES_TEXT.collect(money.money(priced.totals.total))}
+            {saving ? (
+              SALES_TEXT.saving
+            ) : (
+              <span className="cobro__etiqueta" ref={labelRef}>
+                <span className={short ? 'cobro__etiqueta-completa cobro__etiqueta-completa--oculta' : 'cobro__etiqueta-completa'} aria-hidden={short ? true : undefined}>
+                  {SALES_TEXT.collect(totalText)}
+                </span>
+                {short && <span className="cobro__etiqueta-corta">{SALES_TEXT.collectShort}</span>}
+              </span>
+            )}
           </Boton>
         </SheetActions>
       </form>

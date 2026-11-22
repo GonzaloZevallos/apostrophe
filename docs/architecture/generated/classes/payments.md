@@ -12,6 +12,8 @@ classDiagram
   }
   class application {
   }
+  class customer_sales {
+  }
   class debt_age {
   }
   class delete_payment {
@@ -53,6 +55,7 @@ classDiagram
   class view_accounts {
   }
   account --> settlement
+  customer_sales --> settlement
   debt_age --> settlement
   delete_payment --> errors
   delete_payment --> ports
@@ -77,6 +80,7 @@ classDiagram
   router --> sql_payments
   router --> view_accounts
   schemas --> account
+  schemas --> customer_sales
   schemas --> debt_age
   schemas --> record_payment
   schemas --> settlement
@@ -90,6 +94,7 @@ classDiagram
   sql_payments --> ports
   sql_payments --> tables
   view_accounts --> account
+  view_accounts --> customer_sales
   view_accounts --> debt_age
   view_accounts --> errors
   view_accounts --> ports
@@ -112,6 +117,10 @@ classDiagram
     owing_since : date #124; None
     standing : Literal
   }
+  class CustomerSales {
+    average_sale : int #124; None
+    by_month : tuple~MonthTotal, ...~
+  }
   class DebtAgeBuckets {
     days_8_30 : int
     over_30 : int
@@ -128,6 +137,10 @@ classDiagram
   class Ledger {
     payments : tuple~LaterPaymentEntry, ...~
     sales : tuple~OwedSale, ...~
+  }
+  class MonthTotal {
+    month : Month
+    total : int
   }
   class NewPayment {
     amount : int
@@ -212,6 +225,12 @@ classDiagram
 
 ```mermaid
 classDiagram
+  class AccountRead {
+    account : Account
+    age_days : int #124; None
+    sales : CustomerSales
+    still_owing : tuple~StillOwingLine, ...~
+  }
   class CandidateOutcome {
     applied_to : tuple~Split, ...~
     balance : int
@@ -294,11 +313,15 @@ classDiagram
 ```mermaid
 classDiagram
   class AccountOut {
+    age_days : int #124; None
+    average_sale : MoneyOut #124; None
     balance
     owing_since : PaymentDate #124; None
     rows : list~AccountRowOut~
+    sales_by_month : list~MonthTotalOut~
     standing : Literal
-    of(account: Account) AccountOut
+    still_owing : list~StillOwingLineOut~
+    of(read: AccountRead) AccountOut
   }
   class AccountPaymentRefOut {
     amount
@@ -347,6 +370,11 @@ classDiagram
     sales_owing_count : int
     total_owed
     of(debtors: Debtors, with_lines: bool) DebtorsOut
+  }
+  class MonthTotalOut {
+    month : str
+    total
+    of(entry: MonthTotal) MonthTotalOut
   }
   class PaymentAccountRowOut {
     date : date

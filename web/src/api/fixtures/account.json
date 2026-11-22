@@ -27,5 +27,12 @@
       "is_partial": false,
       "payment": { "id": 6, "paid_on": "2026-09-25", "amount": 8000, "payment_method": { "id": 2, "name": "Transfer", "icon": "bank" } }
     }
-  ]
+  ],
+  "age_days": null,
+  "still_owing": [],
+  "sales_by_month": [
+    { "month": "2026-09", "total": 11000 },
+    { "month": "2026-10", "total": 0 }
+  ],
+  "average_sale": 11000
 }
