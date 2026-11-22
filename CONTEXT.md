@@ -296,6 +296,10 @@ _Avoid_: profit, earnings, markup, ganancia
 El Margin de un Product sobre sus Sales de gramos con costo en el período. No hay ninguno cuando esas Sales son $0, como en un Product solo regalado o con todos los gramos pendientes. _In the app_: Margin %.
 _Avoid_: markup, rentabilidad, return
 
+**Cost and margins**:
+El costo por gramo de la última Purchase con costo de un Product a un día, redondeado a pesos, y su margen en porcentaje contra cada precio vigente (lista, mayorista, VIP). El margen se calcula desde el costo exacto, nunca desde el costo redondeado que se muestra, y se redondea la mitad hacia arriba, así que un margen negativo de -2,5 es -2. Un Product sin Purchase con costo no tiene costo ni márgenes; uno archivado no se calcula. En el código: `CostedPurchase` (la Purchase con costo y su cantidad), `PriceRule` (lista, mayorista, VIP) y `CostAndMargins`. _In the app_: todavía ninguna pantalla lo muestra.
+_Avoid_: markup, ganancia
+
 **Average margin**:
 El Margin total de un mes en todos sus Products sobre las Sales de gramos con costo del mes, marcado cuando algún Product tiene gramos pendientes. _In the app_: Average margin.
 _Avoid_: average profit, mean margin
