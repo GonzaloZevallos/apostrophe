@@ -295,6 +295,8 @@ export const RECORDS_STATES: readonly WalkState[] = [
       { fill: { label: CUSTOMERS_TEXT.searchCustomer, value: '' } },
     ],
     visible: 'Mica Solano',
+    // It ends on the Customers page with the search empty, so its placeholder is the row's own listed offender.
+    offendersAs: 'Clientes',
   },
 
   {
