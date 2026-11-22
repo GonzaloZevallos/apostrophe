@@ -9,7 +9,7 @@
  * the card and the sentence, adding `aria-busy` and `aria-disabled` and nothing else.
  */
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
@@ -29,9 +29,25 @@ export interface DebtorsSlotProps {
 
 export function DebtorsSlot({ drawn, busy, errorUpdatedAt, onRetry }: DebtorsSlotProps) {
   const [filled, setFilled] = useState(false)
-  useEffect(() => setFilled(drawn), [drawn])
+  const region = useRef<HTMLDivElement>(null)
+  // After the commit's effects, never inside one: the button arrives once `ContentArea` has dropped `aria-busy`.
+  useEffect(() => {
+    let live = true
+    queueMicrotask(() => {
+      if (live) setFilled(drawn)
+    })
+    return () => {
+      live = false
+    }
+  }, [drawn])
+  // Focus that landed on the slot before its button existed (the return to place) moves onto the button.
+  useEffect(() => {
+    const slot = region.current
+    if (drawn && filled && slot !== null && document.activeElement === slot) slot.querySelector('button')?.focus({ preventScroll: true })
+  }, [drawn, filled])
   return (
     <div
+      ref={region}
       role="status"
       className={drawn ? 'clientes__sin-cifras clientes__sin-cifras--reservado' : 'clientes__sin-cifras'}
       data-place={drawn ? DEBTORS_NOTICE_PLACE : undefined}

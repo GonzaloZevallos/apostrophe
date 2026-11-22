@@ -1072,8 +1072,10 @@ test('a typed query hides the notice, and a success arriving meanwhile leaves th
   const input = screen.getByLabelText('Search customer')
   await userEvent.type(input, 'lu')
   await waitFor(() => expect(screen.queryByRole('button', { name: DEBTORS_NOTICE })).not.toBeInTheDocument())
+  const before = requestsTo('/payments/debtors')
   debtors.answer(DEBTORS_FIXTURE)
   await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+  await waitFor(() => expect(requestsTo('/payments/debtors')).toBeGreaterThan(before))
   await userEvent.clear(input)
 
   expect(await screen.findByRole('radio', { name: /All/ })).toBeChecked()
