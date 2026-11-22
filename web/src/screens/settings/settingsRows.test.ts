@@ -293,7 +293,7 @@ describe('shownRowsByGroup', () => {
   test('with two languages: thirteen rows, the language in the business group', () => {
     const groups = shownRowsByGroup(ON_TWO)
     expect(groups.flatMap((entry) => entry.rows)).toHaveLength(13)
-    expect(groups[0].rows.map((candidate) => candidate.key)).toEqual(['businessName', 'currency', 'language'])
+    expect(groups.find((entry) => entry.group === 'business')?.rows.map((candidate) => candidate.key)).toEqual(['businessName', 'currency', 'language'])
   })
 
   test('customer types is missing while its switch is off or unknown', () => {

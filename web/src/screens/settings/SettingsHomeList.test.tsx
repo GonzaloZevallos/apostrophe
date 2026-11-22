@@ -60,7 +60,9 @@ test('shows five headings in group order, the shortcut strip before the first', 
     SETTINGS_GROUPS.map((group) => testT(SETTINGS_GROUP_LABEL_KEYS[group])),
   )
   const firstShortcut = screen.getByRole('link', { name: testT(SHORTCUTS[0].labelKey) })
-  expect(firstShortcut.compareDocumentPosition(headings[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  const firstHeading = headings.find(() => true)
+  if (firstHeading === undefined) throw new Error('no group heading')
+  expect(firstShortcut.compareDocumentPosition(firstHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
 })
 
 test('lists twelve rows with one language and thirteen with two', async () => {
@@ -114,7 +116,9 @@ test('every link, rows and shortcuts, arrives carrying enteredFrom settings', as
   expect(total).toBe(SHORTCUTS.length + 13)
 
   for (let index = 0; index < total; index += 1) {
-    await user.click(screen.getAllByRole('link')[index])
+    const link = screen.getAllByRole('link').at(index)
+    if (link === undefined) throw new Error(`no link ${index}`)
+    await user.click(link)
     const destination = router.state.location
     expect(destination.state).toMatchObject({ enteredFrom: 'settings' })
     await router.navigate(HOME)
