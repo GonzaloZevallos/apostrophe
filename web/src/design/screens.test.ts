@@ -30,8 +30,9 @@ const copyFiles = import.meta.glob<CopyFile>(['/src/copy/*.ts', '!/src/copy/limi
 })
 
 // The sample's own names (scripts/design/sample_app.py), seller data a step may name. 'Packaging' is the
-// expense category the sample makes (sample_app.py, `category("Packaging")`), which VentaVuelve picks.
-const SAMPLE_NAMES = ['Blue Dream', 'Gelato', 'Sir Jack', 'Packaging']
+// expense category the sample makes (sample_app.py, `category("Packaging")`), which VentaVuelve picks. The
+// customers are the sample's own (sample_app.py, `customer("Nico Parra" ...)`), which the Customers search rows wait on.
+const SAMPLE_NAMES = ['Blue Dream', 'Gelato', 'Sir Jack', 'Packaging', 'Nico Parra', 'Tincho Aguirre', 'Mica Solano']
 const HOLE = '\u0001'
 /** Stands for the business's currency symbol, so the check names no symbol of its own: a Money format
  * value is built with it and `moneyFormatter` writes the figure around it. */

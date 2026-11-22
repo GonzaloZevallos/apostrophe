@@ -252,7 +252,9 @@ describe('walked_as: a row whose screen a walked state proves', () => {
     const proved = REGISTRY.filter((screen) => screen.walkedAs !== null)
     expect(proved.map((screen) => screen.screen)).toEqual([
       'VentaEnCurso',
+      'ClientesBusquedaResultado',
       'ClientesBusquedaSinResultado',
+      'ClientesBusquedaLimpiada',
       'VentaVuelve',
     ])
     for (const screen of proved) {
