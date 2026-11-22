@@ -114,7 +114,7 @@ export default defineConfig({
     },
     {
       name: 'mobile',
-      testMatch: /(mobile|homeDateLine)\.spec\.ts/,
+      testMatch: /(mobile|homeDateLine|productPage)\.spec\.ts/,
       dependencies: ['mobile-setup'],
       fullyParallel: true,
       timeout: MOBILE_TEST_TIMEOUT_MS,
@@ -124,7 +124,7 @@ export default defineConfig({
     // original specs, which keep the first server and the real clock, never match it.
     {
       name: 'secure-origin',
-      testIgnore: [/catalogInsecureOrigin\.spec\.ts/, /(mobile|homeDateLine)\.(spec|setup)\.ts/, /phoneCountry\.spec\.ts/],
+      testIgnore: [/catalogInsecureOrigin\.spec\.ts/, /(mobile|homeDateLine|productPage)\.(spec|setup)\.ts/, /phoneCountry\.spec\.ts/],
     },
     // GH-686: the Phone country is detected from the device's language and zone, so its spec
     // needs a device that is not Argentine. A non-default locale is a project here, never a

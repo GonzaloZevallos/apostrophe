@@ -86,7 +86,7 @@ for (const viewport of VIEWPORTS) {
       // The archived page's own heading, on both viewports (a phone has no Rosa link here).
       await expect(page.getByRole('heading', { name: 'Rosa' })).toBeVisible()
       await expect(page.getByRole('button', { name: '‹ Archived' })).toBeVisible()
-      await expect(page.locator('.variedad-resumen--archivada + .variedad-marcas').getByText('Archived', { exact: true })).toBeVisible()
+      await expect(page.getByRole('list', { name: 'Rosa' }).getByText('Archived', { exact: true })).toBeVisible()
       await expect(page.getByText('+ Entry')).toHaveCount(0)
       await expect(page.getByText('New price')).toHaveCount(0)
       await expect(page.getByText('Take from stock')).toHaveCount(0)
