@@ -5,7 +5,8 @@ import { GONE_NOTICE } from '../api/refusals.ts'
 import { recordExpense } from '../api/expenses.ts'
 import { HOME, SALE_NEW } from '../routes.ts'
 import { STATE_NAMES, WALKABLE } from './registry.ts'
-import { common, refusal } from './copy.ts'
+import { common, emptyState, refusal } from './copy.ts'
+import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { PENDING_TAPS } from './pending.ts'
 import { offendersAsProblems, stateNameProblems, type WalkState } from './states.ts'
 import { isConvertedRow } from '../i18n/step.ts'
@@ -33,6 +34,28 @@ describe('a walked state that holds a read', () => {
     for (const name of ['customer/country-selector-open', 'customer/country-selector-locked']) {
       expect(STATES.find((candidate) => candidate.screen === name)?.holds, name).toBeUndefined()
     }
+  })
+})
+
+/** The path a read goes to, as the walk matches it: the request URL's pathname. */
+const pathOf = (url: string): string => new URL(url).pathname
+
+describe('the walked states of the Customers search', () => {
+  const state = (screen: string): WalkState => {
+    const found = STATES.find((candidate) => candidate.screen === screen)
+    if (found === undefined) throw new Error(`${screen} is not walked`)
+    return found
+  }
+
+  it('ends the no-match state on the existing no-match line, and the cleared state on a customer who owes nothing', () => {
+    expect(state('customer/search-no-match').visible).toBe(emptyState('emptyStates:customersList'))
+    expect(state('customer/search-cleared-to-all').visible).toBe('Mica Solano')
+    expect(state('customer/search-cleared-to-all').steps).toContainEqual({ click: common('common:customerSegmentAll') })
+    expect(state('customer/search-cleared-to-all').steps.at(-1)).toEqual({ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: '' } })
+  })
+
+  it('finds a debtor by search', () => {
+    expect(state('customer/search-answered').visible).toBe('Tincho Aguirre')
   })
 })
 
@@ -66,12 +89,13 @@ describe('a state that lists its offenders as a registry row', () => {
     expect(offendersAsProblems(STATES, rows)).toEqual([])
   })
 
-  it('is only the New sale states and the Customers notice state, each as the row whose page the walk ends on', () => {
+  it('is only the New sale states whose page the walk ends on, as NuevaVenta, the cleared Customers search and the Customers notice state, as Clientes', () => {
     const borrowing = STATES.filter((state) => state.offendersAs !== undefined)
     expect(borrowing.map((state) => [state.screen, state.offendersAs])).toEqual([
       ['new-sale/nothing-priced', 'NuevaVenta'],
       ['new-sale/date-change-refetching', 'NuevaVenta'],
       ['sale/expense-returned', 'NuevaVenta'],
+      ['customer/search-cleared-to-all', 'Clientes'],
       ['ClientesSinCifras', 'Clientes'],
     ])
   })
@@ -96,12 +120,29 @@ describe('a state that lists its offenders as a registry row', () => {
 describe('a walked state that holds a refetch after its steps', () => {
   const refetching = STATES.filter((state) => state.refetch !== undefined)
 
-  it('is only new-sale/date-change-refetching', () => {
-    expect(refetching.map((state) => state.screen)).toEqual(['new-sale/date-change-refetching'])
+  it('is only the Customers search held and new-sale/date-change-refetching', () => {
+    expect(refetching.map((state) => state.screen)).toEqual(['new-sale/date-change-refetching', 'customer/search-held'])
+  })
+
+  it('holds GET /customers across a longer search, after the first search answered', () => {
+    const found = STATES.find((state) => state.screen === 'customer/search-held')
+    expect(found?.refetch?.holds.test(pathOf('http://api.test/customers'))).toBe(true)
+    expect(found?.refetch?.holds.test(pathOf('http://api.test/payments/debtors'))).toBe(false)
+    expect(found?.refetch?.holds.test(pathOf('http://api.test/customers/1'))).toBe(false)
+    expect(found?.refetch?.steps).toEqual([{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nicol' } }])
+    expect(found?.visible).toBe('Nico Parra')
+  })
+
+  it('holds the customers and debtors reads of the first Customers load, and nothing else', () => {
+    const holds = STATES.find((state) => state.screen === 'ClientesBusqueda')?.holds
+    expect(holds?.test(pathOf('http://api.test/customers'))).toBe(true)
+    expect(holds?.test(pathOf('http://api.test/payments/debtors'))).toBe(true)
+    expect(holds?.test(pathOf('http://api.test/customers/1'))).toBe(false)
+    expect(holds?.test(pathOf('http://api.test/payments'))).toBe(false)
   })
 
   it('holds GET /api/products and not /api/settings, and changes the date to the day before the pin', () => {
-    const refetch = refetching[0]?.refetch
+    const refetch = refetching.find((state) => state.screen === 'new-sale/date-change-refetching')?.refetch
     expect(refetch?.holds.test('/api/products')).toBe(true)
     expect(refetch?.holds.test('/api/settings')).toBe(false)
     expect(refetch?.steps).toEqual([{ fill: { label: 'Date', value: DAY_BEFORE_PIN } }])
