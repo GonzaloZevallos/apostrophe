@@ -10,6 +10,7 @@ Cada capacidad tiene su página en [docs/product/](product/):
 - [Análisis](product/analysis.md)
 - [Brand](product/brand.md)
 - [Catalog](product/catalog.md)
+- [Costo y márgenes](product/cost-and-margins.md)
 - [Clientes](product/customers.md)
 - [Decisiones del dueño](product/decisiones-del-dueño.md)
 - [Design capture](product/design-capture.md)

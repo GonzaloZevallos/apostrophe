@@ -297,8 +297,8 @@ El Margin de un Product sobre sus Sales de gramos con costo en el período. No h
 _Avoid_: markup, rentabilidad, return
 
 **Cost and margins**:
-El costo por gramo de la última Purchase con costo de un Product a un día, redondeado a pesos, y su margen en porcentaje contra cada precio vigente (lista, mayorista, VIP). El margen se calcula desde el costo exacto, nunca desde el costo redondeado que se muestra, y se redondea la mitad hacia arriba, así que un margen negativo de -2,5 es -2. Un Product sin Purchase con costo no tiene costo ni márgenes; uno archivado no se calcula. En el código: `CostedPurchase` (la Purchase con costo y su cantidad), `PriceRule` (lista, mayorista, VIP) y `CostAndMargins`. _In the app_: todavía ninguna pantalla lo muestra.
-_Avoid_: markup, ganancia
+El costo por unidad de la última Purchase de un Product con costo mayor que 0 y cantidad mayor que 0, con fecha del día o anterior (en un empate de fecha gana la registrada después), redondeado la mitad hacia arriba a los decimales del Money format del Business, y su margen en porcentaje entero contra cada precio vigente de una regla activada (lista, mayorista y VIP solo para el VIP type con Customer types activado), calculado desde el costo exacto y redondeado la mitad hacia arriba, así que un -2,5 es -2. Es un costo de reposición, no el Lot order ni el Cost of goods sold, y nunca se guarda; un Product sin Purchase con costo no tiene costo ni márgenes, uno sin precio hoy no tiene márgenes y uno archivado no tiene ninguno. En el código: `LatestCostedPurchase` (el puerto de productos que implementa stock), `CostedPurchase`, `PriceRule` y `CostAndMargins`; _In the app_: lo expone `GET /api/products/{id}` como `cost`, y todavía ninguna pantalla lo muestra.
+_Avoid_: markup, ganancia, average cost, COGS
 
 **Average margin**:
 El Margin total de un mes en todos sus Products sobre las Sales de gramos con costo del mes, marcado cuando algún Product tiene gramos pendientes. _In the app_: Average margin.
