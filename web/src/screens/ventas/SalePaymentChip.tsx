@@ -2,7 +2,7 @@
  * `SalePaymentChip`: where one Sale stands on being paid, read only from `payment_state` and
  * `still_owed` (never `still_owing`, the Payments or the Customer's Balance). The word says the
  * state; part-paid adds a half-filled circle and the unknown line the Attention icon, both
- * decorative. A state or amount that cannot be shown reads "Payment can't be shown", never a
+ * decorative. A state or amount that cannot be shown reads "Payment cannot be shown", never a
  * guessed state or a $ 0. Not on any screen yet.
  */
 

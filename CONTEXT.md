@@ -633,7 +633,7 @@ Los Payments con fecha de hoy de un Business, On-the-spot payments y posteriores
 _Avoid_: income, revenue, collections, takings, cobrado, Cash, cash in hand
 
 **Payment state**:
-Cómo está pagada una Sale: pagada (paid), pagada en parte (part_paid) o sin pagar (unpaid), junto con lo que todavía se debe de ella (`still_owed`), exactamente lo que da el Settlement. Lo calcula una sola regla de dominio, `payment_state`, y nunca se guarda; una Sale cuyos hechos de pago no se pueden conciliar no tiene ninguno. Lo muestra el chip de pago de una Sale (payment-state.md), que nunca lo vuelve a calcular y muestra "Payment can't be shown" cuando falta o cuando una pagada en parte no tiene un monto adeudado mayor que 0. _In the app_: Paid, Unpaid, Part-paid · {amount} owed, Payment can't be shown (en ninguna pantalla hasta #928).
+Cómo está pagada una Sale: pagada (paid), pagada en parte (part_paid) o sin pagar (unpaid), junto con lo que todavía se debe de ella (`still_owed`), exactamente lo que da el Settlement. Lo calcula una sola regla de dominio, `payment_state`, y nunca se guarda; una Sale cuyos hechos de pago no se pueden conciliar no tiene ninguno. Lo muestra el chip de pago de una Sale (payment-state.md), que nunca lo vuelve a calcular y muestra "Payment cannot be shown" cuando falta o cuando una pagada en parte no tiene un monto adeudado mayor que 0. _In the app_: Paid, Unpaid, Part-paid · {amount} owed, Payment cannot be shown (en ninguna pantalla hasta #928).
 _Avoid_: status, payment status, settled, paid flag, estado de cobro
 
 **Best sellers**:

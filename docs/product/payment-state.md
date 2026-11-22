@@ -20,11 +20,11 @@ Hasta que #928 lo ponga en una pantalla, el chip no lo ve nadie y no tiene **Scr
 | `paid` | "Paid" | `.payment-chip--paid` |
 | `unpaid` | "Unpaid" | `.payment-chip--unpaid` |
 | `part_paid` con `still_owed` mayor que 0 | un círculo lleno a la mitad y "Part-paid · {amount} owed" | `.payment-chip--part-paid` |
-| null, un valor desconocido, o `part_paid` con `still_owed` null, no finito, 0 o negativo, o que en el Money format queda en $0 | el **Attention icon** y "Payment can't be shown" | `.payment-chip--unknown` |
+| null, un valor desconocido, o `part_paid` con `still_owed` null, no finito, 0 o negativo, o que en el Money format queda en $0 | el **Attention icon** y "Payment cannot be shown" | `.payment-chip--unknown` |
 
 - **El monto**: es exactamente `still_owed`, en el **Money format** del Business (su símbolo y sus decimales). Va en su propio elemento con la clase de cifra `.cifra-n` (**Tabular figures**) dentro de la oración. Nunca se saca del total, de los Payments ni del Balance, aunque no coincida con ellos.
 - **Nunca un estado adivinado**:
-  - Pagada en parte significa que todavía se debe algo. Un `part_paid` cuyo `still_owed` es null, no finito o menor o igual a 0, o que formateado da lo mismo que $0 (por ejemplo, 0,4 en un Business sin decimales), muestra "Payment can't be shown". Nunca muestra $0 ni un monto inventado.
+  - Pagada en parte significa que todavía se debe algo. Un `part_paid` cuyo `still_owed` es null, no finito o menor o igual a 0, o que formateado da lo mismo que $0 (por ejemplo, 0,4 en un Business sin decimales), muestra "Payment cannot be shown". Nunca muestra $0 ni un monto inventado.
   - El `switch` es exhaustivo con un `assertNever` propio que no tira error. Su rama por defecto muestra la misma línea, así que un valor que mande un servidor más nuevo no rompe la pantalla.
 - **Nunca solo por color**: cada estado se lee por su palabra, y pagada en parte también por su círculo. Unpaid y Part-paid comparten el tono de deuda y se distinguen por la palabra y el círculo.
 - **Nombre accesible**: el círculo y el Attention icon (un `Icono` sin etiqueta) son decorativos, con `aria-hidden`. El texto del chip es su nombre accesible, según la **Icon and text rule**. El chip no se toca y no tiene estado de presión.
@@ -46,7 +46,7 @@ Hasta que #928 lo ponga en una pantalla, el chip no lo ve nadie y no tiene **Scr
   - `sales:card.payment.paid`: "Paid".
   - `sales:card.payment.unpaid`: "Unpaid".
   - `sales:card.payment.partPaid`: "Part-paid · {{amount}} owed".
-  - `sales:card.payment.unknown`: "Payment can't be shown".
+  - `sales:card.payment.unknown`: "Payment cannot be shown".
 
   Ninguno nombra una unidad, una moneda ni un tipo de producto (**Assume nothing**). "Paid · <método>" es del **On-the-spot payment**, no de este chip.
 - **Ayuda de tests**: `saleWith(state, overrides?)` (`web/src/screens/ventas/saleWith.ts`, solo para tests) devuelve una `Sale` tipada con `payment_state` y `still_owed` puestos como par. Los `overrides` se aplican al final.
@@ -55,7 +55,7 @@ Hasta que #928 lo ponga en una pantalla, el chip no lo ve nadie y no tiene **Scr
 
 1. **Se lee sin color**: en el teléfono, el estado se lee por la palabra, y pagada en parte también por el círculo; nunca solo por el color.
 2. **El monto de la venta, tal cual**: lo que se debe de una venta pagada en parte es exactamente su `still_owed`, en el Money format del Business, también cuando no coincide con el total. Evidencia: el test con un `stillOwed` distinto del total.
-3. **Nunca un estado adivinado**: el chip muestra "Payment can't be shown" con el Attention icon decorativo cuando los hechos de pago no se concilian (null), cuando llega un valor desconocido o cuando un `part_paid` trae un `still_owed` inservible. Nunca muestra un estado adivinado ni $0.
+3. **Nunca un estado adivinado**: el chip muestra "Payment cannot be shown" con el Attention icon decorativo cuando los hechos de pago no se concilian (null), cuando llega un valor desconocido o cuando un `part_paid` trae un `still_owed` inservible. Nunca muestra un estado adivinado ni $0.
 4. **Assume nothing**: ningún texto del chip nombra una unidad, una moneda ni un tipo de producto, y los cuatro viven solo en `web/src/copy/`.
 5. **Nada se corta**: el chip pasa a una segunda línea y el monto nunca queda cortado ni oculto. El Mobile check y la **Design capture** lo juzgan en el teléfono cuando #928 lo pone en la tarjeta de Sales.
 
@@ -63,4 +63,4 @@ Pendiente para #928:
 - Conciliar el chip con la marca "te debe" de las filas de Sales, para que una Sale no muestre dos señales de deuda.
 - Confirmar en la pantalla real que Paid, neutro, se sigue leyendo como parte de la misma familia de chips.
 - Comparar el chip con el dibujo de GH-855.
-- Decidir si "Payment can't be shown" necesita una forma de resolverlo ahí mismo; hoy la salida es abrir la Sale.
+- Decidir si "Payment cannot be shown" necesita una forma de resolverlo ahí mismo; hoy la salida es abrir la Sale.

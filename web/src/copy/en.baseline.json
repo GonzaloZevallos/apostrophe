@@ -662,7 +662,7 @@
   {"source":"sales.ts:SALE_PAYMENT_TEXT.paid","args":null,"text":"Paid"},
   {"source":"sales.ts:SALE_PAYMENT_TEXT.unpaid","args":null,"text":"Unpaid"},
   {"source":"sales.ts:SALE_PAYMENT_TEXT.partPaid","args":["$ 11.000"],"text":"Part-paid · $ 11.000 owed"},
-  {"source":"sales.ts:SALE_PAYMENT_TEXT.unknown","args":null,"text":"Payment can't be shown"},
+  {"source":"sales.ts:SALE_PAYMENT_TEXT.unknown","args":null,"text":"Payment cannot be shown"},
   {"source":"settings.ts:BUSINESS_NAME_INVALID_MESSAGE","args":null,"text":"Give the business a name, without extra spaces"},
   {"source":"settings.ts:CATALOG_SAVED","args":null,"text":"Catalog saved"},
   {"source":"settings.ts:CATEGORIES_SAVE_AT_ONCE","args":null,"text":"Adding, renaming or removing a category saves right away."},
