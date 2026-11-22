@@ -161,7 +161,13 @@ export function flashReducer(state: FlashState, event: FlashEvent): FlashState {
       if (state.status !== 'idle' && isProtected(state)) {
         return { ...state, queue: [...(state.queue ?? []), carry(event)] }
       }
-      return { status: 'showing', shownKey: event.currentKey, ...carry(event) }
+      return {
+        status: 'showing',
+        shownKey: event.currentKey,
+        ...carry(event),
+        // A toast armed over a protected one that has since ended still waits for leaving.
+        ...(state.status === 'showing' && state.arming !== undefined ? { arming: state.arming } : {}),
+      }
     case 'locationChanged':
       if (state.status === 'armed' && event.key !== state.originKey) {
         return {

@@ -445,6 +445,26 @@ describe('the queue of action-less toasts that wait behind an actionable or atte
     })
   })
 
+  test('a toast armed over a protected one survives the queue emptying and a replacing showNow', () => {
+    const arming = flashReducer(
+      { status: 'showing', shownKey: 'b', message: FAILED, id: 3, queue: [queued(4)] },
+      { type: 'armAfterLeaving', message: SALE, id: 5, action: SAVED_ACTION, currentKey: 'b' },
+    )
+    // The failure ends and its queued result shows: nothing protects it any more, but the armed
+    // saved toast (with its Undo) is still waiting.
+    const released = flashReducer(arming, { type: 'expired' })
+    expect(released).toMatchObject({ status: 'showing', id: 4, arming: { id: 5 } })
+
+    const replaced = flashReducer(released, { type: 'showNow', message: 'Expense deleted', id: 6, currentKey: 'b' })
+    expect(replaced).toMatchObject({ status: 'showing', id: 6, arming: { id: 5 } })
+    expect(flashReducer(replaced, { type: 'locationChanged', key: 'c' })).toMatchObject({
+      status: 'showing',
+      message: SALE,
+      id: 5,
+      action: SAVED_ACTION,
+    })
+  })
+
   test('showing an action-less text toast with an empty queue: armAfterLeaving and showNow behave as today', () => {
     const showing: FlashState = {
       status: 'showing',

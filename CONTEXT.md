@@ -653,5 +653,5 @@ El vuelto que la vendedora devuelve: Received menos el total de la Sale, calcula
 _Avoid_: refund, Credit, vuelto, balance, difference
 
 **Undo**:
-Eliminar con un toque, sin confirmación, la última Sale guardada desde New sale, durante los 5 segundos de su aviso "Sale to {name} saved". Es la misma eliminación que se hace desde el detalle de la Sale, y siempre muestra cómo terminó; un Home que ya está en pantalla conserva sus cifras. In the app: Undo.
+Eliminar con un toque, sin confirmación, la última Sale guardada desde New sale, durante los 5 segundos de su aviso "Sale to {name} saved". Es la misma eliminación que se hace desde el detalle de la Sale, y siempre muestra cómo terminó; un Home que ya está en pantalla conserva sus cifras. _In the app_: Undo.
 _Avoid_: revert, rollback, cancel sale, void, anular, deshacer venta
