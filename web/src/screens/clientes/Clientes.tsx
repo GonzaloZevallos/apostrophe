@@ -54,7 +54,7 @@ export const SEARCHING = CUSTOMERS_TEXT.searching
 function segmentPlace(root: HTMLElement): HTMLElement | null {
   return (
     owedPlace(root) ??
-    root.querySelector<HTMLElement>('.segmentos-clientes [role="radio"][aria-checked="true"]') ??
+    root.querySelector<HTMLElement>('.segmentos-clientes [aria-checked="true"]') ??
     root.querySelector<HTMLElement>('input[type="search"]')
   )
 }
