@@ -16,15 +16,17 @@
 
 **Cuando** registro una venta en el teléfono y el Product que pidió el cliente no está entre los que ya están en la venta ni entre los más vendidos, **quiero** tipear parte de su nombre y ver solo los Products que coinciden, **para** agregarlo en un toque o dos sin scrollear ni acordarme de dónde queda en la lista. (#940: la sirve la búsqueda de la lista de Products de New sale. Afina la misma primera historia de sales.md, "una venta se registra desde el teléfono en menos de un minuto"; la búsqueda es el atajo cuando las sugerencias no alcanzan).
 
+**Cuando** entrego un pedido en el teléfono, **quiero** ver de un vistazo para quién es la venta, qué precios le corresponden y el total hasta ahora, con una sola forma clara de ir a cobrar, **para** cobrar el monto justo y nunca cotizar de memoria. (Parte 2 de GH-864: la sirve la **Sheet de New sale**, el marco con la fila de Customer y la barra de la venta alrededor de la lista de Products. Afina la misma primera historia de sales.md; elegir Products y cobrar siguen en sus propias partes).
+
 ## Qué es
 
 La **Sale in progress** es la venta que se está armando en New sale antes de guardarla: cliente, líneas, fecha, **Shipping charged**, **Note** y cómo se paga. Es solo del front (`web/src/sales/useSaleDraft.ts`) y vive en memoria durante una apertura de New sale: nunca se guarda en el dispositivo y una recarga la pierde (igual que lo que dice sales.md, criterio 43). Lo que se guarda es la **Sale**, con las reglas de sales.md.
 
-Hasta la parte de GH-496 que la monta en pantalla (el flip), ninguna pantalla la usa: no hay ruta, constante de build, parámetro de consulta, bandera de ventana ni hook `data-*` para llegar a ella ni a la lista de Products ni a la Collect Sheet, y se prueban solo con tests unitarios, de componente y del cliente a nivel de fetch.
+Hasta la parte de GH-496 que la monta en pantalla (el flip), ninguna pantalla la usa: no hay ruta, constante de build, parámetro de consulta, bandera de ventana ni hook `data-*` para llegar a ella ni a la Sheet de New sale, la lista de Products o la Collect Sheet, y se prueban solo con tests unitarios, de componente y del cliente a nivel de fetch.
 
 Nota: el criterio 34 de sales.md ("el medio nunca viene puesto") sigue vigente hasta la parte del flip de GH-496, porque la New sale en vivo todavía arranca sin medio. La propuesta de medio de esta capacidad no llega a la vendedora hasta entonces.
 
-Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clientes, productos y medio de pago, y tipea las cantidades a mano, de a un Product por vez y sin ver de una sola vez lo que ya está en la venta ni lo que suele vender. El costo principal son las elecciones repetidas, y el segundo es tipear cantidades. Cuando el Product pedido no está en la venta ni en "Most sold", hoy se recorre la lista entera a ojo; la búsqueda (#940) reemplaza ese recorrido. Hoy dice cómo le pagaron en el mismo formulario de New sale; la Collect Sheet pasa esa elección a un paso de cierre sin cambiar qué significan Payment, On-the-spot payment, Balance, Settlement ni Owing since. Un pago parcial sigue siendo un Payment posterior registrado con Record payment. El vuelto hoy se calcula de cabeza o con la calculadora del teléfono en medio de la entrega; la planilla nunca registró lo que el cliente entregó, así que no guardarlo no pierde nada.
+Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clientes, productos y medio de pago, y tipea las cantidades a mano, de a un Product por vez y sin ver de una sola vez lo que ya está en la venta ni lo que suele vender. El costo principal son las elecciones repetidas, y el segundo es tipear cantidades. Cuando el Product pedido no está en la venta ni en "Most sold", hoy se recorre la lista entera a ojo; la búsqueda (#940) reemplaza ese recorrido. Hoy dice cómo le pagaron en el mismo formulario de New sale; la Collect Sheet pasa esa elección a un paso de cierre sin cambiar qué significan Payment, On-the-spot payment, Balance, Settlement ni Owing since. Un pago parcial sigue siendo un Payment posterior registrado con Record payment. El vuelto hoy se calcula de cabeza o con la calculadora del teléfono en medio de la entrega; la planilla nunca registró lo que el cliente entregó, así que no guardarlo no pierde nada. Qué precios le tocan a un Customer hoy se revisa a mano cuando no está claro; la fila de Customer de la Sheet de New sale lo dice antes de agregar nada.
 
 En la planilla, una venta sin pagar era una fila sin pago, y saldarla después pisaba la deuda (BRIEF, Problema). "Owes it" existe para que la vendedora nunca necesite inventar un Payment, ni uno de $0, para que los libros den bien: eso falsearía el Cash y el Money in y dejaría mal el Owing since. Es un supuesto decidido en la entrevista de #944, no verificado.
 
@@ -69,7 +71,70 @@ En la planilla, una venta sin pagar era una fila sin pago, y saldarla después p
 
 ### Dinero
 
-- Ni la Sale in progress, ni el cliente de sugerencias, ni la lista de Products, ni la Collect Sheet calculan dinero. Toda cifra de la venta (precio de la fila, total de la línea, total de la barra, total de Collect, fila Total, aviso de recotización) sale de `priceSale`/`rowPrices`/`priceLine` en `web/src/sales/pricing.ts`, calculada por la pantalla anfitriona. El Received se lee y el Change se calcula solo con `changeFor` del mismo módulo, mediante `parseMoneyInput`, como enteros a los decimales del Money format. El Shipping charged y la Note se guardan tal como se ingresaron.
+- Ni la Sale in progress, ni el cliente de sugerencias, ni la Sheet de New sale, ni la lista de Products, ni la Collect Sheet calculan dinero. Toda cifra de la venta (precio de la fila, total de la línea, total de la barra, total de Collect, fila Total, aviso de recotización) sale de `priceSale`/`rowPrices`/`priceLine` en `web/src/sales/pricing.ts` (en la Sheet de New sale, mediante `pricedSaleOf`), calculada por la pantalla anfitriona. El Received se lee y el Change se calcula solo con `changeFor` del mismo módulo, mediante `parseMoneyInput`, como enteros a los decimales del Money format. El Shipping charged y la Note se guardan tal como se ingresaron.
+
+## Sheet de New sale
+
+El contenedor `web/src/screens/ventas/NuevaVentaSheet.tsx` (parte 2 de GH-864), dibujado dentro de la Sheet compartida (`web/src/components/Sheet.tsx`) a partir de los dibujos NuevaVenta y NuevaVentaOscuro. Es el marco de New sale: la fila de Customer arriba, la lista de Products en el medio y la barra de la venta abajo. Elegir Products es de la lista y cobrar es de la Collect Sheet. Hasta el flip de GH-496 ninguna ruta ni entrada de navegación lo monta: figura en `web/scripts/docs/front-exclude.json` (D-62e6dc23) y el flip saca esa entrada. No tiene entrada en WalkState ni en `scripts/design/screens.json`, ni hook de test, así que no tiene Design capture lado a lado ni Screen image. Para la vendedora no cambia nada en pantalla hasta el flip.
+
+### Props
+
+- `draft` (`SaleDraftApi`), `customer` (`CustomerView`), `onClose()`, `onChangeCustomer()` y `onCollect(sale: CompleteSale)`.
+- `computer`, `computerClass` y `computerDialog` pasan tal cual a la Sheet compartida, igual que en la Collect Sheet.
+
+### Lecturas y cifras
+
+- Lee con `useNewSaleReads({ date: draft.state.date, openedOn: draft.state.openedOn })`, las mismas lecturas que la lista de Products (ver "Lista de Products de New sale").
+- Corre `pricedSaleOf` una sola vez por render, en un `useMemo`, con el Money format de `useMoney`. Toda cifra que muestra sale de ahí; el componente no hace ninguna operación de dinero.
+- La Sheet cuenta como tocada (`touched`) exactamente cuando `isDirty(draft.state)`, es decir con al menos una línea, y por ningún otro motivo.
+
+### Encabezado
+
+- Título "New sale" (`COMMON_TEXT.newSale`).
+- El Close propio de la Sheet llama a `onClose` sin confirmación y sin ningún diálogo.
+
+### Fila de Customer
+
+- Muestra el nombre del Customer, o "No customer" (`SALES_TEXT.noCustomer`) cuando la Sale in progress no tiene cliente, y debajo una sola línea, que decide `priceLineOf`:
+  - "List prices" para un Customer sin Customer type, y siempre que el interruptor Customer types está apagado, aunque el Customer tenga un tipo (una regla desactivada queda oculta, pricing-settings.md);
+  - "Prices for {type}", con el nombre del Customer type, para un Customer con tipo;
+  - la marca compacta de carga (`Loading compacto`) mientras el tipo está pendiente;
+  - nada cuando una lectura falló.
+- Mientras el nombre está pendiente, la marca compacta de carga ocupa su lugar.
+- **Lectura del Customer fallida:** la fila muestra lo que ya tiene para el nombre (el nombre si llegó; si no, la marca de carga se queda). Nunca muestra "List prices", "Prices for {type}" ni una cifra de dinero. Para la lista cuenta como pendiente: sus marcas de precio siguen cargando y no se muestra ninguna cifra. No hay reintento en esta parte; cerrar y volver a abrir la Sheet hace una lectura nueva.
+- **Change** (`COMMON_TEXT.change`) llama a `onChangeCustomer`. Dice "Change" en todo estado, "No customer" incluido: una sola etiqueta con un solo sentido, elegir para quién es la venta. Es `flex: none`, mide al menos 44x44 px y conserva su etiqueta.
+- **Disposición:** la columna de texto tiene `min-width: 0` y cada línea queda en una sola línea con puntos suspensivos; el nombre completo es el nombre accesible, así que un nombre de 60 caracteres lo conserva entero.
+- Si una Sale without a customer se puede guardar lo decide Collect (solo pagada por completo en el momento), nunca esta fila.
+
+### Lista
+
+- La lista de Products de New sale (ver abajo), con `customerTypeId = customerTypeIdOf(customer)` y el precio calculado por la Sheet.
+
+### Barra de la venta
+
+- Es el último hijo de `SheetActions`, fija abajo solo en el teléfono.
+- Una región `role="status"` muestra uno de cuatro estados:
+  - **total:** `itemsTotal(n, money(total))`, "1 item · {total}" o "{n} items · {total}", con el total en un elemento de cifra que nunca se parte;
+  - **conteo:** `itemsCount(n)`, "1 item" o "{n} items";
+  - **contando:** `itemsCount(n)` más la marca compacta de carga;
+  - **vacío:** "Add a product to collect".
+- n cuenta líneas, no unidades.
+- **Collect** (`SALES_TEXT.collectShort`) se dibuja solo en el estado total y llama a `onCollect(state.sale)`. En cualquier otro estado no hay ningún botón Collect, de ningún tipo: nunca se muestra `disabled` ni `aria-disabled`.
+- La barra nunca está en el estado total mientras la lista carga o recarga, el Customer está pendiente, la lectura de la lista o la del Customer falló, o alguna línea no tiene precio.
+- El total es `totals.total` del precio calculado, con el Shipping charged incluido cuando es mayor que 0.
+- No hay texto de promoción ni de ahorro (desviación 1, decidida en GH-864).
+
+### Textos
+
+- En `web/src/copy/sales.ts`, `NEW_SALE_TEXT`, en inglés y sin palabras de Unit, moneda ni tipo de producto: `listPrices` "List prices"; `pricesFor(type)` "Prices for {type}" (BASELINE_ARGS `[['Regulars']]`); `itemsCount(n)` "1 item" / "{n} items" (BASELINE_ARGS counted); `itemsTotal(n, total)` "1 item · {total}" / "{n} items · {total}" (BASELINE_ARGS counted con el monto); `addProductToCollect` "Add a product to collect" (LIMITED_COPY, ayuda). "Product" es el término del glosario, así que pasa el chequeo productWord.
+- Se reutilizan "New sale" (`COMMON_TEXT.newSale`), "No customer", "Change" (`COMMON_TEXT.change`) y `collectShort`.
+- Las entradas nuevas se insertan en su lugar ordenado en `en.baseline.json` (y en el JSON del idioma si replica el grupo) con el texto que emite el script, y después corre `npm --prefix web run i18n:baseline -- --update`; el chequeo, copyLimits y productWord pasan.
+
+### Diseño
+
+- Solo tokens, comparado a ojo con NuevaVenta y NuevaVentaOscuro, claro y oscuro.
+- El título y el singular "1 item" salen del pedido, no de una definición escrita anterior, así que no ganan solos sobre el dibujo. Si alguno difiere de un modo que el dueño leería distinto en el teléfono, el PR lo plantea como desviación del dibujo y lo decide el dueño, nunca el PR ni un rol. Una diferencia de espacio o de peso no es un hallazgo. El dibujo todavía no se revisó.
+- Mientras la Sheet no tenga ruta, la captura lado a lado no es posible y queda "not compared".
 
 ## Collect Sheet
 
@@ -145,7 +210,7 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 ### Textos
 
-- Viven en `SALES_TEXT`, el módulo de ventas de `web/src/copy/`, en inglés y sin palabra de unidad, moneda ni tipo de producto: `collectTitle(n)`, `howTheyPay` ("How they pay"), `owesIt` ("Owes it", desde #944), `chooseMethod` ("Choose a method"), `noMethodToCollect` ("Choose how they pay to collect."), `collect(total)` ("Collect {total}"), `collectShort` ("Collect", el texto de la etiqueta acortada), `saving` ("Saving…") y, desde #930, `saleNotSaved` ("The sale was not saved. Your lines are kept, so try again."), registrada en LIMITED_COPY como las otras claves de ventas. Los de la parte 3 de GH-867 son `totalLabel` ("Total"), `receivedLabel` ("Received"), `receivedHelp` ("Type what they hand over to see the change. It isn't saved.", registrada en LIMITED_COPY) y `changeLabel` ("Change"); el baseline recibe sus filas del script, nunca a mano. "No customer" ya existía. El baseline se regenera, nunca se edita a mano.
+- Viven en `SALES_TEXT`, el módulo de ventas de `web/src/copy/`, en inglés y sin palabra de unidad, moneda ni tipo de producto: `collectTitle(n)`, `howTheyPay` ("How they pay"), `owesIt` ("Owes it", desde #944), `chooseMethod` ("Choose a method"), `noMethodToCollect` ("Choose how they pay to collect."), `collect(total)` ("Collect {total}"), `collectShort` ("Collect", el texto de la etiqueta acortada) , `saving` ("Saving…") y, desde #930, `saleNotSaved` ("The sale was not saved. Your lines are kept, so try again."), registrada en LIMITED_COPY como las otras claves de ventas. Los de la parte 3 de GH-867 son `totalLabel` ("Total"), `receivedLabel` ("Received"), `receivedHelp` ("Type what they hand over to see the change. It isn't saved.", registrada en LIMITED_COPY) y `changeLabel` ("Change"); el baseline recibe sus filas del script, nunca a mano. "No customer" ya existía. El baseline se regenera, nunca se edita a mano.
 - El rechazo de owing sin cliente tiene su propia clave, `owingNeedsCustomer` ("Owing needs a customer. Pick one, or choose how they pay."), registrada en LIMITED_COPY: dice el problema primero y las dos salidas después (la fila de Customer de la Sheet es de solo lectura, así que "choose how they pay" es la que la vendedora puede hacer en la Sheet). No reutiliza `OWING_HINT`, que es la ayuda de New sale. El mapeo del servidor `sale.owing_without_customer` → `refusals:generic` no cambia, y la Sheet nunca llega a él porque rechaza antes de mandar.
 - La marca "no longer available", `common:paymentMethodUnavailable`, la línea de fallo del Selector (`selectorPaymentMethodsFailed`) y el texto de lista vacía (`selectorNoPaymentMethods`) se reutilizan, sin claves nuevas.
 
@@ -173,7 +238,7 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 ## Lista de Products de New sale
 
-El componente `web/src/screens/ventas/NuevaVentaProductos.tsx`, con sus lecturas en `web/src/sales/useNewSaleReads.ts`, sigue los dibujos NuevaVentaProductos y NuevaVentaProductosOscuro (claro y oscuro). Hasta el flip de GH-496 ninguna ruta, entrada de navegación ni pantalla lo monta; solo lo alcanzan sus tests de componente, y los dos módulos figuran en `web/scripts/docs/front-exclude.json` hasta que el flip los conecte (D-62e6dc23). Rigen las diez invariantes de #924; la 4 y la 6 son las de los estados de carga y de falla (#941).
+El componente `web/src/screens/ventas/NuevaVentaProductos.tsx`, con sus lecturas en `web/src/sales/useNewSaleReads.ts`, sigue los dibujos NuevaVentaProductos y NuevaVentaProductosOscuro (claro y oscuro). Desde la parte 2 de GH-864 la monta la Sheet de New sale, que tampoco tiene ruta: hasta el flip de GH-496 ninguna ruta, entrada de navegación ni pantalla las alcanza; solo las alcanzan sus tests de componente, y los módulos figuran en `web/scripts/docs/front-exclude.json` hasta que el flip los conecte (D-62e6dc23). Rigen las diez invariantes de #924; la 4 y la 6 son las de los estados de carga y de falla (#941).
 
 Diferencias con los dibujos aceptadas por el dueño:
 
@@ -219,13 +284,13 @@ La lista dibuja solo a partir de `status`, y `priceSale` y `rowPrices` corren so
   - las filas de "Most sold" esconden su "+" hasta que llegan las cifras;
   - la pista no se muestra;
   - la lista queda `aria-busy`.
-  `'pending'` significa solo una lectura del Customer en curso; qué significa una lectura del Customer fallida lo decide quien monta la lista, nunca la lista.
+  `'pending'` significa una lectura del Customer en curso. Qué significa una lectura del Customer fallida lo decide quien monta la lista, nunca la lista; la Sheet de New sale (parte 2 de GH-864) la trata como `'pending'`: las marcas de precio siguen cargando, no se muestra ninguna cifra y no hay Collect.
 - **Cargada (`ready`):** la lista de los dibujos, sin `aria-busy`.
 - **Falla (`failed`):** un `NetworkError` muestra SinConexion y cualquier otro error muestra ErrorGenerico, los dos tal como ya existen y sin botón. Cualquiera de los dos reemplaza la lista entera, sin `aria-busy`, esqueleto, marca ni pista, y no queda a la vista nada de la lista anterior, porque sus precios eran de una fecha o un Customer que ya no rigen. Un teléfono sin conexión al abrir cuenta como falla: muestra SinConexion y no pide nada hasta que vuelve la conexión.
 - **Nueva lectura después de una falla:** como no queda una lista cargada, vuelve el esqueleto con las reglas de la primera carga, nunca la marca compacta.
 - **Recuperación:** cuando una lectura posterior sale bien (al reconectar, al recuperar el foco o por un cambio de fecha), la lista reemplaza el aviso, con las líneas, sus cantidades y los precios nuevos. Una lectura que vuelve a fallar deja el aviso hasta el próximo evento.
 - **Sale in progress:** ningún estado de carga o de falla la borra ni la cambia; las líneas viven en el borrador, fuera de las lecturas.
-- **Para la parte del flip:** Guardar y el total no están disponibles salvo que `status` sea `ready` y el Customer no esté en `'pending'`. Qué rodea al aviso de falla (Cerrar, Cliente) lo decide la Sheet que monte la lista.
+- **Total y Collect:** la barra de la Sheet de New sale no muestra el total ni Collect salvo que `status` sea `ready`, el Customer no esté en `'pending'` ni su lectura haya fallado y toda línea tenga precio (ver "Barra de la venta"). Alrededor del aviso de falla, la Sheet de New sale conserva su Close y su fila de Customer.
 - **Búsqueda (#940):** el campo queda fuera de `status`: se muestra siempre (esqueleto, recarga, falla y cargada) y conserva su texto. Con texto y la lista mostrando sus nombres (`refreshing` o `ready`), "Results · N" y las coincidencias reemplazan la pista y las secciones, con la marca compacta de carga y las reglas del "+" de las secciones; en `loading` y en una falla no hay resultados ni conteo. Una línea cuyo Product ya no vuelve nunca coincide y no se muestra mientras se busca.
 
 ### Filas
@@ -298,14 +363,14 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 
 ## Fuera de esta capacidad (por ahora)
 
-- Cualquier ruta, entrada de navegación, pantalla o Sheet que monte la Sale in progress o la lista de Products, y el flip que las monta.
-- Un botón de reintento en los avisos de falla, o cualquier reintento más allá de la lectura de nuevo al reconectar o al recuperar el foco; cambios a SinConexion o a ErrorGenerico.
-- Qué muestran el total y Cobrar mientras la lista carga o falló, y qué rodea al aviso de falla (flip).
-- Qué significa para la lista una lectura del Customer fallida (lo decide y prueba el flip).
+- Cualquier ruta, entrada de navegación o pantalla que monte la Sheet de New sale, la Sale in progress o la lista de Products, y el flip que las monta; también la entrada de WalkState y de `screens.json` de la Sheet de New sale.
+- Un botón de reintento en los avisos de falla o en la fila de Customer de la Sheet de New sale, o cualquier reintento más allá de la lectura de nuevo al reconectar o al recuperar el foco; cambios a SinConexion o a ErrorGenerico.
+- Cualquier texto de promoción o de ahorro en la barra de la venta (desviación 1 de GH-864).
+- Pulido de la Sheet de New sale en la computadora (Phone first).
 - La cantidad tipeada en la lista (flip). Un control para limpiar la búsqueda, que el dibujo no muestra.
 - Si el texto de búsqueda se recuerda al salir de la lista y volver (lo decide el flip; hoy es estado local y no se lleva a ningún lado).
 - Filtros de la lista por Stock, precio, Hidden product o Catalog attributes.
-- Los pasos de cliente, pago y guardado de New sale, incluido qué pasa al guardar una línea cuyo Product ya no está disponible.
+- El guardado de New sale fuera de la Collect Sheet, incluido qué pasa al guardar una línea cuyo Product ya no está disponible.
 - Código de barras, categoría y elementos de promoción en la lista de Products.
 - La pantalla anfitriona de New sale que monta la Collect Sheet, el flip que la monta y su regla de no abrirla con una línea sin precio; también, ya en el flip: que la anfitriona ignore el volver del sistema y Escape mientras `onSavingChange(true)`, un test que monte la barra de la venta y la Sheet juntas y muestre el total guardado igual al de la barra y a `SaleOut.total`, y que tras `onSaved` la anfitriona muestre las cifras de la respuesta con el aviso de recotización (`linesRepriced`) cuando el total cambió.
 - Reescribir el criterio 34 de sales.md ("el medio nunca viene puesto"), que le corresponde al flip, cuando la preselección llegue a la vendedora.
@@ -338,11 +403,18 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
   6. **Recuperación:** una lectura después de una falla muestra el esqueleto; una reconexión o una vuelta del foco tras una falla vuelve a pedir y devuelve la lista con las cantidades cargadas y los precios nuevos; una lista cargada hace 0 pedidos nuevos al recuperar el foco o al reconectar; otro observador de la misma consulta conserva sus propias opciones.
 - Líneas perdidas por una acción de la lista, una recarga de Products o una falla: 0. Ids internos mostrados en pantalla: 0.
 - Cifras mostradas antes de que lleguen todas las lecturas, mientras el Customer está pendiente o durante una falla (dígitos, símbolo de moneda, "No price", aviso, encabezados): 0.
-- Operaciones de dinero en `useSaleDraft`, en el cliente de sugerencias y en la lista de Products: 0 (todo pasa por `pricing.ts`).
+- Operaciones de dinero en `useSaleDraft`, en el cliente de sugerencias, en la Sheet de New sale y en la lista de Products: 0 (todo pasa por `pricing.ts`).
 - Rutas, constantes, parámetros, banderas, props, exports o hooks `data-*` solo para tests: 0.
 - Claves del Copy module de la lista de Products: 10 (7 de #924 y 3 de #940), en inglés y sin palabras de Unit ni de tipo de producto; agregadas por los estados de carga y de falla: 0. Pedidos de red nuevos causados por la búsqueda: 0.
 - Gate (pytest, vitest, e2e) pasa, y tsc strict y oxlint pasan sin nada silenciado.
 - Vara del trabajo, que se juzga cuando el flip la monte: una venta se registra desde el teléfono en menos de un minuto (sales.md, criterio 1), y un Product habitual se encuentra, se agrega y se ajusta sin salir de la lista (1 toque para un Product habitual a 1 unidad desde "Most sold"), y uno que no está en "Most sold" se agrega en 2 toques (el campo y el "+" de su resultado) tipeando parte de su nombre. No hay medición de uso en la app hasta el flip de GH-496.
+- Sheet de New sale (parte 2 de GH-864), con Testing Library y fetch stubbeado (los stubs de `NuevaVentaProductos.test.tsx` y `stubFetchWithSettings.ts`), cada caso con su test que pasa en el Gate (vitest):
+  - **Fila:** sin cliente ("No customer"); Customer sin tipo ("List prices"); Customer con tipo ("Prices for {type}"); interruptor Customer types apagado ("List prices"); nombre pendiente y tipo pendiente (marca compacta); lectura fallida sin línea de precio; un nombre de 60 caracteres conserva su nombre accesible completo; Change llama a `onChangeCustomer`.
+  - **Barra:** el conteo para una línea ("1 item") y para varias; el total es igual a `totals.total` de `priceSale` en el Money format con envío mayor que 0; la barra vacía no tiene ningún botón Collect; Collect llama a `onCollect` con la venta; carga, recarga, Customer pendiente, lista fallida, lectura del Customer fallida (las marcas de la lista siguen cargando y no se ve ninguna cifra) y una línea sin precio: cada uno sin Collect y sin total; el texto de la región de estado en cada uno de los cuatro estados.
+  - **Close:** llama a `onClose` y no muestra ningún diálogo.
+- Sheet de New sale: Collect fuera del estado total: 0, y Collect `disabled` o `aria-disabled`: 0. "List prices", "Prices for {type}" o cifras de dinero con la lectura del Customer fallida: 0. Fuentes de `touched` distintas de `isDirty(draft.state)`: 0. Cifras que no salen de `pricedSaleOf`: 0. Textos fuera de `web/src/copy/`: 0.
+- Claves del Copy module agregadas por la parte 2 de GH-864: 5 (`listPrices`, `pricesFor`, `itemsCount`, `itemsTotal`, `addProductToCollect`), en inglés y sin palabras de Unit, moneda ni tipo de producto; el baseline, copyLimits y productWord pasan.
+- Vara de la Sheet de New sale, que se juzga cuando el flip la monte: la vendedora ve qué precios le tocan al Customer antes de agregar nada, y nunca ve un total ni un Collect que no estén calculados por completo; suma a la vara de menos de un minuto de sales.md, criterio 1.
 - Collect Sheet, con Testing Library a nivel de fetch: sin medio por encima de $0, 0 pedidos y el campo enfocado; con una línea sin precio en `priced`, 0 pedidos, ningún texto nuevo y ninguna llamada a `onSavingChange`; mientras guarda, toques extra y Close dan 0 pedidos adicionales; tras un pedido rechazado, `onSavingChange` termina en false y Close vuelve a funcionar; la etiqueta de Collect es igual a `priced.totals.total` formateado y `onSaved` recibe la respuesta sin tocar.
 - Received y Change, en un segundo archivo de tests de la Collect Sheet con Testing Library a nivel de fetch: con Received vacío, menor o inválido, 0 líneas de Change y 0 avisos o errores; con Received igual al total, Change 0; con uno mayor, la diferencia exacta, a 0 y a 2 decimales del Money format; en una venta de $0 con Received 0, Change 0; 0 apariciones de Received o Change en el cuerpo de `POST /api/sales`; Received conservado tras cambiar de medio, pasar a owing y volver, y tras un guardado fallido; ayuda oculta con owing; al ancho angosto donde el botón dice "Collect", la fila Total muestra el total; etiqueta acortada a "Collect" con `scrollWidth` > `clientWidth` (definido con `Object.defineProperty`), nombre accesible con el "Collect {total}" completo, y la etiqueta completa de vuelta cuando vuelve a entrar.
 - "Owes it" (#944), con Testing Library a nivel de fetch y en el mismo host que los tests de #918:
