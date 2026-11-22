@@ -26,6 +26,7 @@
   "^src/sales/useSaleDraft\\.ts$",
   "^src/sales/saleDraft\\.ts$",
   "^src/sales/productList\\.ts$",
+  "^src/sales/customerSearch\\.ts$",
   "^src/api/saleSuggestions\\.ts$",
   "^src/sales/useNewSaleReads\\.ts$",
   "^src/screens/ventas/NuevaVentaProductos\\.tsx$",
