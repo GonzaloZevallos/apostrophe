@@ -288,8 +288,29 @@ def seed_payments(client: TestClient) -> dict[str, int]:
         json={"paid_on": TODAY.isoformat(), "amount": 1_000, "payment_method_id": method_id},
     )
     assert paid_today.status_code == 201, paid_today.text
+    # A customer whose only Sale is older than the account read's six-month window:
+    # every month 0 and no Average sale, still isolated like the others (GH-498 part 3).
+    empty_month = client.post(
+        "/customers",
+        json={
+            "name": f"{MARKER} empty-month customer",
+            "phone": "11 4444-3334",
+            "phone_country": "AR",
+        },
+    ).json()
+    older_sale = client.post(
+        "/sales",
+        json={
+            "payment": {"kind": "owing"},
+            "customer_id": empty_month["id"],
+            "date": "2026-03-01",
+            "lines": [{"product_id": variety["id"], "quantity": "1"}],
+        },
+    )
+    assert older_sale.status_code == 201, older_sale.text
     return {
         "customer_id": customer_id,
+        "empty_month_customer_id": empty_month["id"],
         "payment_id": payment.json()["payment"]["id"],
         "money_in_method_id": method_id,
     }

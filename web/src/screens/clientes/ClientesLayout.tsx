@@ -17,7 +17,7 @@ import BehindPane from '../../components/BehindPane'
 import { CUSTOMER, CUSTOMER_EDIT, CUSTOMER_NEW, CUSTOMER_PAYMENT, CUSTOMERS } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import Clientes from './Clientes'
-import { CustomerSearchContext } from './CustomerSearch'
+import { CustomerSearchContext, type CustomerSegment } from './CustomerSearch'
 import CobroPanes from './CobroPanes'
 import CustomerCardBehind from './CustomerCardBehind'
 import CustomersBehind from './CustomersBehind'
@@ -25,6 +25,7 @@ import CustomersBehind from './CustomersBehind'
 export default function ClientesLayout() {
   const me = useOutletContext<Me>()
   const [query, setQuery] = useState('')
+  const [segment, setSegment] = useState<CustomerSegment>('owed')
   const computer = useViewport() === 'computer'
   const onList = useMatch(CUSTOMERS) !== null
   const customerId = useMatch(CUSTOMER)?.params.id
@@ -39,7 +40,7 @@ export default function ClientesLayout() {
   const onEdit = editedId !== undefined && /^[0-9]+$/.test(editedId)
 
   return (
-    <CustomerSearchContext.Provider value={{ query, setQuery }}>
+    <CustomerSearchContext.Provider value={{ query, setQuery, segment, setSegment }}>
       {onPayment ? (
         <CobroPanes />
       ) : computer && (onList || onCard) ? (

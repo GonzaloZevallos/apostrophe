@@ -32,6 +32,31 @@
       },
       "AccountOut": {
         "properties": {
+          "age_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age Days"
+          },
+          "average_sale": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Sale"
+          },
           "balance": {
             "anyOf": [
               {
@@ -63,13 +88,17 @@
                 },
                 {
                   "$ref": "#/components/schemas/PaymentAccountRowOut"
-                },
-                {
-                  "$ref": "#/components/schemas/CreditAccountRowOut"
                 }
               ]
             },
             "title": "Rows",
+            "type": "array"
+          },
+          "sales_by_month": {
+            "items": {
+              "$ref": "#/components/schemas/MonthTotalOut"
+            },
+            "title": "Sales By Month",
             "type": "array"
           },
           "standing": {
@@ -80,13 +109,24 @@
             ],
             "title": "Standing",
             "type": "string"
+          },
+          "still_owing": {
+            "items": {
+              "$ref": "#/components/schemas/StillOwingLineOut"
+            },
+            "title": "Still Owing",
+            "type": "array"
           }
         },
         "required": [
           "balance",
           "owing_since",
           "standing",
-          "rows"
+          "rows",
+          "age_days",
+          "still_owing",
+          "sales_by_month",
+          "average_sale"
         ],
         "title": "AccountOut",
         "type": "object"
@@ -923,64 +963,6 @@
           "pending_quantity"
         ],
         "title": "CostOut",
-        "type": "object"
-      },
-      "CreditAccountRowOut": {
-        "properties": {
-          "amount": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "number"
-              }
-            ],
-            "title": "Amount"
-          },
-          "date": {
-            "format": "date",
-            "title": "Date",
-            "type": "string"
-          },
-          "kind": {
-            "const": "credit",
-            "default": "credit",
-            "title": "Kind",
-            "type": "string"
-          },
-          "payment": {
-            "$ref": "#/components/schemas/AccountPaymentRefOut"
-          },
-          "running_balance": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "number"
-              }
-            ],
-            "title": "Running Balance"
-          },
-          "standing": {
-            "enum": [
-              "owes",
-              "credit",
-              "settled"
-            ],
-            "title": "Standing",
-            "type": "string"
-          }
-        },
-        "required": [
-          "date",
-          "running_balance",
-          "standing",
-          "payment",
-          "amount"
-        ],
-        "title": "CreditAccountRowOut",
         "type": "object"
       },
       "CurrentPriceOut": {
@@ -2588,6 +2570,31 @@
         "title": "MonthRowOut",
         "type": "object"
       },
+      "MonthTotalOut": {
+        "properties": {
+          "month": {
+            "title": "Month",
+            "type": "string"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "month",
+          "total"
+        ],
+        "title": "MonthTotalOut",
+        "type": "object"
+      },
       "MonthlyViewOut": {
         "properties": {
           "categories": {
@@ -2836,13 +2843,14 @@
       },
       "PaymentAccountRowOut": {
         "properties": {
-          "applied_to": {
-            "$ref": "#/components/schemas/AppliedToOut"
-          },
           "date": {
             "format": "date",
             "title": "Date",
             "type": "string"
+          },
+          "is_partial": {
+            "title": "Is Partial",
+            "type": "boolean"
           },
           "kind": {
             "const": "payment",
@@ -2878,8 +2886,8 @@
           "date",
           "running_balance",
           "standing",
-          "payment",
-          "applied_to"
+          "is_partial",
+          "payment"
         ],
         "title": "PaymentAccountRowOut",
         "type": "object"
@@ -4215,6 +4223,10 @@
             "title": "Kind",
             "type": "string"
           },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
           "running_balance": {
             "anyOf": [
               {
@@ -4243,6 +4255,7 @@
           "date",
           "running_balance",
           "standing",
+          "number",
           "sale"
         ],
         "title": "SaleAccountRowOut",

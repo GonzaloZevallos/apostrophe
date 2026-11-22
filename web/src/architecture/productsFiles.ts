@@ -19,6 +19,7 @@ export interface Source {
 export const PRODUCTS_FILES = [
   'src/screens/varieties/ProductsBody.tsx',
   'src/screens/varieties/ProductsComputer.tsx',
+  'src/screens/varieties/ProductsPhone.tsx',
   'src/screens/varieties/VarietyRows.tsx',
   'src/screens/varieties/SendCatalog.tsx',
   'src/screens/varieties/StockActions.tsx',

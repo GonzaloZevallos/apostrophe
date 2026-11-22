@@ -17,7 +17,7 @@ same strict rules.
 A fixture may itself be a list (`movements.json`): its paths start at `[kind]`.
 
 A list is matched item by item against the fixture's own single representative entry,
-unless every fixture item carries `"kind"` (`AccountRow`'s three shapes) — then each
+unless every fixture item carries `"kind"` (`AccountRow`'s two shapes) — then each
 answer item is matched against the fixture item sharing its own `kind`, and a `kind`
 the fixture never lists fails the check. An empty fixture list cannot describe an
 item's shape, so only "the answer is a list" is checked.
@@ -142,7 +142,7 @@ def _check_items(
 
 def _group_by_kind(items: list[object]) -> dict[object, object] | None:
     """`items` keyed by its own `"kind"`, if every one of them is an object carrying
-    one (`AccountRow`'s sale/payment/credit shapes) — else `None`, meaning every item
+    one (`AccountRow`'s sale/payment shapes) — else `None`, meaning every item
     shares the list's single representative shape."""
     if not all(isinstance(item, dict) and "kind" in item for item in items):
         return None

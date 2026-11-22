@@ -20,6 +20,7 @@
 
 import { COMMON_TEXT } from '../copy/common'
 import { CUSTOMER_TYPE_ICON_NAME } from '../copy/readers/customerTypeIcons'
+import { CUSTOMER_SEGMENT_NAME } from '../copy/readers/customerSegments'
 import { HOME_VIEW_NAME } from '../copy/readers/homeViews'
 import { PAYMENT_METHOD_ICON_KEYS, PAYMENT_METHOD_ICON_NAME } from '../copy/readers/paymentMethodIcons'
 import { PAYMENT_STATE_NAME } from '../copy/readers/paymentStates'
@@ -51,6 +52,8 @@ function fixedSet<const T extends string>(
 
 const HOME_VIEWS_REASON =
   "Home and Analysis are the two views of the phone's Home tab; the app ships both and no setting adds another."
+const CUSTOMER_SEGMENTS_REASON =
+  "Customers' two views, everyone and those who owe, ship with the app and no setting adds another."
 const PERIODS_REASON = 'fixed view: periods'
 const THEME_REASON = 'fixed set: theme choice'
 const ICONS_REASON = 'fixed set: the neutral icon set ships with the app'
@@ -73,6 +76,12 @@ export const HOME_PERIODS = fixedSet(PERIODS_REASON, [
 export const HOME_VIEWS = fixedSet(HOME_VIEWS_REASON, [
   { value: 'home', label: HOME_VIEW_NAME.home },
   { value: 'analysis', label: HOME_VIEW_NAME.analysis },
+])
+
+/** Customers' All | Owed segments. */
+export const CUSTOMER_SEGMENTS = fixedSet(CUSTOMER_SEGMENTS_REASON, [
+  { value: 'all', label: CUSTOMER_SEGMENT_NAME.all },
+  { value: 'owed', label: CUSTOMER_SEGMENT_NAME.owed },
 ])
 
 /** Sales' period tabs. */
@@ -196,6 +205,7 @@ export const MONEY_DECIMALS = fixedSet(MONEY_DECIMALS_REASON, [
 export const FIXED_SETS = {
   HOME_PERIODS: PERIODS_REASON,
   HOME_VIEWS: HOME_VIEWS_REASON,
+  CUSTOMER_SEGMENTS: CUSTOMER_SEGMENTS_REASON,
   SALES_PERIODS: PERIODS_REASON,
   THEME_CHOICES: THEME_REASON,
   CUSTOMER_TYPE_ICON_SET: ICONS_REASON,

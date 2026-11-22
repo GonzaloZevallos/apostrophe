@@ -25,6 +25,7 @@
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALES, SALE_NEW, VARIETIES } from '../src/routes.js'
 import type { Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
+import { openAllCustomers } from './helpers/openScreens.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -88,6 +89,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   // The card shows the debt, straight from the API.
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 5\.000/ })).toBeVisible()
   await expect(page.getByText(`since ${today}`, { exact: true })).toBeVisible()
@@ -107,8 +109,12 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // cobro reaching that sale instead.
   await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Record payment' })).toHaveCount(0)
+  // One row for the payment: its full amount (the sale's total shows the same figure),
+  // the balance it leaves, and no sub-line about the sale it reached.
   await expect(page.getByText('Payment · cash')).toBeVisible()
-  await expect(page.getByText(`On account of the sale of ${today}`)).toBeVisible()
+  await expect(page.getByText('$ 5.000', { exact: true })).toHaveCount(2)
+  await expect(page.getByText('balance $ 0', { exact: true })).toHaveCount(1)
+  await expect(page.getByText(/On account of/)).toHaveCount(0)
 
   // Sale 2: 8 g of Rosa, also left owing — $8.000.
   await page.getByRole('link', { name: 'New sale to Carla Pérez' }).click()
@@ -120,6 +126,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 8\.000/ })).toBeVisible()
 
@@ -150,7 +157,6 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await page.goto(CUSTOMERS)
   const owing = page.getByRole('region', { name: 'Owed to you' })
   await expect(owing.locator('.cifra-xl')).toHaveText('$ 8.000')
-  await expect(owing.getByText('1 sale owing')).toBeVisible()
   await owing.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expectPath(page, CUSTOMER)
   await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 8\.000/ })).toBeVisible()
@@ -174,9 +180,11 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // Nothing left owing: the debt that sale carried is gone with it, never a
   // credit (recording never creates one, and this sale took no payment with it).
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
   await expect(cardOf(page).getByText('Credit', { exact: false })).toHaveCount(0)
+  await expect(cardOf(page).getByText('In your favor', { exact: false })).toHaveCount(0)
 
   // --- A payment that is only "Credit" can still be deleted: sell on credit,
   // collect it later, delete the sale (the cobro becomes a credit), then delete
@@ -192,6 +200,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   const creditSaleUrl = page.url()
 
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'Record payment' }).click()
   await page.getByRole('button', { name: 'All: $ 5.000' }).click()
@@ -205,12 +214,13 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText('Sale deleted')).toBeVisible()
 
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
-  // Three rows: the first sale, its cobro, and the new cobro left as a credit.
+  // Three rows: the first sale, its cobro, and the new cobro that takes the balance below zero.
   await expect(page.locator('.cuenta-cliente__fila')).toHaveCount(3)
-  const creditRow = page.locator('.cuenta-cliente__fila').filter({ hasText: 'Credit' })
+  const creditRow = page.locator('.cuenta-cliente__fila').filter({ hasText: 'In your favor' })
   await expect(creditRow).toHaveCount(1)
-  // Every cobro offers "Delete payment" once: the first's, and the credit's.
+  // Every cobro offers "Delete payment" once: the first's, and the one in your favor.
   await expect(page.getByRole('button', { name: 'Delete payment' })).toHaveCount(2)
   await expect(creditRow.getByRole('button', { name: 'Delete payment' })).toHaveCount(1)
   await creditRow.getByRole('button', { name: 'Delete payment' }).click()
@@ -220,6 +230,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expectToast(page, 'Payment deleted', () => page.getByRole('button', { name: 'Yes, delete it' }).click())
   await expect(cardOf(page).getByText('Owes you', { exact: false })).toHaveCount(0)
   await expect(cardOf(page).getByText('Credit', { exact: false })).toHaveCount(0)
+  await expect(cardOf(page).getByText('In your favor', { exact: false })).toHaveCount(0)
   await expect(page.getByRole('button', { name: 'Delete payment' })).toHaveCount(1)
 
   // Nothing personal or technical reaches the console or the browser's own storage.
@@ -230,6 +241,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // debiendo", and Te deben's header total is their sum (payments.md, Métricas
   // "Who-owes totals" and "No curl"). ---
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'New sale to Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
@@ -240,6 +252,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'New sale to Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)
@@ -251,6 +264,5 @@ test('a seller records, settles, undoes and traces payments, from the front alon
 
   await page.goto(CUSTOMERS)
   await expect(page.getByRole('region', { name: 'Owed to you' }).locator('.cifra-xl')).toHaveText('$ 5.000')
-  await expect(page.getByText('2 sales owing')).toBeVisible()
 })
 import { VARIETY_NAME_LABEL } from './helpers/labels.js'

@@ -273,19 +273,19 @@ El Payment registrado junto con una Sale pagada por completo con uno de los Paym
 _Avoid_: cash sale, immediate payment
 
 **Settlement**:
-Qué Sales cubre un Payment posterior: primero la deuda más antigua del Customer (las Sales por fecha y después por orden de registro; los Payments por fecha y después por orden de registro), sin importar la fecha del propio Payment. Se calcula en el momento a partir de las Sales y los Payments tal como están ahora, y nunca se guarda. _In the app_: On account of the sale of dd/mm.
+Qué Sales cubre un Payment posterior: primero la deuda más antigua del Customer (las Sales por fecha y después por orden de registro; los Payments por fecha y después por orden de registro), sin importar la fecha del propio Payment. Se calcula en el momento a partir de las Sales y los Payments tal como están ahora, y nunca se guarda. Se muestra solo en Record payment y su vista previa; la cuenta del Customer no lo muestra. _In the app_: On account of the sale of dd/mm (solo en Record payment y su vista previa).
 _Avoid_: allocation, application, imputación
 
 **Credit**:
-Un Balance menor que cero, que queda solo cuando se elimina una Sale que unos Payments habían saldado; registrar nunca crea uno. Se aplica automáticamente a las próximas Sales del Customer que queden con deuda y no cuenta en ninguna cifra de deuda. _In the app_: In your favor.
+Un Balance menor que cero, que queda solo cuando se elimina una Sale que unos Payments habían saldado; registrar nunca crea uno. Se aplica automáticamente a las próximas Sales del Customer que queden con deuda y no cuenta en ninguna cifra de deuda. En la cuenta del Customer no es una fila propia: "In your favor" en una fila solo marca que el saldo corrido después de esa fila es menor que cero, un punto del libro que no es por sí mismo un Credit. _In the app_: Credit (cabecera de la ficha y Customers); In your favor (saldo corrido de una fila de la cuenta).
 _Avoid_: refund, saldo a favor, overpayment
 
 **Sales still owing**:
-Toda Sale de un Business que no está pagada por completo una vez que se aplica el Settlement, las pagadas en parte incluidas, cada una contada una sola vez. _In the app_: owes you (en Sales) y la línea del conteo de la sección "Owed to you" de Customers y del bloque "Owed to you" de Home.
+Toda Sale de un Business que no está pagada por completo una vez que se aplica el Settlement, las pagadas en parte incluidas, cada una contada una sola vez. Desde la parte 1 de GH-831 su conteo se muestra solo en el bloque "Owed to you" de Home y como "owes you" en Sales; Customers ya no lo muestra. _In the app_: owes you (en Sales) y la línea del conteo del bloque "Owed to you" de Home.
 _Avoid_: unpaid orders, pending sales, open invoices
 
 **Total owed**:
-La suma del Balance de cada Customer mayor que $0 en un Business; los Credits nunca la restan. _In the app_: el título de la sección "Owed to you" de Customers y del bloque "Owed to you" de Home.
+La suma del Balance de cada Customer mayor que $0 en un Business; los Credits nunca la restan. Se muestra en la vista "Owed to you" de Customers cuando alguien debe, y en el bloque "Owed to you" de Home. _In the app_: la cifra de la vista "Owed to you" de Customers y el título del bloque "Owed to you" de Home.
 _Avoid_: receivables, outstanding
 
 **Margin**:
@@ -639,3 +639,11 @@ _Avoid_: status, payment status, settled, paid flag, estado de cobro
 **Best sellers**:
 Hasta 4 Products de un Business con más plata cobrada en las Sales con fecha desde el lunes de la semana en curso hasta hoy: la suma de los totales guardados de sus Sale lines, sin envío y con los Gifts en $0. Se dejan afuera los de $0, los empates van por nombre, entran los Archived y los Hidden products, y nunca se completa con otra semana. En la app: todavía no tiene palabra propia (la muestran partes posteriores de GH-497).
 _Avoid_: top products, top sellers, ranking, most sold, más vendidos, favorites
+
+**Received**:
+Lo que el Customer entrega en mano al pagar en el momento, tipeado de forma opcional en la Collect Sheet solo para ver el Change. Arranca vacío, nunca viene precargado, nunca se guarda ni se manda y no cambia el Payment, que sigue siendo el total de la Sale con el Payment method elegido. Se oculta mientras la venta queda debiendo y nunca se ata al nombre de un medio ni a una marca de efectivo. _In the app_: Received.
+_Avoid_: tendered, cash given, amount paid, pago, Payment
+
+**Change**:
+El vuelto que la vendedora devuelve: Received menos el total de la Sale, calculado solo por `changeFor` a los decimales del Money format y mostrado solo cuando Received alcanza el total (0 si son iguales). Es una ayuda para la entrega: nunca se guarda, nunca se manda y no es un Credit ni un Payment. _In the app_: Change.
+_Avoid_: refund, Credit, vuelto, balance, difference

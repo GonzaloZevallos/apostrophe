@@ -27,7 +27,9 @@ import {
   fromHundredths,
   hundredthsOfApiGrams,
   linesRepriced,
+  lineValidationsOf,
   payStateOf,
+  payStateOfEffective,
   paymentChoiceOf,
   priceLine,
   priceSale,
@@ -674,7 +676,9 @@ describe('changeFor', () => {
     ['empty', '', 11000, null],
     ['not a number', 'abc', 11000, null],
     ['negative', '-5', 11000, null],
-    ['zero', '0', 0, null],
+    ['zero against a $0 sale', '0', 0, 0],
+    ['zero against a sale above $0', '0', 11000, null],
+    ['positive against a $0 sale', '5', 0, 5],
     ['too many decimals', '10,5', 11000, null],
   ])('0 decimals, %s', (_label, received, total, expected) => {
     expect(changeFor(received, total, whole)).toBe(expected)
@@ -687,6 +691,10 @@ describe('changeFor', () => {
     ['1.234,56', 1000, 234.56],
     ['1,234', 1, null],
     ['10,00', 10.1, null],
+    ['0,00', 0, 0],
+    ['0', 0, 0],
+    ['0,00', 10.1, null],
+    ['0,001', 0, null],
   ])('2 decimals, %s against %s', (received, total, expected) => {
     expect(changeFor(received, total, cents)).toBe(expected)
   })
@@ -719,6 +727,60 @@ describe('payStateOf', () => {
 
   test('validateSale does not refuse an unset choice above zero: the API does', () => {
     expect(validateSale({ ...payStateOf(null), total: 1000, hasCustomer: false, lines: [] })).toEqual([])
+  })
+})
+
+describe('payStateOfEffective', () => {
+  test('no method is paying with none known: refused above zero, allowed at zero', () => {
+    expect(payStateOfEffective(null)).toEqual({ payState: 'paid', method: null })
+    expect(validateSale({ ...payStateOfEffective(null), total: 1000, hasCustomer: false, lines: [] })).toEqual([
+      { field: 'method' },
+    ])
+    expect(validateSale({ ...payStateOfEffective(null), total: 0, hasCustomer: false, lines: [] })).toEqual([])
+  })
+
+  test('a $0 sale with no method sends no payment', () => {
+    const { payState, method } = payStateOfEffective(null)
+    expect(paymentChoiceOf(payState, method, 0)).toBeNull()
+  })
+
+  test('any other choice is read as payStateOf reads it', () => {
+    const choices: PaymentChoice[] = [{ kind: 'owing' }, { kind: 'paid', payment_method_id: 7 }]
+    for (const choice of choices) expect(payStateOfEffective(choice)).toEqual(payStateOf(choice))
+    expect(
+      validateSale({ ...payStateOfEffective({ kind: 'paid', payment_method_id: 7 }), total: 1000, hasCustomer: false, lines: [] }),
+    ).toEqual([])
+  })
+})
+
+describe('lineValidationsOf', () => {
+  const pricing = { pricePerGram: 10, rule: 'list', lineTotal: 100, customerTypeId: null } as unknown as NonNullable<
+    PricedSaleLine['pricing']
+  >
+  const sale = (lines: PricedSaleLine[]): PricedSale => ({
+    lines,
+    totals: { total: 0, shippingCharged: 0 } as unknown as PricedSale['totals'],
+  })
+
+  test('an unpriced line is refused as a line error', () => {
+    const errors = validateSale({
+      ...payStateOfEffective({ kind: 'paid', payment_method_id: 1 }),
+      total: 100,
+      hasCustomer: false,
+      lines: lineValidationsOf(sale([{ id: 'a', gift: false, gramsHundredths: 100, pricing: null }])),
+    })
+    expect(errors.map((error) => error.field)).toEqual(['line:a'])
+  })
+
+  test('a priced line gives no error, whatever its rule', () => {
+    const lines = lineValidationsOf(
+      sale([
+        { id: 'a', gift: false, gramsHundredths: 100, pricing },
+        { id: 'b', gift: true, gramsHundredths: 100, pricing: { ...pricing, rule: 'gift' } as typeof pricing },
+      ]),
+    )
+    expect(lines).toHaveLength(2)
+    expect(validateSale({ payState: null, method: null, total: 100, hasCustomer: false, lines })).toEqual([])
   })
 })
 

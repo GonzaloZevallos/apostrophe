@@ -51,6 +51,7 @@ import { VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { paidInCash } from './helpers/paymentMethod.js'
 import { CUSTOMERS, SALE, SALES, SALE_NEW, VARIETIES, VARIETY_NEW } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
+import { openAllCustomers } from './helpers/openScreens.js'
 import { expectToast } from './helpers/toast.js'
 import { choosePaymentMethod, expect, test, withToastRecorder } from './fixtures.js'
 import { expectBusinessNameOnPhone, signUpNewBusiness } from './helpers/signup.js'
@@ -251,6 +252,7 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
 
   // --- Sale B: "Nueva venta a <name>", a gift line, no payment needed for $0. ---
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await page.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await page.getByRole('link', { name: 'New sale to Carla Pérez' }).click()
   await expectPath(page, SALE_NEW)

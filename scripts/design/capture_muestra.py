@@ -401,9 +401,7 @@ def _accounts(api: _ClientApi) -> list[str]:
             else:
                 payment = row["payment"]
                 concept, amount = "Pago", money(payment["amount"])
-                applied = row["applied_to"]
-                method = how_paid("paid", payment["payment_method"])
-                detail = f"{method}, a la venta del {day_month(applied['sale_date'])}"
+                detail = how_paid("paid", payment["payment_method"])
             rows.append(
                 [
                     customer["name"],

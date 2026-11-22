@@ -29,7 +29,7 @@
  * one source of a line's message, in the plan's priority order.
  */
 
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { tooManyDecimalsMessage } from '../../api/amountRefusal'
@@ -38,7 +38,6 @@ import type { Customer } from '../../api/customers'
 import { customerTypesQueryOptions } from '../../api/customerTypes'
 import { keys } from '../../api/keys'
 import type { Me } from '../../api/me'
-import type { PricingSettings as ApiPricingSettings } from '../../api/pricingSettings'
 import { resolveOverride, type RefusalCode } from '../../api/refusals'
 import type { PaymentMethod } from '../../api/payments'
 import Boton from '../../components/Boton'
@@ -73,8 +72,15 @@ import {
   validateSale,
 } from '../../sales/pricing'
 import { paymentMethodName } from '../../sales/paymentMethods'
+import { parseShipping } from '../../sales/shipping'
+import { isMethodUnavailable } from '../../sales/saleRefusal'
 import { type SaleBody, saleBodyOf } from '../../sales/saleBody'
 import { nothingSellable } from '../../sales/nothingSellable'
+import {
+  pricingSettingsOf,
+  saleFormPricingSettingsQuery,
+  saleFormProductsQuery,
+} from '../../sales/saleFormQueries'
 import { OWING_HINT, SALES_TEXT } from '../../copy/sales'
 import type { Variety } from '../Variedades'
 import NuevaVentaCliente from './NuevaVentaCliente'
@@ -112,14 +118,6 @@ function isBlank(line: LineState): boolean {
  * A rule that is off never shows, so the safe side is no rule (`pricing-settings.md`). */
 const NO_RULES: PricingSettings = { bulk: false, vip: false }
 
-/** Shipping charged: zero or more, unlike `parseMoneyInput`, which rejects zero — `0` is its default
- * and a valid value to save with. Anything else goes through `parseMoneyInput`. */
-function parseShipping(input: string, format: MoneyFormat): number | null {
-  if ((format.decimals === 0 ? /^0+$/ : /^0+([,.]0*)?$/).test(input.trim())) return 0
-  const parsed = parseMoneyInput(input, format)
-  return parsed.ok ? parsed.value : null
-}
-
 interface SavedSale {
   id: number
 }
@@ -127,7 +125,7 @@ interface SavedSale {
 type SubmitOverrides = Partial<
   Record<
     RefusalCode,
-    { field: 'customer' | 'shipping' | 'note' | 'date' | 'payment' | 'method' | 'form'; message: string }
+    { field: 'customer' | 'shipping' | 'note' | 'date' | 'payment' | 'form'; message: string }
   >
 >
 
@@ -138,7 +136,6 @@ function submitOverrides(format: MoneyFormat): SubmitOverrides {
     'sale.note_too_long': { field: 'note', message: SALES_TEXT.noteTooLong },
     'sale.date_in_future': { field: 'date', message: COMMON_TEXT.dateCannotBeFuture },
     'sale.payment_required': { field: 'payment', message: PAYMENT_REQUIRED_MESSAGE },
-    'payment_method.unavailable': { field: 'method', message: GENERIC_REFUSAL },
     'sale.customer_not_found': { field: 'form', message: GENERIC_REFUSAL },
     'sale.variety_not_found': { field: 'form', message: GENERIC_REFUSAL },
     'sale.lines_missing': { field: 'form', message: GENERIC_REFUSAL },
@@ -239,28 +236,10 @@ function NuevaVentaForm() {
   const gramsFieldRef = useRef<HTMLInputElement | null>(null)
   const specialPriceFieldRef = useRef<HTMLInputElement | null>(null)
 
-  const varietiesQuery = useQuery({
-    queryKey: keys.saleFormVarieties(date),
-    queryFn: () => get<Variety[]>(`/api/products?on=${encodeURIComponent(date)}`),
-    // A date change keeps the form's varieties (names, options) while that day's prices
-    // come; no figure of the previous day is ever shown (`repricing` below).
-    placeholderData: keepPreviousData,
-    gcTime: 0,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  })
+  const varietiesQuery = useQuery(saleFormProductsQuery(date))
 
   // The switches come with each day's prices: on opening and on every date change.
-  const settingsQuery = useQuery({
-    queryKey: keys.saleFormPricingSettings(date),
-    queryFn: () => get<ApiPricingSettings>('/pricing-settings'),
-    placeholderData: keepPreviousData,
-    gcTime: 0,
-    staleTime: Infinity,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  })
+  const settingsQuery = useQuery(saleFormPricingSettingsQuery(date))
 
   const customerByIdQuery = useQuery({
     queryKey: keys.saleFormCustomer(initialCustomerId ?? ''),
@@ -287,9 +266,7 @@ function NuevaVentaForm() {
   const reservedHint = varietiesQuery.isPlaceholderData ? nothingSellable(varietiesQuery.data) : null
   const repricing = varietiesQuery.isPlaceholderData || settingsQuery.isPlaceholderData
   const settings: PricingSettings =
-    settingsQuery.data === undefined
-      ? NO_RULES
-      : { bulk: settingsQuery.data.is_bulk_pricing, vip: settingsQuery.data.is_vip_customers }
+    settingsQuery.data === undefined ? NO_RULES : pricingSettingsOf(settingsQuery.data)
 
   const customerTypeId = customer?.customer_type_id ?? null
   // The name for the badge: the list of types is asked only while it can matter.
@@ -642,19 +619,18 @@ function NuevaVentaForm() {
         }
         return
       }
-      if (caught instanceof ApiError) {
+      if (isMethodUnavailable(caught)) {
+        // The method was archived or deleted meanwhile: the form stays and the field keeps the
+        // chosen method with the "no longer available" mark until the person picks another.
+        if (method !== null) setMethodGone(paymentMethodName(queryClient, method) ?? '')
+        void queryClient.invalidateQueries({ queryKey: keys.paymentMethods() })
+      } else if (caught instanceof ApiError) {
         const override = resolveOverride(submitOverrides(money.format), caught.code)
         if (override !== undefined) {
           if (override.field === 'shipping') setShippingError(override.message)
           else if (override.field === 'note') setNoteError(override.message)
           else if (override.field === 'date') setDateError(override.message)
           else if (override.field === 'payment') setPaymentError(override.message)
-          else if (override.field === 'method') {
-            // The method was archived or deleted meanwhile: the form stays and the field keeps the
-            // chosen method with the "no longer available" mark until the person picks another.
-            if (method !== null) setMethodGone(paymentMethodName(queryClient, method) ?? '')
-            void queryClient.invalidateQueries({ queryKey: keys.paymentMethods() })
-          }
           else setFormError(override.message)
         } else if (caught.code !== UNKNOWN_CODE) {
           setFormError(GENERIC_REFUSAL)

@@ -12,8 +12,6 @@ classDiagram
   }
   class application {
   }
-  class arithmetic {
-  }
   class assemble {
   }
   class costed_sales {
@@ -56,7 +54,6 @@ classDiagram
   period_figures --> ledger
   period_figures --> rounding
   ports --> ledger
-  read_panel --> arithmetic
   read_panel --> figures
   read_panel --> period_figures
   read_panel --> periods

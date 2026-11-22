@@ -14,7 +14,12 @@ const ACTION_ICON: Record<IconOnlyAction, NombreIcono> = {
   close: 'cerrar',
   edit: 'lapiz',
   share: 'compartir',
+  add: 'agregar',
 }
+
+/** The one icon-only action drawn filled (`--boton`, like the avatar beside it) rather than on
+ * `--superficie`: the phone Products title row's "New product", which has no room for its word. */
+const FILLED_ICON_ONLY_CLASS = 'boton-icono boton-icono--lleno'
 
 /** Placement classes of the fixed "Nueva venta" button (phone and computer), kept here so no
  * other file writes a `boton*` literal. */
@@ -49,7 +54,7 @@ export function botonVisual(props: BotonProps): {
   const className = CLASS[props.variant ?? 'primary']
   if (props.variant === 'icon') {
     return {
-      className,
+      className: props.action === 'add' ? FILLED_ICON_ONLY_CLASS : className,
       ariaLabel: props.ariaLabel,
       content: <Icono nombre={ACTION_ICON[props.action]} />,
     }
