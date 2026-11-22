@@ -26,14 +26,15 @@ class SqlLatestCostedPurchase:
         """The latest Purchase of the variety dated `day` or earlier with a cost above 0 and a
         quantity above 0: latest by date, then by when it was recorded, then by id."""
         factor = money_scale_factor(self._session, self._business_id)
+        amount = scaled(StockEntryRow.total_cost, factor)
         statement = (
-            select(scaled(StockEntryRow.total_cost, factor), StockEntryRow.grams_hundredths)
+            select(amount, StockEntryRow.grams_hundredths)
             .where(
                 StockEntryRow.business_id == self._business_id,
                 StockEntryRow.variety_id == product_id,
                 StockEntryRow.origin == Origin.PURCHASE.value,
-                StockEntryRow.total_cost.is_not(None),
-                StockEntryRow.total_cost > 0,
+                amount.is_not(None),
+                amount > 0,
                 StockEntryRow.grams_hundredths > 0,
                 StockEntryRow.entered_on <= day,
             )
