@@ -119,20 +119,21 @@ describe('a walked state that holds a refetch after its steps', () => {
     expect(refetching.map((state) => state.screen)).toEqual(['new-sale/date-change-refetching', 'customer/search-held'])
   })
 
-  it('holds GET /api/customers across a longer search, after the first search answered', () => {
+  it('holds GET /customers across a longer search, after the first search answered', () => {
     const found = STATES.find((state) => state.screen === 'customer/search-held')
-    expect(found?.refetch?.holds.test('/api/customers')).toBe(true)
-    expect(found?.refetch?.holds.test('/api/payments/debtors')).toBe(false)
+    expect(found?.refetch?.holds.test('/customers')).toBe(true)
+    expect(found?.refetch?.holds.test('/payments/debtors')).toBe(false)
+    expect(found?.refetch?.holds.test('/customers/1')).toBe(false)
     expect(found?.refetch?.steps).toEqual([{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nicol' } }])
     expect(found?.visible).toBe('Nico Parra')
   })
 
   it('holds the customers and debtors reads of the first Customers load, and nothing else', () => {
     const holds = STATES.find((state) => state.screen === 'ClientesBusqueda')?.holds
-    expect(holds?.test('/api/customers')).toBe(true)
-    expect(holds?.test('/api/payments/debtors')).toBe(true)
-    expect(holds?.test('/api/customers/1')).toBe(false)
-    expect(holds?.test('/api/payments')).toBe(false)
+    expect(holds?.test('/customers')).toBe(true)
+    expect(holds?.test('/payments/debtors')).toBe(true)
+    expect(holds?.test('/customers/1')).toBe(false)
+    expect(holds?.test('/payments')).toBe(false)
   })
 
   it('holds GET /api/products and not /api/settings, and changes the date to the day before the pin', () => {

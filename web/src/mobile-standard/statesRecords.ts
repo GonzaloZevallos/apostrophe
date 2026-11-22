@@ -260,7 +260,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: CUSTOMERS,
     steps: [{ fill: SEARCH_NICO }],
     visible: 'Nico Parra',
-    holds: /^\/api\/(customers|payments\/debtors)$/,
+    holds: /^\/(customers|payments\/debtors)$/,
   },
   {
     // The search typed over the list shown, its read held: only "Searching…", released to the answer after the walk's steps.
@@ -268,7 +268,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     route: CUSTOMERS,
     steps: [{ fill: SEARCH_NICO }],
     visible: 'Nico Parra',
-    refetch: { holds: /^\/api\/customers$/, steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nicol' } }] },
+    refetch: { holds: /^\/customers$/, steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nicol' } }] },
   },
   {
     // A debtor found by search keeps its debtor row (Tincho Aguirre owes in the sample).
