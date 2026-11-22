@@ -12,7 +12,6 @@
 import { useEffect, useRef, useState } from 'react'
 import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
-import { CUSTOMERS_TEXT } from '../../copy/customers'
 
 /** The value of `data-place` while the notice is drawn: where focus lands when a customer's row is gone. */
 export const DEBTORS_NOTICE_PLACE = 'debtors-notice'
@@ -22,12 +21,14 @@ export interface DebtorsSlotProps {
   drawn: boolean
   /** A retry is in flight: the notice stays and reads as busy. */
   busy: boolean
+  /** The sentence: the button's only text and its name. Its owner, `Clientes`, holds the copy. */
+  sentence: string
   /** The time of the latest failure: a new one re-announces the sentence. */
   errorUpdatedAt: number
   onRetry: () => void
 }
 
-export function DebtorsSlot({ drawn, busy, errorUpdatedAt, onRetry }: DebtorsSlotProps) {
+export function DebtorsSlot({ drawn, busy, sentence, errorUpdatedAt, onRetry }: DebtorsSlotProps) {
   const [filled, setFilled] = useState(false)
   const region = useRef<HTMLDivElement>(null)
   // After the commit's effects, never inside one: the button arrives once `ContentArea` has dropped `aria-busy`.
@@ -55,10 +56,10 @@ export function DebtorsSlot({ drawn, busy, errorUpdatedAt, onRetry }: DebtorsSlo
     >
       {drawn && filled && (
         <Boton variant="notice" onClick={onRetry} ariaBusy={busy ? true : undefined} ariaDisabled={busy ? true : undefined}>
-          <span className="clientes__sin-cifras__icono">
+          <span className="aviso-ambar__icono">
             <Icono nombre="atencion" />
           </span>
-          <span key={errorUpdatedAt}>{CUSTOMERS_TEXT.debtorsUnavailable}</span>
+          <span key={errorUpdatedAt}>{sentence}</span>
         </Boton>
       )}
     </div>

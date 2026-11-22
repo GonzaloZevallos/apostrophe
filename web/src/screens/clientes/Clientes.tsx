@@ -132,6 +132,7 @@ export default function Clientes() {
         <DebtorsSlot
           drawn={noticeDrawn}
           busy={debtors.busy}
+          sentence={CUSTOMERS_TEXT.debtorsUnavailable}
           errorUpdatedAt={debtors.errorUpdatedAt}
           onRetry={debtors.retry}
         />

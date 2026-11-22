@@ -14,7 +14,7 @@ const SENTENCE = baselineText('customers.ts:CUSTOMERS_TEXT.debtorsUnavailable')
 
 function slot(overrides: Partial<Parameters<typeof DebtorsSlot>[0]> = {}) {
   return (
-    <DebtorsSlot drawn busy={false} errorUpdatedAt={1} onRetry={() => {}} {...overrides} />
+    <DebtorsSlot drawn busy={false} sentence={SENTENCE} errorUpdatedAt={1} onRetry={() => {}} {...overrides} />
   )
 }
 

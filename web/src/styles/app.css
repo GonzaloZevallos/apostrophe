@@ -6053,12 +6053,6 @@ a.ajustes-tema__opcion {
   min-height: var(--alto-tocable);
 }
 
-.clientes__sin-cifras__icono {
-  display: flex;
-  flex: none;
-  color: var(--deuda);
-}
-
 .clientes__sin-cifras .boton-aviso {
   flex-direction: row;
   align-items: center;
