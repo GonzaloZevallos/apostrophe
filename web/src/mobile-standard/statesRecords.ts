@@ -123,6 +123,9 @@ const ARCHIVED_ENTRY = {
 const ARCHIVED_ENTRY_READ = { path: /^\/stock\/entries\/1$/, status: 200, body: ARCHIVED_ENTRY }
 const ARCHIVED_ONLY = /^\?archived=true$/
 
+/** The search typed on Customers to reach Nico Parra, the sample debtor. */
+const SEARCH_NICO = { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nico' }
+
 export const RECORDS_STATES: readonly WalkState[] = [
   {
     // Twelve reasons, one of 60 characters: the phone list is open and its search shows.
@@ -252,10 +255,46 @@ export const RECORDS_STATES: readonly WalkState[] = [
     ],
   },
   {
+    // The first load held (aria-busy, the segment skeleton, no figure and no empty wording), then the search answered.
     screen: 'ClientesBusqueda',
     route: CUSTOMERS,
-    steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nico' } }],
+    steps: [{ fill: SEARCH_NICO }],
     visible: 'Nico Parra',
+    holds: /^\/api\/(customers|payments\/debtors)$/,
+  },
+  {
+    // The search typed over the list shown, its read held: only "Searching…", released to the answer after the walk's steps.
+    screen: 'customer/search-held',
+    route: CUSTOMERS,
+    steps: [{ fill: SEARCH_NICO }],
+    visible: 'Nico Parra',
+    refetch: { holds: /^\/api\/customers$/, steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nicol' } }] },
+  },
+  {
+    // A debtor found by search keeps its debtor row (Tincho Aguirre owes in the sample).
+    screen: 'customer/search-answered',
+    route: CUSTOMERS,
+    steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Tincho' } }],
+    visible: 'Tincho Aguirre',
+  },
+  {
+    // A search nobody matches: only the no-match line.
+    screen: 'customer/search-no-match',
+    route: CUSTOMERS,
+    steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Zzzzz' } }],
+    visible: emptyState('emptyStates:customersList'),
+  },
+  {
+    // All chosen, a search typed and answered, then cleared: back on All with the full list (Mica Solano owes nothing).
+    screen: 'customer/search-cleared-to-all',
+    route: CUSTOMERS,
+    steps: [
+      { click: common('common:customerSegmentAll') },
+      { fill: SEARCH_NICO },
+      { wait: 'Nico Parra' },
+      { fill: { label: CUSTOMERS_TEXT.searchCustomer, value: '' } },
+    ],
+    visible: 'Mica Solano',
   },
 
   {

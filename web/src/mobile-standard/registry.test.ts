@@ -250,7 +250,13 @@ describe('walked_as: a row whose screen a walked state proves', () => {
 
   test('every real row that has one is skipped, names a state of STATE_NAMES and has the state steps plus its wait', () => {
     const proved = REGISTRY.filter((screen) => screen.walkedAs !== null)
-    expect(proved.map((screen) => screen.screen)).toEqual(['VentaEnCurso', 'VentaVuelve'])
+    expect(proved.map((screen) => screen.screen)).toEqual([
+      'VentaEnCurso',
+      'ClientesBusquedaResultado',
+      'ClientesBusquedaSinResultado',
+      'ClientesBusquedaLimpiada',
+      'VentaVuelve',
+    ])
     for (const screen of proved) {
       const state = STATES.find((candidate) => candidate.screen === screen.walkedAs)
       if (state === undefined) throw new Error(`${screen.screen}: ${String(screen.walkedAs)} is not walked`)
