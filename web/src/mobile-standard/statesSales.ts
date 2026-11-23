@@ -45,7 +45,9 @@ const TWELVE_PRODUCTS = Array.from({ length: 12 }, (_unused, index) => ({
 /**
  * The shape of one `GET /sales` row, as `Sale` (`api/sales.ts`) spells it. Not imported: this core
  * is compiled under `tsconfig.node.json`, whose `nodenext` resolution refuses `api/sales.ts`'s own
- * extensionless imports. `states.test.ts` checks the rows against the real `Sale` with `satisfies`.
+ * extensionless imports (`npm --prefix web run typecheck` with the import in place: `src/api/sales.ts(11,31):
+ * error TS2835 ... Did you mean './client.js'?`, and once those are fixed the same error spreads through
+ * `sales/pricing.ts` to `screens/Variedades`). `states.test.ts` checks the rows against the real `Sale` with `satisfies`.
  */
 interface StubSale {
   id: number
