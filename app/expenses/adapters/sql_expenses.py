@@ -55,7 +55,7 @@ class SqlExpenses:
             literal(self._business_id, ExpenseRow.business_id.type),
             literal(expense.category_id, ExpenseRow.expense_category_id.type),
             literal(expense.spent_on, ExpenseRow.spent_on.type),
-            literal(self._stored(expense.amount), ExpenseRow.amount.type),
+            literal(self._stored(expense.amount)),
             literal(expense.detail, ExpenseRow.detail.type),
             literal(expense.recorded_at, ExpenseRow.recorded_at.type),
             null() if method is None else literal(method.value),
