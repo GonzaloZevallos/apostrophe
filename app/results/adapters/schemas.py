@@ -35,7 +35,7 @@ from app.results.application.read_panel import (
     TodayFigures,
 )
 from app.results.domain.figures import AmountWithPending, ReasonCost
-from app.results.domain.today_ordering import BestSeller, LowStock
+from app.results.domain.today_ordering import AgeLevel, BestSeller, LowStock, OwedRow, OwedSummary
 from app.results.domain.today_series import MoneyIn
 from app.stock.adapters.schemas import Status
 
@@ -277,6 +277,50 @@ class BestSellerOut(BaseModel):
         return cls(product_id=seller.variety_id, name=seller.name, sales=Decimal(seller.sales))
 
 
+class OwedDebtorOut(BaseModel):
+    """One of the oldest debtors on the panel: the only schema that carries a Customer's
+    stored `phone` (`null` when it has none)."""
+
+    customer_id: int
+    name: str
+    balance: MoneyOut
+    owing_since: date
+    age_days: int
+    age_level: AgeLevel
+    phone: str | None
+
+    @classmethod
+    def of(cls, row: OwedRow) -> OwedDebtorOut:
+        return cls(
+            customer_id=row.customer_id,
+            name=row.name,
+            balance=Decimal(row.balance),
+            owing_since=row.owing_since,
+            age_days=row.age_days,
+            age_level=row.age_level,
+            phone=row.phone,
+        )
+
+
+class OwedOut(BaseModel):
+    """What the debts block already reports (`total_owed`, `sales_owing_count`), the
+    number of Customers owing and the oldest few of them, never `null`."""
+
+    total_owed: MoneyOut
+    debtor_count: int
+    sales_owing_count: int
+    debtors: list[OwedDebtorOut]
+
+    @classmethod
+    def of(cls, summary: OwedSummary) -> OwedOut:
+        return cls(
+            total_owed=Decimal(summary.total_owed),
+            debtor_count=summary.debtor_count,
+            sales_owing_count=summary.sales_owing_count,
+            debtors=[OwedDebtorOut.of(row) for row in summary.debtors],
+        )
+
+
 class TodayOut(BaseModel):
     """Today's Sales and the so-far comparison against the same weekday last week.
     `change_percent` is `null` when last week's so-far is 0, never 0 or infinite.
@@ -296,6 +340,7 @@ class TodayOut(BaseModel):
     low_stock: LowStockOut
     best_sellers: list[BestSellerOut]
     month_profit: AmountWithPendingOut
+    owed: OwedOut
 
     @classmethod
     def of(cls, figures: TodayFigures) -> TodayOut:
@@ -315,6 +360,7 @@ class TodayOut(BaseModel):
             low_stock=LowStockOut.of(figures.low_stock),
             best_sellers=[BestSellerOut.of(seller) for seller in figures.best_sellers],
             month_profit=AmountWithPendingOut.of(figures.month_profit),
+            owed=OwedOut.of(figures.owed),
         )
 
 

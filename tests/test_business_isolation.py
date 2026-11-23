@@ -1390,6 +1390,52 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         "teaser": [],
     }
     assert b_panel["stock"] == []
+    assert b_panel["today"]["owed"] == {
+        "total_owed": 0,
+        "debtor_count": 0,
+        "sales_owing_count": 0,
+        "debtors": [],
+    }
+
+    # B now has its own debtor with its own phone: A's phone and debtor name still never
+    # reach B's panel, and each Business's today.owed holds its own stored phone.
+    b_variety = business_b.post("/api/products", json={"name": "B panel variety"}).json()
+    business_b.post(
+        f"/api/products/{b_variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 10_000},
+    )
+    b_customer = business_b.post(
+        "/customers",
+        json={"name": "B panel customer", "phone": "11 3333-4444", "phone_country": "AR"},
+    ).json()
+    b_owing = business_b.post(
+        "/sales",
+        json={
+            "date": today,
+            "customer_id": b_customer["id"],
+            "payment": {"kind": "owing"},
+            "lines": [{"product_id": b_variety["id"], "quantity": "1"}],
+        },
+    )
+    assert b_owing.status_code == 201, b_owing.text
+    assert b_customer["phone"] is not None
+    assert customer["phone"] is not None
+    assert b_customer["phone"] != customer["phone"]
+
+    b_response = business_b.get("/panel")
+    assert b_response.status_code == 200, b_response.text
+    assert customer["phone"] not in b_response.text
+    assert customer["name"] not in b_response.text
+    [a_row] = business_a.get("/panel").json()["today"]["owed"]["debtors"]
+    [b_row] = b_response.json()["today"]["owed"]["debtors"]
+    assert a_row["phone"] == customer["phone"]
+    assert b_row["phone"] == b_customer["phone"]
+    for client in (business_a, business_b):
+        [teaser] = client.get("/panel").json()["debts"]["teaser"]
+        [debtor] = client.get("/payments/debtors").json()["debtors"]
+        assert "phone" not in teaser
+        assert "phone" not in debtor
+        assert "phone" not in debtor["customer"]
 
 
 def test_another_business_reads_none_of_the_low_or_best_selling_products(

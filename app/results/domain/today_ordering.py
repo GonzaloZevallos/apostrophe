@@ -20,7 +20,7 @@ standard library, `app.shared.names` and `app.shared.debt_age`; the other import
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from typing import Literal, Protocol
 
@@ -66,12 +66,12 @@ class _DebtsRead(Protocol):
 @dataclass(frozen=True)
 class OwedRow:
     customer_id: int
-    name: str
+    name: str = field(repr=False)
     balance: int
     owing_since: date
     age_days: int
     age_level: AgeLevel
-    phone: str | None
+    phone: str | None = field(repr=False)
 
     def __post_init__(self) -> None:
         if self.age_days < 0:
@@ -88,13 +88,13 @@ class OwedSummary:
     debtors: tuple[OwedRow, ...]
 
     def __post_init__(self) -> None:
-        for field, value in (
+        for label, value in (
             ("total_owed", self.total_owed),
             ("debtor_count", self.debtor_count),
             ("sales_owing_count", self.sales_owing_count),
         ):
             if value < 0:
-                raise ValueError(f"{field} cannot be negative")
+                raise ValueError(f"{label} cannot be negative")
         if len(self.debtors) > OWED_ROWS:
             raise ValueError(f"a summary holds at most {OWED_ROWS} rows")
 
