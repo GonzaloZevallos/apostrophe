@@ -88,13 +88,13 @@ class OwedSummary:
     debtors: tuple[OwedRow, ...]
 
     def __post_init__(self) -> None:
-        for field, value in (
+        for label, value in (
             ("total_owed", self.total_owed),
             ("debtor_count", self.debtor_count),
             ("sales_owing_count", self.sales_owing_count),
         ):
             if value < 0:
-                raise ValueError(f"{field} cannot be negative")
+                raise ValueError(f"{label} cannot be negative")
         if len(self.debtors) > OWED_ROWS:
             raise ValueError(f"a summary holds at most {OWED_ROWS} rows")
 
