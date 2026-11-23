@@ -14,62 +14,65 @@ La Sheet de New sale con la que se elige el Customer de la Sale in progress. Hay
 
 Estado actual (GH-865 parte 2): el componente `web/src/screens/ventas/CustomerSearchSheet.tsx` existe, pero ninguna ruta ni entrada de la Navigation lo monta hasta la parte flip de GH-496. Por eso no tiene imagen de pantalla ni fila en el registro de pantallas. Tampoco está en `WalkState` ni en `scripts/design/screens.json`, así que el chequeo Mobile no la visita (excepción del §10 para una Sheet sin montar): la parte flip de GH-496 agrega ambos y quita su entrada de `web/scripts/docs/front-exclude.json`.
 
-Excepción del §10.4: en el celular la Sheet es una hoja inferior de hasta 88 % del alto y 480 px de ancho, como el dibujo NuevaVentaCliente y como "Elegir cliente", no una hoja a pantalla completa; la parte flip de GH-496 decide si pasa a pantalla completa. La Sheet no tiene acción primaria fija (§10.4): elegir es tocar una fila, y "No customer" va al final de la lista que se desplaza, como lo ubica el dibujo. Con una búsqueda tipeada, las coincidencias van primero y sin título, "Create «query»" va debajo y no se muestra el bloque de Recientes (desvío 1 del dibujo, aceptado por el dueño: gana lo escrito en el PRD, que además evita duplicar Customers). Hasta GH-1013, una lectura de Customers pendiente o fallida no muestra ningún estado extra: ni filas, ni título, ni la línea de sin coincidencias; Create y "No customer" siguen visibles.
+Excepción del §10.4: en el celular la Sheet es una hoja inferior de hasta 88 % del alto y 480 px de ancho, con esquinas superiores redondeadas, agarradera y fondo atenuado, como el dibujo NuevaVentaCliente y como "Elegir cliente", no una hoja a pantalla completa; la parte flip de GH-496 decide si pasa a pantalla completa. Es un diálogo modal con nombre accesible "Choose a customer". La Sheet no tiene acción primaria fija (§10.4): elegir es tocar una fila, y "No customer" va al final de la lista que se desplaza, como lo ubica el dibujo. Con una búsqueda tipeada, las coincidencias van primero y sin título, "Create «query»" va debajo y no se muestra el bloque de Recientes (desvío 1 del dibujo, aceptado por el dueño: gana lo escrito en el PRD, que además evita duplicar Customers). Hasta GH-1013, una lectura de Customers pendiente o fallida no muestra ningún estado extra: ni filas, ni título, ni la línea de sin coincidencias; Create y "No customer" siguen visibles.
 
 ## Comportamiento
 
 ### Encabezado
-Título "Customer", con "Close". Nombre de la Sheet: "Choose a customer". Ayuda: "Search by name or phone, with or without accents.".
+Título "Customer", con el botón de ícono "Close". Nombre de la Sheet: "Choose a customer". Ayuda: "Search by name or phone, with or without accents.", debajo del campo y asociada a él.
 
 ### Campo de búsqueda
-- Tiene el foco al abrirse.
+- Tiene el foco al abrirse. Su nombre accesible es "Search customers".
 - Es `type=search`, con `autocomplete=off`, `enterkeyhint=search`, sin `inputmode` y con letra de al menos 16 px.
-- La tecla de búsqueda solo cierra el teclado en pantalla: nunca elige a nadie.
+- La tecla de búsqueda solo cierra el teclado en pantalla: nunca elige a nadie, nunca llama a `onChoose` y nunca envía un formulario.
 
 ### Búsqueda vacía
 - Muestra el título "Recent customers" y hasta `RECENT_ROWS` (3) filas, tomadas de las New sale suggestions.
 - Los ids que no corresponden a ningún Customer se descartan antes de aplicar el límite.
-- Si no se resuelve ninguno, no se muestra nada.
+- Si no se resuelve ninguno, o las sugerencias todavía cargan o fallaron, no se muestra ni título ni filas.
 
 ### Búsqueda tipeada
 - Las coincidencias no llevan título.
 - Primero van los nombres que empiezan con lo tipeado y después el resto, incluidas las coincidencias solo por teléfono. Cada grupo va en orden alfabético, sin importar acentos ni mayúsculas.
-- La parte que coincide se resalta con `<mark>`: negrita con subrayado de acento, desde tokens (excepción nombrada de la guarda de subrayados: es un `<mark>` no interactivo, no una acción).
+- La parte que coincide se resalta con `<mark>`: negrita con subrayado de acento y sin fondo, desde tokens (excepción nombrada de la guarda de subrayados: es un `<mark>` no interactivo, no una acción; decisión 3 del dueño).
 - Ninguna fila se marca como elegida ni lleva `aria-selected`.
 
 ### Fila
-- Muestra el nombre y, en una segunda línea, el Phone number agrupado, solo cuando el Customer tiene uno.
+- Muestra el nombre y, en una segunda línea atenuada, el Phone number agrupado, solo cuando el Customer tiene uno.
 - El teléfono se resalta cuando lo tipeado coincide con sus dígitos. El rango corresponde al texto agrupado que se muestra.
 - No muestra el Balance, el Owing since, el Customer type ni la marca VIP.
+- Mide al menos 44 px de alto (`--alto-tocable`).
 - Un toque en la fila elige a ese Customer (`onChoose`).
 
 ### Orden de la lista
 En todos los estados, la lista desplazable va en este orden:
 
 1. Las coincidencias, o los Recent customers.
-2. "Create «query»" (nombre accesible "Create customer query").
+2. "Create «query»" (nombre accesible "Create customer query", con lo tipeado).
    - Aparece solo cuando lo tipeado no está en blanco, aunque coincida exactamente con el nombre de un Customer existente.
-   - Lanza `onCreate(query)` y nunca cierra la Sheet.
+   - Lanza `onCreate(query)` con lo tipeado sin espacios en los extremos y nunca cierra la Sheet.
    - Corta una búsqueda larga con puntos suspensivos.
 3. "No customer" (nombre accesible "Continue without a customer"), que lanza `onContinueWithout()`. Que una Sale without a customer no quede debiendo lo hace cumplir el formulario de la Sale, no esta Sheet.
 
 ### Estados
 - **Cargando** (lo entrega GH-1013): `RECENT_ROWS` filas esqueleto bajo `aria-busy` (nombre "Loading customers"), hasta que estén listas la lectura de Customers y las sugerencias, una vez por apertura.
-- **Sin coincidencias:** "No customer matches «query».", sin ícono.
+- **Sin coincidencias:** "No customer matches «query».", sin ícono, solo después de una lectura exitosa.
 - **Falla la lectura de Customers** (lo entrega GH-1013): el aviso "Customers did not load." con el Attention icon y "Try again". Reemplaza solo las filas.
 - **Falla la lectura de sugerencias:** simplemente no hay filas recientes.
+- **Hay una Sheet abierta encima** (por ejemplo, el formulario de Create): todo el contenido queda `inert` y lo tipeado se conserva; al cerrarse, el foco vuelve al campo de búsqueda.
 
 ### Vida de la Sheet
 - El padre la monta solo mientras existe su entrada del historial.
 - Lo tipeado sobrevive a Create y vuelve vacío en la próxima apertura.
 - Un Customer guardado desde Create aparece recién en la próxima apertura, así que el padre lo elige y cierra la Sheet.
 - Cerrar, volver, Create y No customer nunca pierden las líneas de la Sale in progress.
+- Escape es del padre: ni esta Sheet ni la pila de Sheets lo escuchan, así que la parte flip de GH-496 lo conecta al mismo cierre que Close.
 - Cada apertura vuelve a leer los Customers (`keys.saleFormCustomers()`, `gcTime` 0, `staleTime` Infinity, `refetchOnMount` true). No se vuelven a leer al recuperar el foco, al reconectar ni cuando se invalida 'customers'.
 
 ### Reglas de construcción
-- El nivel de la Sheet sale solo de `SheetLevel`.
+- El nivel de la Sheet sale solo de `SheetLevel`: Close es la entrada `level + 1` y el contenido queda `inert` mientras la entrada `level + 2` está abierta.
 - La coincidencia, la resolución de recientes y los rangos resaltados viven solo en `web/src/sales/customerSearch.ts`.
-- Los textos van en `web/src/copy/sales.ts`, en inglés, sin palabras de unidad ni de tipo de producto.
+- Los textos van en `web/src/copy/sales.ts` (`SALES_TEXT.customerSearch`), en inglés, sin palabras de unidad ni de tipo de producto.
 - Solo tokens: ningún texto literal ni valor hex en el componente.
 
 ### Fuera de esta parte
@@ -77,11 +80,11 @@ En todos los estados, la lista desplazable va en este orden:
 - La nota de recálculo de precios, levantada como desvío.
 - Cualquier ruta o entrada de la Navigation.
 
-### Pendiente de comparar con el dibujo
-Nada de esto se verificó contra NuevaVentaCliente. Toda diferencia es un desvío que decide el dueño:
+### Pendiente de decidir con el dibujo
+UI Lead comparó el código con NuevaVentaCliente, sin captura porque la Sheet no está montada. Quedan como desvíos que decide el dueño:
 
-- qué muestra una fila;
-- que Create aparezca con una coincidencia exacta de nombre.
+- qué muestra una fila: el dibujo lleva una etiqueta de tipo y un ícono de reloj que acá no están, y sus filas miden unos 60 px;
+- que Create aparezca con una coincidencia exacta de nombre, caso que el dibujo no muestra.
 
 ## Métricas
 
