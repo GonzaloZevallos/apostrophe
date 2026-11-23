@@ -1,8 +1,1 @@
-[
-  {
-    "screen": "Clientes",
-    "rule": "false-empty",
-    "target": "span:You have not added any customers yet.",
-    "issue": 46
-  }
-]
+[]

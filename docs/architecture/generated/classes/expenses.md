@@ -258,6 +258,7 @@ classDiagram
     detail : Mapped~str~
     expense_category_id : Mapped~int~
     id : Mapped~int~
+    payment_method_id : Mapped~int #124; None~
     recorded_at : Mapped~datetime~
     spent_on : Mapped~date~
   }

@@ -43,6 +43,7 @@ src_api_customerTypes_ts-->src_api_keys_ts
 src_api_customers_ts-->src_api_client_ts
 src_api_customers_ts-->src_api_payments_ts
 src_api_expenses_ts-->src_api_client_ts
+src_api_expenses_ts-->src_api_keys_ts
 src_api_firstRun_ts-->src_api_client_ts
 src_api_firstRun_ts-->src_api_keys_ts
 src_api_me_ts-->src_api_client_ts

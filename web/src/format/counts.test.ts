@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { salesCount, salesOwingCount } from './counts'
+import { salesCount, salesOwingCount, segmentCount } from './counts'
 
 test('zero reads "0 sales"', () => {
   expect(salesCount(0)).toBe('0 sales')
@@ -19,4 +19,15 @@ test('one owing sale reads "1 sale owing", singular', () => {
 
 test('several owing sales read "N sales owing", plural', () => {
   expect(salesOwingCount(4)).toBe('4 sales owing')
+})
+
+test.each([
+  [0, '0'],
+  [7, '7'],
+  [999, '999'],
+  [1000, '1.000'],
+  [1234, '1.234'],
+  [1234567, '1.234.567'],
+])('segmentCount(%i) is the mark · and the figure %s', (n, figure) => {
+  expect(segmentCount(n)).toEqual({ mark: '·', figure })
 })

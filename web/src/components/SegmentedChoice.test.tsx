@@ -74,3 +74,44 @@ test('the overlay gives an option its own description, and only that option', ()
   expect(screen.getByRole('radio', { name: 'Owing' })).toHaveAccessibleDescription('Week needs a note')
   expect(screen.getByRole('radio', { name: 'Paid' })).not.toHaveAttribute('aria-describedby')
 })
+
+test('without a suffix the markup is exactly what it was before the suffix existed', () => {
+  render(<SegmentedChoice options={HOME_PERIODS} value="week" onChange={() => {}} ariaLabel="Pick one" />)
+  expect(screen.getByRole('radiogroup', { name: 'Pick one' }).innerHTML).toMatchInlineSnapshot(`"<button type="button" role="radio" aria-checked="false" aria-disabled="false" class="selector-pago__opcion">Today</button><button type="button" role="radio" aria-checked="true" aria-disabled="false" class="selector-pago__opcion selector-pago__opcion--activa">Week</button><button type="button" role="radio" aria-checked="false" aria-disabled="false" class="selector-pago__opcion">Month</button>"`)
+})
+
+test('with a suffix the name stays the label and the description is exactly the figure', () => {
+  render(
+    <SegmentedChoice
+      options={HOME_PERIODS}
+      value="week"
+      onChange={() => {}}
+      ariaLabel="Pick one"
+      suffix={{ today: { mark: '·', figure: '1.234' }, week: { mark: '·', figure: '0' } }}
+    />,
+  )
+  const today = screen.getByRole('radio', { name: 'Today' })
+  expect(today).toHaveAccessibleDescription('1.234')
+  expect(today).toHaveTextContent('Today· 1.234')
+  expect(screen.getByRole('radio', { name: 'Week' })).toHaveAccessibleDescription('0')
+  const month = screen.getByRole('radio', { name: 'Month' })
+  expect(month).not.toHaveAttribute('aria-describedby')
+  expect(month).toHaveTextContent(/^Month$/)
+})
+
+test('with a suffix and an overlay description, the description holds the overlay text first and then the figure', () => {
+  render(
+    <>
+      <span id="owing-help">Needs a note</span>
+      <SegmentedChoice
+        options={PAYMENT_STATES}
+        optionState={{ owing: { describedBy: 'owing-help' } }}
+        value={null}
+        onChange={() => {}}
+        ariaLabel="Pick one"
+        suffix={{ owing: { mark: '·', figure: '12' } }}
+      />
+    </>,
+  )
+  expect(screen.getByRole('radio', { name: 'Owing' })).toHaveAccessibleDescription('Needs a note 12')
+})

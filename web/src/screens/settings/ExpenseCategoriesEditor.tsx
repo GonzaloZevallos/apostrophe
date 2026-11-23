@@ -25,11 +25,11 @@ import { ApiError, NetworkError, UNKNOWN_CODE } from '../../api/client'
 import {
   type ExpenseCategory,
   addCategory,
-  listCategories,
+  expenseCategoriesQueryOptions,
   removeCategory,
   renameCategory,
 } from '../../api/expenses'
-import { invalidateResource, keys } from '../../api/keys'
+import { invalidateResource } from '../../api/keys'
 import { isGone, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import Aviso, { type SuccessToast } from '../../components/Aviso'
 import Boton from '../../components/Boton'
@@ -59,8 +59,7 @@ export default function ExpenseCategoriesEditor({
   addCollapsed?: boolean
 }) {
   const { data, isPending, isError, error } = useQuery({
-    queryKey: keys.expenseCategories(),
-    queryFn: listCategories,
+    ...expenseCategoriesQueryOptions(),
     gcTime: 0,
     staleTime: Infinity,
     refetchOnWindowFocus: false,

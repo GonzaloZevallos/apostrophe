@@ -18,3 +18,20 @@ export function salesCount(n: number): string {
 export function salesOwingCount(n: number): string {
   return DATES_TEXT.owingSuffix(salesCount(n))
 }
+
+/** A segment's count, already split for display: the decorative `mark` and the `figure`. */
+export interface SegmentCount {
+  mark: string
+  figure: string
+}
+
+const SEGMENT_FIGURE_FMT = new Intl.NumberFormat('es-AR', { maximumFractionDigits: 0 })
+
+/**
+ * The count beside a segment label, `· 1.234`, split so a screen reader can read the figure alone
+ * (the mark is decoration). It formats what it is given: the server sends non-negative integers
+ * and nothing here divides, rounds or compares them.
+ */
+export function segmentCount(n: number): SegmentCount {
+  return { mark: '·', figure: SEGMENT_FIGURE_FMT.format(n) }
+}

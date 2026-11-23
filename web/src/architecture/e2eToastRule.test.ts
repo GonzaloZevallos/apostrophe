@@ -45,13 +45,14 @@ export const STILL_OWING_PREFIX = 'Payment saved · still owing '
 
 /**
  * The closed set of success toasts (`SuccessToast`, `components/AvisoExito.tsx`), each copy
- * constant once. The three `common:` members are keys, matched by the English they resolve to;
+ * constant once. The `common:` members are keys, matched by the English they resolve to;
  * `savedStillOwing` is one prefix entry: the balance after the prefix is free.
  */
 export const SUCCESS_TOASTS = [
   { key: 'common:customerSaved' },
   { key: 'common:entrySaved' },
   { key: 'common:entryDeleted' },
+  { key: 'common:saleDeletedGramsBack' },
   VARIETIES_TEXT.variedadGuardada,
   VARIETIES_TEXT.variedadEliminada,
   VARIETIES_TEXT.variedadArchivada,
@@ -453,15 +454,15 @@ const CATEGORY_TOAST = '.aviso-toast: the recorder does not watch the category t
  * line. A reason is always given.
  */
 export const KEPT: readonly string[] = [
-  `clientesCobrar.spec.ts:40 — ${ONE_MATCH}`,
-  `customers.spec.ts:64 — ${ONE_MATCH}`,
-  `customers.spec.ts:84 — ${ONE_MATCH}`,
+  `clientesCobrar.spec.ts:41 — ${ONE_MATCH}`,
+  `customers.spec.ts:65 — ${ONE_MATCH}`,
+  `customers.spec.ts:87 — ${ONE_MATCH}`,
   `flow.spec.ts:49 — ${NO_TIMER}`,
   `flow.spec.ts:172 — ${CATEGORY_TOAST}`,
   `flow.spec.ts:176 — ${CATEGORY_TOAST}`,
   `flow.spec.ts:184 — ${NO_TIMER}`,
   `panel.spec.ts:210 — ${NO_TIMER}`,
-  `payments.spec.ts:76 — ${ONE_MATCH}`,
+  `payments.spec.ts:77 — ${ONE_MATCH}`,
   `settings.spec.ts:96 — ${CATEGORY_TOAST}`,
   `settings.spec.ts:109 — ${CATEGORY_TOAST}`,
   `toastRecorder.spec.ts:164 — ${NO_TIMER}`,

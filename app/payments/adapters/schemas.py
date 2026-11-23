@@ -13,12 +13,11 @@ from pydantic import BaseModel
 
 from app.money_schema import MoneyAmount, MoneyOut
 from app.payments.application.record_payment import CandidateOutcome, RecordedPayment
-from app.payments.application.view_accounts import Debtor, Debtors, StillOwingLine
-from app.payments.domain.account import Account
+from app.payments.application.view_accounts import AccountRead, Debtor, Debtors, StillOwingLine
 from app.payments.domain.account import AccountRow as DomainAccountRow
-from app.payments.domain.account import CreditRow as DomainCreditRow
 from app.payments.domain.account import PaymentRow as DomainPaymentRow
 from app.payments.domain.account import SaleRow as DomainSaleRow
+from app.payments.domain.customer_sales import MonthTotal
 from app.payments.domain.debt_age import DebtAgeBucket, DebtAgeBuckets
 from app.payments.domain.settlement import Split, Standing
 from app.shared.payment_method import PaymentMethodLabel
@@ -132,6 +131,7 @@ class SaleAccountRowOut(BaseModel):
     date: PaymentDate
     running_balance: MoneyOut
     standing: Standing
+    number: int
     sale: SaleRefOut
 
 
@@ -140,20 +140,11 @@ class PaymentAccountRowOut(BaseModel):
     date: PaymentDate
     running_balance: MoneyOut
     standing: Standing
+    is_partial: bool
     payment: AccountPaymentRefOut
-    applied_to: AppliedToOut
 
 
-class CreditAccountRowOut(BaseModel):
-    kind: Literal["credit"] = "credit"
-    date: PaymentDate
-    running_balance: MoneyOut
-    standing: Standing
-    payment: AccountPaymentRefOut
-    amount: MoneyOut
-
-
-AccountRowOut = SaleAccountRowOut | PaymentAccountRowOut | CreditAccountRowOut
+AccountRowOut = SaleAccountRowOut | PaymentAccountRowOut
 
 
 def _row_out(row: DomainAccountRow) -> AccountRowOut:
@@ -162,6 +153,7 @@ def _row_out(row: DomainAccountRow) -> AccountRowOut:
             date=row.date,
             running_balance=Decimal(row.running_balance),
             standing=row.standing,
+            number=row.number,
             sale=SaleRefOut(
                 id=row.sale_id,
                 total=Decimal(row.total),
@@ -171,53 +163,28 @@ def _row_out(row: DomainAccountRow) -> AccountRowOut:
                 else PaymentMethodLabelOut.of(row.payment_method),
             ),
         )
-    if isinstance(row, DomainPaymentRow):
-        return PaymentAccountRowOut(
-            date=row.date,
-            running_balance=Decimal(row.running_balance),
-            standing=row.standing,
-            payment=AccountPaymentRefOut(
-                id=row.payment_id,
-                paid_on=row.paid_on,
-                amount=Decimal(row.amount),
-                payment_method=PaymentMethodLabelOut.of(row.method),
-            ),
-            applied_to=AppliedToOut.of(row.applied_to),
-        )
-    assert isinstance(row, DomainCreditRow), "AccountRow is exactly these three kinds"
-    return CreditAccountRowOut(
+    assert isinstance(row, DomainPaymentRow), "AccountRow is exactly a sale or a payment"
+    return PaymentAccountRowOut(
         date=row.date,
         running_balance=Decimal(row.running_balance),
         standing=row.standing,
+        is_partial=row.is_partial,
         payment=AccountPaymentRefOut(
             id=row.payment_id,
             paid_on=row.paid_on,
             amount=Decimal(row.amount),
             payment_method=PaymentMethodLabelOut.of(row.method),
         ),
-        amount=Decimal(row.credit_amount),
     )
 
 
-class AccountOut(BaseModel):
-    balance: MoneyOut
-    owing_since: PaymentDate | None
-    standing: Standing
-    rows: list[AccountRowOut]
+class MonthTotalOut(BaseModel):
+    month: str
+    total: MoneyOut
 
     @classmethod
-    def of(cls, account: Account) -> AccountOut:
-        return cls(
-            balance=Decimal(account.balance),
-            owing_since=account.owing_since,
-            standing=account.standing,
-            rows=[_row_out(row) for row in account.rows],
-        )
-
-
-class DebtorCustomerOut(BaseModel):
-    id: int
-    name: str
+    def of(cls, entry: MonthTotal) -> MonthTotalOut:
+        return cls(month=str(entry.month), total=Decimal(entry.total))
 
 
 class StillOwingLineOut(BaseModel):
@@ -230,6 +197,37 @@ class StillOwingLineOut(BaseModel):
         return cls(
             sale_number=line.sale_number, date=line.sale_date, remaining=Decimal(line.remaining)
         )
+
+
+class AccountOut(BaseModel):
+    balance: MoneyOut
+    owing_since: PaymentDate | None
+    standing: Standing
+    rows: list[AccountRowOut]
+    age_days: int | None
+    still_owing: list[StillOwingLineOut]
+    sales_by_month: list[MonthTotalOut]
+    average_sale: MoneyOut | None
+
+    @classmethod
+    def of(cls, read: AccountRead) -> AccountOut:
+        account = read.account
+        average = read.sales.average_sale
+        return cls(
+            balance=Decimal(account.balance),
+            owing_since=account.owing_since,
+            standing=account.standing,
+            rows=[_row_out(row) for row in account.rows],
+            age_days=read.age_days,
+            still_owing=[StillOwingLineOut.of(line) for line in read.still_owing],
+            sales_by_month=[MonthTotalOut.of(entry) for entry in read.sales.by_month],
+            average_sale=None if average is None else Decimal(average),
+        )
+
+
+class DebtorCustomerOut(BaseModel):
+    id: int
+    name: str
 
 
 class DebtorOut(BaseModel):

@@ -194,3 +194,31 @@ def test_a_stored_amount_with_cents_is_an_integrity_failure_not_a_rounded_figure
     with Session(engine) as session, pytest.raises(MoneyNotRepresentable) as failed:
         SqlPaymentsLedger(session, business_id).all()
     assert "1.5" not in str(failed.value)
+
+
+def test_account_rows_carry_the_full_payment_and_its_partial_mark_at_both_scales(
+    client: TestClient, money_scale: int
+) -> None:
+    customer_id = _owing_customer(client)
+
+    assert _pay(client, customer_id, 4_000).status_code == 201
+    partial = [
+        row
+        for row in client.get(f"/customers/{customer_id}/account").json()["rows"]
+        if row["kind"] == "payment"
+    ]
+
+    assert [(r["payment"]["amount"], r["running_balance"], r["is_partial"]) for r in partial] == [
+        (4_000, 6_500, True)
+    ]
+
+    assert _pay(client, customer_id, 6_500).status_code == 201
+    account = client.get(f"/customers/{customer_id}/account").json()
+    last = account["rows"][-1]
+
+    assert (last["payment"]["amount"], last["running_balance"], last["is_partial"]) == (
+        6_500,
+        0,
+        False,
+    )
+    assert_money_is_int(account, "rows[].payment.amount", "rows[].running_balance")

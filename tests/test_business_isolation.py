@@ -80,6 +80,18 @@ def seed_varieties(client: TestClient) -> dict[str, int]:
         f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     ).json()
+    # A costed Purchase: the cost the product detail shows is read only inside the business
+    # that recorded it (`test_a_purchase_never_feeds_another_business_s_cost`).
+    purchase = client.post(
+        "/stock/entries",
+        json={
+            "product_id": variety["id"],
+            "origin": "purchase",
+            "quantity": "30",
+            "total_cost": 10_000,
+        },
+    )
+    assert purchase.status_code == 201, purchase.text
     # `product_id` fills the `{product_id}` path parameter of the sweep's routes; `variety_id`
     # is the key the tests below read back.
     return {"variety_id": variety["id"], "product_id": variety["id"], "entry_id": entry["id"]}
@@ -288,8 +300,29 @@ def seed_payments(client: TestClient) -> dict[str, int]:
         json={"paid_on": TODAY.isoformat(), "amount": 1_000, "payment_method_id": method_id},
     )
     assert paid_today.status_code == 201, paid_today.text
+    # A customer whose only Sale is older than the account read's six-month window:
+    # every month 0 and no Average sale, still isolated like the others (GH-498 part 3).
+    empty_month = client.post(
+        "/customers",
+        json={
+            "name": f"{MARKER} empty-month customer",
+            "phone": "11 4444-3334",
+            "phone_country": "AR",
+        },
+    ).json()
+    older_sale = client.post(
+        "/sales",
+        json={
+            "payment": {"kind": "owing"},
+            "customer_id": empty_month["id"],
+            "date": "2026-03-01",
+            "lines": [{"product_id": variety["id"], "quantity": "1"}],
+        },
+    )
+    assert older_sale.status_code == 201, older_sale.text
     return {
         "customer_id": customer_id,
+        "empty_month_customer_id": empty_month["id"],
         "payment_id": payment.json()["payment"]["id"],
         "money_in_method_id": method_id,
     }
@@ -665,6 +698,34 @@ def test_a_body_reference_to_a_missing_or_foreign_variety_is_refused_the_same_wa
         "/sales", json=_sale_body(variety_id=own_variety["id"], customer_id=customer_id)
     )
     assert valid.status_code == 201, valid.text
+
+
+def test_a_purchase_never_feeds_another_business_s_cost(
+    business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
+) -> None:
+    purchase = business_a.post(
+        "/stock/entries",
+        json={
+            "product_id": seeded_b["variety_id"],
+            "origin": "purchase",
+            "quantity": "30",
+            "total_cost": 10_000,
+        },
+    )
+    assert purchase.status_code == 201, purchase.text
+    own = business_b.post("/api/products", json={"name": "B cost variety"}).json()
+    business_b.post(
+        f"/api/products/{own['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 11_000},
+    )
+
+    mine = business_a.get(f"/api/products/{seeded_b['variety_id']}")
+    theirs = business_b.get(f"/api/products/{own['id']}")
+    foreign = business_b.get(f"/api/products/{seeded_b['variety_id']}")
+
+    assert mine.json()["cost"]["amount"] == 333
+    assert theirs.json()["cost"] == {"amount": None, "margins": []}
+    assert foreign.status_code == 404, foreign.text
 
 
 def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_way(

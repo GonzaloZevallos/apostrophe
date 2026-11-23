@@ -676,15 +676,28 @@ describe.each([
     expect(body).toHaveClass('cuerpo')
     const [titleRow, summary, actions] = Array.from(body.children) as [HTMLElement, HTMLElement, HTMLElement]
 
-    expect(titleRow).toHaveClass('cabecera-fila', 'cabecera-fila--envoltura')
+    if (computer) {
+      expect(titleRow).toHaveClass('cabecera-fila', 'cabecera-fila--envoltura')
+    } else {
+      // The phone's title block is a plain div that scrolls with the screen.
+      expect(titleRow.tagName).toBe('DIV')
+      expect(titleRow.tagName).not.toBe('HEADER')
+      expect(['fixed', 'sticky']).not.toContain(getComputedStyle(titleRow).position)
+    }
     const title = within(titleRow).getByRole('heading', { level: 1, name: 'Products' })
     expect(title).toHaveClass('encabezado__titulo')
     expect(titleRow.firstElementChild).toBe(title)
     // The Settings avatar is the phone's entry; the computer draws none.
-    if (computer) expect(titleRow.children).toHaveLength(1)
-    else {
-      expect(titleRow.children).toHaveLength(2)
-      expect(within(titleRow).getByRole('link', { name: 'Settings' })).toBeInTheDocument()
+    if (computer) {
+      expect(titleRow.children).toHaveLength(1)
+    } else {
+      // Exactly the title, "New product" and Settings, in that order: no element for Publish catalog.
+      expect(titleRow.children).toHaveLength(3)
+      const [heading, add, settings] = Array.from(titleRow.children)
+      expect(heading).toBe(title)
+      expect(add).toBe(within(titleRow).getByRole('link', { name: 'New product' }))
+      expect(add).toHaveAttribute('href', VARIETY_NEW)
+      expect(settings).toBe(within(titleRow).getByRole('link', { name: 'Settings' }))
     }
 
     expect(summary.tagName).toBe('P')
@@ -692,7 +705,11 @@ describe.each([
     expect(summary).toHaveTextContent(/\S/)
 
     expect(actions).toHaveClass('variedades__acciones')
-    expect(Array.from(actions.children).map((child) => child.tagName)).toEqual(['A', 'A', 'A', 'SPAN'])
+    if (computer) {
+      expect(Array.from(actions.children).map((child) => child.tagName)).toEqual(['A', 'A', 'A', 'SPAN'])
+    } else {
+      expect(Array.from(actions.children).map((child) => child.tagName)).toEqual(['A', 'A', 'A'])
+    }
     const [send, entry, withdrawal, fresh] = Array.from(actions.children) as [HTMLElement, HTMLElement, HTMLElement, HTMLElement]
     expect(send).toHaveAccessibleName('Send catalog')
     expect(send).toHaveAttribute('href', CATALOG)
@@ -700,8 +717,15 @@ describe.each([
     expect(entry).toHaveAccessibleName('+ Stock entry')
     expect(withdrawal).toHaveAttribute('href', WITHDRAWAL_NEW)
     expect(withdrawal).toHaveAccessibleName('Take from stock')
-    expect(fresh).toHaveClass('variedades__nueva')
-    expect(within(fresh).getByRole('link', { name: 'New product' })).toHaveAttribute('href', VARIETY_NEW)
+    if (computer) {
+      expect(fresh).toHaveClass('variedades__nueva')
+      expect(within(fresh).getByRole('link', { name: 'New product' })).toHaveAttribute('href', VARIETY_NEW)
+    } else {
+      // The list body never draws "New product" on the phone: the title block owns it.
+      expect(fresh).toBeUndefined()
+      expect(within(actions).queryByRole('link', { name: 'New product' })).not.toBeInTheDocument()
+      expect(body.querySelector('.variedades__nueva')).toBeNull()
+    }
 
     const all = screen.getByRole('link', { name: /All entries/ })
     expect(all).toHaveClass('variedades__todas')
@@ -777,5 +801,35 @@ describe.each([
     expect(reason).toHaveTextContent('Add a product with a price and its stock')
     expect(button.nextElementSibling).toBe(reason)
     expect(reason.nextElementSibling).toBe(screen.getByRole('link', { name: '+ Stock entry' }))
+  })
+
+  test('the screen has exactly one Products heading and exactly one New product link', async () => {
+    renderApp(VARIETIES_PATH, { computer })
+
+    await screen.findByText('24K Gold')
+    expect(screen.getAllByRole('heading', { level: 1, name: 'Products' })).toHaveLength(1)
+    expect(screen.getAllByRole('link', { name: 'New product' })).toHaveLength(1)
+  })
+
+  test.skipIf(computer).each([
+    ['no varieties at all', { 'GET /api/products': () => json(200, []), 'GET /stock': () => json(200, { total: 0, products: [], entries: [] }) }],
+    [
+      'only archived varieties',
+      {
+        'GET /api/products': () => json(200, []),
+        'GET /stock': () => json(200, { total: 0, products: [], entries: [] }),
+        'GET /api/products?archived=true': () => json(200, [{ id: 9, name: 'Old Blend', archived: true, current_price: null }]),
+      },
+    ],
+  ])('on the phone the title block shows its New product link with %s, and the list body has none', async (_state, answers) => {
+    renderApp(VARIETIES_PATH, { computer, answers })
+
+    await screen.findByText('No products yet')
+    const main = screen.getByRole('main')
+    const block = main.firstElementChild?.firstElementChild as HTMLElement
+    expect(block.tagName).toBe('DIV')
+    expect(within(block).getByRole('heading', { level: 1, name: 'Products' })).toBeInTheDocument()
+    expect(within(block).getByRole('link', { name: 'New product' })).toHaveAttribute('href', VARIETY_NEW)
+    expect(screen.getAllByRole('link', { name: 'New product' })).toHaveLength(1)
   })
 })

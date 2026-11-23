@@ -24,7 +24,6 @@ from app.results.application.ports import (
     StockRow,
     WithdrawalReasons,
 )
-from app.results.domain.arithmetic import average_sale
 from app.results.domain.figures import AmountWithPending, PeriodTotals, ReasonCost, RowCost
 from app.results.domain.period_figures import scan, totals_between
 from app.results.domain.periods import Period, periods
@@ -40,6 +39,7 @@ from app.results.domain.today_series import (
     money_in,
     so_far,
 )
+from app.shared.average import average_sale
 from app.shared.calendar import local_day
 from app.shared.quantity import Quantity
 

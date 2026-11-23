@@ -1,7 +1,7 @@
 /**
  * Clientes as redesigned, phone and computer, against the real backend through the built front
  * (customers.md, "On screen (Clientes)"; payments.md, "Owed to you"): the screen opens on "Owed to you"
- * (count line, total, debtors oldest owing-since first, then the larger balance) above everyone A–Z;
+ * (total, debtors oldest owing-since first, then the larger balance), with everyone A–Z one tap away on "All";
  * "Collect from <name>" on a row opens Registrar cobro with that customer chosen, "All" fills the
  * whole balance in one tap, a payment is saved, and one move back returns to Clientes; the
  * customer's card offers "Nueva venta a <name>" with that customer already chosen.
@@ -16,6 +16,7 @@ import { watchConsole } from './console.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { fillSaleLine } from './helpers/sale.js'
+import { openAllCustomers } from './helpers/openScreens.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { uniqueTag } from './helpers/unique.js'
@@ -97,16 +98,22 @@ for (const viewport of VIEWPORTS) {
     await registerCustomer(page, 'Zoe Vieja')
     await sellOnCredit(page, 'Zoe Vieja', '3', true)
 
-    // Te deben on top: the total, the count line and the debtors oldest first, ties by larger balance.
+    // Te deben first: the total, the debtors' count on its segment and the debtors oldest first, ties by larger balance.
     await page.goto(CUSTOMERS)
     const owing = page.getByRole('region', { name: 'Owed to you' })
+    const owedSegment = page.getByRole('radio', { name: 'Owed to you', exact: true })
+    await expect(owedSegment).toBeChecked()
     await expect(owing.locator('.cifra-xl')).toHaveText('$ 10.000')
-    await expect(owing.getByText('3 sales owing')).toBeVisible()
+    await expect(owedSegment).toHaveText(/^Owed to you\s*·\s*3$/)
     expect(await debtorOrder(page)).toEqual(['Collect from Zoe Vieja', 'Collect from Carla Deudora', 'Collect from Beto Deudor'])
-    // Whoever owes nothing is only in the A–Z list below, with no "Collect".
+    // Whoever owes nothing is not on it.
     await expect(owing.getByRole('link', { name: /Ana AlDia/ })).toHaveCount(0)
+    // She is only on "All", with no "Collect".
+    await openAllCustomers(page)
     await expect(page.getByRole('link', { name: 'Collect from Ana AlDia' })).toHaveCount(0)
     await expect(page.getByRole('link', { name: /^Ana AlDia/ })).toBeVisible()
+    await owedSegment.click()
+    await expect(owedSegment).toBeChecked()
 
     // One tap on "Collect from Carla Deudora": Registrar cobro with her chosen.
     await owing.getByRole('link', { name: 'Collect from Carla Deudora' }).click()
@@ -123,7 +130,7 @@ for (const viewport of VIEWPORTS) {
 
     // The section is the API's new answer: she left, the total and the count follow.
     await expect(owing.locator('.cifra-xl')).toHaveText('$ 5.000')
-    await expect(owing.getByText('2 sales owing')).toBeVisible()
+    await expect(owedSegment).toHaveText(/^Owed to you\s*·\s*2$/)
     expect(await debtorOrder(page)).toEqual(['Collect from Zoe Vieja', 'Collect from Beto Deudor'])
 
     // One move back from Clientes does not land on Registrar cobro again.
