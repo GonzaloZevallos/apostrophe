@@ -7513,3 +7513,148 @@ button:has(> .venta-en-curso) {
   min-width: var(--alto-tocable);
   min-height: var(--alto-tocable);
 }
+
+/* ===== ajustes-inicio ===== */
+/* Settings home list (`SettingsHomeList`): a strip of three shortcuts, then each group's rows in one card.
+ * Tokens only, so light and dark follow the theme. Pressed state, no hover-only behaviour. */
+.ajustes-inicio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xl);
+}
+
+.ajustes-inicio ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ajustes-inicio__atajos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: var(--espacio-sm);
+}
+
+.ajustes-inicio__atajo-celda {
+  display: flex;
+}
+
+.ajustes-inicio__atajo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--espacio-sm);
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-md) var(--espacio-sm);
+  border-bottom: 0;
+  background-color: var(--superficie);
+  border-radius: var(--radio-panel);
+  color: var(--tinta);
+  text-decoration: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.ajustes-inicio__ficha {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radio-campo);
+  background: var(--acento-suave);
+  color: var(--acento);
+}
+
+.ajustes-inicio__atajo-rotulo {
+  font-size: 13px;
+  text-align: center;
+  color: var(--tinta);
+}
+
+.ajustes-inicio__grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
+.ajustes-inicio__titulo {
+  margin: 0;
+  padding: 0 var(--espacio-xs);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tinta2);
+}
+
+.ajustes-inicio__tarjeta {
+  background-color: var(--superficie);
+  border-radius: var(--radio-panel);
+  overflow: hidden;
+}
+
+.ajustes-inicio__fila-celda + .ajustes-inicio__fila-celda {
+  border-top: 1px solid var(--linea);
+}
+
+.ajustes-inicio__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-md) var(--espacio-lg);
+  border-bottom: 0;
+  background-color: var(--superficie);
+  color: var(--tinta);
+  text-decoration: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.ajustes-inicio__icono,
+.ajustes-inicio__flecha {
+  display: flex;
+  flex: none;
+  color: var(--tinta2);
+}
+
+.ajustes-inicio__textos {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+  min-width: 0;
+}
+
+.ajustes-inicio__rotulo {
+  color: var(--tinta);
+}
+
+.ajustes-inicio__detalle {
+  font-size: 13px;
+  color: var(--tinta2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ajustes-inicio__atajo:active {
+  background-color: var(--papel);
+  transition: none;
+}
+
+.ajustes-inicio__fila:active {
+  background-color: var(--papel);
+  transition: none;
+}
+
+/* They also wear `.ajustes__item`, whose shared pressed rule fills with --superficie (the card's own
+ * colour here): the pressed fill of this list stays --papel, named with a stronger selector. */
+.ajustes-inicio__atajo.ajustes__item:active:not(:disabled):not([aria-disabled='true']),
+.ajustes-inicio__fila.ajustes__item:active:not(:disabled):not([aria-disabled='true']) {
+  background-color: var(--papel);
+}
+/* ===== end ajustes-inicio ===== */
