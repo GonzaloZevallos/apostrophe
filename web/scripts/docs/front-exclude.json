@@ -16,6 +16,7 @@
   "^src/screens/analisis/rowOf\\.ts$",
   "^src/screens/stubFetchWithSettings\\.ts$",
   "^src/screens/ventas/lineProduct\\.ts$",
+  "^src/screens/ventas/NewSaleSheetHost\\.tsx$",
   "^src/i18n/switchFixture\\.ts$",
   "^src/components/selectorTestKit\\.tsx$",
   "^src/components/SelectorTestHost\\.tsx$",
@@ -25,5 +26,15 @@
   "^src/sales/useSaleDraft\\.ts$",
   "^src/sales/saleDraft\\.ts$",
   "^src/sales/productRows\\.ts$",
-  "^src/api/saleSuggestions\\.ts$"
+  "^src/sales/productList\\.ts$",
+  "^src/sales/customerSearch\\.ts$",
+  "^src/api/saleSuggestions\\.ts$",
+  "^src/sales/useNewSaleReads\\.ts$",
+  "^src/screens/ventas/NuevaVentaProductos\\.tsx$",
+  "^src/sales/newSalePricing\\.ts$",
+  "^src/sales/newSaleView\\.ts$",
+  "^src/screens/ventas/CollectSheet\\.tsx$",
+  "^src/screens/ventas/NuevaVentaSheet\\.tsx$",
+  "^src/screens/ventas/renderNuevaVentaSheet\\.tsx$",
+  "^src/screens/settings/settingsRows\\.ts$"
 ]

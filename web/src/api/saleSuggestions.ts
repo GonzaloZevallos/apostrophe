@@ -2,7 +2,8 @@
  * New sale's suggestions (`GET /api/sales/suggestions`, docs/product/sales.md): ids only, they
  * shorten choices and never set a price, an amount or a quantity. Fetched once per New sale
  * opening and keyed on the opening date (`keys.saleFormSuggestions`), never on the edited sale date.
- * Every failure but a lost session resolves to no suggestions, silently.
+ * Every failure but a lost session resolves to no suggestions, silently; while the read is pending
+ * the hook answers `null`, so a screen can tell "not yet" from "none".
  */
 
 import { useQuery } from '@tanstack/react-query'
@@ -60,8 +61,10 @@ async function suggestionsOrEmpty(on: string): Promise<SaleSuggestions> {
   }
 }
 
-/** One GET per New sale opening: pass the draft's `openedOn`, never its editable date. */
-export function useSaleSuggestions(openedOn: string): SaleSuggestions {
+/** One GET per New sale opening: pass the draft's `openedOn`, never its editable date. `null` means
+ * the read is still pending, and only that: once the data has arrived, and after any failure (a lost
+ * session included, which `QueryCache.onError` handles), it is never `null` again. */
+export function useSaleSuggestions(openedOn: string): SaleSuggestions | null {
   const query = useQuery({
     queryKey: keys.saleFormSuggestions(openedOn),
     queryFn: () => suggestionsOrEmpty(openedOn),
@@ -72,5 +75,5 @@ export function useSaleSuggestions(openedOn: string): SaleSuggestions {
     refetchOnReconnect: false,
     refetchOnMount: true,
   })
-  return query.data ?? EMPTY_SUGGESTIONS
+  return query.data ?? (query.isPending ? null : EMPTY_SUGGESTIONS)
 }

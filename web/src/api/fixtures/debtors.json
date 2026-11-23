@@ -1,12 +1,19 @@
 {
   "total_owed": 37000,
   "sales_owing_count": 4,
+  "customer_count": 6,
+  "debtor_count": 1,
+  "buckets": { "this_week": 12000, "days_8_30": 15000, "over_30": 10000 },
   "debtors": [
     {
       "customer": { "id": 1, "name": "Ana Pérez" },
       "balance": 15000,
       "owing_since": "2026-09-14",
-      "standing": "owes"
+      "standing": "owes",
+      "age_days": 18,
+      "bucket": "days_8_30",
+      "customer_type_id": null,
+      "still_owing": [{ "sale_number": 3, "date": "2026-08-01", "remaining": 9000 }]
     }
   ]
 }

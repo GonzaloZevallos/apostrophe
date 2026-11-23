@@ -151,7 +151,7 @@ export const COLOR_CENSUS: readonly CensusEntry[] = [
     ),
   },
   { selector: '.cuenta-cliente__fila', component: 'AccountRowLine', carries: 'decorative: the line between account rows, each row names what happened', tests: at('screens/clientes/ClienteFicha.test.tsx') },
-  { selector: '.cuenta-cliente__saldo.monto-deuda', component: 'AccountRowLine', carries: 'the word "balance" before the figure (a credit reads "Credit")', tests: at('screens/clientes/ClienteFicha.test.tsx') },
+  { selector: '.cuenta-cliente__saldo.monto-deuda', component: 'AccountRowLine', carries: 'the word "balance" before the figure (below zero the row reads "In your favor")', tests: at('screens/clientes/ClienteFicha.test.tsx') },
   { selector: '.marca-estado--sold_out .marca-estado__forma', component: 'MarcaEstado', carries: 'a square and the word "sold out"', tests: at('components/MarcaEstado.test.tsx') },
   { selector: '.marca-estado--low .marca-estado__forma', component: 'MarcaEstado', carries: 'a filled circle and the word "low"', tests: at('components/MarcaEstado.test.tsx') },
   { selector: '.catalogo__publicar--desactualizado', component: 'PinPublish', carries: '"Out of date"', tests: at('screens/PinPublish.test.tsx') },

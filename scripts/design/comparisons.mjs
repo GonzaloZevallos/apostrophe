@@ -179,7 +179,10 @@ const EN = loadBundle('en')
 
 async function run(page, rawStep, placeholders) {
   const step = resolveStep(rawStep, EN)
-  if (step.click) await page.getByText(step.click, { exact: true }).first().click()
+  // A radio that carries a count (Customers' "All") is named by its label alone, its text is label and count.
+  if (step.click) {
+    await page.getByText(step.click, { exact: true }).or(page.getByRole('radio', { name: step.click, exact: true })).first().click()
+  }
   // An icon-only control has an accessible name and no text: found by role and exact name,
   // and strict, so zero matches or two fail the row instead of picking one.
   else if (step.press) await page.getByRole('button', { name: step.press, exact: true }).click()

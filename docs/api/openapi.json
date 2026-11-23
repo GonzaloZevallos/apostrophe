@@ -32,6 +32,31 @@
       },
       "AccountOut": {
         "properties": {
+          "age_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age Days"
+          },
+          "average_sale": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average Sale"
+          },
           "balance": {
             "anyOf": [
               {
@@ -63,13 +88,17 @@
                 },
                 {
                   "$ref": "#/components/schemas/PaymentAccountRowOut"
-                },
-                {
-                  "$ref": "#/components/schemas/CreditAccountRowOut"
                 }
               ]
             },
             "title": "Rows",
+            "type": "array"
+          },
+          "sales_by_month": {
+            "items": {
+              "$ref": "#/components/schemas/MonthTotalOut"
+            },
+            "title": "Sales By Month",
             "type": "array"
           },
           "standing": {
@@ -80,13 +109,24 @@
             ],
             "title": "Standing",
             "type": "string"
+          },
+          "still_owing": {
+            "items": {
+              "$ref": "#/components/schemas/StillOwingLineOut"
+            },
+            "title": "Still Owing",
+            "type": "array"
           }
         },
         "required": [
           "balance",
           "owing_since",
           "standing",
-          "rows"
+          "rows",
+          "age_days",
+          "still_owing",
+          "sales_by_month",
+          "average_sale"
         ],
         "title": "AccountOut",
         "type": "object"
@@ -925,64 +965,6 @@
         "title": "CostOut",
         "type": "object"
       },
-      "CreditAccountRowOut": {
-        "properties": {
-          "amount": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "number"
-              }
-            ],
-            "title": "Amount"
-          },
-          "date": {
-            "format": "date",
-            "title": "Date",
-            "type": "string"
-          },
-          "kind": {
-            "const": "credit",
-            "default": "credit",
-            "title": "Kind",
-            "type": "string"
-          },
-          "payment": {
-            "$ref": "#/components/schemas/AccountPaymentRefOut"
-          },
-          "running_balance": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "number"
-              }
-            ],
-            "title": "Running Balance"
-          },
-          "standing": {
-            "enum": [
-              "owes",
-              "credit",
-              "settled"
-            ],
-            "title": "Standing",
-            "type": "string"
-          }
-        },
-        "required": [
-          "date",
-          "running_balance",
-          "standing",
-          "payment",
-          "amount"
-        ],
-        "title": "CreditAccountRowOut",
-        "type": "object"
-      },
       "CurrentPriceOut": {
         "description": "The entry in force, with the price each customer type has in it (docs/adr/0059):\nin this part, only the VIP type's.",
         "properties": {
@@ -1395,6 +1377,50 @@
         "title": "DaySalesOut",
         "type": "object"
       },
+      "DebtBucketsOut": {
+        "properties": {
+          "days_8_30": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Days 8 30"
+          },
+          "over_30": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Over 30"
+          },
+          "this_week": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "This Week"
+          }
+        },
+        "required": [
+          "this_week",
+          "days_8_30",
+          "over_30"
+        ],
+        "title": "DebtBucketsOut",
+        "type": "object"
+      },
       "DebtorCustomerOut": {
         "properties": {
           "id": {
@@ -1415,6 +1441,17 @@
       },
       "DebtorsOut": {
         "properties": {
+          "buckets": {
+            "$ref": "#/components/schemas/DebtBucketsOut"
+          },
+          "customer_count": {
+            "title": "Customer Count",
+            "type": "integer"
+          },
+          "debtor_count": {
+            "title": "Debtor Count",
+            "type": "integer"
+          },
           "debtors": {
             "items": {
               "$ref": "#/components/schemas/app__payments__adapters__schemas__DebtorOut"
@@ -1441,7 +1478,10 @@
         "required": [
           "total_owed",
           "sales_owing_count",
-          "debtors"
+          "debtors",
+          "customer_count",
+          "debtor_count",
+          "buckets"
         ],
         "title": "DebtorsOut",
         "type": "object"
@@ -2530,6 +2570,31 @@
         "title": "MonthRowOut",
         "type": "object"
       },
+      "MonthTotalOut": {
+        "properties": {
+          "month": {
+            "title": "Month",
+            "type": "string"
+          },
+          "total": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total"
+          }
+        },
+        "required": [
+          "month",
+          "total"
+        ],
+        "title": "MonthTotalOut",
+        "type": "object"
+      },
       "MonthlyViewOut": {
         "properties": {
           "categories": {
@@ -2778,13 +2843,14 @@
       },
       "PaymentAccountRowOut": {
         "properties": {
-          "applied_to": {
-            "$ref": "#/components/schemas/AppliedToOut"
-          },
           "date": {
             "format": "date",
             "title": "Date",
             "type": "string"
+          },
+          "is_partial": {
+            "title": "Is Partial",
+            "type": "boolean"
           },
           "kind": {
             "const": "payment",
@@ -2820,8 +2886,8 @@
           "date",
           "running_balance",
           "standing",
-          "payment",
-          "applied_to"
+          "is_partial",
+          "payment"
         ],
         "title": "PaymentAccountRowOut",
         "type": "object"
@@ -2985,6 +3051,16 @@
         ],
         "title": "PaymentRefOut",
         "type": "object"
+      },
+      "PaymentState": {
+        "description": "Where a sale stands on being paid (CONTEXT.md: Payment state). The values are the\nwire strings.",
+        "enum": [
+          "paid",
+          "unpaid",
+          "part_paid"
+        ],
+        "title": "PaymentState",
+        "type": "string"
       },
       "PeriodOut": {
         "properties": {
@@ -3597,6 +3673,29 @@
         "title": "PriceEntryOut",
         "type": "object"
       },
+      "PriceMarginOut": {
+        "properties": {
+          "percent": {
+            "title": "Percent",
+            "type": "integer"
+          },
+          "rule": {
+            "enum": [
+              "list",
+              "bulk",
+              "vip"
+            ],
+            "title": "Rule",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule",
+          "percent"
+        ],
+        "title": "PriceMarginOut",
+        "type": "object"
+      },
       "PricingRule": {
         "enum": [
           "list",
@@ -3628,12 +3727,54 @@
         "title": "PricingSettingsBody",
         "type": "object"
       },
+      "ProductCostOut": {
+        "description": "What the latest costed Purchase cost per unit, in the unit of the business's decimals\nand sent in currency units (docs/adr/0058), and the margin against each price in use.\n`amount` is `null` while the cost is pending.",
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "margins": {
+            "items": {
+              "$ref": "#/components/schemas/PriceMarginOut"
+            },
+            "title": "Margins",
+            "type": "array"
+          }
+        },
+        "required": [
+          "amount",
+          "margins"
+        ],
+        "title": "ProductCostOut",
+        "type": "object"
+      },
       "ProductDetailOut": {
         "description": "One product's page: also the one removal action it offers, worked out from history\nwhen it is read (`null` for an archived product).",
         "properties": {
           "archived": {
             "title": "Archived",
             "type": "boolean"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductCostOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "current_price": {
             "anyOf": [
@@ -3674,7 +3815,8 @@
           "name",
           "current_price",
           "archived",
-          "removal"
+          "removal",
+          "cost"
         ],
         "title": "ProductDetailOut",
         "type": "object"
@@ -4147,6 +4289,10 @@
             "title": "Kind",
             "type": "string"
           },
+          "number": {
+            "title": "Number",
+            "type": "integer"
+          },
           "running_balance": {
             "anyOf": [
               {
@@ -4175,6 +4321,7 @@
           "date",
           "running_balance",
           "standing",
+          "number",
           "sale"
         ],
         "title": "SaleAccountRowOut",
@@ -4415,6 +4562,16 @@
               }
             ]
           },
+          "payment_state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "shipping_charged": {
             "anyOf": [
               {
@@ -4425,6 +4582,20 @@
               }
             ],
             "title": "Shipping Charged"
+          },
+          "still_owed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Still Owed"
           },
           "still_owing": {
             "title": "Still Owing",
@@ -4459,6 +4630,8 @@
           "lines",
           "total_quantity",
           "still_owing",
+          "payment_state",
+          "still_owed",
           "bill"
         ],
         "title": "SaleDetailOut",
@@ -4745,6 +4918,16 @@
               }
             ]
           },
+          "payment_state": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PaymentState"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "shipping_charged": {
             "anyOf": [
               {
@@ -4755,6 +4938,20 @@
               }
             ],
             "title": "Shipping Charged"
+          },
+          "still_owed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Still Owed"
           },
           "still_owing": {
             "title": "Still Owing",
@@ -4783,7 +4980,9 @@
           "payment_method",
           "total",
           "lines",
-          "still_owing"
+          "still_owing",
+          "payment_state",
+          "still_owed"
         ],
         "title": "SaleOut",
         "type": "object"
@@ -4957,6 +5156,37 @@
         ],
         "title": "StepState",
         "type": "string"
+      },
+      "StillOwingLineOut": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "remaining": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Remaining"
+          },
+          "sale_number": {
+            "title": "Sale Number",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sale_number",
+          "date",
+          "remaining"
+        ],
+        "title": "StillOwingLineOut",
+        "type": "object"
       },
       "StockOut": {
         "description": "`GET /stock`'s own shape: the business's total grams, every product's own row,\nand its entries, newest date first then most recently recorded first.",
@@ -5582,6 +5812,10 @@
       },
       "app__payments__adapters__schemas__DebtorOut": {
         "properties": {
+          "age_days": {
+            "title": "Age Days",
+            "type": "integer"
+          },
           "balance": {
             "anyOf": [
               {
@@ -5593,8 +5827,28 @@
             ],
             "title": "Balance"
           },
+          "bucket": {
+            "enum": [
+              "this_week",
+              "days_8_30",
+              "over_30"
+            ],
+            "title": "Bucket",
+            "type": "string"
+          },
           "customer": {
             "$ref": "#/components/schemas/DebtorCustomerOut"
+          },
+          "customer_type_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Customer Type Id"
           },
           "owing_since": {
             "anyOf": [
@@ -5616,13 +5870,31 @@
             ],
             "title": "Standing",
             "type": "string"
+          },
+          "still_owing": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/StillOwingLineOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Still Owing"
           }
         },
         "required": [
           "customer",
           "balance",
           "owing_since",
-          "standing"
+          "standing",
+          "age_days",
+          "bucket",
+          "customer_type_id",
+          "still_owing"
         ],
         "title": "DebtorOut",
         "type": "object"
@@ -8592,6 +8864,18 @@
     "/payments/debtors": {
       "get": {
         "operationId": "get_debtors_payments_debtors_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "with_lines",
+            "required": false,
+            "schema": {
+              "default": false,
+              "title": "With Lines",
+              "type": "boolean"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -8602,6 +8886,16 @@
               }
             },
             "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
           }
         },
         "security": [

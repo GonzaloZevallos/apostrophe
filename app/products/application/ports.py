@@ -2,6 +2,7 @@ from collections.abc import Mapping, Sequence
 from datetime import date
 from typing import Protocol
 
+from app.products.domain.cost_and_margins import CostedPurchase
 from app.products.domain.product import NameHolder, Product, ProductName
 from app.shared.money import MoneyFormat
 from app.shared.pricing_settings import PricingSettings
@@ -89,3 +90,10 @@ class VipTypePrices(Protocol):
     def remove_for_entry(self, entry_id: int) -> None: ...
 
     def remove_for_product(self, product_id: int) -> None: ...
+
+
+class LatestCostedPurchase(Protocol):
+    """The latest Purchase with a cost that a variety had by a day, as its domain cost
+    and quantity. Built for one business."""
+
+    def latest_on(self, product_id: int, day: date) -> CostedPurchase | None: ...

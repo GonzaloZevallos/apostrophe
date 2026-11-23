@@ -6,7 +6,7 @@ is checked on rows recorded over HTTP.
 
 from __future__ import annotations
 
-from collections.abc import Collection, MutableMapping
+from collections.abc import Collection, Mapping, MutableMapping
 from datetime import date
 from typing import cast
 
@@ -35,6 +35,11 @@ class SpyOwingSales:
     def still_owing(self, customer_ids: Collection[int]) -> frozenset[int]:
         self._calls["still_owing"] += 1
         return self._real.still_owing(customer_ids)
+
+    def owed_of(self, customer_ids: Collection[int]) -> Mapping[int, int]:
+        # The batched read: `owed_of` counts with `still_owing`, which wraps it.
+        self._calls["still_owing"] += 1
+        return self._real.owed_of(customer_ids)
 
     def settlement_of(self, customer_id: int) -> CustomerSettlement:
         self._calls["settlement_of"] += 1

@@ -5,6 +5,7 @@ import {
   initialDraft,
   isDirty,
   saleDraftReducer,
+  saleLineInputsOf,
   typedQuantity,
   type DraftAction,
   type DraftState,
@@ -15,6 +16,28 @@ const TODAY = '2026-11-19'
 function run(actions: DraftAction[], from: DraftState = initialDraft({ today: TODAY })): DraftState {
   return actions.reduce(saleDraftReducer, from)
 }
+
+describe('saleLineInputsOf', () => {
+  test('maps each line to a priced-sale input: a string id, the quantity, no gift, no special price', () => {
+    expect(saleLineInputsOf([{ productId: 7, quantityHundredths: 250 }])).toEqual([
+      { id: '7', productId: 7, gramsHundredths: 250, gift: false, specialPrice: null },
+    ])
+    expect(saleLineInputsOf([])).toEqual([])
+  })
+
+  test('after taps, one input per line with a unique id and the tapped quantity', () => {
+    const state = run([
+      { type: 'productAdded', productId: 3 },
+      { type: 'stepUp', productId: 3 },
+      { type: 'stepUp', productId: 3 },
+      { type: 'productAdded', productId: 9 },
+    ])
+    const inputs = saleLineInputsOf(state.lines)
+    expect(inputs.map((input) => input.gramsHundredths)).toEqual([300, 100])
+    expect(inputs.map((input) => input.productId)).toEqual([3, 9])
+    expect(new Set(inputs.map((input) => input.id)).size).toBe(2)
+  })
+})
 
 describe('opening', () => {
   test('starts empty, unset, dated today, with no customer unless one is passed', () => {
@@ -141,13 +164,23 @@ describe('lines', () => {
 describe('customer and the owing choice', () => {
   const owing = { kind: 'owing' } as const
 
-  test('removing the customer while owing resets the choice to unset', () => {
+  test('removing the customer while owing keeps owing: the draft changes nothing on its own', () => {
     const state = run([
       { type: 'customerChosen', customerId: 5 },
       { type: 'choiceSet', choice: owing },
       { type: 'customerRemoved' },
     ])
     expect(state.customerId).toBeNull()
+    expect(state.choice).toEqual(owing)
+  })
+
+  test('choiceSet unset after owing leaves nothing remembered', () => {
+    const state = run([
+      { type: 'customerChosen', customerId: 5 },
+      { type: 'choiceSet', choice: { kind: 'paid', payment_method_id: 3 } },
+      { type: 'choiceSet', choice: owing },
+      { type: 'choiceSet', choice: { kind: 'unset' } },
+    ])
     expect(state.choice).toEqual({ kind: 'unset' })
   })
 
@@ -169,6 +202,14 @@ describe('customer and the owing choice', () => {
     ])
     expect(state.customerId).toBe(6)
     expect(state.choice).toEqual(owing)
+  })
+
+  test('customerChosen keeps a paid choice', () => {
+    const state = run([
+      { type: 'choiceSet', choice: { kind: 'paid', payment_method_id: 3 } },
+      { type: 'customerChosen', customerId: 6 },
+    ])
+    expect(state.choice).toEqual({ kind: 'paid', payment_method_id: 3 })
   })
 
   test('choosing owing with no customer is held as is', () => {

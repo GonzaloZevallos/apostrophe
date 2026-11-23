@@ -80,6 +80,18 @@ def seed_varieties(client: TestClient) -> dict[str, int]:
         f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     ).json()
+    # A costed Purchase: the cost the product detail shows is read only inside the business
+    # that recorded it (`test_a_purchase_never_feeds_another_business_s_cost`).
+    purchase = client.post(
+        "/stock/entries",
+        json={
+            "product_id": variety["id"],
+            "origin": "purchase",
+            "quantity": "30",
+            "total_cost": 10_000,
+        },
+    )
+    assert purchase.status_code == 201, purchase.text
     # `product_id` fills the `{product_id}` path parameter of the sweep's routes; `variety_id`
     # is the key the tests below read back.
     return {"variety_id": variety["id"], "product_id": variety["id"], "entry_id": entry["id"]}
@@ -288,8 +300,29 @@ def seed_payments(client: TestClient) -> dict[str, int]:
         json={"paid_on": TODAY.isoformat(), "amount": 1_000, "payment_method_id": method_id},
     )
     assert paid_today.status_code == 201, paid_today.text
+    # A customer whose only Sale is older than the account read's six-month window:
+    # every month 0 and no Average sale, still isolated like the others (GH-498 part 3).
+    empty_month = client.post(
+        "/customers",
+        json={
+            "name": f"{MARKER} empty-month customer",
+            "phone": "11 4444-3334",
+            "phone_country": "AR",
+        },
+    ).json()
+    older_sale = client.post(
+        "/sales",
+        json={
+            "payment": {"kind": "owing"},
+            "customer_id": empty_month["id"],
+            "date": "2026-03-01",
+            "lines": [{"product_id": variety["id"], "quantity": "1"}],
+        },
+    )
+    assert older_sale.status_code == 201, older_sale.text
     return {
         "customer_id": customer_id,
+        "empty_month_customer_id": empty_month["id"],
         "payment_id": payment.json()["payment"]["id"],
         "money_in_method_id": method_id,
     }
@@ -665,6 +698,34 @@ def test_a_body_reference_to_a_missing_or_foreign_variety_is_refused_the_same_wa
         "/sales", json=_sale_body(variety_id=own_variety["id"], customer_id=customer_id)
     )
     assert valid.status_code == 201, valid.text
+
+
+def test_a_purchase_never_feeds_another_business_s_cost(
+    business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
+) -> None:
+    purchase = business_a.post(
+        "/stock/entries",
+        json={
+            "product_id": seeded_b["variety_id"],
+            "origin": "purchase",
+            "quantity": "30",
+            "total_cost": 10_000,
+        },
+    )
+    assert purchase.status_code == 201, purchase.text
+    own = business_b.post("/api/products", json={"name": "B cost variety"}).json()
+    business_b.post(
+        f"/api/products/{own['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 11_000},
+    )
+
+    mine = business_a.get(f"/api/products/{seeded_b['variety_id']}")
+    theirs = business_b.get(f"/api/products/{own['id']}")
+    foreign = business_b.get(f"/api/products/{seeded_b['variety_id']}")
+
+    assert mine.json()["cost"]["amount"] == 333
+    assert theirs.json()["cost"] == {"amount": None, "margins": []}
+    assert foreign.status_code == 404, foreign.text
 
 
 def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_way(
@@ -1048,7 +1109,104 @@ def test_another_business_reads_debtors_as_zero_while_a_has_debt(
     assert a_debtors["debtors"] != []
 
     b_debtors = business_b.get("/payments/debtors").json()
-    assert b_debtors == {"total_owed": 0, "sales_owing_count": 0, "debtors": []}
+    assert b_debtors == {
+        "total_owed": 0,
+        "sales_owing_count": 0,
+        "debtors": [],
+        "customer_count": 0,
+        "debtor_count": 0,
+        "buckets": {"this_week": 0, "days_8_30": 0, "over_30": 0},
+    }
+
+
+def _owes_one_sale(client: TestClient, *, name: str, on: str, quantity: str) -> dict[str, Any]:
+    """A business's own priced variety, customer and one owing Sale: its number is 1 in
+    whichever business, so two businesses collide on it."""
+    variety = client.post("/api/products", json={"name": f"{name} variety"}).json()
+    client.post(
+        f"/api/products/{variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 1_000},
+    )
+    customer = client.post(
+        "/customers", json={"name": name, "phone": "11 3000-0000", "phone_country": "AR"}
+    ).json()
+    sale = client.post(
+        "/sales",
+        json={
+            "payment": {"kind": "owing"},
+            "customer_id": customer["id"],
+            "date": on,
+            "lines": [{"product_id": variety["id"], "quantity": quantity}],
+        },
+    )
+    assert sale.status_code == 201, sale.text
+    return {"customer": customer["id"], "number": sale.json()["number"]}
+
+
+def test_each_business_reads_only_its_own_still_owing_lines_when_sale_numbers_collide(
+    business_a: TestClient, business_b: TestClient
+) -> None:
+    a = _owes_one_sale(business_a, name="Ana", on="2026-09-10", quantity="3")
+    b = _owes_one_sale(business_b, name="Beto", on="2026-09-14", quantity="5")
+    assert a["number"] == b["number"], "both businesses start numbering at 1"
+
+    a_debtors = business_a.get("/payments/debtors?with_lines=true").json()["debtors"]
+    b_debtors = business_b.get("/payments/debtors?with_lines=true").json()["debtors"]
+
+    assert [(row["customer"]["id"], row["still_owing"]) for row in a_debtors] == [
+        (a["customer"], [{"sale_number": a["number"], "date": "2026-09-10", "remaining": 3_000}])
+    ]
+    assert [(row["customer"]["id"], row["still_owing"]) for row in b_debtors] == [
+        (b["customer"], [{"sale_number": b["number"], "date": "2026-09-14", "remaining": 5_000}])
+    ]
+
+
+def test_another_business_sees_none_of_a_debtor_a_credit_or_a_customer_without_sales(
+    business_a: TestClient, business_b: TestClient, seeded: dict[str, int]
+) -> None:
+    """A holds a debtor (seeded), a customer with no sales (seeded) and, added here, a
+    Credit; B's counts and age groups stay at zero while A's own include all three."""
+    variety_id = seeded["suggested_product_id"]
+    before = business_a.get("/payments/debtors").json()
+    credit = business_a.post(
+        "/customers",
+        json={"name": f"{MARKER} credit customer", "phone": "11 7777-7777", "phone_country": "AR"},
+    ).json()["id"]
+    sales = [
+        business_a.post(
+            "/sales",
+            json={
+                "payment": {"kind": "owing"},
+                "customer_id": credit,
+                "lines": [{"product_id": variety_id, "quantity": quantity}],
+            },
+        )
+        for quantity in ("1", "2")
+    ]
+    kept, removed = (sale.json() for sale in sales)
+    paid = business_a.post(
+        f"/customers/{credit}/payments",
+        json={
+            "paid_on": SEEDED_ON,
+            "amount": kept["total"] + removed["total"],
+            "payment_method_id": 1,
+        },
+    )
+    assert paid.status_code == 201, paid.text
+    assert business_a.delete(f"/sales/{removed['id']}").status_code == 200
+    assert business_a.get(f"/customers/{credit}/account").json()["standing"] == "credit"
+
+    a_debtors = business_a.get("/payments/debtors").json()
+    assert a_debtors["debtor_count"] == before["debtor_count"] >= 1
+    assert a_debtors["customer_count"] == before["customer_count"] + 1
+    assert a_debtors["total_owed"] == before["total_owed"]
+    assert sum(a_debtors["buckets"].values()) == a_debtors["total_owed"] > 0
+
+    b_debtors = business_b.get("/payments/debtors").json()
+    assert b_debtors["customer_count"] == 0
+    assert b_debtors["debtor_count"] == 0
+    assert b_debtors["buckets"] == {"this_week": 0, "days_8_30": 0, "over_30": 0}
+    assert b_debtors["debtors"] == []
 
 
 def test_the_panel_money_in_shows_no_payment_method_of_another_business(
@@ -1576,3 +1734,48 @@ def _owner(session: Session, type_id: int) -> int:
     row = session.get(CustomerTypeRow, type_id)
     assert row is not None
     return row.business_id
+
+
+def test_another_business_never_changes_still_owed(
+    business_a: TestClient, business_b: TestClient
+) -> None:
+    """The same customer name and phone, the same sale and a part-payment in business B
+    leave A's sale unpaid with its whole total, on the list and on the detail."""
+
+    def record(client: TestClient) -> dict[str, Any]:
+        variety = client.post("/api/products", json={"name": "Misma flor"}).json()
+        client.post(
+            f"/api/products/{variety['id']}/prices",
+            json={"effective_from": "2026-01-01", "list_price": 11_000},
+        )
+        customer = client.post(
+            "/customers",
+            json={"name": "Misma clienta", "phone": "11 4444-5555", "phone_country": "AR"},
+        ).json()
+        sale = client.post(
+            "/sales",
+            json=_sale_body(variety_id=variety["id"], customer_id=customer["id"]),
+        )
+        assert sale.status_code == 201, sale.text
+        sold: dict[str, Any] = sale.json()
+        sold["customer_id"] = customer["id"]
+        return sold
+
+    mine = record(business_a)
+    theirs = record(business_b)
+    method = business_b.get("/api/payment-methods").json()[0]["id"]
+    paid = business_b.post(
+        f"/customers/{theirs['customer_id']}/payments",
+        json={"paid_on": NOW.date().isoformat(), "amount": 4_000, "payment_method_id": method},
+    )
+    assert paid.status_code == 201, paid.text
+    assert business_b.get(f"/sales/{theirs['id']}").json()["payment_state"] == "part_paid"
+
+    listed = business_a.get("/sales").json()
+    detail = business_a.get(f"/sales/{mine['id']}").json()
+
+    assert theirs["id"] != mine["id"]
+    assert [sale["id"] for sale in listed] == [mine["id"]]
+    for read in (listed[0], detail):
+        assert (read["payment_state"], read["still_owed"]) == ("unpaid", mine["total"])
+    assert business_a.get(f"/sales/{theirs['id']}").status_code == 404

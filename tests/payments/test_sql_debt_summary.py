@@ -7,6 +7,8 @@ settled customer.
 
 from __future__ import annotations
 
+from datetime import date
+
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.engine import Engine
@@ -99,7 +101,7 @@ def test_read_matches_get_payments_debtors(client: TestClient, engine: Engine) -
     business_id = _business_id_of_customer(engine, older_debtor_id)
 
     with Session(engine) as session:
-        answer = SqlDebtSummary(session, business_id).read()
+        answer = SqlDebtSummary(session, business_id).read(date(2026, 9, 30))
 
     assert answer.total_owed == expected["total_owed"]
     assert answer.sales_owing_count == expected["sales_owing_count"]
@@ -118,6 +120,20 @@ def test_read_matches_get_payments_debtors(client: TestClient, engine: Engine) -
     assert [row.customer_id for row in answer.debtors] == [older_debtor_id, newer_debtor_id]
 
 
+def test_read_keeps_debtors_order_on_an_owing_since_tie(client: TestClient, engine: Engine) -> None:
+    variety_id = _priced_variety(client, price=1_000)
+    small = _customer(client, "Ana small", "11 2000-0011")
+    _owing_sale(client, small, variety_id, quantity="1", date="2026-09-10")
+    large = _customer(client, "Zoe large", "11 2000-0012")
+    _owing_sale(client, large, variety_id, quantity="9", date="2026-09-10")
+    business_id = _business_id_of_customer(engine, small)
+
+    with Session(engine) as session:
+        answer = SqlDebtSummary(session, business_id).read(date(2026, 9, 30))
+
+    assert [row.customer_id for row in answer.debtors] == [large, small]
+
+
 def test_debtor_row_phone_is_the_stored_value_or_none_and_is_not_in_its_repr(
     client: TestClient, engine: Engine
 ) -> None:
@@ -131,7 +147,8 @@ def test_debtor_row_phone_is_the_stored_value_or_none_and_is_not_in_its_repr(
     _owing_sale(client, without_phone["id"], variety_id, quantity="2", date="2026-09-02")
 
     with Session(engine) as session:
-        answer = SqlDebtSummary(session, _business_id_of_customer(engine, with_phone["id"])).read()
+        business_id = _business_id_of_customer(engine, with_phone["id"])
+        answer = SqlDebtSummary(session, business_id).read(date(2026, 9, 30))
 
     phones = {row.customer_id: row.phone for row in answer.debtors}
     assert phones == {with_phone["id"]: with_phone["phone"], without_phone["id"]: None}

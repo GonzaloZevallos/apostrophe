@@ -1,23 +1,26 @@
-"""A customer's account, laid out from `settle()`'s result (CONTEXT.md: Payment,
-Balance, Settlement, Credit; ADR-0012).
+"""A customer's account as a plain ledger walk (CONTEXT.md: Payment, Balance,
+Settlement, Credit; ADR-0012; the ledger-walk ADR
+`docs/adr/20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view.md`).
 
-Rows are ordered `(date, sales before payments, recorded_at, id)` (the plan's
-invariant). Every row carries its own `running_balance` and `standing`, read only
-from `standing_of`: nothing here compares a raw balance.
+One row per Sale and one row per later Payment, ordered by `ledger_key`:
+`(date, recorded_at, Sale before Payment, id)`. That is a plain ledger walk, not the
+Settlement order: a Sale adds its total (`0` when paid on the spot) and a Payment
+subtracts its full amount, whatever Sales it settles.
 
-The running balance is a plain chronological walk, independent of `settle()`'s own
-amount-only matching: a sale row moves it by the sale's whole total (`0` for one paid
-on the spot), and a later payment's split moves it by the amount that split applied,
-in the payment's own date order. When a payment is dated before the sale it settles
-(PRD round-1, Q1), its row's running balance goes below zero and reads "A favor"
-until the sale row that follows brings it back — that figure is only this row's own,
-never the account's final balance.
+Every row carries its own `running_balance` and `standing`, read only from
+`standing_of`. A row can go below zero mid-ledger (a Payment dated before its Sale, or
+recorded before a same-day Sale): its `standing` is then `credit`, a point in the
+ledger and never a stored Credit. A Payment row also carries `is_partial`, true only
+when the balance after it is still above zero; only this module works it out.
+
+The newest row's running balance equals `settle().balance`, because both sum the same
+deltas; `settle()` decides only the Balance, Owing since and standing of the account.
 """
 
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Literal
 
@@ -25,7 +28,6 @@ from app.payments.domain.settlement import (
     LaterPaymentEntry,
     Ledger,
     OwedSale,
-    Split,
     Standing,
     settle,
     standing_of,
@@ -35,7 +37,7 @@ from app.shared.payment_method import PaymentMethodLabel
 HowPaid = Literal["paid", "owing", "none"]
 
 # A row's own `date` field shadows the `date` type for any field declared after it in
-# the same class body; every later annotation in `PaymentRow` and `CreditRow` (e.g.
+# the same class body; every later annotation in `PaymentRow` (e.g.
 # `paid_on`) uses this alias instead (the same device `app/sales/domain/sale.py` uses
 # for `SaleDate`).
 RowDate = date
@@ -53,6 +55,7 @@ class SaleRow:
     running_balance: int
     standing: Standing
     sale_id: int
+    number: int
     total: int
     how_paid: HowPaid
     payment_method: PaymentMethodLabel | None
@@ -61,8 +64,8 @@ class SaleRow:
 
 @dataclass(frozen=True)
 class PaymentRow:
-    """One split of a later payment: the whole payment, for the Borrar cobro
-    confirmation, plus the one sale this row's split went to."""
+    """One later Payment, whole: its full amount and whether the balance after it is
+    still above zero."""
 
     date: RowDate
     running_balance: int
@@ -71,26 +74,11 @@ class PaymentRow:
     paid_on: RowDate
     amount: int
     method: PaymentMethodLabel
-    applied_to: Split
+    is_partial: bool
     kind: Literal["payment"] = "payment"
 
 
-@dataclass(frozen=True)
-class CreditRow:
-    """Whatever one later payment has left over every debt."""
-
-    date: RowDate
-    running_balance: int
-    standing: Standing
-    payment_id: int
-    paid_on: RowDate
-    amount: int
-    method: PaymentMethodLabel
-    credit_amount: int
-    kind: Literal["credit"] = "credit"
-
-
-AccountRow = SaleRow | PaymentRow | CreditRow
+AccountRow = SaleRow | PaymentRow
 
 
 @dataclass(frozen=True)
@@ -101,65 +89,62 @@ class Account:
     standing: Standing
 
 
-_Key = tuple[date, int, datetime, int]
+LedgerKey = tuple[date, datetime, int, int]
+
+SALE_RANK = 0
+PAYMENT_RANK = 1
+
+
+def ledger_key(row_date: date, recorded_at: datetime, kind_rank: int, id: int) -> LedgerKey:
+    """The account's one sort key: `(date, recorded_at, Sale = 0 / Payment = 1, id)`."""
+    return (row_date, recorded_at, kind_rank, id)
 
 
 def account_of(sales: Sequence[OwedSale], payments: Sequence[LaterPaymentEntry]) -> Account:
-    ledger = Ledger(tuple(sales), tuple(payments))
-    result = settle(ledger)
-    splits_by_payment = {settlement.payment_id: settlement for settlement in result.payments}
+    result = settle(Ledger(tuple(sales), tuple(payments)))
 
-    entries: list[tuple[_Key, int, AccountRow]] = []
-    for sale in sales:
-        delta = 0 if sale.paid_on_the_spot else sale.total
-        sale_row = SaleRow(
-            date=sale.date,
-            running_balance=0,
-            standing="settled",
-            sale_id=sale.id,
-            total=sale.total,
-            how_paid=_how_paid(sale),
-            payment_method=sale.on_the_spot_method,
-        )
-        entries.append(((sale.date, 0, sale.recorded_at, sale.id), delta, sale_row))
-
-    for payment in payments:
-        method = payment.method
-        assert method is not None, "an account's own later payments always carry a method"
-        settlement = splits_by_payment[payment.id]
-        key = (payment.paid_on, 1, payment.recorded_at, payment.id)
-        for split in settlement.splits:
-            payment_row = PaymentRow(
-                date=payment.paid_on,
-                running_balance=0,
-                standing="settled",
-                payment_id=payment.id,
-                paid_on=payment.paid_on,
-                amount=payment.amount,
-                method=method,
-                applied_to=split,
-            )
-            entries.append((key, -split.amount, payment_row))
-        if settlement.leftover > 0:
-            credit_row = CreditRow(
-                date=payment.paid_on,
-                running_balance=0,
-                standing="settled",
-                payment_id=payment.id,
-                paid_on=payment.paid_on,
-                amount=payment.amount,
-                method=method,
-                credit_amount=settlement.leftover,
-            )
-            entries.append((key, -settlement.leftover, credit_row))
-
+    entries: list[tuple[LedgerKey, OwedSale | LaterPaymentEntry]] = [
+        (ledger_key(sale.date, sale.recorded_at, SALE_RANK, sale.id), sale) for sale in sales
+    ]
+    entries += [
+        (ledger_key(payment.paid_on, payment.recorded_at, PAYMENT_RANK, payment.id), payment)
+        for payment in payments
+    ]
     entries.sort(key=lambda entry: entry[0])
 
     rows: list[AccountRow] = []
     running = 0
-    for _, delta, entry_row in entries:
-        running += delta
-        rows.append(replace(entry_row, running_balance=running, standing=standing_of(running)))
+    for _, entry in entries:
+        if isinstance(entry, OwedSale):
+            running += 0 if entry.paid_on_the_spot else entry.total
+            rows.append(
+                SaleRow(
+                    date=entry.date,
+                    running_balance=running,
+                    standing=standing_of(running),
+                    sale_id=entry.id,
+                    number=entry.number,
+                    total=entry.total,
+                    how_paid=_how_paid(entry),
+                    payment_method=entry.on_the_spot_method,
+                )
+            )
+            continue
+        method = entry.method
+        assert method is not None, "an account's own later payments always carry a method"
+        running -= entry.amount
+        rows.append(
+            PaymentRow(
+                date=entry.paid_on,
+                running_balance=running,
+                standing=standing_of(running),
+                payment_id=entry.id,
+                paid_on=entry.paid_on,
+                amount=entry.amount,
+                method=method,
+                is_partial=running > 0,
+            )
+        )
 
     return Account(
         rows=tuple(rows),

@@ -1,11 +1,10 @@
-/** `deleteRowIndices`: one "Delete payment" per later payment, whatever mix of
- * payment and credit rows it appears as. */
+/** `deleteRowIndices` and `ledgerRowView`: one row per later payment, deletable once. */
 
 import { expect, test } from 'vitest'
 import type { HowPaid, Standing } from '../../api/payments'
 import type { AccountRow, Payment } from '../../api/payments'
 import { moneyFormatter } from '../../format/money'
-import { deleteRowIndices, ledgerRowView as ledgerRowViewWith } from './accountRows'
+import { deleteRowIndices, ledgerRowView as ledgerRowViewWith, rowKey } from './accountRows'
 
 const MONEY = moneyFormatter({ symbol: '$', decimals: 0 })
 
@@ -13,8 +12,8 @@ function ledgerRowView(row: AccountRow) {
   return ledgerRowViewWith(row, MONEY)
 }
 
-function payment(id: number): Payment {
-  return { id, paid_on: '2026-10-05', amount: 8000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } }
+function payment(id: number, amount = 8000): Payment {
+  return { id, paid_on: '2026-10-05', amount, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } }
 }
 
 function sale(id: number): AccountRow {
@@ -23,50 +22,37 @@ function sale(id: number): AccountRow {
     date: '2026-10-01',
     running_balance: 5000,
     standing: 'owes',
+    number: id,
     sale: { id, total: 5000, how_paid: 'owing', payment_method: null },
   }
 }
 
-function paymentRow(paymentId: number, saleId: number): AccountRow {
+function paymentRow(paymentId: number, standing: Standing = 'settled', running = 0, amount = 8000): AccountRow {
   return {
     kind: 'payment',
     date: '2026-10-05',
-    running_balance: 0,
-    standing: 'settled',
-    payment: payment(paymentId),
-    applied_to: { sale_id: saleId, sale_date: '2026-10-01', amount: 5000 },
+    running_balance: running,
+    standing,
+    is_partial: false,
+    payment: payment(paymentId, amount),
   }
 }
 
-function creditRow(paymentId: number): AccountRow {
-  return {
-    kind: 'credit',
-    date: '2026-10-05',
-    running_balance: -3000,
-    standing: 'credit',
-    payment: payment(paymentId),
-    amount: 3000,
-  }
-}
-
-test('a payment that is only a credit row gets one index', () => {
-  expect([...deleteRowIndices([creditRow(7)])]).toEqual([0])
+test('each payment row gets its own index, once', () => {
+  expect([...deleteRowIndices([sale(1), sale(2), paymentRow(8), paymentRow(9)])]).toEqual([2, 3])
 })
 
-test('a payment and its credit row give one index, the payment row\'s', () => {
-  expect([...deleteRowIndices([sale(1), paymentRow(8, 1), creditRow(8)])]).toEqual([1])
-})
-
-test('two splits of one payment over two sales give one index', () => {
-  expect([...deleteRowIndices([sale(1), sale(2), paymentRow(8, 1), paymentRow(8, 2)])]).toEqual([2])
+test('a lone payment row gets one index', () => {
+  expect([...deleteRowIndices([paymentRow(7, 'credit', -3000)])]).toEqual([0])
 })
 
 test('sale rows never get an index', () => {
   expect(deleteRowIndices([sale(1), sale(2)]).size).toBe(0)
 })
 
-test('two different payments give two indices', () => {
-  expect([...deleteRowIndices([sale(1), paymentRow(8, 1), creditRow(9)])]).toEqual([1, 2])
+test('row keys come from the ids of each kind', () => {
+  expect(rowKey(sale(4))).toBe('sale-4')
+  expect(rowKey(paymentRow(8))).toBe('payment-8')
 })
 
 function saleWith(howPaid: HowPaid, standing: Standing, running: number, methodName = 'Cash'): AccountRow {
@@ -75,6 +61,7 @@ function saleWith(howPaid: HowPaid, standing: Standing, running: number, methodN
     date: '2026-10-01',
     running_balance: running,
     standing,
+    number: 12,
     sale: {
       id: 1,
       total: 5000,
@@ -90,9 +77,9 @@ const HOW_PAID_SUBS: readonly (readonly [HowPaid, string])[] = [
   ['none', 'Nothing to pay'],
 ]
 
-test.each(HOW_PAID_SUBS)('a %s sale reads "Sale" over %s, with its own total', (howPaid, sub) => {
+test.each(HOW_PAID_SUBS)('a %s sale reads "Sale #N" over %s, with its own total', (howPaid, sub) => {
   const view = ledgerRowView(saleWith(howPaid, 'settled', 0))
-  expect(view.title).toBe('Sale')
+  expect(view.title).toBe('Sale #12')
   expect(view.sub).toBe(sub)
   expect(view.own).toBe('$ 5.000')
 })
@@ -117,44 +104,37 @@ test('a sale names no product and no grams', () => {
 test.each([
   ['owes', 6000, 'balance $ 6.000', 'debt'],
   ['settled', 0, 'balance $ 0', 'neutral'],
-  ['credit', -2000, 'Credit $ 2.000', 'credit'],
+  ['credit', -2000, 'In your favor $ 2.000', 'credit'],
 ] as const)('a %s standing gives the balance line and tone', (standing, running, balance, tone) => {
-  for (const row of [
-    { ...saleWith('owing', standing, running) },
-    { ...paymentRow(8, 1), standing, running_balance: running },
-    { ...creditRow(8), standing, running_balance: running },
-  ]) {
+  for (const row of [saleWith('owing', standing, running), paymentRow(8, standing, running)]) {
     const view = ledgerRowView(row)
     expect(view.balance).toBe(balance)
     expect(view.balanceTone).toBe(tone)
   }
 })
 
-test('a payment row reads "Payment · method" over the sale it reached, with the amount applied', () => {
-  const view = ledgerRowView(paymentRow(8, 1))
+test('the tone and the words follow the standing, not the sign of the running balance', () => {
+  const view = ledgerRowView(paymentRow(8, 'settled', -2000))
+  expect(view.balance).not.toContain('In your favor')
+  expect(view.balanceTone).toBe('neutral')
+})
+
+test('a payment row reads "Payment · method" with its full amount and no sub-line', () => {
+  const view = ledgerRowView(paymentRow(8, 'owes', 3000, 8000))
   expect(view.title).toBe('Payment · Cash')
-  expect(view.sub).toBe('On account of the sale of 01/10')
-  expect(view.own).toBe('$ 5.000')
+  expect(view.sub).toBe('')
+  expect(view.own).toBe('$ 8.000')
 })
 
 test('a transfer payment names transfer', () => {
-  const row = paymentRow(8, 1)
+  const row = paymentRow(8)
   if (row.kind !== 'payment') throw new Error('expected a payment row')
   expect(ledgerRowView({ ...row, payment: { ...row.payment, payment_method: { id: 2, name: 'Transfer', icon: 'bank' } } }).title).toBe('Payment · Transfer')
 })
 
-test('a credit row reads "Payment · method" over "Credit", with the leftover amount without sign', () => {
-  const view = ledgerRowView(creditRow(8))
-  expect(view.title).toBe('Payment · Cash')
-  expect(view.sub).toBe('Credit')
-  expect(view.own).toBe('$ 3.000')
-})
-
-test.each(['owes', 'settled', 'credit'] as const)('payment and credit rows say the same title, sub and own under a %s standing', (standing) => {
-  const payment = ledgerRowView({ ...paymentRow(8, 1), standing })
-  expect([payment.title, payment.sub, payment.own]).toEqual(['Payment · Cash', 'On account of the sale of 01/10', '$ 5.000'])
-  const credit = ledgerRowView({ ...creditRow(8), standing })
-  expect([credit.title, credit.sub, credit.own]).toEqual(['Payment · Cash', 'Credit', '$ 3.000'])
-  const sale = ledgerRowView(saleWith('owing', standing, 5000))
-  expect([sale.title, sale.sub, sale.own]).toEqual(['Sale', 'Left owing', '$ 5.000'])
+test('a payment row below zero says "In your favor $ X" with no sub-line', () => {
+  const view = ledgerRowView(paymentRow(8, 'credit', -3000))
+  expect(view.balance).toBe('In your favor $ 3.000')
+  expect(view.balanceTone).toBe('credit')
+  expect(view.sub).toBe('')
 })

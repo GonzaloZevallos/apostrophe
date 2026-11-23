@@ -9,6 +9,7 @@ import { CUSTOMER, CUSTOMER_EDIT, CUSTOMER_NEW, CUSTOMERS, pathTo } from '../src
 import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { expectPath } from './helpers/url.js'
+import { openAllCustomers } from './helpers/openScreens.js'
 
 test.use({ viewport: { width: 390, height: 844 } })
 
@@ -72,6 +73,7 @@ test('Close from a scrolled Customers list returns to it at the same scroll posi
     expect(created.ok()).toBe(true)
   }
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await expect(page.getByRole('link', { name: /Zeta 30/ })).toBeVisible()
   await page.evaluate(() => window.scrollTo(0, 700))
   const before = await page.evaluate(() => window.scrollY)

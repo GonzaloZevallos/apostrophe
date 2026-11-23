@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.customers.adapters.tables import CustomerRow
 from app.payments.adapters.sql_ledgers import SqlLedgers
 from app.payments.application.ports import NamedLedger
-from app.payments.application.view_accounts import Debtor
+from app.payments.application.view_accounts import Debtor, StillOwingLine
 from app.payments.domain.settlement import Ledger, SaleSettlement, settle
 
 
@@ -122,7 +122,11 @@ def test_a_named_ledger_and_a_debtor_do_not_show_the_phone_in_their_repr() -> No
         balance=1,
         owing_since=date(2026, 9, 14),
         standing="owes",
+        age_days=0,
+        bucket="this_week",
+        customer_type_id=None,
         phone=phone,
+        still_owing=(StillOwingLine(sale_number=1, sale_date=date(2026, 9, 14), remaining=1),),
     )
 
     assert phone not in repr(named)

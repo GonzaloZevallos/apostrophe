@@ -21,7 +21,12 @@ import pytest
 from fastapi import FastAPI
 
 from tests.contract_nullable import NULLABLE, JsonType, ShapeOf
-from tests.contract_shapes import FIXTURES_DIR, assert_matches_fixture, check_shape
+from tests.contract_shapes import (
+    FIXTURES_DIR,
+    _resolve_shape_of,
+    assert_matches_fixture,
+    check_shape,
+)
 
 
 def _load(name: str) -> dict[str, object]:
@@ -39,12 +44,19 @@ def test_an_answer_with_the_same_keys_and_types_matches_regardless_of_its_values
     answer = {
         "total_owed": 9000,
         "sales_owing_count": 1,
+        "customer_count": 3,
+        "debtor_count": 1,
+        "buckets": {"this_week": 0, "days_8_30": 0, "over_30": 9000},
         "debtors": [
             {
                 "customer": {"id": 7, "name": "Beto Gómez"},
                 "balance": 9000,
                 "owing_since": "2026-08-01",
                 "standing": "owes",
+                "age_days": 62,
+                "bucket": "over_30",
+                "customer_type_id": 4,
+                "still_owing": None,
             }
         ],
     }
@@ -90,18 +102,23 @@ def test_a_bare_object_in_place_of_an_array_fails_the_checker() -> None:
 
 
 def test_account_rows_are_matched_by_their_own_kind_not_by_position() -> None:
-    # Two sale rows and no credit row at all: a plain "match item 0 against item 0"
+    # Two sale rows and no payment row at all: a plain "match item 0 against item 0"
     # checker would wrongly compare a sale row to the fixture's payment row.
     answer = {
         "balance": 11000,
         "owing_since": "2026-09-14",
         "standing": "owes",
+        "age_days": 18,
+        "still_owing": [],
+        "sales_by_month": [{"month": "2026-09", "total": 11000}],
+        "average_sale": 5500,
         "rows": [
             {
                 "kind": "sale",
                 "date": "2026-09-01",
                 "running_balance": 4000,
                 "standing": "owes",
+                "number": 1,
                 "sale": {"id": 1, "total": 4000, "how_paid": "owing", "payment_method": None},
             },
             {
@@ -109,6 +126,7 @@ def test_account_rows_are_matched_by_their_own_kind_not_by_position() -> None:
                 "date": "2026-09-14",
                 "running_balance": 11000,
                 "standing": "owes",
+                "number": 2,
                 "sale": {
                     "id": 2,
                     "total": 7000,
@@ -383,10 +401,17 @@ def _response_schema(spec: dict[str, Any], route: RouteShape) -> dict[str, Any]:
     return schema["items"] if route.item else schema
 
 
+def _declared_json_type(declared: JsonType | ShapeOf) -> JsonType:
+    """A `ShapeOf` is an array when the fixture's shape it points at is a list, an object
+    otherwise."""
+    if not isinstance(declared, ShapeOf):
+        return declared
+    return "array" if isinstance(_resolve_shape_of(declared), list) else "object"
+
+
 def _declared_json_types(name: str) -> dict[str, JsonType]:
     return {
-        path: ("object" if isinstance(declared, ShapeOf) else declared)
-        for path, declared in NULLABLE.get(name, {}).items()
+        path: _declared_json_type(declared) for path, declared in NULLABLE.get(name, {}).items()
     }
 
 
@@ -567,3 +592,41 @@ def test_a_path_behind_a_deref_d_ref_declared_the_wrong_json_type_fails() -> Non
     wrong: dict[str, JsonType] = {"x": "string", "x.nested": "string"}
     with pytest.raises(AssertionError):
         _assert_declared_matches_schema(_REF_BEHIND_NULLABLE_ANY_OF, wrong, components=COMPONENTS)
+
+
+# -- a ShapeOf is declared an array or an object by the fixture's own target ---------
+
+_LIST_TARGET = ShapeOf("debtors", "debtors[].still_owing")
+_OBJECT_TARGET = ShapeOf("analysis", "month.shortfall")
+_NULLABLE_ARRAY_FIELD = {
+    "type": "object",
+    "properties": {
+        "foo": {"anyOf": [{"type": "array", "items": {"type": "string"}}, {"type": "null"}]}
+    },
+}
+_NULLABLE_OBJECT_FIELD = {
+    "type": "object",
+    "properties": {"foo": {"anyOf": [{"type": "object", "properties": {}}, {"type": "null"}]}},
+}
+
+
+def test_a_shape_of_is_declared_an_array_when_its_fixture_target_is_a_list_else_an_object() -> None:
+    assert _declared_json_type(_LIST_TARGET) == "array"
+    assert _declared_json_type(_OBJECT_TARGET) == "object"
+    assert _declared_json_type("string") == "string"
+
+
+def test_a_list_target_declared_against_an_object_schema_is_rejected() -> None:
+    declared = {"foo": _declared_json_type(_LIST_TARGET)}
+
+    _assert_declared_matches_schema(_NULLABLE_ARRAY_FIELD, declared)
+    with pytest.raises(AssertionError):
+        _assert_declared_matches_schema(_NULLABLE_OBJECT_FIELD, declared)
+
+
+def test_an_object_target_declared_against_an_array_schema_is_rejected() -> None:
+    declared = {"foo": _declared_json_type(_OBJECT_TARGET)}
+
+    _assert_declared_matches_schema(_NULLABLE_OBJECT_FIELD, declared)
+    with pytest.raises(AssertionError):
+        _assert_declared_matches_schema(_NULLABLE_ARRAY_FIELD, declared)

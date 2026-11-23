@@ -19,5 +19,7 @@
       "line_total": 10500
     }
   ],
-  "still_owing": true
+  "still_owing": true,
+  "payment_state": "unpaid",
+  "still_owed": 11000
 }

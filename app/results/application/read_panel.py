@@ -24,7 +24,6 @@ from app.results.application.ports import (
     StockRow,
     WithdrawalReasons,
 )
-from app.results.domain.arithmetic import average_sale
 from app.results.domain.figures import AmountWithPending, PeriodTotals, ReasonCost, RowCost
 from app.results.domain.period_figures import scan, totals_between
 from app.results.domain.periods import Period, periods
@@ -40,6 +39,7 @@ from app.results.domain.today_series import (
     money_in,
     so_far,
 )
+from app.shared.average import average_sale
 from app.shared.calendar import local_day
 from app.shared.quantity import Quantity
 
@@ -173,7 +173,7 @@ def read_panel(
     def figures_for(period: Period) -> PeriodFigures:
         return figures_of(period, totals_between(buckets, period.start, period.end))
 
-    debts_answer = debts.read()
+    debts_answer = debts.read(today)
     debts_summary = DebtsSummary(
         total_owed=debts_answer.total_owed,
         sales_owing_count=debts_answer.sales_owing_count,

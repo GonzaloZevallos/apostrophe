@@ -17,6 +17,8 @@
 
 import type { PaymentMethod } from '../api/payments'
 import { noPriceMessage, OWING_HINT } from '../copy/sales'
+import type { MoneyFormat } from '../format/money'
+import { parseMoneyInput } from '../format/parse'
 import type { Variety } from '../screens/Variedades'
 
 /** `'vip'` is only read, from lines saved before customer types; a new line priced by a type's
@@ -193,6 +195,21 @@ export function toHundredths(grams: string): number {
   return Number(whole) * 100 + Number(hundredths)
 }
 
+/** The wire quantity of an integer count of hundredths of a gram (`350` -> `'3.5'`, `300` -> `'3'`,
+ * `5` -> `'0.05'`), built from the number's digits: never `toFixed` and never a float division.
+ * Refuses anything that is not a safe integer of 0 or more, as `toHundredths` refuses unvalidated text.
+ * It does not check the largest quantity a line takes: that limit lives in `saleDraft.ts`, which
+ * imports this module. */
+export function quantityOfHundredths(hundredths: number): string {
+  if (!Number.isSafeInteger(hundredths) || hundredths < 0) {
+    throw new Error('quantityOfHundredths expects a safe integer of hundredths, 0 or more')
+  }
+  const digits = String(hundredths).padStart(3, '0')
+  const whole = digits.slice(0, -2)
+  const fraction = digits.slice(-2).replace(/0+$/, '')
+  return fraction === '' ? whole : `${whole}.${fraction}`
+}
+
 /** The inverse of `toHundredths`, for handing a sum of hundredths (`saleTotals`'s
  * grams sold/gifted) to `format/money.ts`'s `formatGrams`. Display only: this value
  * is never computed with again. */
@@ -213,6 +230,14 @@ export function fromHundredths(hundredths: number): number {
  * value itself. */
 export function hundredthsOfApiGrams(apiGrams: number): number {
   return toHundredths(String(apiGrams))
+}
+
+/** `hundredthsOfApiGrams` with the sign of `apiGrams` kept, for a figure that can be negative (a
+ * difference). The sign is applied to the digits' result, never by float multiplication; 0 and -0 give
+ * 0. Display only. A value whose `String()` is in exponent form throws, as `toHundredths` refuses it. */
+export function signedHundredthsOfApiGrams(apiGrams: number): number {
+  const hundredths = hundredthsOfApiGrams(Math.abs(apiGrams))
+  return apiGrams < 0 && hundredths !== 0 ? -hundredths : hundredths
 }
 
 /** The price the Customer's type has in the entry, from the current price's `type_prices`; `null`
@@ -255,6 +280,53 @@ export interface PricedSale {
   totals: SaleTotals
 }
 
+/** The quantity of one "+" tap and of the quantity a list row is priced at: one whole unit, in
+ * hundredths. Other `100`s in this module (hundredths per gram, `lineTotal`'s half-up rounding) are
+ * different quantities. */
+export const LINE_STEP_HUNDREDTHS = 100
+
+/** The one place a line is priced for `priceSale` and `rowPrices`: the quote of `product` (none when
+ * it is missing), then `priceLine`. A broken sale rule (no price that day, grams not above zero, ...)
+ * gives `null`; any other error is a data fault and propagates. A Customer with a type is
+ * `customerIsVip`. */
+function priceOne(
+  product: Variety | undefined,
+  customerTypeId: number | null,
+  settings: PricingSettings,
+  line: { gift: boolean; specialPrice: number | null; gramsHundredths: number },
+): LinePricing | null {
+  const quote = product === undefined ? null : quoteOf(product, customerTypeId)
+  try {
+    return priceLine({ ...line, customerIsVip: customerTypeId !== null, settings, quote })
+  } catch (error) {
+    if (error instanceof SaleRuleBroken) return null
+    throw error
+  }
+}
+
+/** What a row of the Product list that is not in the sale costs: one step of `LINE_STEP_HUNDREDTHS`
+ * of each product, no gift, no special price, `null` for a product with no price that day or one that
+ * `products` does not hold. Computes no totals. */
+export function rowPrices(input: {
+  productIds: readonly number[]
+  products: readonly Variety[]
+  customerTypeId: number | null
+  pricingSettings: PricingSettings
+}): Map<number, LinePricing | null> {
+  const { productIds, products, customerTypeId, pricingSettings } = input
+  return new Map(
+    productIds.map((id) => [
+      id,
+      priceOne(
+        products.find((candidate) => candidate.id === id),
+        customerTypeId,
+        pricingSettings,
+        { gift: false, specialPrice: null, gramsHundredths: LINE_STEP_HUNDREDTHS },
+      ),
+    ]),
+  )
+}
+
 /** Prices every line of a sale against `products` (the day's list, so no date here) and adds
  * the totals. A line that breaks a sale rule (no price that day, grams not above zero, ...)
  * is left unpriced (`pricing: null`) and adds 0 grams and $0 to the totals, as the screen does;
@@ -271,25 +343,15 @@ export function priceSale(input: {
   const priced: PricedSaleLine[] = lines.map((line) => {
     const { id, gift, specialPrice, gramsHundredths } = line
     const product = products.find((candidate) => candidate.id === line.productId)
-    const quote = product === undefined ? null : quoteOf(product, customerTypeId)
-    try {
-      const pricing = priceLine({
-        gift,
-        specialPrice,
-        customerIsVip: customerTypeId !== null,
-        settings: pricingSettings,
-        quote,
-        gramsHundredths,
-      })
-      return {
-        id,
-        gift,
-        gramsHundredths,
-        pricing: { ...pricing, customerTypeId: pricing.rule === 'type' ? customerTypeId : null },
-      }
-    } catch (error) {
-      if (error instanceof SaleRuleBroken) return { id, gift, gramsHundredths, pricing: null }
-      throw error
+    const pricing = priceOne(product, customerTypeId, pricingSettings, { gift, specialPrice, gramsHundredths })
+    return {
+      id,
+      gift,
+      gramsHundredths,
+      pricing:
+        pricing === null
+          ? null
+          : { ...pricing, customerTypeId: pricing.rule === 'type' ? customerTypeId : null },
     }
   })
   const totals = saleTotals(
@@ -360,6 +422,56 @@ export function paymentChoiceOf(
   if (payState === 'owing') return { kind: 'owing' }
   if (payState === 'paid') return method === null ? null : { kind: 'paid', payment_method_id: method }
   return null
+}
+
+/** The state and method that give back `choice`: the exact inverse of `paymentChoiceOf`. It lets
+ * `validateSale` judge the choice `effectiveChoice` (`saleDraft.ts`) gives. An unset choice above $0
+ * is not refused by `validateSale` but by the API's `sale.payment_required`, as New sale does today. */
+export function payStateOf(choice: PaymentChoice | null): { payState: PayState | null; method: PaymentMethod | null } {
+  if (choice === null) return { payState: null, method: null }
+  if (choice.kind === 'owing') return { payState: 'owing', method: null }
+  return { payState: 'paid', method: choice.payment_method_id }
+}
+
+/** `payStateOf` for what `effectiveChoice` gives: `null` here means paying with no method known, so
+ * `validateSale` refuses it above $0 and lets it through at $0 (a $0 sale then sends no payment). */
+export function payStateOfEffective(choice: PaymentChoice | null): {
+  payState: PayState | null
+  method: PaymentMethod | null
+} {
+  if (choice === null) return { payState: 'paid', method: null }
+  return payStateOf(choice)
+}
+
+/** What `validateSale` reads of a sale already priced by the host: an unpriced line (`pricing: null`)
+ * is a line with no quote and no gift or special price, so it is refused; every other line passes.
+ * It computes no price. */
+export function lineValidationsOf(priced: PricedSale): LineValidation[] {
+  return priced.lines.map((line) =>
+    line.pricing === null
+      ? { id: line.id, varietyName: '', gift: line.gift, specialPrice: null, quote: null }
+      : { id: line.id, varietyName: '', gift: true, specialPrice: null, quote: null },
+  )
+}
+
+/** A typed zero (`0`, or `0,00` at the format's decimals): `parseMoneyInput` refuses it as an amount, but
+ * for a $0 sale it is exactly what was handed over. */
+function isZeroAmount(text: string, format: MoneyFormat): boolean {
+  const trimmed = text.trim()
+  if (/^0+$/.test(trimmed)) return true
+  return format.decimals > 0 && new RegExp(`^0+[.,]0{1,${format.decimals}}$`).test(trimmed)
+}
+
+/** The change owed for what the Customer handed over: `null` when `receivedText` is empty or refused
+ * by `parseMoneyInput` (a typed zero counts on a $0 sale), or is below `total`; otherwise the difference in currency units (0 when equal).
+ * Both amounts become integers at the format's decimals and are subtracted as integers. For display
+ * only: it never goes into a request body. */
+export function changeFor(receivedText: string, total: number, format: MoneyFormat): number | null {
+  const parsed = parseMoneyInput(receivedText, format)
+  if (!parsed.ok) return total === 0 && isZeroAmount(receivedText, format) ? 0 : null
+  const scale = 10 ** format.decimals
+  const difference = Math.round(parsed.value * scale) - Math.round(total * scale)
+  return difference < 0 ? null : difference / scale
 }
 
 /** The rules the sale screen checks before saving (sales.md): Owing needs a customer, Paid above
