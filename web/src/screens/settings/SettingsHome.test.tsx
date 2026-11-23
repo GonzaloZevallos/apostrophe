@@ -181,7 +181,7 @@ describe('the first paint while both reads are held', () => {
       expect(links.map((link) => link.getAttribute('href'))).toEqual(group.rows.map((row) => row.to))
     }
     for (const shortcut of SHORTCUTS) {
-      expect(screen.getByRole('link', { name: testT(shortcut.labelKey), exact: true })).toHaveAttribute(
+      expect(screen.getByRole('link', { name: testT(shortcut.labelKey) })).toHaveAttribute(
         'href',
         shortcutTarget(shortcut),
       )
@@ -209,7 +209,7 @@ describe('opening a page from Settings home', () => {
     const payment = SHORTCUTS.find((shortcut) => shortcut.row === 'paymentMethods')
     if (payment === undefined) throw new Error('no payment methods shortcut')
 
-    await user.click(await screen.findByRole('link', { name: testT(payment.labelKey), exact: true }))
+    await user.click(await screen.findByRole('link', { name: testT(payment.labelKey) }))
     expect(router.state.location.pathname).toBe(shortcutTarget(payment))
     await user.click(await screen.findByRole('button', { name: BACK_TO_SETTINGS }))
 
