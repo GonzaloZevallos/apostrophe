@@ -13,7 +13,7 @@
 
 import type { Locator, Page } from '@playwright/test'
 import { CUSTOMERS } from '../src/routes.js'
-import { expect, test } from './fixtures.js'
+import { expect, test, withToastRecorder } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 
 const SUMMARY = 'Summary of what customers owe'
@@ -65,7 +65,9 @@ let page: Page
 test.describe.serial('Owed summary card', () => {
   test.beforeAll(async ({ browser, workerServer }) => {
     test.setTimeout(120_000)
-    page = await (await browser.newContext({ baseURL: workerServer.url, viewport: { width: 390, height: 844 } })).newPage()
+    page = await (
+      await withToastRecorder(browser.newContext({ baseURL: workerServer.url, viewport: { width: 390, height: 844 } }))
+    ).newPage()
     await signUpNewBusiness(page)
   })
 
