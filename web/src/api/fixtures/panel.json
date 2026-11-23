@@ -271,7 +271,23 @@
       { "product_id": 1, "name": "Criolla", "sales": 15000 },
       { "product_id": 2, "name": "Lavanda", "sales": 4500 }
     ],
-    "month_profit": { "amount": 52000, "pending_quantity": 0.0 }
+    "month_profit": { "amount": 52000, "pending_quantity": 0.0 },
+    "owed": {
+      "total_owed": 37000,
+      "debtor_count": 2,
+      "sales_owing_count": 4,
+      "debtors": [
+        {
+          "customer_id": 3,
+          "name": "Ana",
+          "balance": 22000,
+          "owing_since": "2026-09-14",
+          "age_days": 19,
+          "age_level": "warning",
+          "phone": "+5491155555555"
+        }
+      ]
+    }
   },
   "debts": {
     "total_owed": 37000,
