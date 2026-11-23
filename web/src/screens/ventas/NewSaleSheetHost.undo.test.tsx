@@ -170,6 +170,12 @@ async function saveFromList(m: Mounted): Promise<void> {
   await saveWithLine(m)
   await waitFor(() => expect(path(m)).toBe(SALES))
   await screen.findByRole('button', { name: 'Undo' })
+  // The toast's timer starts in an effect, which React schedules through the faked timers: it may not
+  // have run when the button was found, and a 5 s measure must start from a timer that is set. An
+  // empty async advance lets the scheduler and its microtasks run first.
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(0)
+  })
 }
 
 async function openNewSale(m: Mounted): Promise<void> {
