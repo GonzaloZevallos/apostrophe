@@ -20,7 +20,7 @@ Esto afina el job de productos y navegación para el fin de la vida de un produc
 
 **Settings** es poco frecuente y deliberado; los jobs diarios nunca lo necesitan. Afina el "cada configuración del negocio en otro lugar único" del job de navegación. Las configuraciones que son de un solo producto viven en su página y no son parte de este job.
 
-**Cuando** un cliente me paga, en la venta o más tarde, **quiero** registrar cómo me pagó con los medios que mi negocio de verdad acepta, nombrados a mi manera, **para** que cada pago me diga después cómo me llegó la plata, sin que la app decida por mí que la plata es efectivo o transferencia. (Parte 24 de GH-318: la lista vive en payment-methods.md; acá la sirve el grupo Payments and expenses de Settings, a 3 toques desde cualquier pantalla principal.)
+**Cuando** un cliente me paga, en la venta o más tarde, **quiero** registrar cómo me pagó con los medios que mi negocio de verdad acepta, nombrados a mi manera, **para** que cada pago me diga después cómo me llegó la plata, sin que la app decida por mí que la plata es efectivo o transferencia. (Parte 24 de GH-318: la lista vive en payment-methods.md; acá la sirve la fila Payment methods de Settings, en el grupo Payments and stock: a 1 toque desde la pantalla de inicio de Settings y a 2 desde cualquier pantalla principal del celular, con el avatar y el atajo Payment methods. Antes, desde la parte 3 de GH-843, eran 3 toques: avatar → Payments and expenses → Payment methods.)
 
 **Cuando** me muevo entre pantallas entre pedidos o en medio de un chat con un cliente (Products y la página de un producto, sus precios y sus Stock entries, una **Stock entry**, la ficha de un cliente, Record payment), **quiero** que cada pantalla me dé la misma forma de salir y volver, y que cada dirección actual de la app abra la pantalla correcta, **para poder** volver con el cliente sin buscar, sin perder mi lugar ni tocar atrás dos veces.
 
@@ -131,7 +131,7 @@ Criterios de éxito:
    - el formulario de **Expense** se abre en 2 toques desde cada Tab root del celular (Home, Sales, Customers, Products y Analysis) con el + de la barra → "Expense" (la fila "Other things to record" de New sale, que se ofrece también sin líneas; sales.md), y desde Home también en 2 con el segmento "Analysis" → "Record expense" de la tarjeta Expenses. Cuentan solo los toques hasta que el formulario está abierto; sus campos no. Este archivo es el único lugar de este presupuesto; otro documento que lo nombre remite acá. La ubicación sigue los dibujos aprobados; no se rediseña para bajar la cuenta.
 
    En una computadora, cada uno no lleva más toques que en el celular (la Sale, con el "+ New sale" de la barra lateral).
-2. **Cada configuración de todo el Business en un solo lugar.** El nombre, los **User**s y los links para sumarse, las reglas de precio (Bulk price y VIP customers), los **Payment method**s, el bot de Telegram, el Catalog header and footer, las Expense categories, la apariencia y tu cuenta (contraseña, cerrar sesión) están todos en Settings y en ningún otro lado. Se llega a Settings en 1 toque desde cualquier Tab root: con el avatar "Settings" del encabezado (un link) en el celular, y con el link "Settings" de engranaje de la barra lateral en una computadora (desde la parte 7 de GH-495; antes, la fila del Business). Los Payment methods se abren en 3 toques desde cualquier pantalla principal (avatar → Payments and expenses → Payment methods; decisión 21 del humano), y las Expense categories también en 3 (avatar → Payments and expenses → Expense categories; eran 2 cuando tenían su propio grupo, y el cambio se aceptó porque sigue dentro del máximo de 3). Las configuraciones que son de un solo **Product** viven en el Product, y en ningún otro lado. La única excepción provisoria es el bot y el Catalog header and footer, a los que se llega desde la pantalla del Catalog hasta que existan sus grupos de Settings. Los pasos del Onboarding guardan estas mismas configuraciones a través de sus dueños y no son un segundo lugar para ellas (onboarding.md).
+2. **Cada configuración de todo el Business en un solo lugar.** El nombre, los **User**s y los links para sumarse, las reglas de precio (Bulk price y VIP customers), los **Payment method**s, el bot de Telegram, el Catalog header and footer, las Expense categories, la apariencia y tu cuenta (contraseña, cerrar sesión) están todos en Settings y en ningún otro lado. Se llega a Settings en 1 toque desde cualquier Tab root: con el avatar "Settings" del encabezado (un link) en el celular, y con el link "Settings" de engranaje de la barra lateral en una computadora (desde la parte 7 de GH-495; antes, la fila del Business). Los Payment methods se abren en 3 toques desde cualquier pantalla principal en una computadora (link "Settings" → Payments and expenses → Payment methods; decisión 21 del humano) y en 2 en el celular (avatar → atajo Payment methods, desde GH-843; antes eran 3), y las Expense categories también en 3 (avatar → Payments and expenses → Expense categories; eran 2 cuando tenían su propio grupo, y el cambio se aceptó porque sigue dentro del máximo de 3). Las configuraciones que son de un solo **Product** viven en el Product, y en ningún otro lado. La única excepción provisoria es el bot y el Catalog header and footer, a los que se llega desde la pantalla del Catalog hasta que existan sus grupos de Settings. Los pasos del Onboarding guardan estas mismas configuraciones a través de sus dueños y no son un segundo lugar para ellas (onboarding.md).
 3. **Un Product, una página.** El Stock de un Product y sus movimientos (Stock entries y Stock withdrawals), sus precios, su aviso de Stock bajo y sus **Catalog attributes** se ven y se editan desde su página. Ningún dato se edita en dos lugares con dos nombres.
 4. **Nada perdido, nada inventado.** Todo lo que quien vende podía hacer antes sigue a su alcance. Las únicas excepciones deliberadas son el canal del Customer, que se quita, y la pantalla More, que el dueño retiró el 2026-11-02: cada uno de sus cinco destinos tiene su propia entrada. No existe ninguna opción de Navigation ni pantalla para algo que todavía no está construido: ningún "coming soon", ni promociones, automatizaciones o idiomas. Ningún link apunta a una pantalla que no existe.
 5. **Una sola regla para el marco y la vuelta.** Cada pantalla es de uno de tres tipos: Tab root, tarjeta o detalle, formulario o Sheet. Cada tipo recibe su marco por la regla. Atrás sigue el historial, y la pantalla madre es la alternativa.
@@ -355,7 +355,15 @@ El dueño retiró la pantalla More el 2026-11-02 (`docs/design/redesign/registro
 
 ![Configuracion](../assets/screens/Configuracion.webp)
 
-- **Una pantalla que reúne cada configuración de todo el Business, en grupos, y nada más.** Los grupos, en este orden (el comportamiento de cada grupo es de su dueño):
+- **Una pantalla que reúne cada configuración de todo el Business, en grupos, y nada más.** En el celular es la pantalla de inicio de Settings (settings.md): la tarjeta del Business, tres atajos y cinco encabezados, en este orden: **Business**, **Catalog**, **Payments and stock**, **Channels** y **Team and app**. Las filas de cada uno salen de un solo registro, `web/src/screens/settings/settingsRows.ts` (ADR [20261119-settings-rows-live-in-one-registry-read-by-the-list-the-shortcuts-and-the-search](../adr/20261119-settings-rows-live-in-one-registry-read-by-the-list-the-shortcuts-and-the-search.md)), y cada una abre su pantalla en 1 toque:
+  - **Business**: Business name y Currency and decimals, y Language cuando el Business tiene 2 o más idiomas seleccionables (abre la misma pantalla que Business name).
+  - **Catalog**: Prices y, con el interruptor activado, Customer types.
+  - **Payments and stock**: Payment methods, Expense categories (`/settings/expense-categories`) y Withdrawal reasons, en ese orden.
+  - **Channels**: Integrations y Catalog message.
+  - **Team and app**: Users and Invitations, Theme y Your account.
+  - Los atajos son tres: Prices, Payment methods y Integrations ("Telegram catalog"). Payment methods queda a 2 toques de cualquier Tab root del celular: el avatar y el atajo.
+  - Antes, la lista del celular era una sola lista plana de grupos con los nombres de abajo.
+- **En una computadora la lista no cambia** (`SettingsComputer`, desde la barra lateral). Sus grupos, en este orden (el comportamiento de cada grupo es de su dueño):
   - **Business**: el nombre del Business. Toast "Saved".
   - **Users**: los socios por email, ordenados por email, el que inició sesión marcado "you", e "Invite a partner", que crea un link nuevo para sumarse por toque, para copiar o compartir (accounts.md). Sin lista de Invitations, sin revocar, sin roles.
   - **Prices** (pricing-settings.md), en `/settings/prices`:
@@ -366,7 +374,7 @@ El dueño retiró la pantalla More el 2026-11-02 (`docs/design/redesign/registro
     - dos filas, en este orden: "Payment methods", cuyo subtítulo son los nombres de los medios ofrecidos en su orden, unidos por ", " y cortados con puntos suspensivos, y "Expense categories" (expenses.md), sin subtítulo;
     - la fila abre la lista de Payment methods (`/settings/payments/methods`), una tarjeta con flecha de regreso "‹ Payments and expenses": cada medio ofrecido con su ícono y su nombre, Move up / Move down, Delete o Archive según tenga Payments, "Add method" y la entrada "Archived";
     - agregar y editar un medio es una Sheet; Archived (`/settings/payments/methods/archived`) es un formulario con "Restore" por fila;
-    - son 3 toques desde cualquier pantalla principal: avatar → Payments and expenses → Payment methods, y avatar → Payments and expenses → Expense categories.
+    - en una computadora son 3 toques desde cualquier pantalla principal: el link "Settings" → Payments and expenses → Payment methods, y lo mismo hasta Expense categories. En el celular son 2: avatar → atajo Payment methods, y avatar → la fila Expense categories de Payments and stock.
   - **Integrations**: el bot de Telegram (pinned-catalog.md):
     - el token, el chat del canal, el chat propio, y Test it, la única forma en que se guardan;
     - después de un cambio de token o de canal, "The previous pinned message stays as it is; unpin it yourself in Telegram.";
@@ -418,7 +426,8 @@ Cada pantalla es exactamente de uno de tres tipos, tiene una sola pantalla madre
 | Expenses (celular) | Analysis |
 | La lista de grupos de Settings | Home (`/`) |
 | Un grupo de Settings | la lista de grupos de Settings |
-| La lista de Payment methods (tarjeta "‹ Payments and expenses") | el grupo Payments and expenses |
+| La lista de Payment methods (tarjeta "‹ Payments and expenses", en una computadora) | el grupo Payments and expenses |
+| La lista de Payment methods (tarjeta "‹ Settings", en el celular, abierta desde una fila o un atajo de Settings) | la pantalla de inicio de Settings (`enteredFrom: 'settings'`, settings.md) |
 | El "See all" de precios o de Stock entries de un Product | la página del Product |
 | "All entries" | Products |
 | Formulario de Stock withdrawal, nuevo | Products |
@@ -697,7 +706,8 @@ Esto cubre Settings y sus grupos, la pantalla del Catalog y la página de un Pro
     - cada grupo tiene "Close" y no tiene barra;
     - los cambios sin guardar preguntan, y un grupo sin tocar se cierra de inmediato;
     - Appearance no muestra guardar, toast ni aviso;
-  - Prices está después de Users y antes de Payments and expenses, en `/settings/prices`; Payments and expenses está antes de Integrations, en `/settings/payments`, con Payment methods y Expense categories en ese orden, y la lista de Settings ya no tiene una fila Expense categories;
+  - Prices está después de Users y antes de Payments and expenses, en `/settings/prices`; Payments and expenses está antes de Integrations, en `/settings/payments`, con Payment methods y Expense categories en ese orden, y la lista de Settings de una computadora ya no tiene una fila Expense categories;
+  - en el celular, la pantalla de inicio de Settings muestra los cinco encabezados Business, Catalog, Payments and stock, Channels y Team and app en ese orden, con Payment methods y Expense categories bajo Payments and stock, y Payment methods se abre en 2 toques desde un Tab root (avatar → atajo) (settings.md, `tapBudget.spec.ts`);
   - Integrations muestra el link a la pantalla del Catalog, sin estado del fijado y sin Publish, y la línea "unpin it yourself in Telegram" después de un cambio de token o de canal;
   - una corrida de punta a punta del front desde un viewport de celular:
     - renombra el Business y crea un link para sumarse;
