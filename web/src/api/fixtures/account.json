@@ -8,6 +8,7 @@
       "date": "2026-09-14",
       "running_balance": 11000,
       "standing": "owes",
+      "number": 3,
       "sale": { "id": 10, "total": 11000, "how_paid": "owing", "payment_method": null }
     },
     {
@@ -15,24 +16,23 @@
       "date": "2026-09-20",
       "running_balance": 6000,
       "standing": "owes",
-      "payment": { "id": 5, "paid_on": "2026-09-20", "amount": 5000, "payment_method": { "id": 1, "name": "Cash", "icon": "banknote" } },
-      "applied_to": { "sale_id": 10, "sale_date": "2026-09-14", "amount": 5000 }
+      "is_partial": true,
+      "payment": { "id": 5, "paid_on": "2026-09-20", "amount": 5000, "payment_method": { "id": 1, "name": "Cash", "icon": "banknote" } }
     },
     {
       "kind": "payment",
       "date": "2026-09-25",
-      "running_balance": 0,
-      "standing": "settled",
-      "payment": { "id": 6, "paid_on": "2026-09-25", "amount": 8000, "payment_method": { "id": 2, "name": "Transfer", "icon": "bank" } },
-      "applied_to": { "sale_id": 10, "sale_date": "2026-09-14", "amount": 6000 }
-    },
-    {
-      "kind": "credit",
-      "date": "2026-09-25",
       "running_balance": -2000,
       "standing": "credit",
-      "payment": { "id": 6, "paid_on": "2026-09-25", "amount": 8000, "payment_method": { "id": 2, "name": "Transfer", "icon": "bank" } },
-      "amount": 2000
+      "is_partial": false,
+      "payment": { "id": 6, "paid_on": "2026-09-25", "amount": 8000, "payment_method": { "id": 2, "name": "Transfer", "icon": "bank" } }
     }
-  ]
+  ],
+  "age_days": null,
+  "still_owing": [],
+  "sales_by_month": [
+    { "month": "2026-09", "total": 11000 },
+    { "month": "2026-10", "total": 0 }
+  ],
+  "average_sale": 11000
 }

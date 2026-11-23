@@ -82,6 +82,8 @@ classDiagram
   }
   class tables {
   }
+  class unreconciled {
+  }
   import_port --> price_book
   import_port --> sql_sales
   import_port --> tables
@@ -91,6 +93,7 @@ classDiagram
   router --> schemas
   router --> sql_sales
   router --> sql_suggestions
+  router --> unreconciled
   sales_ledger --> tables
   sql_sales --> tables
   sql_suggestions --> tables
@@ -170,6 +173,9 @@ classDiagram
   class PaymentRequired {
     code : ClassVar~str~
   }
+  class PaymentState {
+    name
+  }
   class PriceQuote {
     bulk : BulkQuote #124; None
     list_price : int
@@ -225,6 +231,11 @@ classDiagram
     quantity : Quantity
     variety_id : int
   }
+  class SalePayment {
+    state
+    still_owed : int
+    total : int
+  }
   class SaleRuleBroken {
     code : ClassVar~str~
   }
@@ -253,6 +264,7 @@ classDiagram
   SaleBill --> BillPayment : payment
   SaleDateInFuture --|> SaleRuleBroken
   SaleLine --> PricingRule : pricing_rule
+  SalePayment --> PaymentState : state
 ```
 
 ## application
@@ -286,6 +298,11 @@ classDiagram
     special_price : Decimal #124; None
     variety_id : int
   }
+  class ListedSale {
+    payment : SalePayment #124; None
+    still_owing : bool
+    view
+  }
   class MoneyFormatReader {
     current() MoneyFormat
   }
@@ -300,6 +317,7 @@ classDiagram
     recent_customer_ids(limit: int) list~int~
   }
   class OwingSales {
+    owed_of(customer_ids: Collection~int~) Mapping~int, int~
     settlement_of(customer_id: int) CustomerSettlement
     still_owing(customer_ids: Collection~int~) frozenset~int~
   }
@@ -316,6 +334,7 @@ classDiagram
   class SaleDetail {
     bill : SaleBill #124; None
     costs : list~LineCost~
+    payment : SalePayment #124; None
     still_owing : bool
     view
   }
@@ -348,6 +367,7 @@ classDiagram
     get(sale_id: int) Sale #124; None
     list(date_from: date #124; None, date_to: date #124; None) list~Sale~
   }
+  ListedSale --> SaleView : view
   SaleDetail --> SaleView : view
 ```
 
@@ -429,7 +449,9 @@ classDiagram
     number : int
     payment : Literal
     payment_method : PaymentMethodLabelOut #124; None
+    payment_state : PaymentState #124; None
     shipping_charged
+    still_owed : MoneyOut #124; None
     still_owing : bool
     total
     total_quantity
@@ -486,10 +508,12 @@ classDiagram
     number : int
     payment : Literal
     payment_method : PaymentMethodLabelOut #124; None
+    payment_state : PaymentState #124; None
     shipping_charged
+    still_owed : MoneyOut #124; None
     still_owing : bool
     total
-    of(view: SaleView, still_owing: bool) 'SaleOut'
+    of(view: SaleView, still_owing: bool, payment: SalePayment #124; None) 'SaleOut'
   }
   class SaleRow {
     business_id : Mapped~int~

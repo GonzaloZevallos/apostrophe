@@ -21,6 +21,8 @@
     }
   ],
   "still_owing": true,
+  "payment_state": "unpaid",
+  "still_owed": 11000,
   "total_quantity": 3.5,
   "bill": {
     "business_name": "Flores del Sur",

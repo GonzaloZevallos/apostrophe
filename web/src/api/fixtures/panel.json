@@ -243,7 +243,35 @@
         "hour": 23,
         "total": 20000
       }
-    ]
+    ],
+    "last_7_days": [
+      { "day": "2026-09-27", "sales": 0 },
+      { "day": "2026-09-28", "sales": 9000 },
+      { "day": "2026-09-29", "sales": 0 },
+      { "day": "2026-09-30", "sales": 12000 },
+      { "day": "2026-10-01", "sales": 7000 },
+      { "day": "2026-10-02", "sales": 11000 },
+      { "day": "2026-10-03", "sales": 15000 }
+    ],
+    "money_in": {
+      "total": 15000,
+      "methods": [
+        { "payment_method_id": 1, "name": "Efectivo", "amount": 10000 },
+        { "payment_method_id": 2, "name": "Transferencia", "amount": 5000 }
+      ]
+    },
+    "low_stock": {
+      "count": 2,
+      "rows": [
+        { "product_id": 2, "name": "Lavanda", "quantity": 0.0, "status": "sold_out" },
+        { "product_id": 1, "name": "Criolla", "quantity": 12.5, "status": "low" }
+      ]
+    },
+    "best_sellers": [
+      { "product_id": 1, "name": "Criolla", "sales": 15000 },
+      { "product_id": 2, "name": "Lavanda", "sales": 4500 }
+    ],
+    "month_profit": { "amount": 52000, "pending_quantity": 0.0 }
   },
   "debts": {
     "total_owed": 37000,

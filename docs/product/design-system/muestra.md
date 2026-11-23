@@ -131,7 +131,7 @@ Total: $ 32.000
 | Mica Solano | 07/10 | Venta | $ 130.000 | Transferencia | $ 0 |
 | Nico Parra | 18/09 | Venta | $ 25.000 | Debiendo | $ 25.000 |
 | Nico Parra | 18/09 | Venta | $ 14.000 | Efectivo | $ 25.000 |
-| Nico Parra | 05/10 | Pago | $ 5.000 | Efectivo, a la venta del 18/09 | $ 20.000 |
+| Nico Parra | 05/10 | Pago | $ 5.000 | Efectivo | $ 20.000 |
 | Tincho Aguirre | 25/09 | Venta | $ 96.000 | Efectivo | $ 0 |
 | Tincho Aguirre | 06/10 | Venta | $ 12.000 | Debiendo | $ 12.000 |
 

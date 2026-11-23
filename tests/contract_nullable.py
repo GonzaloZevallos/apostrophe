@@ -37,6 +37,8 @@ class ShapeOf:
 NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     "account": {
         "owing_since": "string",
+        "age_days": "integer",
+        "average_sale": "integer",
         "rows[sale].sale.payment_method": ShapeOf("sale-detail-gift", "payment_method"),
     },
     "analysis": {
@@ -90,6 +92,8 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     },
     "debtors": {
         "debtors[].owing_since": "string",
+        "debtors[].customer_type_id": "integer",
+        "debtors[].still_owing": ShapeOf("debtors", "debtors[].still_owing"),
     },
     "movements": {
         # The fixture is a bare list of `kind`-discriminated items.
@@ -147,12 +151,16 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     "sale": {
         "customer": ShapeOf("sale", "customer"),
         "payment_method": ShapeOf("sale-detail-gift", "payment_method"),
+        "payment_state": "string",
+        "still_owed": "integer",
         "note": "string",
         "lines[].customer_type_name": "string",
     },
     "sale-detail": {
         "customer": ShapeOf("sale-detail", "customer"),
         "payment_method": ShapeOf("sale-detail-gift", "payment_method"),
+        "payment_state": "string",
+        "still_owed": "integer",
         "note": "string",
         "lines[].cost.costed": "integer",
         "lines[].customer_type_name": "string",
@@ -167,6 +175,8 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         # `sale-detail-gift.json`'s own `customer` is `null`: the sibling fixture
         # `sale-detail` is the one that shows the object non-null.
         "customer": ShapeOf("sale-detail", "customer"),
+        "payment_state": "string",
+        "still_owed": "integer",
         "note": "string",
         "lines[].cost.costed": "integer",
         "lines[].customer_type_name": "string",

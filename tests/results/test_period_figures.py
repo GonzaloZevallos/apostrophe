@@ -606,7 +606,10 @@ def test_the_domain_time_guard_runs_a_year_of_history_in_under_a_second() -> Non
     for i in range(100):
         day = TODAY - timedelta(days=i % 400)
         draws.append(_shortfall(day=day, costed=10, pending="0"))
-    payments = [PaymentRecord(day=TODAY - timedelta(days=i % 400), amount=500) for i in range(100)]
+    payments = [
+        PaymentRecord(day=TODAY - timedelta(days=i % 400), amount=500, payment_method_id=1)
+        for i in range(100)
+    ]
     expenses = [
         ExpenseRecord(
             day=TODAY - timedelta(days=i % 400),

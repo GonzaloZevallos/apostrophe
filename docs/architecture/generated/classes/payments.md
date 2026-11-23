@@ -12,6 +12,8 @@ classDiagram
   }
   class application {
   }
+  class customer_sales {
+  }
   class debt_age {
   }
   class delete_payment {
@@ -53,6 +55,7 @@ classDiagram
   class view_accounts {
   }
   account --> settlement
+  customer_sales --> settlement
   debt_age --> settlement
   delete_payment --> errors
   delete_payment --> ports
@@ -77,6 +80,8 @@ classDiagram
   router --> sql_payments
   router --> view_accounts
   schemas --> account
+  schemas --> customer_sales
+  schemas --> debt_age
   schemas --> record_payment
   schemas --> settlement
   schemas --> view_accounts
@@ -89,6 +94,8 @@ classDiagram
   sql_payments --> ports
   sql_payments --> tables
   view_accounts --> account
+  view_accounts --> customer_sales
+  view_accounts --> debt_age
   view_accounts --> errors
   view_accounts --> ports
   view_accounts --> settlement
@@ -110,16 +117,9 @@ classDiagram
     owing_since : date #124; None
     standing : Literal
   }
-  class CreditRow {
-    amount : int
-    credit_amount : int
-    date : date
-    kind : Literal~'credit'~
-    method : PaymentMethodLabel
-    paid_on : date
-    payment_id : int
-    running_balance : int
-    standing : Literal
+  class CustomerSales {
+    average_sale : int #124; None
+    by_month : tuple~MonthTotal, ...~
   }
   class DebtAgeBuckets {
     days_8_30 : int
@@ -137,6 +137,10 @@ classDiagram
   class Ledger {
     payments : tuple~LaterPaymentEntry, ...~
     sales : tuple~OwedSale, ...~
+  }
+  class MonthTotal {
+    month : Month
+    total : int
   }
   class NewPayment {
     amount : int
@@ -171,8 +175,8 @@ classDiagram
   }
   class PaymentRow {
     amount : int
-    applied_to
     date : date
+    is_partial : bool
     kind : Literal~'payment'~
     method : PaymentMethodLabel
     paid_on : date
@@ -189,6 +193,7 @@ classDiagram
     date : date
     how_paid : Literal
     kind : Literal~'sale'~
+    number : int
     payment_method : PaymentMethodLabel #124; None
     running_balance : int
     sale_id : int
@@ -214,13 +219,18 @@ classDiagram
     sale_date : date
     sale_id : int
   }
-  PaymentRow --> Split : applied_to
 ```
 
 ## application
 
 ```mermaid
 classDiagram
+  class AccountRead {
+    account : Account
+    age_days : int #124; None
+    sales : CustomerSales
+    still_owing : tuple~StillOwingLine, ...~
+  }
   class CandidateOutcome {
     applied_to : tuple~Split, ...~
     balance : int
@@ -231,13 +241,21 @@ classDiagram
     code : ClassVar~str~
   }
   class Debtor {
+    age_days : int
     balance : int
+    bucket : Literal
     customer_id : int
+    customer_type_id : int #124; None
     name : str
     owing_since : date #124; None
+    phone : str #124; None
     standing : Literal
+    still_owing : tuple~StillOwingLine, ...~
   }
   class Debtors {
+    buckets : DebtAgeBuckets
+    customer_count : int
+    debtor_count : int
     debtors : tuple~Debtor, ...~
     sales_owing_count : int
     total_owed : int
@@ -251,9 +269,11 @@ classDiagram
     current() MoneyFormat
   }
   class NamedLedger {
+    customer_type_id : int #124; None
     id : int
     ledger : Ledger
     name : str
+    phone : str #124; None
   }
   class OnTheSpot {
     code : ClassVar~str~
@@ -266,12 +286,20 @@ classDiagram
     get(payment_id: int) StoredPayment #124; None
     insert_later(customer_id: int, paid_on: date, amount: int, method: PaymentMethodId, recorded_at: datetime) int
   }
+  class PricingSettingsReader {
+    current() PricingSettings
+  }
   class RecordedPayment {
     amount : int
     id : int
     method : PaymentMethodId
     outcome
     paid_on : date
+  }
+  class StillOwingLine {
+    remaining : int
+    sale_date : date
+    sale_number : int
   }
   class StoredPayment {
     id : int
@@ -285,11 +313,15 @@ classDiagram
 ```mermaid
 classDiagram
   class AccountOut {
+    age_days : int #124; None
+    average_sale : MoneyOut #124; None
     balance
     owing_since : PaymentDate #124; None
     rows : list~AccountRowOut~
+    sales_by_month : list~MonthTotalOut~
     standing : Literal
-    of(account: Account) AccountOut
+    still_owing : list~StillOwingLineOut~
+    of(read: AccountRead) AccountOut
   }
   class AccountPaymentRefOut {
     amount
@@ -309,34 +341,44 @@ classDiagram
     sale_id : int
     of(split: Split) AppliedToOut
   }
-  class CreditAccountRowOut {
-    amount
-    date : date
-    kind : Literal~'credit'~
-    payment
-    running_balance
-    standing : Literal
+  class DebtBucketsOut {
+    days_8_30
+    over_30
+    this_week
+    of(buckets: DebtAgeBuckets) DebtBucketsOut
   }
   class DebtorCustomerOut {
     id : int
     name : str
   }
   class DebtorOut {
+    age_days : int
     balance
+    bucket : Literal
     customer
+    customer_type_id : int #124; None
     owing_since : PaymentDate #124; None
     standing : Literal
-    of(debtor: Debtor) DebtorOut
+    still_owing : list~StillOwingLineOut~ #124; None
+    of(debtor: Debtor, with_lines: bool) DebtorOut
   }
   class DebtorsOut {
+    buckets
+    customer_count : int
+    debtor_count : int
     debtors : list~DebtorOut~
     sales_owing_count : int
     total_owed
-    of(debtors: Debtors) DebtorsOut
+    of(debtors: Debtors, with_lines: bool) DebtorsOut
+  }
+  class MonthTotalOut {
+    month : str
+    total
+    of(entry: MonthTotal) MonthTotalOut
   }
   class PaymentAccountRowOut {
-    applied_to
     date : date
+    is_partial : bool
     kind : Literal~'payment'~
     payment
     running_balance
@@ -394,6 +436,7 @@ classDiagram
   class SaleAccountRowOut {
     date : date
     kind : Literal~'sale'~
+    number : int
     running_balance
     sale
     standing : Literal
@@ -408,7 +451,7 @@ classDiagram
     for_customers(customer_ids: Collection~int~) Mapping~int, CustomerBalance~
   }
   class SqlDebtSummary {
-    read() Debts
+    read(today: date) Debts
   }
   class SqlLedgers {
     all() Sequence~NamedLedger~
@@ -416,6 +459,7 @@ classDiagram
     for_customers(customer_ids: Collection~int~) Mapping~int, Ledger~
   }
   class SqlOwingSales {
+    owed_of(customer_ids: Collection~int~) Mapping~int, int~
     settlement_of(customer_id: int) CustomerSettlement
     still_owing(customer_ids: Collection~int~) frozenset~int~
   }
@@ -427,11 +471,16 @@ classDiagram
   class SqlPaymentsLedger {
     all() list~PaymentRecord~
   }
+  class StillOwingLineOut {
+    date : date
+    remaining
+    sale_number : int
+    of(line: StillOwingLine) StillOwingLineOut
+  }
   AccountPaymentRefOut --> PaymentMethodLabelOut : payment_method
-  CreditAccountRowOut --> AccountPaymentRefOut : payment
   DebtorOut --> DebtorCustomerOut : customer
+  DebtorsOut --> DebtBucketsOut : buckets
   PaymentAccountRowOut --> AccountPaymentRefOut : payment
-  PaymentAccountRowOut --> AppliedToOut : applied_to
   PaymentPreviewOut --> AfterOut : after
   RecordPaymentOut --> AfterOut : after
   RecordPaymentOut --> PaymentRefOut : payment

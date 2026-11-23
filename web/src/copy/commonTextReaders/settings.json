@@ -18,7 +18,7 @@
   "web/src/screens/settings/InvitePartner.tsx",
   "web/src/screens/settings/PricingGroup.test.tsx",
   "web/src/screens/settings/PricingGroup.tsx",
-  "web/src/screens/settings/Settings.tsx",
+  "web/src/screens/settings/SettingsComputer.tsx",
   "web/src/screens/settings/SettingsGroup.tsx",
   "web/src/screens/settings/UsersGroup.test.tsx",
   "web/src/screens/settings/UsersGroup.tsx",

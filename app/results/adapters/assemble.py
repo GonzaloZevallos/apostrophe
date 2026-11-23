@@ -48,9 +48,7 @@ def _cost(figure: CostFigure) -> CostOut:
 
 
 def _amount_with_pending(figure: AmountWithPending) -> AmountWithPendingOut:
-    return AmountWithPendingOut(
-        amount=Decimal(figure.amount), pending_quantity=figure.pending_quantity.as_decimal()
-    )
+    return AmountWithPendingOut.of(figure)
 
 
 def _row_cost(figure: RowCost) -> RowCostOut:

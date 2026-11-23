@@ -28,6 +28,8 @@ classDiagram
   }
   class ports {
   }
+  class results_methods {
+  }
   class router {
   }
   class schemas {
@@ -48,6 +50,7 @@ classDiagram
   opening --> ports
   opening --> sql_payment_methods
   ports --> method
+  results_methods --> tables
   router --> application
   router --> errors
   router --> method
@@ -197,6 +200,9 @@ classDiagram
     restore(method_id: int) None
     save_details(method: PaymentMethod) PaymentMethod
     swap_positions(first: PaymentMethod, second: PaymentMethod) None
+  }
+  class SqlResultsPaymentMethods {
+    all() Sequence~PaymentMethodRecord~
   }
   Holding --> Holder : holder
 ```

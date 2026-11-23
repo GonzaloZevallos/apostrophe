@@ -73,12 +73,21 @@ export const keys = {
   // The switches Nueva venta prices with, loaded beside that day's prices and frozen the same way,
   // so a date change reloads both and a partner's change is picked up (`pricing-settings.md`).
   saleFormPricingSettings: (on: string) => ['sale-form', 'pricing-settings', on] as const,
+  // New sale's suggestions (`GET /api/sales/suggestions`, `api/saleSuggestions.ts`): fetched once per
+  // opening and keyed on the opening date, never on the sale's editable date. Frozen the same way
+  // (`gcTime: 0`, `staleTime: Infinity` at the call site) and outside the `Resource`/`PREFIX` system.
+  saleFormSuggestionsAll: () => ['sale-form', 'suggestions'] as const,
+  saleFormSuggestions: (on: string) => [...keys.saleFormSuggestionsAll(), on] as const,
   saleFormCustomer: (id: string) => ['sale-form', 'customer', id] as const,
   // "Elegir cliente"'s own search (`NuevaVentaCliente.tsx`): its results are where
   // the preview's `vip` comes from once a customer is chosen, so it is frozen the
   // same way — a result cached by an earlier mount, with a since-changed `vip`,
   // must never be the one a seller picks.
   saleFormCustomerSearch: (q: string) => ['sale-form', 'customer-search', q] as const,
+  // New sale's customer search Sheet reads the business's customer list under this key. Like its
+  // sale-form neighbours it is never invalidated: frozen at the call site (`gcTime: 0`,
+  // `staleTime: Infinity`) and outside the `Resource`/`PREFIX` system.
+  saleFormCustomers: () => ['sale-form', 'customers'] as const,
   sales: (dateFrom: string, dateTo: string) => [PREFIX.sales, { dateFrom, dateTo }] as const,
   sale: (id: string) => [PREFIX.sales, id] as const,
   stock: () => [PREFIX.stock] as const,

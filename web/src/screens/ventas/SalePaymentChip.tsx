@@ -1,0 +1,74 @@
+/**
+ * `SalePaymentChip`: where one Sale stands on being paid, read only from `payment_state` and
+ * `still_owed` (never `still_owing`, the Payments or the Customer's Balance). The word says the
+ * state; part-paid adds a half-filled circle and the unknown line the Attention icon, both
+ * decorative. A state or amount that cannot be shown reads "Payment cannot be shown", never a
+ * guessed state or a $ 0. Not on any screen yet.
+ */
+
+import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { Sale } from '../../api/sales'
+import Icono from '../../components/Icono'
+import { useMoney } from '../../format/moneyContext'
+
+export interface SalePaymentChipProps {
+  state: Sale['payment_state']
+  stillOwed: Sale['still_owed']
+}
+
+/** Marks the `switch` on `state` as exhaustive. It does not throw: a value outside the type (an
+ * API answer from a newer server) reads the unknown line instead of breaking the screen. */
+function assertNever(_state: never): void {}
+
+/** Stands in for the amount while the sentence is split around it (a private-use character no
+ * text holds), so the figure can sit in its own element. */
+const AMOUNT_MARK = '\uE000'
+
+export default function SalePaymentChip({ state, stillOwed }: SalePaymentChipProps) {
+  const { t } = useTranslation()
+  const money = useMoney()
+
+  const unknown = (
+    <span className="payment-chip rotulo payment-chip--unknown">
+      <Icono nombre="atencion" />
+      {t('sales:card.payment.unknown')}
+    </span>
+  )
+
+  function partPaid(owed: number): ReactNode {
+    if (!Number.isFinite(owed) || owed <= 0) return unknown
+    const formatted = money.money(owed)
+    if (formatted === money.money(0)) return unknown
+    const parts = t('sales:card.payment.partPaid', { amount: AMOUNT_MARK }).split(AMOUNT_MARK)
+    const [before, after] = parts
+    return (
+      <span className="payment-chip rotulo payment-chip--part-paid">
+        <span className="payment-chip__half" aria-hidden="true" />
+        {parts.length === 2 ? (
+          <span>
+            {before}
+            <span className="cifra-n">{formatted}</span>
+            {after}
+          </span>
+        ) : (
+          t('sales:card.payment.partPaid', { amount: formatted })
+        )}
+      </span>
+    )
+  }
+
+  switch (state) {
+    case 'paid':
+      return <span className="payment-chip rotulo payment-chip--paid">{t('sales:card.payment.paid')}</span>
+    case 'unpaid':
+      return <span className="payment-chip rotulo payment-chip--unpaid">{t('sales:card.payment.unpaid')}</span>
+    case 'part_paid':
+      return stillOwed === null ? unknown : partPaid(stillOwed)
+    case null:
+      return unknown
+    default:
+      assertNever(state)
+      return unknown
+  }
+}

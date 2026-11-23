@@ -9,6 +9,7 @@ flowchart LR
 subgraph src["src"]
   subgraph src_copy["copy"]
     subgraph src_copy_readers["readers"]
+      src_copy_readers_customerSegments_ts["customerSegments.ts"]
       src_copy_readers_customerTypeIcons_ts["customerTypeIcons.ts"]
       src_copy_readers_homeViews_ts["homeViews.ts"]
       src_copy_readers_newSaleDescription_ts["newSaleDescription.ts"]

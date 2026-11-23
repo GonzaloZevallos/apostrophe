@@ -7,9 +7,13 @@
  * is `T | null`: nothing here defaults a choice. An option the `optionState` overlay disables
  * carries the native `disabled` as well as `aria-disabled`, so tests and assistive technology see
  * the same state the native radio it replaces had; the overlay may also give an option its own
- * `aria-describedby`. No arrow keys and no roving tabindex: every option is a Tab-reachable button.
+ * `aria-describedby`. An option with a `suffix` shows its count after the label: the dot and the
+ * figure sit in one `aria-hidden` unit, and the radio is described by the figure alone, so its
+ * name stays the label. Without a `suffix` the markup is the same as ever. No arrow keys and no roving tabindex: every option is a Tab-reachable button.
  */
 
+import { useId } from 'react'
+import type { SegmentCount } from '../format/counts'
 import type { FixedSet } from './fixedSets'
 
 export interface SegmentedChoiceProps<T extends string> {
@@ -19,6 +23,8 @@ export interface SegmentedChoiceProps<T extends string> {
   value: T | null
   onChange: (value: T) => void
   ariaLabel: string
+  /** A count shown after an option's label, keyed by value; an option with none shows its label alone. */
+  suffix?: Partial<Record<T, SegmentCount>>
 }
 
 export default function SegmentedChoice<T extends string>({
@@ -27,13 +33,18 @@ export default function SegmentedChoice<T extends string>({
   value,
   onChange,
   ariaLabel,
+  suffix,
 }: SegmentedChoiceProps<T>) {
+  const groupId = useId()
   return (
     <div className="selector-pago" role="radiogroup" aria-label={ariaLabel}>
       {options.map((option) => {
         const checked = value === option.value
         const state = optionState?.[option.value]
         const disabled = state?.disabled === true
+        const count = suffix?.[option.value]
+        const countId = `${groupId}-${option.value}-count`
+        const describedBy = [state?.describedBy, count ? countId : undefined].filter(Boolean).join(' ')
         return (
           <button
             key={option.value}
@@ -42,13 +53,21 @@ export default function SegmentedChoice<T extends string>({
             aria-checked={checked}
             aria-disabled={disabled}
             disabled={disabled}
-            aria-describedby={state?.describedBy}
+            aria-describedby={describedBy === '' ? undefined : describedBy}
             className={checked ? 'selector-pago__opcion selector-pago__opcion--activa' : 'selector-pago__opcion'}
             onClick={() => {
               if (!disabled) onChange(option.value)
             }}
           >
             {option.label()}
+            {count && (
+              <span className="selector-pago__cuenta" aria-hidden="true">
+                {count.mark}{' '}
+                <span id={countId} className="cifra-n">
+                  {count.figure}
+                </span>
+              </span>
+            )}
           </button>
         )
       })}

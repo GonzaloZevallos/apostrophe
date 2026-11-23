@@ -1,51 +1,38 @@
 /**
- * "Te deben" (`payments.md`, "En pantalla"): the section on top of Clientes. The total, the count
- * line and every customer with a balance above $0 are the API's own answer
- * (`GET /payments/debtors`, oldest owing-since first, ties by name): nothing is sorted, added or
- * compared here, so they equal Inicio's block. With nobody owing it reads a fixed "Nadie te
- * debe", with nothing to tap. It is no screen of its own: the old `/clientes/deben` redirects to
- * `/customers` (ADR-0024).
+ * The "Owed to you" view of Clientes (`payments.md`, "En pantalla"): the Owed summary card
+ * (Total owed, age bar and legend) and every customer with a balance above $0 are the API's own answer (`GET /payments/debtors`),
+ * handed in by Clientes only once it answered successfully (oldest owing-since first, ties by
+ * name): nothing is sorted, added or compared here, so they equal Inicio's block. With
+ * `debtor_count` 0 it reads only the fixed "Nobody owes you", with nothing to tap. Either way its place for focus is marked
+ * `OWED_PLACE`. It is no screen of its own: the old `/clientes/deben` redirects to `/customers` (ADR-0024).
  */
 
-import { useQuery } from '@tanstack/react-query'
-import { debtorsQuery } from '../../api/payments'
-import { salesOwingCount } from '../../format/counts'
-import { useMoney } from '../../format/moneyContext'
+import type { Debtors } from '../../api/payments'
 import { OWED_PLACE } from '../../components/useReturnToPlace'
 import ClienteFila from './ClienteFila'
+import OwedSummary from './OwedSummary'
 import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import { COMMON_TEXT } from '../../copy/common'
 
-export default function TeDeben() {
-  const money = useMoney()
+export default function TeDeben({ data }: { data: Debtors }) {
   const { t } = useTranslation()
-  const { data } = useQuery(debtorsQuery)
 
-  // Nothing while it loads or when it fails: Clientes' own list already shows its loading and
-  // its errors.
-  if (data === undefined) return null
-
-  return (
-    <section className="clientes__te-deben" aria-label={COMMON_TEXT.owedToYou}>
-      <div className="campo__rotulo clientes__seccion-cabecera">
-        <span tabIndex={data.debtors.length > 0 ? -1 : undefined} data-place={data.debtors.length > 0 ? OWED_PLACE : undefined}>
-          {COMMON_TEXT.owedToYou}
-        </span>
-        {data.debtors.length > 0 && <span>{salesOwingCount(data.sales_owing_count)}</span>}
-      </div>
-
-      {data.debtors.length === 0 ? (
+  if (data.debtor_count === 0) {
+    return (
+      <section className="clientes__te-deben" aria-label={COMMON_TEXT.owedToYou}>
         <span className="encabezado__titulo" data-copy="emptyTitle" tabIndex={-1} data-place={OWED_PLACE}>
           {t(EMPTY_STATE_KEYS.nobodyOwes)}
         </span>
-      ) : (
-        <div className="ventas__resumen">
-          <span className="cifra-xl monto-deuda">{money.money(data.total_owed)}</span>
-        </div>
-      )}
+      </section>
+    )
+  }
 
-      <div className="lista-clientes">
+  return (
+    <section className="clientes__te-deben" aria-label={COMMON_TEXT.owedToYou}>
+      <OwedSummary debtors={data} />
+
+      <div className="lista-clientes" tabIndex={-1} data-place={OWED_PLACE}>
         {data.debtors.map((debtor) => (
           <ClienteFila
             key={debtor.customer.id}

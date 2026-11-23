@@ -164,6 +164,13 @@ class OwingSales(Protocol):
         never in it: settlement never sees one."""
         ...
 
+    def owed_of(self, customer_ids: Collection[int]) -> Mapping[int, int]:
+        """The amount still owed on each sale of these customers that settlement
+        reports: every sale not paid on the spot, a paid one at 0, from one read of
+        their ledgers. Sales paid on the spot and sales with no customer are absent.
+        `still_owing` is exactly the ids of this mapping above 0."""
+        ...
+
     def settlement_of(self, customer_id: int) -> CustomerSettlement:
         """The customer's balance and the amount still owed per sale for every sale
         `settle()` reports: every sale not paid on the spot, a paid one at 0; sales

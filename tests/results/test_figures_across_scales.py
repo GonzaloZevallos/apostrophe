@@ -77,6 +77,16 @@ def test_every_figure_is_the_same_at_scale_0_and_scale_2(
             at_zero, at_two = zero.get(path), two.get(path)
             assert (at_zero.status_code, at_two.status_code) == (200, 200), path
             assert _without_ids(at_zero.json()) == _without_ids(at_two.json()), path
+        # Today's new figures: best sellers and month Profit are the same at both scales,
+        # and month Profit is the Month row of Analysis.
+        today_blocks = [client.get("/panel").json()["today"] for client in clients]
+        assert today_blocks[0]["best_sellers"] != []
+        assert _without_ids(today_blocks[0]["best_sellers"]) == _without_ids(
+            today_blocks[1]["best_sellers"]
+        )
+        assert today_blocks[0]["month_profit"] == today_blocks[1]["month_profit"]
+        for client, block in zip(clients, today_blocks, strict=True):
+            assert block["month_profit"] == client.get("/analysis").json()["months"][-1]["profit"]
         # The data really moved money: sales, an expense, a cost of goods and an owed balance.
         month = zero.get("/panel").json()["periods"]["month"]
         assert month["sales"] > 0 and month["expenses"] == 1_500 and month["cost_of_goods"] > 0

@@ -1,4 +1,5 @@
-"""Today's Sales by hour and the so-far comparison (GH-497). Pure: the time zone comes in
+"""Today's Sales by hour and the so-far comparison, the last 7 days of Sales and today's
+money in by Payment method (GH-497). Pure: the time zone comes in
 as a `tzinfo` argument, never from `app.clock` or `zoneinfo`.
 
 A Sale counts on its own date (`SaleRecord.day`). One recorded on that date counts at its
@@ -10,11 +11,13 @@ the whole second, and every function checks `sale.day` before calling it.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
-from datetime import date, datetime, time, tzinfo
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
+from datetime import date, datetime, time, timedelta, tzinfo
 from itertools import accumulate
 
-from app.results.domain.ledger import SaleRecord
+from app.results.domain.ledger import PaymentMethodRecord, SaleRecord
+from app.results.domain.period_figures import Buckets
 from app.results.domain.rounding import percent
 from app.shared.calendar import local_day
 
@@ -72,3 +75,60 @@ def so_far(sales: Iterable[SaleRecord], day: date, cut: time, tz: tzinfo) -> int
 
 def change_percent(so_far: int, base: int) -> int | None:
     return percent(so_far - base, base)
+
+
+SERIES_DAYS = 7
+
+
+@dataclass(frozen=True)
+class DaySales:
+    day: date
+    sales: int
+
+
+@dataclass(frozen=True)
+class MethodMoney:
+    payment_method_id: int
+    name: str
+    amount: int
+
+
+@dataclass(frozen=True)
+class MoneyIn:
+    total: int
+    methods: tuple[MethodMoney, ...]
+
+
+class PaymentMethodMissing(LookupError):
+    """A Payment points at a method the business does not list: a broken read. The
+    message is fixed: it carries no id, name or amount."""
+
+    def __init__(self) -> None:
+        super().__init__("a payment's method is not among the business's payment methods")
+
+
+def last_7_days(buckets: Buckets, today: date) -> tuple[DaySales, ...]:
+    """`today` and the 6 days before it, oldest first. Each day reads the same
+    `Buckets.sales` every Sales total reads, so a day on its own never disagrees with
+    `totals_between`."""
+    days = (today - timedelta(days=back) for back in range(SERIES_DAYS - 1, -1, -1))
+    return tuple(DaySales(day=day, sales=buckets.sales(day, day)) for day in days)
+
+
+def money_in(buckets: Buckets, methods: Sequence[PaymentMethodRecord], today: date) -> MoneyIn:
+    """Payments dated `today` by method, from the same buckets as Cash's Payments
+    received: only methods with a Payment today, archived ones included, each under its
+    current name, by `position` then `payment_method_id`."""
+    paid = buckets.payments_by_day_method.get(today, {})
+    by_id = {method.payment_method_id: method for method in methods}
+    if set(paid) - set(by_id):
+        raise PaymentMethodMissing
+    ordered = sorted(
+        (by_id[method_id] for method_id in paid),
+        key=lambda method: (method.position, method.payment_method_id),
+    )
+    lines = tuple(
+        MethodMoney(method.payment_method_id, method.name, paid[method.payment_method_id])
+        for method in ordered
+    )
+    return MoneyIn(total=sum(line.amount for line in lines), methods=lines)

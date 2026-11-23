@@ -101,7 +101,7 @@ def test_archive_keeps_the_prices_and_restore_brings_them_back(client: TestClien
     client.post(f"/api/products/{variety_id}/restore")
     after = client.get(f"/api/products/{variety_id}").json()
 
-    assert archived == {**before, "archived": True, "removal": None}
+    assert archived == {**before, "archived": True, "removal": None, "cost": None}
     assert after == before
 
 

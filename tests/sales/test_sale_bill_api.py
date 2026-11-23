@@ -7,7 +7,7 @@ such a sale; the use-case test covers it.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Collection
+from collections.abc import Callable, Collection, Mapping
 from typing import Any
 
 import pytest
@@ -320,6 +320,9 @@ class SpyOwingSales:
     def still_owing(self, customer_ids: Collection[int]) -> frozenset[int]:
         return self._real.still_owing(customer_ids)
 
+    def owed_of(self, customer_ids: Collection[int]) -> Mapping[int, int]:
+        return self._real.owed_of(customer_ids)
+
     def settlement_of(self, customer_id: int) -> CustomerSettlement:
         real = self._real.settlement_of(customer_id)
         return CustomerSettlement(real.balance, self._bend(real))
@@ -333,7 +336,11 @@ def _spy(app: FastAPI, bend: Callable[[CustomerSettlement], dict[int, int]]) -> 
 
 
 def _without_bill_and_owing(detail: dict[str, Any]) -> dict[str, Any]:
-    return {k: v for k, v in detail.items() if k not in ("bill", "still_owing")}
+    return {
+        k: v
+        for k, v in detail.items()
+        if k not in ("bill", "still_owing", "payment_state", "still_owed")
+    }
 
 
 def test_a_sale_dropped_from_settlement_answers_200_with_no_bill_and_the_rest_unchanged(

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
+from enum import StrEnum
 from typing import Literal, assert_never
 
 from app.sales.domain.pricing import PricingRule
@@ -41,27 +42,94 @@ class BillPayment:
         )
 
 
+class PaymentState(StrEnum):
+    """Where a sale stands on being paid (CONTEXT.md: Payment state). The values are the
+    wire strings."""
+
+    PAID = "paid"
+    UNPAID = "unpaid"
+    PART_PAID = "part_paid"
+
+
+def payment_state(
+    total: int,
+    on_the_spot_method: PaymentMethodId | None,
+    has_customer: bool,
+    still_owed: int | None,
+) -> PaymentState:
+    """The one rule that decides a sale's Payment state; the first that applies wins.
+    `still_owed` is what settlement reports for this sale, `None` when it does not list
+    it. The only place a customer's amount owed is checked against `0..total`."""
+    if total == 0:
+        return PaymentState.PAID
+    if on_the_spot_method is not None:
+        if still_owed is not None:
+            raise SaleBillInconsistent("a sale paid on the spot is never reported as owed")
+        return PaymentState.PAID
+    if not has_customer:
+        raise SaleBillInconsistent("a sale with no customer is paid on the spot or is a gift")
+    if still_owed is None:
+        raise SaleBillInconsistent("a customer's sale is missing from settlement")
+    if still_owed < 0 or still_owed > total:
+        raise SaleBillInconsistent("a sale's amount owed lies outside zero and its total")
+    if still_owed == 0:
+        return PaymentState.PAID
+    if still_owed == total:
+        return PaymentState.UNPAID
+    return PaymentState.PART_PAID
+
+
+@dataclass(frozen=True)
+class SalePayment:
+    """A sale's Payment state with the amount still owed on it, `0` when paid."""
+
+    state: PaymentState
+    still_owed: int
+    total: int
+
+    def __post_init__(self) -> None:
+        assert (self.state is PaymentState.PAID) == (self.still_owed == 0), (
+            "a sale is paid exactly when nothing is owed on it"
+        )
+        assert (self.state is PaymentState.UNPAID) == (
+            self.still_owed == self.total and self.total > 0
+        ), "a sale is unpaid exactly when all of a positive total is owed"
+        assert (self.state is PaymentState.PART_PAID) == (0 < self.still_owed < self.total), (
+            "a sale is part-paid exactly when the amount owed lies strictly inside its total"
+        )
+
+
+def sale_payment(
+    total: int,
+    on_the_spot_method: PaymentMethodId | None,
+    has_customer: bool,
+    still_owed: int | None,
+) -> SalePayment:
+    """`payment_state` with the amount: `0` when paid, settlement's figure otherwise."""
+    state = payment_state(total, on_the_spot_method, has_customer, still_owed)
+    if state is PaymentState.PAID:
+        return SalePayment(state, 0, total)
+    assert still_owed is not None, "a sale that is not paid has an amount owed"
+    return SalePayment(state, still_owed, total)
+
+
+def bill_payment_of(payment: SalePayment) -> BillPayment:
+    """How the Sale bill words a sale's payment: paid, or owed with the amount."""
+    if payment.state is PaymentState.PAID:
+        return BillPayment("paid", None)
+    return BillPayment("owed", payment.still_owed)
+
+
 def bill_payment(
     total: int,
     on_the_spot_method: PaymentMethodId | None,
     has_customer: bool,
     still_owed: int | None,
 ) -> BillPayment:
-    """The first check that fits wins. `still_owed` is what settlement reports for this
-    sale, `None` when it does not list it."""
+    """A total of 0 is `none`; otherwise the Payment state decides."""
     if total == 0:
         return BillPayment("none", None)
-    if on_the_spot_method is not None:
-        if still_owed is not None:
-            raise SaleBillInconsistent("a sale paid on the spot is never reported as owed")
-        return BillPayment("paid", None)
-    if not has_customer:
-        raise SaleBillInconsistent("a sale with no customer is paid on the spot or is a gift")
-    if still_owed is None:
-        raise SaleBillInconsistent("a customer's sale is missing from settlement")
-    if still_owed > 0:
-        return BillPayment("owed", still_owed)
-    return BillPayment("paid", None)
+    return bill_payment_of(sale_payment(total, on_the_spot_method, has_customer, still_owed))
 
 
 def bill_balance(has_customer: bool, balance: int) -> int | None:

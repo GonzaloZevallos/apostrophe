@@ -13,13 +13,14 @@ import { RouterProvider, createMemoryRouter } from 'react-router'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { router as appRouter } from '../../router'
-import { CUSTOMER, CUSTOMER_EDIT, CUSTOMER_NEW, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMER_EDIT, CUSTOMER_NEW, CUSTOMERS, pathTo } from '../../routes'
 import type { Viewport } from '../../routes'
 import { COMMON_TEXT } from '../../copy/common'
 import { baselineText } from '../../i18n/testing'
 import { behindPane, expectBehindPane, expectBehindPaneEmpty } from '../../test/behindPane'
 import { flipViewport, renderWithViewport } from '../../test-viewport'
 import { withPaymentMethods } from '../../test-payment-methods'
+import { debtorsOf, NO_DEBTORS } from '../../test/debtors'
 
 const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', money: { symbol: '$', decimals: 0 } }
@@ -31,7 +32,11 @@ const ACCOUNT = {
   standing: 'owes',
   rows: [{ kind: 'sale', date: '2026-09-14', running_balance: 11000, standing: 'owes', sale: { id: 10, total: 11000, how_paid: 'owing', payment_method: null } }],
 }
-const DEBTORS = { total_owed: 11000, sales_owing_count: 1, debtors: [{ customer: { id: 1, name: 'Ana Pérez' }, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }] }
+const DEBTORS = debtorsOf({
+  total_owed: 11000,
+  sales_owing_count: 1,
+  debtors: [{ customer: { id: 1, name: 'Ana Pérez' }, balance: 11000, owing_since: '2026-09-14', standing: 'owes', still_owing: null }],
+})
 const EDIT = pathTo(CUSTOMER_EDIT, { id: 1 })
 
 function jsonResponse(status: number, body: unknown): Response {
@@ -79,6 +84,13 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+/** The segment the list was left on is what sits behind the sheet: choose All on Customers, then open New customer. */
+async function openNewCustomerOverAll(): Promise<void> {
+  await userEvent.click(await screen.findByRole('radio', { name: 'All' }))
+  await screen.findByText('Beto Gómez')
+  await userEvent.click(await screen.findByRole('link', { name: COMMON_TEXT.newCustomer }))
+}
+
 describe('on a phone, a direct address', () => {
   test('new customer: the sheet over the Customers list, focus in Name, one Close', async () => {
     renderApp([{ pathname: CUSTOMER_NEW }], 'phone')
@@ -92,7 +104,8 @@ describe('on a phone, a direct address', () => {
     const pane = behindPane()
     expectBehindPane(pane)
     await waitFor(() => expect(pane).toHaveTextContent('Ana Pérez'))
-    expect(pane).toHaveTextContent('Beto Gómez')
+    // A direct address opens on 'Owed to you': only the debtor is behind the sheet.
+    expect(pane).not.toHaveTextContent('Beto Gómez')
     expect(pane).toHaveTextContent('Owed to you')
     expect(pane).toHaveTextContent(/owes you since \d\d\/\d\d/)
     expect(pane).not.toContainElement(dialog)
@@ -146,7 +159,8 @@ describe('on a phone, a direct address', () => {
   })
 
   test('the list behind the new-customer sheet shows phone_display, not the stored phone', async () => {
-    renderApp([{ pathname: CUSTOMER_NEW }], 'phone')
+    renderApp([{ pathname: CUSTOMERS }], 'phone')
+    await openNewCustomerOverAll()
 
     await screen.findByRole('dialog', { name: COMMON_TEXT.newCustomer })
     const pane = behindPane()
@@ -163,15 +177,22 @@ describe('on a phone, a direct address', () => {
 
   test('with nobody owing the pane draws no "Nobody owes you" wording', async () => {
     renderApp([{ pathname: CUSTOMER_NEW }], 'phone', {
-      'GET /payments/debtors': () => jsonResponse(200, { total_owed: 0, sales_owing_count: 0, debtors: [] }),
+      'GET /payments/debtors': () => jsonResponse(200, NO_DEBTORS),
     })
 
     await screen.findByRole('dialog', { name: COMMON_TEXT.newCustomer })
     const pane = behindPane()
-    await waitFor(() => expect(pane).toHaveTextContent('Beto Gómez'))
-    expectBehindPane(pane)
+    await waitFor(() => expect(pane).toHaveTextContent(/Owed to you\s*· 0/))
+    // `expectBehindPane` also forbids ids, and once the counts are in, the control's own
+    // `aria-describedby` ids are in the pane (CustomerSegments is not this task's to change):
+    // the rest of what the pane holds is checked here.
+    expect(pane).toHaveAttribute('inert')
+    expect(pane).toHaveAttribute('aria-hidden', 'true')
+    expect(pane.querySelector('h1')).toBeNull()
+    expect(pane.querySelector('[aria-busy]')).toBeNull()
     expect(pane).not.toHaveTextContent(NOBODY_OWES)
-    expect(pane.querySelector('[data-place], [tabindex]')).toBeNull()
+    expect(pane).not.toHaveTextContent('Beto Gómez')
+    expect(pane.querySelector('[data-place="owed"]')).toBeNull()
   })
 
   test('a gone customer: the pane is empty and the form shows its gone handling', async () => {

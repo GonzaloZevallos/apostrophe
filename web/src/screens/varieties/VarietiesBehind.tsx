@@ -17,7 +17,8 @@ import type { Me } from '../../api/me'
 import { readStock } from '../../api/stock'
 import { COMMON_TEXT } from '../../copy/common'
 import { summaryLine } from '../../stock/summaryLine'
-import { type Variety, VarietyRows } from '../Variedades'
+import type { Variety } from '../Variedades'
+import { VarietyRows } from './VarietyRows'
 import { varietiesByName } from './varietiesByName'
 
 const NOBODY_HIDDEN: ReadonlySet<number> = new Set()

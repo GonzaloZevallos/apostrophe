@@ -6,23 +6,28 @@ not exist.
 from __future__ import annotations
 
 from collections.abc import Collection, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Protocol
 
 from app.payments.domain.settlement import Ledger
 from app.shared.money import MoneyFormat
 from app.shared.payment_method import PaymentMethodId
+from app.shared.pricing_settings import PricingSettings
 
 
 @dataclass(frozen=True)
 class NamedLedger:
-    """One customer's id, current name and ledger (`Ledgers.all`'s own shape):
-    `debtors` needs the name to break an owing-since tie, never a second query."""
+    """One customer's id, current name, ledger and stored Customer type (`Ledgers.all`'s
+    own shape): `debtors` needs the name to break an owing-since tie and the type to
+    show it, never a second query. The stored type is always the real one; only
+    `debtors` decides whether it is shown."""
 
     id: int
     name: str
     ledger: Ledger
+    phone: str | None = field(repr=False)
+    customer_type_id: int | None = None
 
 
 @dataclass(frozen=True)
@@ -41,6 +46,13 @@ class MoneyFormatReader(Protocol):
     amounts at (docs/adr/0055, docs/adr/0058). Built for one business."""
 
     def current(self) -> MoneyFormat: ...
+
+
+class PricingSettingsReader(Protocol):
+    """The business's pricing switches, read through payments' own port: payments never
+    imports `app.pricing_settings` (docs/adr/0034). Built for one business."""
+
+    def current(self) -> PricingSettings: ...
 
 
 class Ledgers(Protocol):

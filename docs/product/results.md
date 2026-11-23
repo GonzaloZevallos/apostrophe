@@ -15,6 +15,19 @@ Este job afina el job del Panel de arriba y el job de navegación para Today (GH
 3. Las cifras cierran: las ventas y la cantidad de ventas de hoy son iguales a las de Sales y a los totales de Home, envío incluido, pagadas o no.
 4. Con base 0 no hay porcentaje: nunca 0% ni "infinito".
 
+**Cuando** abro Today en Home durante el día, **quiero** ver cómo vienen las ventas de hoy al lado de cada uno de los 6 días anteriores, y cuánta plata entró hoy separada por cada uno de mis Payment methods, **para** saber si hoy es un día normal y qué debería tener en mano por cada forma en que me pagan. (Parte 2 de GH-497: afina el job del Panel, "mirar un día… ventas, Profit y Cash lado a lado", para hoy y para la plata que de verdad entró. Acá lo sirven, por ahora solo en el servidor, `last_7_days` y Money in en el bloque `today`; lo dibujan partes posteriores de GH-497. La redacción no supone ningún medio en particular: "Cash" y "Transfer" son solo valores por defecto que se renombran (Assume nothing). Antes, el vendedor sumaba de memoria los Payments de hoy por medio, o contaba a la noche lo que tenía, e iba a Analysis para ver la forma de la semana; la planilla no tenía ni fecha ni medio de pago.) Criterios de éxito propios:
+
+1. El total de Money in es igual, al peso, a los Payments recibidos del Cash de hoy, sin ninguna cifra sumada en el cliente.
+2. El monto de cada medio son los Payments de hoy con ese medio, bajo su nombre actual; un medio archivado con Payments hoy aparece, y uno sin Payments hoy no.
+3. `last_7_days` tiene siempre 7 días, del más antiguo a hoy; un día sin ventas muestra 0, y el último es igual a las ventas de hoy del Panel.
+4. La cantidad de sentencias del Panel no crece con la historia.
+
+**Cuando** abro Home en el celular durante el día, **quiero** ver qué Products están agotados o por agotarse, cuáles se vendieron más desde el lunes y cuánto Profit lleva el mes, **para** decidir qué reponer y qué ofrecer sin abrir Products ni Analysis. (Parte 4 de GH-497: une el job de stock del Brief, "saber qué puedo ofrecer y cuándo un Product se está por terminar", con el del Panel, "saber si gano plata". Acá lo sirven, por ahora solo en el servidor, `low_stock`, `best_sellers` y `month_profit` en el bloque `today`; lo dibujan partes posteriores de GH-497. Antes, el vendedor recorría Products y What you have left Product por Product para ver qué estaba bajo o agotado, abría Analysis → Month para el Profit del mes y adivinaba de memoria lo más vendido de la semana, porque ninguna pantalla lo mostraba.) Criterios de éxito propios:
+
+1. Solo con Today, el vendedor sabe qué reponer primero: los agotados antes que los bajos y, dentro de cada grupo, el que tiene menos Days left primero; un Stock negativo se ve con su cifra.
+2. Today nunca da otra cifra que el resto de la app para lo mismo: el Stock y el estado de cada fila de `low_stock` son los de Products; `month_profit`, con sus gramos pendientes, es el de la fila Month de Analysis; `best_sellers` es la plata cobrada desde el lunes, sin envío y con los Gifts en $0; `count` sale de la misma función que las filas.
+3. La cantidad de sentencias del Panel no crece con la historia, y nada de otro Business aparece ni deja ver que existe.
+
 **Cuando** abro Home en el celular para ver cómo viene el día, **quiero** ver solo lo que vendí, lo que me deben y mi Stock por Product, **para** llevar el negocio de un vistazo sin avisos de configuración en el medio.
 
 Afina el job del Panel: Home muestra el día, no configura el Business. Antes, Home mostraba arriba un elemento de primer uso (el aviso "Go on to the setup" del Onboarding, la lista de pasos de primer uso o "Start with your products") y el aviso posterior a la Spreadsheet import, hasta que la configuración se terminaba. El dueño los sacó (`docs/design/redesign/registro-unificado.md`, "Se sacan los avisos de primer uso"), y la parte 3 de GH-495 borra lo que quedaba de ellos en el código de Home. La configuración sigue en el Onboarding (al aceptar la Invitation o abriendo `/onboarding`), en Settings y en la página del Product. Criterios de éxito propios:
@@ -70,7 +83,7 @@ Criterios de éxito:
    - el Average sale no muestra nada cuando el período no tiene ventas.
 7. **Un Stock withdrawal no es una venta**: registrar uno deja exactamente como estaban las ventas, la cantidad de ventas, el Average sale, los gramos vendidos, You gave away, el Cost of goods sold, el Stock shortfall y el Cash.
 8. **Cobrar en un toque desde Today**: "Collect" en cada fila de deudor del bloque "Owed to you" abre Record payment con ese Customer elegido, con nombre accesible "Collect from <name>"; volver o "Close" sale con un solo movimiento.
-9. **Today es solo lo que se puede resolver**: lo vendido hoy, después Owed to you, después What you have left; un Product bajo lleva a su página; ninguna cifra de resultado (Profit, Cash, costos, Expenses, You gave away, Purchases) se muestra en Today.
+9. **Today es solo lo que se puede resolver**: lo vendido hoy, después Owed to you, después What you have left; un Product bajo lleva a su página; ninguna cifra de resultado (Profit, Cash, costos, Expenses, You gave away, Purchases) se muestra en Today. El `month_profit` que el bloque `today` trae desde la parte 4 de GH-497 todavía no se muestra; la parte de pantalla de GH-497 que lo dibuje revisa este criterio.
 10. **Sin primer uso en Home**: Home no muestra ningún elemento de primer uso (ni el aviso del Onboarding, ni la checklist, ni "Start with your products", ni el aviso posterior a la Spreadsheet import) para ningún Business, cualquiera sea el estado de su configuración. Un Business en configuración ve el Panel normal con sus estados vacíos de siempre, sin texto de configuración.
 11. **Cada aviso lleva a su arreglo**: "Your Telegram catalog is out of date" abre la pantalla del Catalog; en el teléfono, el avatar "Settings" del encabezado abre Settings, y en una computadora la fila del Business de la barra lateral.
 12. **Como en el diseño**: Home, `InicioOscuro` (Home, tema oscuro) e `InicioCompu` (Home, disposición de computadora) coinciden con `docs/product/design-system/pantallas/`, en teléfono y computadora, en los dos temas.
@@ -81,6 +94,8 @@ Criterios de éxito:
 17. **Settings a un toque, como el dibujo** (parte 3 de GH-495): en el teléfono, el avatar de Home abre Settings en 1 toque, muestra las iniciales del Business, un lector de pantalla dice "Settings" y se alcanza con el teclado; su caja táctil mide 44×44 y pasa `touch-target`; no aparece a 900 px y más. Los criterios propios están en navigation.md (38–41).
 18. **Ningún botón flotante descrito como actual** (parte 4 de GH-727): este archivo nombra la acción principal de Home en el teléfono como el + de la barra (navigation.md, "La barra del celular y su +"), y todo "+ New sale" que queda acá es el de la barra lateral de la computadora. Nada de lo que ve o hace quien vende cambia.
 19. **So far, justo y listo para mostrar** (parte 1 de GH-497): la lectura del Panel trae, en su bloque `today`, las ventas de hoy, So far de hoy y del mismo día de la semana pasada, su cambio en porcentaje y las dos series por hora, todo calculado en el servidor; las dos ventanas cortan a la misma hora local al segundo, una Sale registrada en un día distinto de su fecha no entra en ninguna, y con base 0 no hay porcentaje. Nada de lo que ve quien vende cambia en esta parte.
+20. **Los últimos 7 días y Money in, listos para mostrar** (parte 2 de GH-497): la lectura del Panel trae, en su bloque `today`, `last_7_days` (siempre 7 días, del más antiguo a hoy, con 0 en un día sin ventas, y el último igual a las ventas de hoy) y Money in (total igual, al peso, a los Payments recibidos del Cash de hoy, y un monto por cada Payment method con Payments hoy, archivados incluidos, con su nombre actual y en el orden de la lista), todo calculado y ordenado en el servidor. Nada de lo que ve quien vende cambia en esta parte.
+21. **Qué se termina, lo más vendido y el Profit del mes, listos para mostrar** (parte 4 de GH-497): la lectura del Panel trae, en su bloque `today`, `low_stock` (cada Product sin archivar agotado o bajo, Hidden products incluidos, con el Stock y el estado de Products, los agotados primero y después por Days left y nombre, sin tope y con `count` de la misma función), `best_sellers` (hasta 4 Products con más plata cobrada desde el lunes hasta hoy, sin envío, con los Gifts en $0, sin los de $0, archivados incluidos y los empates por nombre) y `month_profit` (la misma cifra y los mismos gramos pendientes que la fila Month de Analysis, siempre presente), todo calculado y ordenado en el servidor. Nada de lo que ve quien vende cambia en esta parte.
 
 # Resultados
 
@@ -90,11 +105,13 @@ Si un Business gana plata y cuánta tiene de verdad, hoy, esta semana y este mes
 - el Cost of goods sold, el Stock shortfall y el costo de los Stock withdrawals por Withdrawal reason, de los Lots de stock (ADR-0009, ADR-0010);
 - las Expenses, de expenses;
 - las Purchases, de stock;
-- los Payments, los Balances y el Settlement, de payments (ADR-0012);
+- los Payments (con el `payment_method_id` de cada uno), los Balances y el Settlement, de payments (ADR-0012);
+- los Payment methods del Business (id, nombre actual y posición, archivados incluidos), de payment-methods, mediante el puerto `PaymentMethods` (ADR-20261111-payment-methods-by-id);
 - el Stock status y los Days left, de stock;
+- el nombre de cada Product y si está archivado, de varieties;
 - el estado del Pinned catalog, de pinned-catalog.
 
-No calcula nada que esas capacidades ya calculen, más allá de sumarlo. Sus cifras por período salen del único cálculo que también lee Analysis (ADR-0020): el Profit de acá y el de Analysis son la misma cifra. Home no lee `/first-run` ni `/onboarding-progress` y no muestra ningún elemento de primer uso. Un Archived product (varieties.md) sale de What you have left, mientras que todas las cifras del período la siguen contando.
+No calcula nada que esas capacidades ya calculen, más allá de sumarlo. Sus cifras por período salen del único cálculo que también lee Analysis (ADR-0020): el Profit de acá y el de Analysis son la misma cifra. Home no lee `/first-run` ni `/onboarding-progress` y no muestra ningún elemento de primer uso. Un Archived product (varieties.md) sale de What you have left y de `low_stock`, mientras que todas las cifras del período, `best_sellers` incluido, lo siguen contando.
 
 ## Comportamiento
 
@@ -128,9 +145,9 @@ Cada cifra se cuenta en su propia fecha. Las ventas, el Cost of goods sold, el S
   - Lleva el tratamiento de acento del diseño cualquiera sea su signo: el acento marca la cifra principal, no si es buena o mala.
 - **Cash**: Payments recibidos − Expenses − Purchases. Los Payments recibidos son todos los Payments con fecha en el período, tanto los On-the-spot payments como los posteriores, cada uno en su propia fecha. El Cash se muestra al lado del Profit. Un Stock withdrawal nunca lo toca.
 
-### Lo que va del día: el bloque `today` (parte 1 de GH-497, solo servidor)
+### Lo que va del día: el bloque `today` (partes 1, 2 y 4 de GH-497, solo servidor)
 
-La lectura del Panel (`GET` del Panel, `PanelOut.today`) trae un bloque para Today con la comparación de So far. En esta parte ninguna pantalla lo muestra: lo dibujan partes posteriores de GH-497. Week y Month no cambian.
+La lectura del Panel (`GET` del Panel, `PanelOut.today`) trae un bloque para Today con la comparación de So far (parte 1), las ventas de los últimos 7 días y Money in (parte 2), y lo que se termina, lo más vendido de la semana y el Profit del mes (parte 4). En estas partes ninguna pantalla lo muestra: lo dibujan partes posteriores de GH-497. Week y Month no cambian.
 
 - **Campos**:
   - `sales`: el total de ventas de hoy, envío incluido, pagadas o no; la misma cifra que "You sold today" y que Sales.
@@ -140,17 +157,56 @@ La lectura del Panel (`GET` del Panel, `PanelOut.today`) trae un bloque para Tod
   - `last_week_day`: esa fecha (hoy − 7 días).
   - `change_percent`: el cambio de `so_far` contra `last_week_so_far`, en porcentaje entero con signo.
   - `hourly_today` y `hourly_last_week`: el total acumulado por hora local de cada día.
+  - `last_7_days[{day, sales}]`: las ventas de hoy y de cada uno de los 6 días anteriores.
+  - `money_in{total, methods[{payment_method_id, name, amount}]}`: Money in, los Payments de hoy por Payment method y su total.
+  - `low_stock{count, rows[{product_id, name, quantity, status}]}`: los Products agotados o bajos, en orden de reposición (parte 4).
+  - `best_sellers[{product_id, name, sales}]`: los Best sellers, hasta 4 Products con más plata cobrada desde el lunes (parte 4).
+  - `month_profit{amount, pending_quantity}`: el Profit del mes en curso y sus gramos pendientes (parte 4).
 - **Hora de una Sale**: la que sale de su `recorded_at` (el momento en que se registró por primera vez, en UTC). Una Sale registrada en su propia fecha, en hora local del Business, cuenta en su hora local; una registrada en cualquier otro día, antes o después, cuenta al final de su propia fecha (hora 23).
-- **Ventana de So far**: una Sale entra solo si se registró en su propia fecha y su hora local del día es igual o anterior a la de ahora, al segundo (14:05:00 entra, 14:05:01 no). La regla es la misma para hoy y para la semana pasada. Una Sale registrada en un día distinto de su fecha no entra en ninguna ventana de So far, aunque sí cuenta en `sales`, en `sales_count` y en las series.
+- **Ventana de So far**: una Sale entra solo si se registró en su propia fecha y su hora local del día es igual o anterior a la de ahora, al segundo (14:05:00 entra, 14:05:01 no). La regla es la misma para hoy y para la semana pasada. Una Sale registrada en un día distinto de su fecha no entra en ninguna ventana de So far, aunque sí cuenta en `sales`, en `sales_count`, en las series por hora y en `last_7_days`.
 - **Cambio en porcentaje**: entero, redondeado con mitad hacia arriba con el helper de redondeo que ya existe, y con signo. Es nulo cuando `last_week_so_far` es 0 (también cuando las dos son 0), nunca 0% ni "infinito"; es −100 cuando hoy no hay nada y la semana pasada sí; no tiene tope.
 - **Series por hora**: acumuladas, envío incluido, nunca bajan. `hourly_today` va de la hora 00 hasta la hora local actual; `hourly_last_week` cubre las 24 horas, así que su último punto coincide con las ventas de ese día en Sales. Su punto en la hora actual suma todo hasta el final de esa hora, así que es igual o mayor que `last_week_so_far`, nunca menor.
-- **Base**: las ventas tal como están, pagadas o no. El Cash, los Payments y el Profit no están en este bloque.
+- **Los últimos 7 días** (`last_7_days`, parte 2):
+  - Siempre exactamente 7 elementos, uno por día calendario en el día del Business (el mismo corte de día que ya usa el Panel): del más antiguo al más reciente, con hoy último. El orden lo da el servidor.
+  - Cada `sales` es la suma de las Sales con esa fecha (`sale.day`), envío incluido, pagadas o no, como cuentan las ventas en todo el Panel. Un día sin ventas tiene `sales: 0` y nunca se deja afuera.
+  - La regla de "registrada en su propia fecha" es solo de So far y no se aplica acá.
+  - El último elemento es igual a `sales` y a "You sold today".
+  - Los 7 días pueden cruzar una semana, un mes o un año; no siguen los períodos Week ni Month.
+- **Money in** (`money_in`, parte 2):
+  - Siempre está. Cuenta los Payments con fecha de hoy, cada uno en su propia fecha, sean On-the-spot payments o posteriores: exactamente los que entran en los Payments recibidos del Cash de hoy, así que su `total` es igual a esa cifra, al peso.
+  - `methods` lista solo los Payment methods con Payments hoy, archivados incluidos, cada uno con su nombre actual resuelto por id (ADR-20261111-payment-methods-by-id): un medio renombrado se lee con el nombre nuevo. Un medio sin Payments hoy no aparece.
+  - El orden es por la posición del medio en la lista del Business y, en un empate, por `payment_method_id`, así que siempre es el mismo.
+  - `total` es la suma de los `amount` de `methods`. Sin Payments hoy, es `{total: 0, methods: []}`.
+  - No lleva marca de archivado. No hay caso de medio desconocido: un medio con Payments solo se archiva, nunca se elimina.
+  - Los montos viajan como el resto del dinero del Panel (ADR-0058).
+- **Lo que se termina** (`low_stock`, parte 4):
+  - Entra cada Product sin archivar cuyo Stock status es agotado (Stock en cero o menos, con movimientos) o bajo (mayor que cero y por debajo de su propio Low-stock threshold), Hidden products incluidos.
+  - Quedan afuera todo Archived product y todo Product cuyo Stock status es sin movimientos (ninguna Stock entry, ninguna Sale ni Gift, ningún Stock withdrawal). Un Product con Sales pero sin Stock entries, que quedó en negativo, sí tiene movimientos: es agotado y entra.
+  - Un Product sin Low-stock threshold con Stock mayor que cero está ok y no entra. No hay umbral por defecto: "bajo" lo decide cada Business por Product (Assume nothing).
+  - `quantity` es el Stock tal como está guardado, negativos incluidos, la misma cifra que muestra Products; `status` usa los mismos valores de agotado y bajo que Products.
+  - Orden: primero los agotados y después los bajos; dentro de cada grupo, menos Days left primero, después los que no tienen Days left y después por nombre. Un agotado nunca tiene Days left, así que ese grupo queda en la práctica por nombre.
+  - Sin tope: el servidor trae todas las filas; cuántas muestra el teléfono lo decide la parte de pantalla. `count` es la cantidad de filas y sale de la misma función que ellas.
+  - Sin ningún Product agotado ni bajo, es `{count: 0, rows: []}`.
+- **Best sellers** (`best_sellers`, parte 4):
+  - Solo de la semana: cuenta las Sales con fecha desde el lunes de la semana en curso hasta hoy inclusive, en el día del Business. Una Sale con fecha posterior a hoy dentro de la semana no entra, aunque sí cuenta en Week. No hay lista del mes.
+  - `sales` es la plata por Product: la suma de los totales guardados de sus Sale lines tal como se cobraron (List price, Bulk price, Customer-type price o Special price), sin volver a calcular nada. El envío queda afuera y un Gift cuenta $0.
+  - Se dejan afuera los Products en $0, los empates se ordenan por nombre y se conservan los 4 primeros.
+  - Entran los Archived products y los Hidden products, por nombre y sin ningún campo extra: una venta de esta semana es una venta real.
+  - Sin relleno: tiene de 0 a 4 filas y es `[]` cuando no se vendió nada desde el lunes; nunca se completa con la semana pasada.
+  - Los montos viajan como el resto del dinero del Panel (ADR-0058).
+- **Profit del mes** (`month_profit`, parte 4):
+  - Es la misma cifra que la fila Month de Analysis, del mismo `totals_between` sobre el mismo mes calendario entero (ADR-0020), sin regla propia de "hasta hoy": sigue lo que Analysis haga con un registro de fecha futura dentro del mes.
+  - `amount` es el Profit; `pending_quantity` es la N de "and N g without cost" de esa fila: los gramos pendientes vendidos, regalados, sacados por Adjustments negativos y retirados en el mes.
+  - Siempre está: sin nada registrado, es `{amount: 0, pending_quantity: 0}`.
+  - Un `amount` negativo queda negativo. Un `pending_quantity` mayor que 0 es lo que la parte de pantalla usa para la marca "and N g without cost".
+  - Los montos viajan como el resto del dinero del Panel (ADR-0058).
+- **Base**: las ventas tal como están, pagadas o no, para todo el bloque salvo Money in, que son los Payments de hoy, `low_stock`, que es el Stock, y `month_profit`, que es el Profit del mes. El Cash, los Payments posteriores a hoy y un Profit de hoy o de la semana no están en este bloque.
 - **Una Sale editada** conserva su `recorded_at` original: editarla nunca la mueve de hora ni la lleva a "ahora".
-- El dominio (`app/results/domain/today_series.py`) recibe `now` y la zona como argumentos y no importa `app.clock` ni `zoneinfo`; ningún adaptador pasa un `recorded_at` a hora local. La zona es la de Argentina hasta la parte de zona horaria de GH-318.
+- El dominio (`app/results/domain/today_series.py` y `app/results/domain/today_ordering.py`) recibe `now` y la zona como argumentos (`tzinfo`) y no importa `app.clock` ni `zoneinfo`; ningún adaptador pasa un `recorded_at` a hora local. La zona es la de Argentina hasta la parte de zona horaria de GH-318.
 
 ### Qué muestra cada pestaña
 
-- **Today** muestra lo que se puede resolver hoy, de arriba abajo: lo vendido hoy (ventas, cantidad de ventas, Average sale y gramos vendidos), después el bloque "Owed to you", después What you have left. La comparación de So far todavía no se muestra.
+- **Today** muestra lo que se puede resolver hoy, de arriba abajo: lo vendido hoy (ventas, cantidad de ventas, Average sale y gramos vendidos), después el bloque "Owed to you", después What you have left. La comparación de So far, los últimos 7 días, Money in, `low_stock`, `best_sellers` y `month_profit` todavía no se muestran.
 - **Week y Month** muestran ventas, cantidad de ventas, Average sale, gramos vendidos, You gave away, Cost of goods sold, Stock shortfall (cuando el período lo tiene), una línea por cada Withdrawal reason con Stock withdrawals en el período, Expenses, la cifra de Purchases del período (Week y Month de Home y Analysis; su texto en `web/src/copy/common.ts`), Profit y Cash, y después el bloque "Owed to you" y What you have left. Las líneas de los Withdrawal reasons van justo después de Stock shortfall y antes de Expenses, en el orden de la lista del Business.
 - El Profit, el Cash, el Cost of goods sold, el Stock shortfall, las líneas de los Withdrawal reasons, las Expenses, You gave away y las Purchases nunca se muestran en Today.
 
@@ -199,7 +255,7 @@ La lectura del Panel (`GET` del Panel, `PanelOut.today`) trae un bloque para Tod
   - su línea de detalle: "No grams since 30/09", "You are warned below 20 g" o "Add its first entry".
 - Un Product bajo lleva a su página (varieties.md).
 - Un Product sin umbral no muestra línea de aviso.
-- Los Products bajos no se ponen primero; el orden es por nombre.
+- Los Products bajos no se ponen primero; el orden es por nombre. El orden de reposición es solo el de `low_stock` del bloque `today`.
 - No hay gramos totales.
 
 ### En pantalla (Home; `InicioOscuro`, Home en el tema oscuro; `InicioCompu`, Home en la disposición de computadora)
@@ -236,20 +292,29 @@ La lectura del Panel (`GET` del Panel, `PanelOut.today`) trae un bloque para Tod
 
 - El Business sale de la Session.
 - La ruta del Panel entra en el barrido de aislamiento y en la prueba de rutas protegidas.
-- Cada cifra se calcula en el servidor, y también si se muestra el aviso de desactualizado, qué líneas de Withdrawal reason se muestran y en qué orden, y si una línea de Withdrawal reason está toda pendiente. El navegador nunca ordena ni suma nada. Lo mismo vale para So far, su cambio en porcentaje y las series por hora.
+- Cada cifra se calcula en el servidor, y también si se muestra el aviso de desactualizado, qué líneas de Withdrawal reason se muestran y en qué orden, y si una línea de Withdrawal reason está toda pendiente. El navegador nunca ordena ni suma nada. Lo mismo vale para So far, su cambio en porcentaje, las series por hora, `last_7_days` (su orden incluido), Money in (su total, qué medios aparecen y su orden), `low_stock` (qué Products entran, su orden y su `count`), `best_sellers` (sus montos, cuáles entran y su orden) y `month_profit`.
 - Home no lee `/first-run` ni `/onboarding-progress`. Esas rutas siguen en el backend: `/onboarding-progress` lo lee el Onboarding, y `/first-run` la línea de precio faltante del "+ New sale" de la barra lateral de la computadora y Products, para las reglas laterales de navigation.md. Ningún código del marco del celular lee `/first-run`.
-- Ninguna cifra ni nombre va a los logs, la consola ni el almacenamiento del navegador. El Phone number de un deudor sale del servidor solo en el bloque de deudores de Today.
+- Ninguna cifra ni nombre va a los logs, la consola ni el almacenamiento del navegador; tampoco los nombres ni los montos de Payment methods de Money in, ni los nombres, cantidades ni montos de los Products de `low_stock` y `best_sellers`. El Phone number de un deudor sale del servidor solo en el bloque de deudores de Today.
 - Las palabras del avatar y del segmento ("Settings", "Home", "Analysis", "Home view") salen del Copy module; la opción "Home" es `common:homeSegmentHome`. La línea de fecha usa el formateador de fechas que ya existe y no suma nada al Copy module. Las iniciales del avatar salen solo de `initialsOf`, y el avatar no agrega ninguna ruta de API.
 
 ## Métricas
 
-- **Velocidad (criterio 1)**: el Panel, y cada cambio de período, responden en menos de 300 ms con unos cientos de ventas y unas decenas de Products y Customers. Se cuida con el plan de consulta y la cantidad de sentencias, nunca con el tiempo transcurrido (ADR-0038): la misma cantidad de sentencias en un Business sembrado chico que en un año sembrado, sin importar cuántos Withdrawal reasons tenga. El bloque `today` no agrega ninguna sentencia.
+- **Velocidad (criterio 1)**: el Panel, y cada cambio de período, responden en menos de 300 ms con unos cientos de ventas y unas decenas de Products y Customers. Se cuida con el plan de consulta y la cantidad de sentencias, nunca con el tiempo transcurrido (ADR-0038): la misma cantidad de sentencias en un Business sembrado chico que en un año sembrado, sin importar cuántos Withdrawal reasons, Payment methods ni Products tenga. El bloque `today` agrega solo sentencias fijas: la lectura de los Payment methods de la parte 2 de GH-497 y las que agregue la parte 4 para `low_stock`, `best_sellers` y `month_profit`, ninguna que crezca con la historia; la prueba de cantidad de sentencias fija la nueva constante.
 - **Acuerdo (criterio 2)**: 0 diferencias, por período:
   - el total y la cantidad de ventas contra Sales;
   - las cifras de Owed to you contra la sección "Owed to you" de Customers;
   - los gramos, el estado, los Days left y el detalle de cada Product contra Products;
   - el Profit, el Cost of goods sold, el Stock shortfall, el costo de cada Withdrawal reason, las Expenses y el Cash de Week y Month contra la fila de `GET /analysis` para la misma semana y el mismo mes, sobre una historia sembrada que incluye un Adjustment negativo con gramos con costo, uno con gramos pendientes, una Sale line con gramos pendientes, tres o más Withdrawal reasons (uno renombrado y uno reordenado), un Stock withdrawal con costo de cada Withdrawal reason y un Stock withdrawal con gramos pendientes.
 - **So far (criterio 19 y job de la parte 1 de GH-497)**: pruebas de dominio con 100% de aprobación que cubren la medianoche; una Sale registrada tarde y una registrada antes de su fecha, fuera de toda ventana de So far y en la hora 23 de su serie; ahora 14:05 contra una Sale de la semana pasada a las 14:55 (afuera de So far, adentro del punto de la hora 14); una Sale a las 14:05:00 exactas (adentro); base 0 (sin porcentaje), hoy 0 contra base mayor que 0 (−100) y el redondeo con mitad hacia arriba. Pruebas de comportamiento por TestClient con el reloj móvil: `sales` y `sales_count` del bloque `today` tienen 0 diferencias con Sales para hoy. Un chequeo de arquitectura falla si un adaptador que arma un `SaleRecord` llama a `astimezone` o si `app/results/domain/` importa `app.clock` o `zoneinfo`.
+- **Los últimos 7 días y Money in (criterio 20 y job de la parte 2 de GH-497)**: 100% de aprobación.
+  - Pruebas de dominio: los medios ordenados por posición y, en un empate, por id; un medio archivado con Payments hoy que se conserva; sin Payments hoy, `{total: 0, methods: []}`; un Payment con fecha de otro día que queda afuera; un medio sin Payments hoy que no aparece; `last_7_days` siempre con 7 elementos, del más antiguo a hoy, con 0 en un día sin ventas y cruzando un cambio de mes.
+  - Pruebas de comportamiento por TestClient: `money_in.total` tiene 0 diferencias con los Payments recibidos del cálculo del Cash de hoy, con un On-the-spot payment y un Payment posterior; el último elemento de `last_7_days` tiene 0 diferencias con `sales`; un medio renombrado se lee con su nombre nuevo.
+  - Aislamiento: el sembrador de aislamiento suma un Payment con medio, y desde otro Business la ruta del Panel no muestra ningún nombre ni monto de Payment method del primero.
+- **Qué se termina, Best sellers y Profit del mes (criterio 21 y job de la parte 4 de GH-497)**: 100% de aprobación.
+  - Pruebas de dominio de `low_stock`, una por regla: agotado antes que bajo; Days left de menor a mayor; sin Days left al final de su grupo; el nombre como desempate; un Product sin movimientos afuera; un Product con Sales y sin Stock entries, en negativo, adentro como agotado; un Archived product afuera; un Hidden product adentro; el Stock negativo conservado tal cual; un Product sin umbral con Stock mayor que 0 afuera; `count` igual a la cantidad de filas.
+  - Pruebas de dominio de `best_sellers`: un Gift en $0; el envío afuera; un Special price contado como se cobró; un Product en $0 afuera; empates por nombre; solo los 4 primeros; un Archived product y un Hidden product adentro; el lunes adentro; una Sale con fecha posterior a hoy dentro de la semana afuera; lista vacía sin ventas desde el lunes.
+  - Pruebas de comportamiento por TestClient: cada fila de `low_stock` tiene 0 diferencias de Stock y estado con Products; `month_profit` tiene 0 diferencias con el Profit y los gramos pendientes de la fila Month de `GET /analysis`, con un Profit negativo, con gramos pendientes y con un mes sin nada registrado (`{amount: 0, pending_quantity: 0}`).
+  - Aislamiento: el sembrador de aislamiento suma un Product bajo en el otro Business, y desde el primero la ruta del Panel no lo muestra ni en `low_stock` ni en `best_sellers`, ni deja ver ninguna cifra suya.
 - **Fórmulas (criterio 3)**: una matriz, 100% de aprobación, que cubre:
   - el Profit y el Cash;
   - los Payments contados en su propia fecha, no en la de la venta;
@@ -284,7 +349,7 @@ La lectura del Panel (`GET` del Panel, `PanelOut.today`) trae un bloque para Tod
 - **Ningún botón flotante descrito como actual (criterio 18, parte 4 de GH-727)**: una búsqueda en este archivo y en el resto de `docs/product/` no encuentra ningún "+ New sale" flotante del celular, ni su línea de qué falta, descrito como actual; cada "+ New sale" que queda nombra la barra lateral de la computadora, y la acción del teléfono remite al + de la barra en navigation.md. 0 excepciones; `checks` y `docs` en verde.
 - **Bordes de período**: una semana que cruza un mes y un año, el lunes como primer día y un cambio de día en hora argentina. 100% de aprobación.
 - **Avance de deudores (criterio 4)**: ordenado por Balance, después por Owing since y después por nombre; los Credits excluidos; "Nobody owes you" cuando nadie debe; "Collect" con su nombre accesible en cada fila. Ningún estado se dice solo por color, en los dos temas.
-- **Aislamiento (criterio 5)**: desde otro Business, la ruta del Panel no muestra ninguna cifra ni nombre de Withdrawal reason del primer Business. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen cifras ni nombres.
+- **Aislamiento (criterio 5)**: desde otro Business, la ruta del Panel no muestra ninguna cifra ni nombre de Withdrawal reason, de Payment method ni de Product del primer Business. Después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen cifras ni nombres.
 - **Nada inventado (criterio 6)**:
   - un Business vacío muestra $ 0 y 0 g, sin Average sale y sin ninguna línea de Stock shortfall ni de Withdrawal reason;
   - cada cifra en pantalla es igual a la respuesta de la API.
@@ -293,19 +358,20 @@ La lectura del Panel (`GET` del Panel, `PanelOut.today`) trae un bloque para Tod
 
 ## Fuera de alcance
 
-- Dates o cualquier rango a medida; gráficos; cualquier comparación con períodos anteriores fuera de So far del bloque `today`.
-- Mostrar en pantalla So far, su cambio en porcentaje o las series por hora: lo hacen partes posteriores de GH-497. Cómo se presenta un porcentaje muy grande también queda para esas partes.
-- Cash, Payments o Profit en el bloque `today`; cambios en Week y Month por GH-497.
+- Dates o cualquier rango a medida; gráficos; cualquier comparación con períodos anteriores fuera de So far y de `last_7_days` del bloque `today`.
+- Mostrar en pantalla So far, su cambio en porcentaje, las series por hora, los últimos 7 días, Money in, `low_stock`, `best_sellers` o `month_profit`: lo hacen partes posteriores de GH-497, y también el texto de "sin Payments hoy" y el de "nada vendido desde el lunes", que van en `web/src/copy/emptyStates.ts`, con su chequeo contra el dibujo (no hay dibujo aprobado del bloque de Best sellers). Cómo se presenta un porcentaje muy grande, y cuántas filas de `low_stock` muestra el teléfono, también quedan para esas partes.
+- Cash en el bloque `today`, un Profit de hoy o de la semana ahí, y cualquier Payment que no sea de hoy; una marca de archivado en los medios de Money in o en las filas de `best_sellers`; cambios en Week y Month por GH-497.
+- Best sellers del mes, un relleno de `best_sellers` con otra semana cuando se vendieron menos de 4 Products, un Low-stock threshold por defecto y un tope de filas de `low_stock` en el servidor.
 - Registrar cualquier cosa desde el Panel salvo abriendo una New sale desde el marco (el + de la barra del celular o el "+ New sale" de la barra lateral de la computadora) y con "Collect".
 - Actualizaciones en vivo entre socios.
 - Margin por Product (#8), Stock shortfall por Product, y el costo de cada Withdrawal reason por Product.
-- Gramos pendientes contados en el Panel ("and N g without cost") para una cifra con parte pendiente: la nota del Panel es fija y no lleva gramos; Analysis muestra las cuentas.
+- Gramos pendientes contados en las cifras de Week y Month del Panel ("and N g without cost") para una cifra con parte pendiente: la nota del Panel es fija y no lleva gramos; Analysis muestra las cuentas. La única excepción es `pending_quantity` de `month_profit`, que el servidor ya entrega para que una parte posterior de GH-497 lo muestre en Today.
 - Los gramos totales del stock en el Panel.
 - Cualquier aviso, insignia, recordatorio o elemento de primer uso en Home, o un reemplazo de los avisos sacados en otra pantalla; un mensaje a los Users existentes de que se fueron.
 - Un link al Onboarding desde Home.
 - Quitar `/first-run` o `/onboarding-progress` del backend, o cambiar las reglas laterales del "+ New sale" de la barra lateral de la computadora y de "Send catalog" (navigation.md).
 - Una línea de precio faltante o cualquier otro aviso de qué falta en el marco del celular; ese motivo lo da New sale en su campo de producto (sales.md).
-- Archived products en el Panel.
+- Archived products en What you have left y en `low_stock`; solo aparecen en `best_sellers`, por nombre, y en las cifras del período.
 - Poner primero los Products bajos en What you have left.
 - Rediseñar Record payment según `Cobro.dc.html`: es trabajo propio de la pantalla de payments.
 - Mostrar una línea en $0 para un Withdrawal reason sin Stock withdrawals en el período.
@@ -327,7 +393,7 @@ Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-what
 
 - Una cifra que suma cantidades de varios Products va a mostrar un monto por unidad, cada uno con su etiqueta (un `QuantityByUnit`, que crea la parte de unidades), porque nunca se van a sumar cantidades de unidades distintas. Esto abarca la cantidad vendida, la cantidad regalada ("You gave away") y los totales de Stock withdrawals.
 - Va a reemplazar: "**Gramos vendidos**: los gramos de las líneas del período que no son Gifts." y "**Gramos regalados** ("You gave away"): los gramos de las líneas de Gift del período. Los gramos retirados nunca son gramos regalados."
-- La etiqueta de la cifra de Purchases del período (Week y Month de Home y Analysis), en `web/src/copy/common.ts`, y las cantidades de "What you have left" van a seguir la unidad de cada Product.
+- La etiqueta de la cifra de Purchases del período (Week y Month de Home y Analysis), en `web/src/copy/common.ts`, las cantidades de "What you have left" y la `quantity` de cada fila de `low_stock` van a seguir la unidad de cada Product. El `pending_quantity` de `month_profit` va a seguir lo que la parte de unidades decida para "and N g without cost" en Analysis.
 
 ### Plata
 
@@ -340,5 +406,5 @@ Decidido en docs/adr/0058-money-crosses-the-wire-in-currency-units-as-decimal-an
 
 Decidido en docs/adr/0057-the-business-time-zone-replaces-argentina-days-today-is-worked-out-per-business-and-upkeep-is-due-when-its-last-check-was-not-on-the-business-s-own-today.md; lo entrega la parte de zona horaria.
 
-- Today, Week y Month van a seguir la zona horaria propia del Business, y también la hora local con la que el bloque `today` ubica cada Sale y corta So far (hoy la zona que se pasa al dominio es la de Argentina).
+- Today, Week y Month van a seguir la zona horaria propia del Business, y también la hora local con la que el bloque `today` ubica cada Sale y corta So far, los días de `last_7_days`, el hoy de Money in, el lunes desde el que cuenta `best_sellers` y el mes de `month_profit` (hoy la zona que se pasa al dominio es la de Argentina).
 - Va a reemplazar: "Today, Week y Month, en hora argentina, con las mismas definiciones que Sales. No hay Dates."

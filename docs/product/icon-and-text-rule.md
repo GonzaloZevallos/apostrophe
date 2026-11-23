@@ -43,13 +43,17 @@ Las dos listas son cerradas. Agregar a cualquiera de las dos cambia este archivo
 - **Solo ícono**: borrar ("Delete…"), buscar ("Search"), cerrar ("Close"), editar ("Edit") y compartir ("Share") solo donde no es la acción principal de la pantalla (p. ej. el Share debajo de un enlace de invitación recién creado en Users, cuya acción principal es "Invite a partner").
   - El nombre accesible es la palabra exacta actual; "Close", nunca "Back", sigue valiendo a través de él.
   - El objetivo mide al menos 44 px.
-  - Estar en la lista permite el solo ícono; nunca lo exige. La acción principal de una pantalla siempre lleva su texto (el Share de la pantalla del Catalog conserva su palabra).
+  - Estar en la lista permite el solo ícono; nunca lo exige. La acción principal de una pantalla siempre lleva su texto (el Share de la pantalla del Catalog conserva su palabra), con una sola excepción con nombre, la de la fila de título del celular de abajo.
   - **Close es una sola forma en todas partes**: todo formulario y toda hoja se cierra con el mismo control solo ícono, de nombre accesible "Close". Ningún formulario muestra la palabra mientras otro muestra el ícono.
   - Back no está en la lista: es navegación y queda como "‹ <parent>" (docs/product/navigation.md).
     - El padre es el fijo que docs/product/navigation.md nombra para esa pantalla (su "‹ <parent>" y su tabla de volver sin historial), desde cualquier pantalla desde la que se haya llegado. Back sigue el historial.
     - Una pantalla muestra exactamente un back, el que le da su marco (el del shell); una pantalla nunca dibuja un segundo por su cuenta.
     - Back nunca es "‹" solo ni una palabra genérica como "Back": su texto visible y su nombre accesible nombran los dos al padre.
   - La "i" de More info es el único control solo ícono fuera de esta lista, definido por su propio término más abajo.
+- **La única excepción con nombre: agregar ("New product") en la fila de título de Products del celular** (GH-903, decisión del dueño D-8ecb8c1d).
+  - La palabra no cabe en esa fila a 320 y 246 px (la fila con la palabra necesita unos 317 px y hay 272 y 198), así que la acción es un botón redondo solo con el ícono `agregar`: objetivo de 44×44 px, relleno con --boton y --boton-texto (`.boton-icono--lleno`), nombre accesible "New product" (la clave existente `common:newVariety`). En el código es `action="add"` de `IconOnlyAction`, que solo usa ese botón.
+  - Regla del dueño, general: cuando una acción con palabra no cabe en una fila de título del celular, pasa a ser un botón redondo solo ícono con nombre accesible; nunca se achica el título, se acorta la palabra ni se envuelve la fila.
+  - Fuera de esa fila (la computadora incluida), "New product" conserva su palabra.
 - **Solo texto**:
   - enlaces (`enlace`), como "Edit header and footer" y "See all";
   - el par de respuestas dentro de una confirmación, con sus palabras exactas actuales ("No, keep it / Yes, delete it", "No, keep entering / Yes, discard it" y el resto);
@@ -130,6 +134,7 @@ Sin telemetría; sale de los tests y del chequeo de diseño.
 - **Se encuentra de un vistazo (criterio 1)**: un test de front sobre cada pantalla de `scripts/design/screens.json`: cada fila de opción, fila de acción y acción fuera de las listas cerradas tiene un ícono y su texto; cada control solo ícono tiene su nombre accesible actual exacto y un objetivo de 44 px; el ícono junto a una palabra está oculto para la tecnología asistiva; ningún menú repite un ícono; todo formulario y toda hoja se cierra con el mismo "Close" solo ícono. 0 excepciones.
 - **Ícono y palabra sin duplicar**: ninguna etiqueta visible lleva un "+" literal junto a un ícono `agregar`, y cada control así conserva su nombre accesible. 0 excepciones.
 - **Un solo back por pantalla**: cada tarjeta y cada detalle de `scripts/design/screens.json` muestra exactamente un control de back, que dice "‹ <parent>" con el padre fijo que nombra docs/product/navigation.md, y su nombre accesible nombra a ese padre; ninguno dice "‹" solo ni "Back". 0 excepciones.
+- **La excepción de la fila de título**: los tests del front de Products a ancho de celular encuentran "New product" por rol y nombre accesible en el bloque de título, con un objetivo de 44×44 px; la medición a 320 y 246 px, claro y oscuro, está en docs/evidence/GH-548-design-capture.md. Ningún otro control usa `action="add"`.
 - **Las acciones no son enlaces**: ninguna acción se dibuja con el estilo de enlace; se comprueba a ojo en el chequeo de diseño.
 - **Una regla (criterio 2)**: este archivo y el README enuncian las mismas listas y límites, el Tappable notice incluido; `componentes.ts` e `Icono.tsx` nombran el mismo conjunto; cada nombre de `NombreIcono` agregado por esta regla lo usa una pantalla. 0 nombres nuevos sin usar, 0 discrepancias.
 - **Corto por defecto (criterio 3)**:
@@ -149,7 +154,8 @@ Sin telemetría; sale de los tests y del chequeo de diseño.
 
 ## Fuera de alcance
 
-- Una interfaz solo de íconos; back como solo ícono; la acción principal de una pantalla como solo ícono.
+- Una interfaz solo de íconos; back como solo ícono; la acción principal de una pantalla como solo ícono, salvo la única excepción con nombre de la fila de título de Products del celular (ver arriba) y lo que la regla del dueño sobre las filas de título del celular decida en adelante.
+- Achicar el título, acortar la palabra o envolver una fila de título del celular para que entre una acción con palabra.
 - Agregar, quitar, renombrar o reordenar cualquier acción u opción; cambiar una ruta, una confirmación o el texto de un toast.
 - Íconos en las filas de registro.
 - Un ícono opcional en los avisos; íconos que ninguna pantalla usa.

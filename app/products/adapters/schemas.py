@@ -5,6 +5,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, PlainSerializer
 
 from app.money_schema import MoneyAmount, MoneyOut
+from app.products.domain.cost_and_margins import CostAndMargins
 from app.products.domain.product import PriceEntry, Product
 
 # Quantity go out as a JSON number; they never carry more than two decimals.
@@ -86,8 +87,33 @@ class ProductOut(BaseModel):
         )
 
 
+class PriceMarginOut(BaseModel):
+    rule: Literal["list", "bulk", "vip"]
+    percent: int
+
+
+class ProductCostOut(BaseModel):
+    """What the latest costed Purchase cost per unit, in the unit of the business's decimals
+    and sent in currency units (docs/adr/0058), and the margin against each price in use.
+    `amount` is `null` while the cost is pending."""
+
+    amount: MoneyOut | None
+    margins: list[PriceMarginOut]
+
+    @classmethod
+    def of(cls, result: CostAndMargins | None) -> "ProductCostOut | None":
+        if result is None:
+            return None
+        return cls(
+            amount=None if result.cost is None else Decimal(result.cost),
+            margins=[PriceMarginOut(rule=m.rule.value, percent=m.percent) for m in result.margins],
+        )
+
+
 class ProductDetailOut(ProductOut):
     """One product's page: also the one removal action it offers, worked out from history
     when it is read (`null` for an archived product)."""
 
     removal: Literal["delete", "archive"] | None
+    # `null` for an archived product; `{amount: null, margins: []}` while the cost is pending.
+    cost: ProductCostOut | None

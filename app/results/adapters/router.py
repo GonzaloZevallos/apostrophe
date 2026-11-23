@@ -35,6 +35,7 @@ from app.results.application.ports import (
     DebtSummary,
     DrawCosts,
     ExpensesLedger,
+    PaymentMethods,
     PaymentsLedger,
     Purchases,
     SalesLedger,
@@ -108,7 +109,17 @@ def get_withdrawal_reasons(
     return factory(session, business_id)
 
 
+def get_payment_methods(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> PaymentMethods:
+    factory = cast(
+        Callable[[Session, int], PaymentMethods], request.app.state.results_payment_methods
+    )
+    return factory(session, business_id)
+
+
 WithdrawalReasonsDep = Annotated[WithdrawalReasons, Depends(get_withdrawal_reasons)]
+PaymentMethodsDep = Annotated[PaymentMethods, Depends(get_payment_methods)]
 StockFiguresDep = Annotated[StockFigures, Depends(get_stock_figures)]
 DebtSummaryDep = Annotated[DebtSummary, Depends(get_debt_summary)]
 DrawCostsDep = Annotated[DrawCosts, Depends(get_draw_costs)]
@@ -128,9 +139,19 @@ def get_panel(
     purchases: PurchasesDep,
     debts: DebtSummaryDep,
     reasons: WithdrawalReasonsDep,
+    methods: PaymentMethodsDep,
 ) -> PanelOut:
     panel = read_panel(
-        clock(), BUSINESS_TIMEZONE, stock, sales, payments, expenses, purchases, debts, reasons
+        clock(),
+        BUSINESS_TIMEZONE,
+        stock,
+        sales,
+        payments,
+        expenses,
+        purchases,
+        debts,
+        reasons,
+        methods,
     )
     return PanelOut.of(panel)
 

@@ -51,6 +51,7 @@ from app.onboarding.adapters.opening import OnboardingOpening
 from app.onboarding.adapters.router import router as onboarding_router
 from app.payment_methods.adapters.babel_defaults import BabelMethodDefaults
 from app.payment_methods.adapters.opening import PaymentMethodsOpening
+from app.payment_methods.adapters.results_methods import SqlResultsPaymentMethods
 from app.payment_methods.adapters.router import router as payment_methods_router
 from app.payments.adapters.method_usage import PaymentsUsingAMethod
 from app.payments.adapters.payments_ledger import SqlPaymentsLedger
@@ -72,6 +73,7 @@ from app.pricing_settings.adapters.router import router as pricing_settings_rout
 from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSettings
 from app.products.adapters.onboarding_facts import SqlProductFacts
 from app.products.adapters.router import router as products_router
+from app.products.application.ports import LatestCostedPurchase
 from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
@@ -82,6 +84,7 @@ from app.shared.money import MoneyNotRepresentable, TooManyDecimals
 from app.static_spa import FrontNavigation, MissingBuiltFront, ShellPage, SpaStatic, api_segments
 from app.stock.adapters.babel_defaults import BabelReasonDefaults
 from app.stock.adapters.draw_costs import SqlDrawCosts
+from app.stock.adapters.latest_costed_purchase import SqlLatestCostedPurchase
 from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.onboarding_facts import SqlStockFacts
@@ -305,6 +308,10 @@ def create_app(
     # `current() -> PricingSettings` port and none imports `app.pricing_settings`
     # (docs/adr/0006, docs/adr/0034).
     app.state.varieties_pricing_settings = SqlPricingSettings
+    # A variety's cost comes from stock's Purchases through the products port, so nothing
+    # under `app/products/` imports `app.stock` for it (docs/adr/0006).
+    latest_costed_purchase: Callable[[Session, int], LatestCostedPurchase] = SqlLatestCostedPurchase
+    app.state.products_latest_costed_purchase = latest_costed_purchase
     app.state.customers_pricing_settings = SqlPricingSettings
     app.state.owing_sales = SqlOwingSales
     # How money is shown, read through each hexagon's own `MoneyFormatReader` port (docs/adr/0055).
@@ -312,6 +319,9 @@ def create_app(
     app.state.sales_money_format = SqlMoneyFormat
     app.state.products_money_format = SqlMoneyFormat
     app.state.payments_money_format = SqlMoneyFormat
+    # Payments shows a debtor's Customer type only while the switch is on, read through
+    # its own `PricingSettingsReader` port, never `app.pricing_settings`.
+    app.state.payments_pricing_settings = SqlPricingSettings
     app.state.expenses_money_format = SqlMoneyFormat
     app.state.stock_money_format = SqlMoneyFormat
     # Another factory of the same shape: results reaches stock's rows and draws only
@@ -334,6 +344,7 @@ def create_app(
     # computation, never a second sum of their own.
     app.state.draw_costs = SqlDrawCosts
     app.state.results_withdrawal_reasons = SqlResultsWithdrawalReasons
+    app.state.results_payment_methods = SqlResultsPaymentMethods
     app.state.sales_ledger = SqlSalesLedger
     app.state.payments_ledger = SqlPaymentsLedger
     app.state.expenses_ledger = SqlExpensesLedger
