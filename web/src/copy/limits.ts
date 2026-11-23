@@ -31,6 +31,7 @@ export const SAMPLES = {
   grams: '999,99 g',
   name: 'Name of twenty-four char',
   count: '99',
+  quantity: '999,99',
 } as const
 
 /** Code points after NFC: `á` is one whether composed or not, an emoji is one. */

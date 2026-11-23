@@ -1,7 +1,7 @@
 /**
  * `SalePaymentChip` at its props seam (`state`, `stillOwed`), under the Business's Money format:
  * what the seller reads for each Payment state, that the amount is exactly `still_owed`, and that
- * an unusable state or amount reads "Payment cannot be shown" and never $ 0.
+ * an unusable state or amount reads "Payment can't be shown" and never $ 0.
  */
 
 import { act, render, screen } from '@testing-library/react'
@@ -14,7 +14,7 @@ import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import SalePaymentChip from './SalePaymentChip'
 import { saleWith } from './saleWith'
 
-const UNKNOWN = "Payment cannot be shown"
+const UNKNOWN = "Payment can't be shown"
 
 function renderChip(sale: Pick<Sale, 'payment_state' | 'still_owed'>, decimals = 0) {
   return render(
