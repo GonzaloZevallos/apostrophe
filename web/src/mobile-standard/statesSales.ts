@@ -47,7 +47,7 @@ const TWELVE_PRODUCTS = Array.from({ length: 12 }, (_unused, index) => ({
  * is compiled under `tsconfig.node.json`, whose `nodenext` resolution refuses `api/sales.ts`'s own
  * extensionless imports (`npm --prefix web run typecheck` with the import in place: `src/api/sales.ts(11,31):
  * error TS2835 ... Did you mean './client.js'?`, and once those are fixed the same error spreads through
- * `sales/pricing.ts` to `screens/Variedades`). `states.test.ts` checks the rows against the real `Sale` with `satisfies`.
+ * `sales/pricing.ts` to `screens/Variedades`). The real `Sale` check is `UNKNOWN_PAYMENT_SALES satisfies readonly Sale[]` in `states.test.ts`, which tsconfig.app compiles.
  */
 interface StubSale {
   id: number
