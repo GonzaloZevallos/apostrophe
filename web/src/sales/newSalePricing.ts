@@ -9,7 +9,8 @@
  */
 
 import type { MoneyFormat } from '../format/money'
-import type { PricedSale } from './pricing'
+import type { Variety } from '../screens/Variedades'
+import type { PricedSale, PricedSaleLine, PricingSettings } from './pricing'
 import { priceSale } from './pricing'
 import { saleLineInputsOf, type DraftLine } from './saleDraft'
 import { parseShipping } from './shipping'
@@ -76,4 +77,28 @@ export function pricedSaleOf(
     // on an existing object any other way, and this is where the conditions that earn it are checked.
     complete: shippingCharged !== null && everyLinePriced ? (sale as CompleteSale) : null,
   }
+}
+
+/** One draft line priced alone, against its own Product and with no shipping: what a row of the Product
+ * list shows. The line is the draft's own (`saleLineInputsOf`), so no gift or special price reaches it.
+ * `pricing` is `null` only for a rule the line breaks (No price); a data fault propagates, and a missing
+ * answer is a fault too, never No price. */
+export function pricedLineOf(input: {
+  line: DraftLine
+  product: Variety
+  customerTypeId: number | null
+  pricingSettings: PricingSettings
+}): PricedSaleLine {
+  const { line, product, customerTypeId, pricingSettings } = input
+  const {
+    lines: [priced],
+  } = priceSale({
+    lines: saleLineInputsOf([line]),
+    customerTypeId,
+    pricingSettings,
+    products: [product],
+    shippingCharged: 0,
+  })
+  if (priced === undefined) throw new Error('priceSale answered no line for the product')
+  return priced
 }
