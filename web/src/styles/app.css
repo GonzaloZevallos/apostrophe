@@ -7658,3 +7658,63 @@ button:has(> .venta-en-curso) {
   background-color: var(--papel);
 }
 /* ===== end ajustes-inicio ===== */
+
+/* ===== ajustes-inicio: frame and Business card (`SettingsHome`) ===== */
+/* The card is read-only: no pressed state, no chevron. Its count slot has a fixed height so the
+ * card does not move when the count arrives. Tokens only. */
+.ajustes-inicio__marco {
+  min-width: 0;
+}
+
+.ajustes-inicio__encabezado {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.ajustes-inicio-tarjeta__tarjeta {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  min-width: 0;
+  padding: var(--espacio-lg);
+  background-color: var(--superficie);
+  border-radius: var(--radio-panel);
+}
+
+.ajustes-inicio-tarjeta__inicial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radio-campo);
+  background: var(--acento-suave);
+  color: var(--acento);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.ajustes-inicio-tarjeta__textos {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.ajustes-inicio-tarjeta__nombre {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.ajustes-inicio-tarjeta__cantidad {
+  min-height: 20px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--tinta2);
+}
