@@ -22,15 +22,17 @@
 
 **Cuando** estoy armando una venta en el teléfono y la cierro, aprieto Escape o vuelvo atrás por error, **quiero** que la app me pregunte antes de tirar las líneas que agregué, **para** no tener que armar la venta de nuevo. (Parte 2 de GH-869: la sirve el **Anfitrión de New sale** con su única guarda de salida. Afina la misma primera historia de sales.md, "una venta se registra desde el teléfono en menos de un minuto": perder las líneas sin una pregunta rompe ese minuto. No es un trabajo nuevo).
 
+**Cuando** un cliente espera y estoy en la computadora cargando su pedido, **quiero** tipear parte del nombre de un Product y apretar Enter para agregarlo, viendo su Stock y el precio al que se va a vender en la fecha de la Sale, **para** cargar una Sale de varios Products sin el mouse y nunca cotizar de memoria. (Parte 2 de GH-870: la sirve la **Tabla de resultados de Products de la computadora**. Es el primer trabajo de BRIEF hecho en la computadora por la misma vendedora; no es un trabajo nuevo, y el flujo del teléfono no cambia).
+
 ## Qué es
 
 La **Sale in progress** es la venta que se está armando en New sale antes de guardarla: cliente, líneas, fecha, **Shipping charged**, **Note** y cómo se paga. Es solo del front (`web/src/sales/useSaleDraft.ts`) y vive en memoria durante una apertura de New sale: nunca se guarda en el dispositivo y una recarga la pierde (igual que lo que dice sales.md, criterio 43). Lo que se guarda es la **Sale**, con las reglas de sales.md.
 
-Hasta la parte de GH-496 que la monta en pantalla (el flip), ninguna pantalla la usa: no hay ruta, constante de build, parámetro de consulta, bandera de ventana ni hook `data-*` para llegar a ella ni al Anfitrión de New sale, la Sheet de New sale, la lista de Products o la Collect Sheet, y se prueban solo con tests unitarios, de componente y del cliente a nivel de fetch.
+Hasta la parte de GH-496 que la monta en pantalla (el flip), ninguna pantalla la usa: no hay ruta, constante de build, parámetro de consulta, bandera de ventana ni hook `data-*` para llegar a ella ni al Anfitrión de New sale, la Sheet de New sale, la lista de Products, la Collect Sheet o la Tabla de resultados de Products de la computadora, y se prueban solo con tests unitarios, de componente y del cliente a nivel de fetch.
 
 Nota: el criterio 34 de sales.md ("el medio nunca viene puesto") sigue vigente hasta la parte del flip de GH-496, porque la New sale en vivo todavía arranca sin medio. La propuesta de medio de esta capacidad no llega a la vendedora hasta entonces.
 
-Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clientes, productos y medio de pago, y tipea las cantidades a mano, de a un Product por vez y sin ver de una sola vez lo que ya está en la venta ni lo que suele vender. El costo principal son las elecciones repetidas, y el segundo es tipear cantidades. Cuando el Product pedido no está en la venta ni en "Most sold", hoy se recorre la lista entera a ojo; la búsqueda (#940) reemplaza ese recorrido. Hoy dice cómo le pagaron en el mismo formulario de New sale; la Collect Sheet pasa esa elección a un paso de cierre sin cambiar qué significan Payment, On-the-spot payment, Balance, Settlement ni Owing since. Un pago parcial sigue siendo un Payment posterior registrado con Record payment. El vuelto hoy se calcula de cabeza o con la calculadora del teléfono en medio de la entrega; la planilla nunca registró lo que el cliente entregó, así que no guardarlo no pierde nada. Qué precios le tocan a un Customer hoy se revisa a mano cuando no está claro; la fila de Customer de la Sheet de New sale lo dice antes de agregar nada. Hoy la guarda de `NuevaVenta.tsx` protege la pantalla en vivo de una salida por error; el Anfitrión de New sale le da la misma protección a la Sheet antes de que el flip reemplace esa pantalla. El formulario de venta actual ya registra Gifts y Special prices; la Sale in progress los guarda desde la parte 1 de GH-868 para que pasarse a la New sale nueva no obligue a registrar el precio de la regla y corregirlo después.
+Antes de esta parte, la vendedora vuelve a elegir en cada venta los mismos clientes, productos y medio de pago, y tipea las cantidades a mano, de a un Product por vez y sin ver de una sola vez lo que ya está en la venta ni lo que suele vender. El costo principal son las elecciones repetidas, y el segundo es tipear cantidades. Cuando el Product pedido no está en la venta ni en "Most sold", hoy se recorre la lista entera a ojo; la búsqueda (#940) reemplaza ese recorrido. Hoy dice cómo le pagaron en el mismo formulario de New sale; la Collect Sheet pasa esa elección a un paso de cierre sin cambiar qué significan Payment, On-the-spot payment, Balance, Settlement ni Owing since. Un pago parcial sigue siendo un Payment posterior registrado con Record payment. El vuelto hoy se calcula de cabeza o con la calculadora del teléfono en medio de la entrega; la planilla nunca registró lo que el cliente entregó, así que no guardarlo no pierde nada. Qué precios le tocan a un Customer hoy se revisa a mano cuando no está claro; la fila de Customer de la Sheet de New sale lo dice antes de agregar nada. Hoy la guarda de `NuevaVenta.tsx` protege la pantalla en vivo de una salida por error; el Anfitrión de New sale le da la misma protección a la Sheet antes de que el flip reemplace esa pantalla. El formulario de venta actual ya registra Gifts y Special prices; la Sale in progress los guarda desde la parte 1 de GH-868 para que pasarse a la New sale nueva no obligue a registrar el precio de la regla y corregirlo después. En la computadora, hoy cada Product se elige del Selector con clics: funciona, pero es lento para un pedido de varios Products; la Tabla de resultados de Products de la computadora (parte 2 de GH-870) lo reemplaza por tipear y Enter cuando el flip la monte.
 
 En la planilla, una venta sin pagar era una fila sin pago, y saldarla después pisaba la deuda (BRIEF, Problema). "Owes it" existe para que la vendedora nunca necesite inventar un Payment, ni uno de $0, para que los libros den bien: eso falsearía el Cash y el Money in y dejaría mal el Owing since. Es un supuesto decidido en la entrevista de #944, no verificado.
 
@@ -91,7 +93,7 @@ En la planilla, una venta sin pagar era una fila sin pago, y saldarla después p
 
 ### Dinero
 
-- Ni la Sale in progress, ni el cliente de sugerencias, ni el Anfitrión de New sale, ni la Sheet de New sale, ni la lista de Products, ni la Collect Sheet calculan dinero. Toda cifra de la venta (precio de la fila, total de la línea, total de la barra, total de Collect, fila Total, aviso de recotización) sale de `priceSale`/`rowPrices`/`priceLine` en `web/src/sales/pricing.ts` (en la Sheet de New sale, mediante `pricedSaleOf`), calculada por la pantalla anfitriona. El Received se lee y el Change se calcula solo con `changeFor` del mismo módulo, mediante `parseMoneyInput`, como enteros a los decimales del Money format. El Shipping charged y la Note se guardan tal como se ingresaron.
+- Ni la Sale in progress, ni el cliente de sugerencias, ni el Anfitrión de New sale, ni la Sheet de New sale, ni la lista de Products, ni la Collect Sheet, ni la Tabla de resultados de Products de la computadora calculan dinero. Toda cifra de la venta (precio de la fila, total de la línea, total de la barra, total de Collect, fila Total, aviso de recotización) sale de `priceSale`/`rowPrices`/`priceLine` en `web/src/sales/pricing.ts` (en la Sheet de New sale, mediante `pricedSaleOf`; en la tabla de la computadora, mediante su único `pricedRows`), calculada por la pantalla anfitriona o por la propia tabla. El Received se lee y el Change se calcula solo con `changeFor` del mismo módulo, mediante `parseMoneyInput`, como enteros a los decimales del Money format. El Shipping charged y la Note se guardan tal como se ingresaron.
 - `saleLineInputsOf` (precio) y `bodyLinesOf` (cuerpo) leen el Gift y el Special price de los mismos campos de la línea, `gift` y `specialPrice`, así que lo que se muestra y lo que se manda no pueden discrepar. Una línea no tiene precio solo cuando su `PricedSaleLine.pricing` es null; ningún componente ni helper mira `gift` o `specialPrice` por su cuenta para decidirlo.
 
 ## Anfitrión de New sale
@@ -418,9 +420,84 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - El resaltado va en peso 600 y en el color del acento (el acento del resaltado sigue a `NuevaVentaProductosOscuro`), sin depender solo del color. El campo oculta el botón nativo de borrar porque el dibujo no muestra un control de borrado.
 - El estado de búsqueda se compara a ojo con NuevaVentaProductos y NuevaVentaProductosOscuro, claro y oscuro, con la Design capture adjunta al PR. Mientras la lista no tenga ruta, la captura lado a lado no es posible y queda "not compared"; confirmarla a ojo queda para el recorrido del flip.
 
+## Tabla de resultados de Products de la computadora
+
+El componente `web/src/screens/ventas/ProductResultsTable.tsx` (parte 2 de GH-870), con su hoja de estilos solo de tokens, es la columna izquierda de la caja de la computadora del dibujo NuevaVentaCompu y su gemelo oscuro. Es la contraparte de computadora del mismo trabajo de New sale, para la misma vendedora en un escritorio: la lista de Products del teléfono no cambia y nunca se cambia por esta tabla (Phone first). Hasta el flip de GH-496 ningún módulo de producción la importa ni la monta: `web/src/architecture/productResultsUnrouted.test.ts` falla si un módulo que no es de test la importa, y el flip borra ese test. Puede figurar en `web/scripts/docs/front-exclude.json` (D-62e6dc23), y el flip saca esa entrada. No tiene entrada en WalkState ni en `scripts/design/screens.json`, así que no tiene Design capture lado a lado ni Screen image. Para la vendedora no cambia nada en pantalla hasta el flip.
+
+Desviación 2 aceptada: sin código de barras, categoría ni escáner. No supone ningún tipo de Business: sus palabras son "Product", "Stock" y "Price", sin Unit ni tipo de producto.
+
+### Props y lecturas
+
+- `draft` (`SaleDraftApi`) y `customerTypeId` (`number | null`).
+- Tiene tres lecturas propias: los Products y los Pricing settings, con las opciones de `web/src/sales/saleFormQueries.ts` y la clave `draft.state.date`; y el Stock, con `keys.stock()` y `readStock`. No lee sugerencias.
+- Un dato de reemplazo (`isPlaceholderData`) de cualquiera de las dos lecturas de la fecha cuenta como pendiente.
+- No usa la lectura de nuevo al reconectar o al recuperar el foco del ADR 20261121: esa excepción es solo de los observadores de la lista del teléfono. La tabla conserva las opciones por defecto de la app.
+- `pricedRows` corre en un `useMemo` sobre exactamente sus entradas y es el único lugar que llama a `priceSale`: una vez por Product, con una lista de un solo producto. La cantidad a la que se cotiza una fila sale solo de `saleDraftReducer`. `visibleRows` solo filtra y ordena. Ningún código nuevo multiplica ni suma dinero.
+- `NuevaVenta.tsx` cambia solo sus imports y sus tests existentes pasan sin editar.
+
+### Lo que ve la vendedora
+
+- Un campo de búsqueda con etiqueta y placeholder "Search products", `role=combobox` con `aria-controls` y `aria-activedescendant`, enfocado al montarse.
+- Una tabla `role=grid` con los encabezados de columna Product, Stock y Price, y un encabezado Add visualmente oculto. Las filas llevan `aria-selected`.
+- Debajo de la tabla, siempre, la línea de ayuda "↑ ↓ to move, Enter to add.".
+- La fila seleccionada lleva una marca de forma, una barra en el borde y un cambio de peso, solo con tokens y `aria-hidden`, así que nunca depende solo del color. `scrollIntoView({block:'nearest'})` la mantiene a la vista.
+- **Stock**: la cifra sola, con 0 y negativos a la vista. Después va la palabra de `STOCK_TEXT` para sin movimientos, agotado y bajo, y nada para ok. El Stock solo informa: no impide agregar.
+- **Price**: `pricing.pricePerGram` mediante `useMoney`, en la clase de Tabular figures. Es el precio que recibiría la Sale line en la fecha de la Sale y para el Customer type, por la misma regla de precios que la Sale. Un Product sin precio ese día muestra "No price" en palabras.
+- No hay marca de "ya en la venta" en las filas: las líneas de la Sale in progress, al lado de la tabla en la caja, muestran el resultado.
+
+### Qué Products y en qué orden
+
+- Solo los que devuelve la lectura de Products: un Archived product nunca aparece, un Hidden product sí. Los Products con Stock en cero o negativo aparecen y se pueden agregar.
+- **Qué coincide**: el texto, recortado, coincide en cualquier parte del nombre, sin importar mayúsculas ni acentos, con la misma regla que la búsqueda del teléfono (`matchesQuery` y `foldForSearch` de `web/src/components/selectorSearch.ts`, sin un segundo normalizador). Los espacios internos coinciden tal como se tipearon, y una búsqueda en blanco muestra todos los Products.
+- **Orden**: por nombre sin importar mayúsculas ni acentos, con empates por el nombre tal cual y después por id, igual que los resultados del teléfono. Es el mismo con búsqueda y sin ella, sin ningún ranking.
+
+### Teclado y selección
+
+- La selección se guarda como un id de Product.
+- Pasa a la primera fila ante cualquier cambio del texto de búsqueda, después de agregar y con Escape.
+- Escape también borra el texto; con la búsqueda vacía no hace nada.
+- Una recotización deja la selección donde está. Sin filas, no hay nada seleccionado.
+- Arriba y abajo frenan en los dos extremos, sin dar la vuelta.
+- Los manejadores de teclas no hacen nada mientras `nativeEvent.isComposing`.
+- Enter sobre una fila seleccionada con precio llama a `draft.addProduct(id)`, borra la búsqueda y vuelve la selección a la primera fila. Agregar un Product que ya está en la venta le sube su línea y nunca crea otra (ver Líneas).
+- Enter sobre una fila "No price", o sin filas, no hace nada.
+
+### Botones Add y mouse
+
+- Cada fila tiene un botón real con `tabIndex=-1` y nombre accesible "Add {name}", deshabilitado en una fila "No price". Su `onMouseDown` llama a `preventDefault`.
+- El clic hace lo mismo que Enter sobre esa fila y después llama a `inputRef.current?.focus()` en el mismo manejador, así que el foco queda en la búsqueda.
+- Un clic en otra parte de la fila la selecciona sin agregar. Pasar el mouse por encima no hace nada.
+- Tab sale de la tabla sin detenerse en ningún botón Add.
+
+### Estados
+
+Cada uno reemplaza el cuerpo de la tabla; la línea de ayuda queda siempre.
+
+- **Carga**: "Loading products…", con `aria-busy=true` y sin filas, mientras alguna lectura está pendiente o alguna de las dos lecturas de la fecha tiene `isPlaceholderData`. Un cambio de la fecha de la Sale muestra este estado hasta que llega la respuesta nueva: nunca se ve un precio de la fecha anterior.
+- **Falla**: "The products could not load. Reload this screen to try again.", con el Attention icon compartido, cuando falla cualquier lectura, la de Stock incluida (a diferencia de la lista del teléfono, donde un fallo del Stock solo oculta su texto). No hay lectura de nuevo automática.
+- **Sin Products**: "No products yet.", cuando el Business no tiene ningún Product sin archivar.
+- **Sin coincidencias**: "No product matches that search.".
+- Ningún estado borra ni cambia la Sale in progress.
+
+### Textos
+
+- En `web/src/copy/sales.ts`, grupo `SALE_PRODUCT_TABLE_TEXT`, en inglés y sin palabras de Unit ni de tipo de producto: "Search products" (etiqueta y placeholder), los encabezados "Product", "Stock" y "Price", "Add" y "Add {name}", "No price", "↑ ↓ to move, Enter to add.", "No products yet.", "No product matches that search.", "Loading products…" y "The products could not load. Reload this screen to try again." (en `LONG_REFUSALS` si copyLimits lo marca).
+- `web/src/copy/en.baseline.json` se regenera con `npm --prefix web run i18n:baseline`; `baseline_exceptions.json` no gana ninguna entrada.
+
+### Diseño
+
+- Solo tokens; el tema oscuro sigue a los tokens oscuros.
+- Mientras la tabla no tenga ruta, la captura lado a lado no es posible y queda "not compared"; la comparación a ojo con NuevaVentaCompu y su gemelo oscuro va en el PR.
+- Si el dibujo difiere en el orden alfabético, en la coincidencia sin acentos o en la falta de una marca "ya en la venta", la diferencia se le plantea al dueño en el PR y la decide el dueño, nunca un rol.
+
+### Huecos conocidos
+
+- Tras una falla, la única salida es recargar la pantalla; un reintento o una lectura de nuevo, si hacen falta, los decide el flip.
+- La tabla no tiene ruta, así que el teclado no se recorrió en la app en marcha; queda sin verificar, no fallado, hasta el flip.
+
 ## Fuera de esta capacidad (por ahora)
 
-- Cualquier ruta, entrada de navegación o pantalla que monte el Anfitrión de New sale, la Sheet de New sale, la Sale in progress o la lista de Products, y el flip que las monta; también la entrada de WalkState y de `screens.json` de la Sheet de New sale.
+- Cualquier ruta, entrada de navegación o pantalla que monte el Anfitrión de New sale, la Sheet de New sale, la Sale in progress, la lista de Products o la Tabla de resultados de Products de la computadora, y el flip que las monta; también la entrada de WalkState y de `screens.json` de la Sheet de New sale y de la tabla.
 - Cualquier cambio a la guarda de `NuevaVenta.tsx`, que sigue sirviendo a la pantalla en vivo hasta el flip.
 - Cualquier cambio de texto, disposición o dibujo de la pregunta "Discard the sale?"; va al dueño como desviación.
 - El toast después de un guardado exitoso, que una parte posterior inserta antes de `leave()`.
@@ -431,7 +508,8 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Si el texto de búsqueda se recuerda al salir de la lista y volver (lo decide el flip; hoy es estado local y no se lleva a ningún lado).
 - Filtros de la lista por Stock, precio, Hidden product o Catalog attributes.
 - El guardado de New sale fuera de la Collect Sheet, incluido qué pasa al guardar una línea cuyo Product ya no está disponible.
-- Código de barras, categoría y elementos de promoción en la lista de Products.
+- Código de barras, categoría y elementos de promoción en la lista de Products; código de barras, categoría y escáner en la tabla de la computadora.
+- En la tabla de la computadora: New sale suggestions o cualquier ranking, una marca de "ya en la venta", una lectura de nuevo automática tras una falla y cualquier cambio a la lista del teléfono.
 - Ya en el flip: la regla de no abrir la Collect Sheet con una línea sin precio; que el anfitrión ignore el volver del sistema y Escape mientras `onSavingChange(true)`; un test que monte la barra de la venta y la Sheet juntas y muestre el total guardado igual al de la barra y a `SaleOut.total`; y que tras `onSaved` la pantalla muestre las cifras de la respuesta con el aviso de recotización (`linesRepriced`) cuando el total cambió.
 - Reescribir el criterio 34 de sales.md ("el medio nunca viene puesto"), que le corresponde al flip, cuando la preselección llegue a la vendedora.
 - Un pago parcial en el momento de la venta: las opciones son pagada por completo con un medio o "Owes it" sin nada pagado ahora; un pago parcial es un Payment posterior por Record payment y el Settlement.
@@ -473,7 +551,7 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
   6. **Recuperación:** una lectura después de una falla muestra el esqueleto; una reconexión o una vuelta del foco tras una falla vuelve a pedir y devuelve la lista con las cantidades cargadas y los precios nuevos; una lista cargada hace 0 pedidos nuevos al recuperar el foco o al reconectar; otro observador de la misma consulta conserva sus propias opciones.
 - Líneas perdidas por una acción de la lista, una recarga de Products o una falla: 0. Ids internos mostrados en pantalla: 0.
 - Cifras mostradas antes de que lleguen todas las lecturas, mientras el Customer está pendiente o durante una falla (dígitos, símbolo de moneda, "No price", aviso, encabezados): 0.
-- Operaciones de dinero en `useSaleDraft`, en el cliente de sugerencias, en el Anfitrión de New sale, en la Sheet de New sale y en la lista de Products: 0 (todo pasa por `pricing.ts`).
+- Operaciones de dinero en `useSaleDraft`, en el cliente de sugerencias, en el Anfitrión de New sale, en la Sheet de New sale, en la lista de Products y en la Tabla de resultados de Products de la computadora: 0 (todo pasa por `pricing.ts`).
 - Rutas, constantes, parámetros, banderas, props, exports o hooks `data-*` solo para tests: 0.
 - Claves del Copy module de la lista de Products: 10 (7 de #924 y 3 de #940), en inglés y sin palabras de Unit ni de tipo de producto; agregadas por los estados de carga y de falla: 0. Pedidos de red nuevos causados por la búsqueda: 0.
 - Gate (pytest, vitest, e2e) pasa, y tsc strict y oxlint pasan sin nada silenciado.
@@ -529,3 +607,15 @@ En el Copy module (`web/src/copy/sales.ts`, grupo `newSale` de `SALES_TEXT`), en
 - Con el medio propuesto ya elegido, la Collect Sheet guarda con a lo sumo una elección y un toque en Collect (la vara del flip, arriba, se juzga cuando la monte).
 - Toques o pasos extra para registrar una venta que ignora Received: 0. Diferencias en Payments, Balance, Cash y Money in con o sin Received: 0.
 - Vara del vuelto, que se juzga cuando el flip la monte: con Received tipeado, el Change aparece sin ningún toque extra.
+- Tabla de resultados de Products de la computadora (parte 2 de GH-870), con Testing Library a través de un envoltorio de test que usa el `useSaleDraft` real y muestra las líneas del borrador, con fetch falso, cada caso con su test que pasa en el Gate (vitest):
+  - arriba y abajo mueven la selección y frenan en los dos extremos;
+  - tipear y después Enter agrega la primera coincidencia; Enter agrega un Product;
+  - Enter sobre un Product que ya está en la venta le sube la línea, sin una segunda línea;
+  - "No price" se muestra en palabras y no se puede agregar ni con Enter ni con Add;
+  - un cambio de fecha no muestra filas y deja `aria-busy` hasta que llega la respuesta nueva;
+  - el foco queda en la búsqueda después de un clic en Add;
+  - Tab sale de la tabla sin detenerse en ningún botón Add;
+  - los estados de carga y de falla;
+  - `productResultsUnrouted.test.ts` falla si un módulo que no es de test importa `ProductResultsTable`.
+- Tabla de la computadora: llamadas a `priceSale` fuera de `pricedRows`: 0; operaciones de dinero propias: 0; precios de la fecha anterior a la vista tras un cambio de fecha: 0; segundas líneas de un mismo Product creadas desde la tabla: 0; módulos de producción que la importan: 0; textos fuera de `web/src/copy/`: 0; entradas nuevas en `baseline_exceptions.json`: 0; cambios a `NuevaVenta.tsx` que no sean imports: 0.
+- Vara de la tabla de la computadora, que se juzga cuando el flip la monte: una Sale de tres Products se carga en la computadora solo con tipeo y Enter, sin mouse ni Tab, con el foco en la búsqueda todo el tiempo y cada agregado dejando la búsqueda vacía con la primera fila seleccionada. No hay medición de uso en la app hasta el flip de GH-496.
