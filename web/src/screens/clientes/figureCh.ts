@@ -5,16 +5,15 @@
 
 import type { MoneyFormat } from '../../format/money'
 
-const NINE_DIGITS_WITH_DOTS = 11
-const SPACE_AFTER_SYMBOL = 1
+const NINE_DIGITS_WITH_DOTS_AND_SPACE = 11
 
 /**
- * How many `ch` the widest amount can take in this Money format, from the format alone: the symbol
- * counted twice (it can be wider than a digit), the space, nine digits with their two dots and the
- * decimals with their separator.
+ * How many `ch` the widest amount can take in this Money format, from the format alone: the symbol,
+ * then nine digits with their two dots and the space after the symbol, counted as 11 (the dots and
+ * the space are narrower than a digit, so it is a ceiling), and the decimals with their separator.
  */
 export function figureChOf(format: MoneyFormat): number {
   const symbolLength = Array.from(format.symbol).length
   const decimals = format.decimals > 0 ? format.decimals + 1 : 0
-  return 2 * symbolLength + SPACE_AFTER_SYMBOL + NINE_DIGITS_WITH_DOTS + decimals
+  return symbolLength + NINE_DIGITS_WITH_DOTS_AND_SPACE + decimals
 }

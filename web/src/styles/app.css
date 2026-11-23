@@ -5599,6 +5599,11 @@ a.ajustes-tema__opcion {
   flex: 0 1 calc((var(--owed-line-min) - 100%) * 999);
 }
 
+/* The word takes what the amount leaves, so it never wraps while there is room beside the amount. */
+.owed-summary__legend > li > .owed-summary__word {
+  flex-grow: 1;
+}
+
 .owed-summary__word {
   font-weight: 400;
   color: var(--tinta2);

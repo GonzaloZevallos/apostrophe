@@ -72,16 +72,16 @@ test('the bar is hidden from assistive technology and each part carries its API 
 test('the card root carries --figure-ch from the Money format alone', () => {
   const { container } = renderWith(<OwedSummary debtors={SUMMARY} />, { symbol: '$', decimals: 2 })
 
-  expect(screen.getByRole('region').getAttribute('style')).toBe('--figure-ch: 17;')
+  expect(screen.getByRole('region').getAttribute('style')).toBe('--figure-ch: 15;')
   expect(container.querySelectorAll('[style*="--figure-ch"]')).toHaveLength(1)
 })
 
-test('--figure-ch spans two symbols, the space, nine digits with their dots and the decimals', () => {
-  expect(figureChOf({ symbol: '$', decimals: 0 })).toBe(14)
-  expect(figureChOf({ symbol: '$', decimals: 2 })).toBe(17)
-  expect(figureChOf({ symbol: 'US$$', decimals: 0 })).toBe(20)
-  expect(figureChOf({ symbol: '€', decimals: 0 })).toBe(14)
-  expect(figureChOf({ symbol: '😀', decimals: 3 })).toBe(18)
+test('--figure-ch spans the symbol, nine digits with their dots and the space, and the decimals', () => {
+  expect(figureChOf({ symbol: '$', decimals: 0 })).toBe(12)
+  expect(figureChOf({ symbol: '$', decimals: 2 })).toBe(15)
+  expect(figureChOf({ symbol: 'US$$', decimals: 0 })).toBe(15)
+  expect(figureChOf({ symbol: '€', decimals: 0 })).toBe(12)
+  expect(figureChOf({ symbol: '😀', decimals: 3 })).toBe(16)
 })
 
 test('the skeleton is hidden, has no text, digit, currency symbol, role or name and shows the card’s own parts', () => {
@@ -96,5 +96,5 @@ test('the skeleton is hidden, has no text, digit, currency symbol, role or name 
   expect(screen.queryByRole('region')).not.toBeInTheDocument()
   expect(screen.queryByRole('group')).not.toBeInTheDocument()
   expect(screen.queryByRole('list')).not.toBeInTheDocument()
-  expect(root?.getAttribute('style')).toBe('--figure-ch: 14;')
+  expect(root?.getAttribute('style')).toBe('--figure-ch: 12;')
 })
