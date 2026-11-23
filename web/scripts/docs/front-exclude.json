@@ -26,6 +26,7 @@
   "^src/components/selectorSearch\\.ts$",
   "^src/phone/served\\.fixture\\.ts$",
   "^src/sales/useSaleDraft\\.ts$",
+  "^src/sales/useUndoSale\\.ts$",
   "^src/sales/saleDraft\\.ts$",
   "^src/sales/productRows\\.ts$",
   "^src/sales/productList\\.ts$",

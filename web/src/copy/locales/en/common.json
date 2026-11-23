@@ -107,6 +107,8 @@
   "backArrow": "‹ {{parent}}",
   "offline": "Offline: check your internet and try again.",
   "genericError": "Something went wrong. Try again.",
+  "undoSaleOffline": "No connection. The sale is still saved: delete it from its detail in Sales.",
+  "undoSaleFailed": "The sale is still saved. Delete it from its detail in Sales.",
   "search": "Search",
   "noResults": "No results",
   "noLongerAvailable": "no longer available",

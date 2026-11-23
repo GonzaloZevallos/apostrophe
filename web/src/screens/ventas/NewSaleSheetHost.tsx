@@ -11,6 +11,8 @@
  * - The stacked Sheets (customer search with Create customer, Collect) are mounted only while `over` names
  *   them and the router's entry for them exists. Closing one never asks and never touches the lines.
  * - Escape is one bubble-phase listener on `document`; it yields to anything that already handled the key.
+ * - On its default exit a saved Sale is announced ("Sale to {name} saved · Undo") just before `leave()`, so the
+ *   toast waits for the destination; a caller that passes `onSaved` owns its exit and gets no Undo.
  * - The Customer's id lives only in `draft.customerId`; the host keeps just the chosen record's display
  *   fields, and they count only while their id is the draft's.
  */
@@ -30,6 +32,7 @@ import type { CompleteSale } from '../../sales/newSalePricing'
 import { type ChosenCustomer, customerViewOf } from '../../sales/newSaleView'
 import { isDirty } from '../../sales/saleDraft'
 import { useSaleDraft } from '../../sales/useSaleDraft'
+import { useUndoSale } from '../../sales/useUndoSale'
 import { parentOf } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import CollectSheet from './CollectSheet'
@@ -69,6 +72,7 @@ function NewSaleSheetBody({ onSaved }: NewSaleSheetHostProps) {
   const inApp = isInApp(location.state)
 
   const draft = useSaleDraft({ today: me.today })
+  const { announceSaved } = useUndoSale()
   // There is no shipping field on the Sheet yet, and an empty one never prices to a complete sale: the Sale
   // opens with no shipping charged, as the live screen does ('0'), so Collect can be reached.
   const { setShipping } = draft
@@ -187,8 +191,10 @@ function NewSaleSheetBody({ onSaved }: NewSaleSheetHostProps) {
           onClose={sheet.close}
           onSaved={(sale) => {
             const name = customer.kind === 'known' ? customer.name : null
-            if (onSaved === undefined) leave()
-            else onSaved(sale.id, name)
+            if (onSaved === undefined) {
+              announceSaved({ saleId: sale.id, name })
+              leave()
+            } else onSaved(sale.id, name)
           }}
           onSavingChange={(saving) => {
             savingRef.current = saving

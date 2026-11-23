@@ -229,7 +229,7 @@ test('a followed redirect does not restart the clock: the sale-saved toast still
   expect(screen.queryByRole('status')).not.toBeInTheDocument()
 })
 
-test('a new toast replaces the previous one and takes its own full duration', async () => {
+test('a toast raised over one with a button waits, and takes its own full duration once released', async () => {
   const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
   renderRaiser()
   await user.click(screen.getByRole('button', { name: 'raise sale' }))
@@ -239,6 +239,11 @@ test('a new toast replaces the previous one and takes its own full duration', as
 
   await user.click(screen.getByRole('button', { name: 'raise text' }))
 
+  expect(screen.getAllByRole('status')).toHaveLength(1)
+  expect(screen.getByRole('status')).toHaveTextContent('Sale to Ana saved')
+  act(() => {
+    vi.advanceTimersByTime(1000)
+  })
   expect(screen.getAllByRole('status')).toHaveLength(1)
   expect(screen.getByRole('status')).toHaveTextContent('Expense deleted')
   act(() => {
@@ -280,8 +285,8 @@ function renderUndoRaiser() {
 const UNDO_RESULTS = [
   { result: 'deleted', role: 'status', text: 'Sale deleted · the grams go back to stock' },
   { result: 'gone', role: 'status', text: 'That is gone. The list is up to date.' },
-  { result: 'offline', role: 'status', text: 'Offline: check your internet and try again.' },
-  { result: 'failed', role: 'alert', text: 'Something went wrong. Try again.' },
+  { result: 'offline', role: 'status', text: 'No connection. The sale is still saved: delete it from its detail in Sales.' },
+  { result: 'failed', role: 'alert', text: 'The sale is still saved. Delete it from its detail in Sales.' },
 ] as const
 
 describe('the undoResult toast', () => {
@@ -305,39 +310,53 @@ describe('the undoResult toast', () => {
     expect(screen.queryByRole(row.role)).not.toBeInTheDocument()
   })
 
-  it.each(UNDO_RESULTS)('a string toast replaces $result and is the only one visible', async (row) => {
+  it.each(UNDO_RESULTS)('a string toast raised over $result waits and shows once it is gone', async (row) => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     renderUndoRaiser()
     await user.click(screen.getByRole('button', { name: `raise ${row.result}` }))
 
     await user.click(screen.getByRole('button', { name: 'raise text' }))
 
+    expect(screen.getAllByRole(row.role)).toHaveLength(1)
+    expect(screen.getByRole(row.role)).toHaveTextContent(row.text)
+    act(() => {
+      vi.advanceTimersByTime(DEFAULT_TOAST_MS)
+    })
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
     expect(screen.getAllByRole('status')).toHaveLength(1)
     expect(screen.getByRole('status')).toHaveTextContent('Expense deleted')
   })
 
-  it('is replaced by a sale-saved toast', async () => {
+  it('a sale-saved toast raised over a failure waits for it', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     renderUndoRaiser()
     await user.click(screen.getByRole('button', { name: 'raise failed' }))
 
     await user.click(screen.getByRole('button', { name: 'raise sale' }))
 
+    expect(screen.getByRole('alert')).toHaveTextContent('The sale is still saved. Delete it from its detail in Sales.')
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    act(() => {
+      vi.advanceTimersByTime(DEFAULT_TOAST_MS)
+    })
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-    expect(screen.getAllByRole('status')).toHaveLength(1)
     expect(screen.getByRole('status')).toHaveTextContent('Sale to Ana saved')
   })
 
-  it('replaced at 2400 ms, the new toast takes its own full duration', async () => {
+  it('a message released from the queue takes its own full duration', async () => {
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
     renderUndoRaiser()
     await user.click(screen.getByRole('button', { name: 'raise deleted' }))
     act(() => {
       vi.advanceTimersByTime(2400)
     })
-
     await user.click(screen.getByRole('button', { name: 'raise text' }))
+    expect(screen.getByRole('status')).toHaveTextContent('Sale deleted')
+
+    act(() => {
+      vi.advanceTimersByTime(100)
+    })
+    expect(screen.getByRole('status')).toHaveTextContent('Expense deleted')
     act(() => {
       vi.advanceTimersByTime(DEFAULT_TOAST_MS - 100)
     })
