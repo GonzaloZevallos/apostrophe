@@ -496,3 +496,142 @@ def test_today_owed_age_and_level_at_the_edges(
 
     assert row["owing_since"] == sold_on
     assert (row["age_days"], row["age_level"]) == (age_days, age_level)
+
+
+def _pay_customer(client: TestClient, customer_id: int, amount: int) -> None:
+    method_id: int = client.get("/api/payment-methods").json()[0]["id"]
+    paid = client.post(
+        f"/customers/{customer_id}/payments",
+        json={"paid_on": "2026-10-01", "amount": amount, "payment_method_id": method_id},
+    )
+    assert paid.status_code == 201, paid.text
+
+
+def test_a_partial_payment_keeps_the_age_and_paying_the_oldest_sale_moves_it_on(
+    client: TestClient,
+) -> None:
+    variety_id = _priced_variety(client)
+    debtor = _customer(client, 1)
+    _sale_on(client, debtor, variety_id, 4, "2026-09-01")
+    _sale_on(client, debtor, variety_id, 2, "2026-09-20")
+
+    _pay_customer(client, debtor, 1_000)
+    [partial] = _owed(client)["debtors"]
+    _pay_customer(client, debtor, 3_000)
+    [moved] = _owed(client)["debtors"]
+
+    assert (partial["balance"], partial["owing_since"], partial["age_days"]) == (
+        5_000,
+        "2026-09-01",
+        31,
+    )
+    assert partial["age_level"] == "overdue"
+    assert (moved["balance"], moved["owing_since"], moved["age_days"]) == (2_000, "2026-09-20", 12)
+    assert moved["age_level"] == "warning"
+
+
+def test_the_age_rolls_over_at_the_next_argentina_midnight(
+    client: TestClient, clock: MovableClock
+) -> None:
+    _sale_on(client, _customer(client, 1), _priced_variety(client), 2, "2026-09-02")
+
+    clock.set(datetime(2026, 10, 3, 2, 59, tzinfo=UTC))
+    [before] = _owed(client)["debtors"]
+    clock.set(datetime(2026, 10, 3, 3, 1, tzinfo=UTC))
+    [after] = _owed(client)["debtors"]
+
+    assert (before["age_days"], before["age_level"]) == (30, "warning")
+    assert (after["age_days"], after["age_level"]) == (31, "overdue")
+
+
+def test_the_phone_is_what_the_customer_response_returned_and_a_blank_one_is_null(
+    client: TestClient,
+) -> None:
+    variety_id = _priced_variety(client)
+    with_phone = _customer(client, 1)
+    blank = client.post("/customers", json={"name": "Blank", "phone": "", "phone_country": "AR"})
+    assert blank.status_code == 201, blank.text
+    _sale_on(client, with_phone, variety_id, 3, "2026-09-10")
+    _sale_on(client, blank.json()["id"], variety_id, 1, "2026-09-12")
+
+    stored = client.get(f"/customers/{with_phone}").json()["phone"]
+    rows = _owed(client)["debtors"]
+
+    assert stored is not None
+    assert [row["customer_id"] for row in rows] == [with_phone, blank.json()["id"]]
+    assert rows[0]["phone"] == stored
+    assert blank.json()["phone"] is None
+    assert rows[1]["phone"] is None
+
+
+def test_a_balance_with_cents_is_the_same_raw_value_in_the_three_places(
+    client: TestClient, money_scale: int
+) -> None:
+    if money_scale != 2:
+        pytest.skip("only a business that stores hundredths can hold cents")
+    assert client.put("/api/money-format", json={"symbol": "$", "decimals": 2}).status_code == 200
+    product = client.post("/api/products", json={"name": "Cents"}).json()
+    priced = client.post(
+        f"/api/products/{product['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 11_000.5},
+    )
+    assert priced.status_code == 201, priced.text
+    sale = client.post(
+        "/sales",
+        json={
+            "customer_id": _customer(client, 1),
+            "payment": {"kind": "owing"},
+            "date": SALE_DATE,
+            "lines": [{"product_id": product["id"], "quantity": "1"}],
+        },
+    )
+    assert sale.status_code == 201, sale.text
+
+    panel = client.get("/panel").json()
+    debtors = client.get("/payments/debtors").json()
+
+    [owed_row] = panel["today"]["owed"]["debtors"]
+    [teaser_row] = panel["debts"]["teaser"]
+    [debtor_row] = debtors["debtors"]
+    assert owed_row["balance"] == teaser_row["balance"] == debtor_row["balance"] == 11_000.5
+    assert type(owed_row["balance"]) is float
+    assert panel["today"]["owed"]["total_owed"] == 11_000.5
+    assert panel["debts"]["total_owed"] == debtors["total_owed"] == 11_000.5
+
+
+def _panel_statements(engine: Engine, client: TestClient) -> int:
+    with captured_statements(engine) as statements:
+        response = client.get("/panel")
+        assert response.status_code == 200, response.text
+    return len(statements)
+
+
+def test_the_panel_issues_the_same_statements_for_one_debtor_and_for_thirty(
+    client: TestClient, other_client: TestClient, engine: Engine
+) -> None:
+    few = _priced_variety(client)
+    only_debtor = _customer(client, 1)
+    for day in ("2026-09-10", "2026-09-12", "2026-09-20"):
+        _sale_on(client, only_debtor, few, 2, day)
+
+    many = _priced_variety(other_client)
+    credit = _customer(other_client, 99)
+    kept = _owing_sale(other_client, credit, many, 2)
+    removed = _owing_sale(other_client, credit, many, 4)
+    _pay_customer(
+        other_client, credit, _sale_total(other_client, kept) + _sale_total(other_client, removed)
+    )
+    assert other_client.delete(f"/sales/{removed}").status_code == 200
+    for index in range(30):
+        debtor = _customer(other_client, index)
+        _sale_on(other_client, debtor, many, index + 1, f"2026-09-{1 + index % 25:02d}")
+        _sale_on(other_client, debtor, many, 2, f"2026-09-{2 + index % 20:02d}")
+        if index % 3 == 0:
+            _pay_customer(other_client, debtor, 500)
+
+    assert _owed(client)["debtor_count"] == 1
+    assert _owed(other_client)["debtor_count"] == 30
+    one = _panel_statements(engine, client)
+    thirty = _panel_statements(engine, other_client)
+
+    assert one == thirty, (one, thirty)
