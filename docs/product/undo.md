@@ -10,16 +10,16 @@ Undo es el atajo de 5 segundos para eliminar la Sale recién guardada desde New 
 
 ## El aviso de guardado
 
-- Después de guardar una Sale desde New sale aparece un aviso corto con una acción: "Sale to {name} saved · Undo". Dura 5 segundos (`SALE_SAVED_TOAST_MS`).
-- Se muestra en la pantalla a la que vuelve New sale. Se arma antes de salir de New sale (`armAfterLeaving`), nunca se levanta al llegar, y a los 5 s ya no está.
-- Aparece en toda Sale guardada desde New sale: con Customer, sin Customer, con deuda, pagada en parte o pagada en el momento con Collect.
-- Sin Customer, en lugar del nombre se usa el texto "No customer" que ya está en el Copy module.
-- Solo se guardan el id y el nombre de la Sale, en memoria. Un guardado más nuevo reemplaza al aviso anterior, así que Undo siempre actúa sobre la última Sale guardada.
-- Es el aviso temporizado de una acción que la app ya tiene, no un elemento nuevo.
+- Después de guardar una Sale desde New sale aparece un aviso corto con una acción: "Sale to {name} saved · Undo" (`common:saleSavedTo` y `common:undo`). Dura 5 segundos (`SALE_SAVED_TOAST_MS`).
+- Se muestra en la pantalla a la que vuelve New sale. Se arma antes de salir de New sale (`armAfterLeaving`, justo antes de `leave()`), nunca se levanta al llegar, y a los 5 s ya no está.
+- Aparece en toda Sale guardada desde New sale por su salida habitual: con Customer, sin Customer, con deuda, pagada en parte o pagada en el momento con Collect. Una pantalla que abre New sale pasando su propio `onSaved` maneja su propia salida y no recibe el aviso ni Undo.
+- Sin Customer, en lugar del nombre se usa el texto "No customer" que ya está en el Copy module (`sales:noCustomer`).
+- Solo se guardan el id y el nombre de la Sale, en memoria. Cada aviso guarda su propio id: un guardado más nuevo trae su propio aviso, que reemplaza al anterior al llegar, y nunca hereda el id de una Sale anterior, así que Undo siempre actúa sobre la Sale de su aviso.
+- Es el aviso temporizado de una acción que la app ya tiene (`SaleSavedToast` dentro de `.aviso-flotante`), no un elemento nuevo.
 
 ## Qué hace Undo
 
-- Un toque elimina la Sale, sin paso de confirmación.
+- Un toque elimina la Sale, sin paso de confirmación. Un doble toque manda un solo pedido de eliminación.
 - Las consecuencias son las mismas que al eliminarla desde su detalle:
   - La Sale sale de Sales y de la cuenta del Customer.
   - Su On-the-spot payment se va con ella.
@@ -27,7 +27,7 @@ Undo es el atajo de 5 segundos para eliminar la Sale recién guardada desde New 
   - Deja de influir en las New sale suggestions.
   - Un Credit aparece solo donde el glosario dice que aparece, sin ningún aviso extra.
 - Solo elimina: no vuelve a abrir New sale con la Sale cargada, y el vendedor queda en la pantalla en la que estaba.
-- Con éxito, se vuelven a pedir las lecturas abiertas de Sales, Stock, la cuenta del Customer y Payments, y las New sale suggestions.
+- Con éxito, se vuelven a pedir las lecturas abiertas de Sales, Stock, la cuenta del Customer y Payments, y las New sale suggestions (`keys.saleFormSuggestionsAll()`).
 - Un Home que ya está en pantalla conserva las cifras que mostraba: Undo no las hace saltar. Se actualizan la próxima vez que se abre Home. La consulta del Panel (`keys.panel()`) nunca se borra, invalida ni vuelve a pedir desde Undo.
 
 ## Cómo termina
@@ -38,11 +38,13 @@ Cada resultado es un aviso corto, temporizado, con la duración habitual de la a
 
 | Final | Qué ve el vendedor | Attention icon |
 |---|---|---|
-| Eliminada | Una oración corta, como "Sale deleted" | No |
-| Ya no estaba (404, `isGone`) | Un "already deleted" neutro | No |
-| Sin conexión (`NetworkError`) | Que se perdió la conexión, que la Sale sigue guardada y que se puede eliminar desde su detalle en Sales | Sí |
-| Falló (cualquier otro rechazo) | Que la Sale sigue guardada y que se puede eliminar desde su detalle en Sales, sin dar el motivo | Sí |
-| 401 | Nada propio: se hace cargo el manejo de sesión que ya existe | No |
+| Eliminada | "Sale deleted · the grams go back to stock" (`common:saleDeletedGramsBack`, `AvisoExito`) | No |
+| Ya no estaba (404, `isGone`) | El aviso neutro de algo que ya no está (`Notice` con `GONE_NOTICE`) | No |
+| Sin conexión (`NetworkError`) | "No connection. The sale is still saved: delete it from its detail in Sales." (`common:undoSaleOffline`, `AvisoAmbar`) | Sí |
+| Falló (cualquier otro rechazo) | "The sale is still saved. Delete it from its detail in Sales." (`common:undoSaleFailed`, `AvisoAmbar`), sin dar el motivo | Sí |
+| 401 | Nada propio: se hace cargo el manejo de sesión que ya existe (`MutationCache.onError`) | No |
+
+Un resultado que llega tarde nunca tapa un aviso que todavía importa: si en pantalla hay un aviso con acción (como el aviso de guardado de otra Sale) o un resultado Sin conexión o Falló, el resultado nuevo espera su turno, en orden de llegada, y se muestra con su propia duración cuando ese aviso termina. Por eso un resultado puede verse después de los 5 s de una Sale guardada más tarde; es tardío pero cierto, y no nombra ninguna Sale.
 
 Los textos viven en el Copy module, en inglés, y siguen WRITING_STANDARDS.md y la Icon and text rule.
 
@@ -52,10 +54,11 @@ Los textos viven en el Copy module, en inglés, y siguen WRITING_STANDARDS.md y 
 - Reintentar un Undo fallido.
 - Cualquier cambio en la eliminación desde el detalle de la Sale.
 - Cambios en el backend.
+- Un estado de "eliminando" mientras el pedido está en curso: un pedido colgado no muestra nada hasta que el navegador lo da por perdido.
 
 ## Estado
 
-En el código es `useUndoSale` (`web/src/sales/useUndoSale.ts`). Hoy solo se llega a través de NewSaleSheetHost, que todavía no está ruteado, y por eso figura en `web/scripts/docs/front-exclude.json` (D-62e6dc23). La parte que rutea el host saca esa entrada.
+En el código es `useUndoSale` (`web/src/sales/useUndoSale.ts`), con `undoOutcome` para elegir el resultado y la cola de avisos en `web/src/flash/flashReducer.ts`. Hoy solo se llega a través de NewSaleSheetHost, que todavía no está ruteado, y por eso figura en `web/scripts/docs/front-exclude.json` (D-62e6dc23). La parte que rutea el host saca esa entrada.
 
 ## Métricas
 
