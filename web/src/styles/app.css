@@ -2169,10 +2169,8 @@ a.ajustes-tema__opcion {
 }
 
 /* `Ventas` (`Ventas.dc.html`/`VentasCompu.dc.html`, plan "sales-list"): the
- * header's title/tabs/range-and-total, and each sale's stacked row. `.fila-venta`
- * is a tappable row: date, name/VIP/varieties, a chevron (`Icono`), and the
- * amount with "te debe" under it only when the API's `still_owing` says so
- * (never derived here). */
+ * header's title/tabs/range-and-total; each sale is a `SaleCard` (`.sale-card`,
+ * below, after the payment chip). */
 .ventas__cabecera {
   display: flex;
   flex-direction: column;
@@ -2256,91 +2254,6 @@ a.ajustes-tema__opcion {
   font-size: 30px;
   font-weight: 600;
   letter-spacing: -0.04em;
-}
-
-.lista-ventas {
-  display: flex;
-  flex-direction: column;
-}
-
-.fila-venta {
-  display: flex;
-  align-items: center;
-  gap: var(--espacio-md);
-  min-height: var(--alto-tocable);
-  padding: var(--espacio-sm) 0;
-  border-bottom: 1px solid var(--linea);
-  color: var(--tinta);
-  text-decoration: none;
-}
-
-.fila-venta:last-child {
-  border-bottom: 0;
-}
-
-.fila-venta__fecha {
-  width: 42px;
-  font-size: 13px;
-  color: var(--tinta2);
-}
-
-.fila-venta__cuerpo {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.fila-venta__nombre {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.fila-venta__sin-cliente {
-  color: var(--tinta2);
-  font-weight: 400;
-}
-
-.fila-venta__detalle {
-  font-size: 13px;
-  color: var(--tinta2);
-}
-
-/* Phone (`Ventas.dc.html`): name and grams share one line. Computer
- * (`VentasCompu.dc.html`, 900px+ below): grams move into their own column, so
- * this line becomes names only — both text nodes stay in the DOM; only the
- * breakpoint decides which one shows, never a second grams sum. */
-.fila-venta__detalle--nombre {
-  display: none;
-}
-
-.fila-venta__gramos {
-  display: none;
-}
-
-.fila-venta__monto {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
-}
-
-.fila-venta__cifra {
-  font-size: 17px;
-  font-weight: 600;
-}
-
-.fila-venta__te-debe {
-  font-size: 12px;
-}
-
-.fila-venta > svg {
-  flex-shrink: 0;
-  color: var(--tenue);
 }
 
 /* `VentaDetalle` (`VentaDetalle.dc.html`): the total's own label and the summary
@@ -4138,23 +4051,6 @@ a.ajustes-tema__opcion {
     letter-spacing: -0.035em;
   }
 
-  /* `VentasCompu.dc.html`'s row: grams in their own right-aligned column,
-   * the variety-names line without them. */
-  .fila-venta__detalle--combinada {
-    display: none;
-  }
-
-  .fila-venta__detalle--nombre {
-    display: block;
-  }
-
-  .fila-venta__gramos {
-    display: block;
-    width: 56px;
-    text-align: right;
-    font-size: 15px;
-    color: var(--tinta2);
-  }
 }
 
 /* ===== Loading ===== */
@@ -5664,7 +5560,7 @@ a.ajustes-tema__opcion {
  *   .cobrar, .interruptor, .boton-aviso, .aviso-exito__deshacer (the sale-saved toast's Undo);
  *   transparent, so --superficie is the fill cue: .boton--enlace,
  *   .boton--fila, .enlace-texto, .bar-inferior__item, .riel-lateral__item,
- *   .riel-lateral__ajustes, .mas__item, .ajustes__item, .mas-info__boton, .fila-venta, .sale-card,
+ *   .riel-lateral__ajustes, .mas__item, .ajustes__item, .mas-info__boton, .sale-card,
  *   .fila-gasto, .fila-entrada, .fila-entrada__enlace, .lista-clientes__fila,
  *   .bloque-deben__titulo, .bloque-deben__fila, .bloque-deben__datos, .fila-stock--enlace, .variedad-item,
  *   .variedad-fila, .variedades__todas, .catalogo__fila-nombre, .pestanas__opcion,
@@ -5724,7 +5620,6 @@ a.ajustes-tema__opcion {
     .mas__item,
     .ajustes__item,
     .mas-info__boton,
-    .fila-venta,
     .sale-card,
     .fila-gasto,
     .fila-entrada,
@@ -5797,7 +5692,7 @@ a.ajustes-tema__opcion {
 
 /* A tap on a button, tab or the bar selects no text; text in lists and fields stays
  * selectable, since only these classes opt out. Rows whose text is the business's data
- * (.fila-venta, .variedad-fila and the like) are in the test's SELECTABLE table instead. */
+ * (.sale-card, .variedad-fila and the like) are in the test's SELECTABLE table instead. */
 :is(
     .boton,
     .boton-icono,
@@ -6810,60 +6705,6 @@ a.ajustes-tema__opcion {
   .bar-inferior a {
     touch-action: manipulation;
   }
-
-  .fila-venta__texto {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .fila-venta__nombre > :not(.fila-venta__texto) {
-    flex-shrink: 0;
-  }
-
-  .fila-venta__detalle {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .fila-venta__cifra {
-    white-space: nowrap;
-  }
-
-  .fila-venta__monto {
-    flex-shrink: 0;
-  }
-}
-
-/* Under 360 px the amount and the date share the first line and the name takes the second, so
- * a long name and a nine-digit amount both fit. */
-@media (max-width: 359.98px) {
-  .fila-venta {
-    flex-wrap: wrap;
-    row-gap: 0;
-  }
-
-  .fila-venta__fecha {
-    flex: 1 1 0;
-    width: auto;
-    min-width: 0;
-    white-space: nowrap;
-  }
-
-  .fila-venta__monto {
-    order: 2;
-  }
-
-  .fila-venta > svg {
-    order: 2;
-  }
-
-  .fila-venta__cuerpo {
-    order: 3;
-    flex: 1 0 100%;
-  }
 }
 
 /* Fit on Customers, Expenses, Varieties, entries, Settings and the invitation (GH-319): a long
@@ -7637,6 +7478,97 @@ button:has(> .venta-en-curso) {
 .payment-chip--unknown {
   color: var(--critico);
   background: var(--superficie);
+}
+
+/* `Ventas`'s list: one `SaleCard` per sale (`Pedidos.dc.html`, the GH-928 drawing decisions), the
+ * same card at every width. Tokens only; the card's text uses the pairs the design README already
+ * lists (--tinta, --tinta2 on --papel). Two columns: the text (name, product line, date) takes what
+ * the right column leaves, the total and the chip. The right column sizes to its content up to 60%,
+ * so the chip may wrap between words but the total and the chip never shrink and an amount is never
+ * cut: each money figure is its own nowrap element. */
+.sale-card-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.sale-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) fit-content(60%);
+  grid-template-areas:
+    "name total"
+    "items chip"
+    "date chip";
+  align-items: center;
+  column-gap: var(--espacio-md);
+  row-gap: 2px;
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--linea);
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.sale-card:last-child {
+  border-bottom: 0;
+}
+
+.sale-card__name {
+  grid-area: name;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.sale-card__items {
+  grid-area: items;
+  display: flex;
+  gap: var(--espacio-xs);
+  min-width: 0;
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.sale-card__item {
+  flex: 0 10 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sale-card__more {
+  flex: none;
+  white-space: nowrap;
+}
+
+.sale-card__total {
+  grid-area: total;
+  justify-self: end;
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.sale-card .payment-chip {
+  grid-area: chip;
+  justify-self: end;
+  align-self: start;
+  flex-shrink: 0;
+  max-width: 100%;
+}
+
+.sale-card .payment-chip .cifra-n {
+  white-space: nowrap;
+}
+
+.sale-card__date {
+  grid-area: date;
+  font-size: 13px;
+  color: var(--tinta2);
 }
 
 /* Customers segmented control: the wrapper sizes the shared option, which splits the width
