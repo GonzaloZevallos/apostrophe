@@ -24,10 +24,13 @@ Las filas `--strict` que no llegaron a ok en la corrida de head son `ClientesAvi
 - `ConfiguracionOscuro`: lo mismo en oscuro; tokens oscuros en tarjeta, atajos y filas, sin texto ilegible.
 - `ConfiguracionCompu`: lista de siempre de la computadora (Business, Users, Prices, Payments and expenses, Integrations, Catalog message, Appearance, Your account), sin cambios respecto de #927.
 
-## No hecho en esta entrega
+## Mobile check (proyecto `mobile` de e2e, head `ad494d9a`)
 
-- Las dos corridas en la base `6a0b0e8c`: se intentaron desde un `git archive` de la base y la muestra no arrancó (`sample-app: the server exited before answering /health`), así que no hay AE base contra base ni head contra base de `ConfiguracionCompu`. "Sin cambios" de ConfiguracionCompu queda sin medir; va al dueño.
-- Las capturas a 320 y 430 px, el proyecto `mobile` de e2e y la corrida a mano del caso sin conteo con `/business` bloqueado no se corrieron por el tope de turnos.
+`npm run e2e -- --project=mobile --workers=4 --timeout=1800000`: 57 pasaron, 1 falló.
+
+- Primera corrida (`386e959c`): `ConfiguracionTarjeta` se alcanzó; `ConfiguracionTarjetaSinConteo` quedó `unreachable` en 320 y 375. Causa: el estado esperaba el texto exacto "Settings" y la espera toma el primer elemento con ese texto, que no es visible. Se cambió su `visible` a la etiqueta de la primera fila (`settings:rows.businessName.label`, "Business name"), y una sonda a 375 px dio ambos estados sin `unreachable`.
+- Segunda corrida: las celdas de 320, 375 y 430 px, en claro y en oscuro, pasaron con los dos estados alcanzados y ningún infractor nuevo (`unlisted: []`). Eso cubre `Configuracion` y `ConfiguracionOscuro` a 320, 375 y 430.
+- La única falla es la celda 246x437 oscuro: un infractor ya listado, `data-while-loading` en `VariedadNueva` (issue 47), no apareció esta vez (`fixedButListed`). No es una pantalla de Settings ni un infractor agregado; depende de los tiempos bajo carga (la primera corrida, con 600 s de tope por celda, venció en 430 y 246). Ninguna lista de infractores se tocó.
 
 ## Razonamiento del estado sin conteo
 
