@@ -3081,9 +3081,13 @@ a.ajustes-tema__opcion {
 }
 
 .customer-search__mark {
-  background: var(--acento-suave);
+  background: none;
   color: inherit;
   font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--acento);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
 }
 
 .customer-search__no-match {

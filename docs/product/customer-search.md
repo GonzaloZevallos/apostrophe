@@ -34,7 +34,7 @@ Título "Customer", con "Close". Nombre de la Sheet: "Choose a customer". Ayuda:
 ### Búsqueda tipeada
 - Las coincidencias no llevan título.
 - Primero van los nombres que empiezan con lo tipeado y después el resto, incluidas las coincidencias solo por teléfono. Cada grupo va en orden alfabético, sin importar acentos ni mayúsculas.
-- La parte que coincide se resalta con `<mark>`: negrita sobre el fondo suave del acento (sin subrayado: una acción no se dibuja como enlace), desde tokens.
+- La parte que coincide se resalta con `<mark>`: negrita con subrayado de acento, desde tokens (excepción nombrada de la guarda de subrayados: es un `<mark>` no interactivo, no una acción).
 - Ninguna fila se marca como elegida ni lleva `aria-selected`.
 
 ### Fila
