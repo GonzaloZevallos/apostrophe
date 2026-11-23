@@ -1406,6 +1406,18 @@ test('released, the card replaces the skeleton and shows the API total_owed', as
   expect(document.querySelector(SKELETON)).toBeNull()
 })
 
+test('with All held while the debtors read is held, there is no skeleton and no summary region', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture]), () => new Promise<Response>(() => {}) as never))
+  renderClientes()
+  await waitFor(() => expect(fetch).toHaveBeenCalledWith('/payments/debtors', expect.anything()))
+  await waitFor(() => expect(document.querySelector(SKELETON)).not.toBeNull())
+
+  await showAll()
+
+  await waitFor(() => expect(document.querySelector(SKELETON)).toBeNull())
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+})
+
 test('a first failed debtors read shows the flat list with no card and no skeleton', async () => {
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture]), () => new Response('boom', { status: 500 })))
   renderClientes()
