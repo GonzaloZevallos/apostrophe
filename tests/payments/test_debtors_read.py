@@ -410,3 +410,36 @@ def test_debtors_and_the_panel_teaser_rows_carry_no_phone(client: TestClient) ->
     }
     assert set(row["customer"]) == {"id", "name"}
     assert set(teaser) == {"customer_id", "name", "balance", "owing_since"}
+
+
+# -- today.owed on GET /panel (GH-876) -----------------------------------------------
+
+EMPTY_OWED = {"total_owed": 0, "debtor_count": 0, "sales_owing_count": 0, "debtors": []}
+
+
+def _owed(client: TestClient) -> dict[str, object]:
+    panel = client.get("/panel")
+    assert panel.status_code == 200, panel.text
+    owed: dict[str, object] = panel.json()["today"]["owed"]
+    return owed
+
+
+def test_today_owed_agrees_with_the_debts_block_and_the_debtors_list_with_a_credit_customer(
+    client: TestClient,
+) -> None:
+    variety_id = _priced_variety(client)
+    first, second = _customer(client, 1), _customer(client, 2)
+    _owing_sale(client, first, variety_id, 7)
+    _owing_sale(client, second, variety_id, 3)
+    _owing_sale(client, second, variety_id, 1)
+    _credit_customer(client, variety_id, 3)
+
+    debtors = client.get("/payments/debtors").json()
+    panel = client.get("/panel").json()
+    owed = panel["today"]["owed"]
+
+    assert len(debtors["debtors"]) == 2
+    assert owed["total_owed"] == panel["debts"]["total_owed"] == debtors["total_owed"] == 11_000
+    assert owed["sales_owing_count"] == panel["debts"]["sales_owing_count"]
+    assert owed["sales_owing_count"] == debtors["sales_owing_count"] == 3
+    assert owed["debtor_count"] == len(debtors["debtors"])
