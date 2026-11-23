@@ -4,8 +4,8 @@ Evidencia de Design para `Configuracion`, `ConfiguracionOscuro` y `Configuracion
 
 ## Qué se corrió
 
-- Head: la rama de este pull request, sobre la base `6a0b0e8c` con #927 (`9ecb43d7`).
-- Comando: `scripts/design/compare.sh --strict --out <dir>`, sobre el registro completo, sin `--only`, en una muestra nueva.
+- Base: `6a0b0e8c`, a partir de un `git archive` con `.venv` y `node_modules` enlazados (la primera vez la muestra no arrancó porque faltaba `.venv`: no se había enlazado). Head: la rama de este pull request (`ad494d9a` más el commit de evidencia), que contiene #927 (`9ecb43d7`).
+- Comando: levantar la muestra con `scripts/design/sample-app.sh` y correr `node scripts/design/comparisons.mjs --facts <facts> --out <dir> --strict`, sobre el registro completo, sin `--only`, en una muestra nueva cada vez (es lo que hace `compare.sh`, sin su espera de 120 s para el build). Dos corridas en la base y una en head.
 - `scripts/design/screens.json` no cambia: la fila `ConfiguracionOscuro` (`tema "oscuro"`) ya está en la línea 221.
 
 ## Celdas
@@ -35,3 +35,20 @@ Las filas `--strict` que no llegaron a ok en la corrida de head son `ClientesAvi
 ## Razonamiento del estado sin conteo
 
 `settle` espera `networkidle` tras cada paso, y el stub de `/business` se responde dentro del navegador, así que la medición no ocurre antes de que llegue el 500. `GatedLayout` falla solo con `me`, de modo que la página sobrevive. El estado prueba solo que la página dibuja tras un 500 asentado; el lugar vacío lo prueban `SettingsHome.test.tsx:136` y la corrida a mano. Un `networkidle` vencido lo traga `settle`.
+
+## AE de `ConfiguracionCompu` (`ae.mjs`, `--only Configuracion,ConfiguracionOscuro,ConfiguracionCompu --box`)
+
+| Comparación | built | design |
+| --- | --- | --- |
+| base1 contra base2 (ruido), `ConfiguracionCompu` | 0 | 0 |
+| base contra head, `ConfiguracionCompu` | 0 | 0 |
+
+El ruido es 0 y el AE de head contra base es 0: `ConfiguracionCompu` queda sin cambios (el criterio era head <= ruido). Base contra base también da 0 en `Configuracion` y `ConfiguracionOscuro`. Base contra head de esas dos filas del celular no son comparables (780x1688 contra 780x3042): la base no tiene la pantalla de inicio de #927, y es el cambio esperado; el diseño de las dos da AE 0.
+
+## Corrida a mano del caso sin conteo (375 px)
+
+Con una sesión de la muestra de celular y `/business` bloqueado, una vez abortado (`route.abort`) y otra respondido con 500: la página dibuja el `h1` "Settings" y la fila "Business name", ninguna cantidad de Users se muestra (0 coincidencias de `N users`), y no queda nada `aria-busy`. Capturas: `GH-994-count-less-abort-375.png` y `GH-994-count-less-500-375.png`, adjuntas al pull request.
+
+## Adjuntos al pull request
+
+`GH-994-Configuracion-{base,head}.png`, `GH-994-ConfiguracionOscuro-{base,head}.png`, `GH-994-ConfiguracionCompu-{base,head}.png` y las dos capturas sin conteo. Los PNG no se versionan.
