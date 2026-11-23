@@ -220,6 +220,21 @@ classDiagram
     shortfall : RowCost #124; None
     withdrawals : tuple~ReasonCost, ...~
   }
+  class OwedRow {
+    age_days : int
+    age_level : Literal
+    balance : int
+    customer_id : int
+    name : str
+    owing_since : date
+    phone : str #124; None
+  }
+  class OwedSummary {
+    debtor_count : int
+    debtors : tuple~OwedRow, ...~
+    sales_owing_count : int
+    total_owed : int
+  }
   class PaymentMethodMissing {
   }
   class PaymentMethodRecord {
@@ -334,6 +349,11 @@ classDiagram
     sales_of_costed : int
     sales_without_shipping : int
   }
+  class _DebtsRead {
+    debtors : Sequence~_OwedDebt~
+    sales_owing_count : int
+    total_owed : int
+  }
   class _LowStockRow {
     days_left : int #124; None
     name : str
@@ -350,6 +370,13 @@ classDiagram
   class _NamedVariety {
     name : str
     variety_id : int
+  }
+  class _OwedDebt {
+    balance : int
+    customer_id : int
+    name : str
+    owing_since : date
+    phone : str #124; None
   }
   class _VarietyDayTotals {
     costed_cost : int
