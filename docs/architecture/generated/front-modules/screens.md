@@ -99,6 +99,8 @@ subgraph src["src"]
       src_screens_settings_PricingGroup_tsx["PricingGroup.tsx"]
       src_screens_settings_SettingsComputer_tsx["SettingsComputer.tsx"]
       src_screens_settings_SettingsGroup_tsx["SettingsGroup.tsx"]
+      src_screens_settings_SettingsHomeList_tsx["SettingsHomeList.tsx"]
+      src_screens_settings_SettingsHome_tsx["SettingsHome.tsx"]
       src_screens_settings_Settings_tsx["Settings.tsx"]
       src_screens_settings_UsersGroup_tsx["UsersGroup.tsx"]
       src_screens_settings_WithdrawalReasons_tsx["WithdrawalReasons.tsx"]
@@ -357,7 +359,9 @@ src_screens_settings_PaymentMethodsArchived_tsx-->src_screens_settings_SettingsG
 src_screens_settings_PaymentMethods_tsx-->src_screens_settings_PaymentMethodForm_tsx
 src_screens_settings_PaymentsGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_PricingGroup_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_settings_SettingsHome_tsx-->src_screens_settings_SettingsHomeList_tsx
 src_screens_settings_Settings_tsx-->src_screens_settings_SettingsComputer_tsx
+src_screens_settings_Settings_tsx-->src_screens_settings_SettingsHome_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_InvitePartner_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_WithdrawalReasons_tsx-->src_screens_settings_SettingsGroup_tsx
