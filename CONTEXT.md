@@ -273,19 +273,19 @@ El Payment registrado junto con una Sale pagada por completo con uno de los Paym
 _Avoid_: cash sale, immediate payment
 
 **Settlement**:
-Qué Sales cubre un Payment posterior: primero la deuda más antigua del Customer (las Sales por fecha y después por orden de registro; los Payments por fecha y después por orden de registro), sin importar la fecha del propio Payment. Se calcula en el momento a partir de las Sales y los Payments tal como están ahora, y nunca se guarda. _In the app_: On account of the sale of dd/mm.
+Qué Sales cubre un Payment posterior: primero la deuda más antigua del Customer (las Sales por fecha y después por orden de registro; los Payments por fecha y después por orden de registro), sin importar la fecha del propio Payment. Se calcula en el momento a partir de las Sales y los Payments tal como están ahora, y nunca se guarda. Se muestra solo en Record payment y su vista previa; la cuenta del Customer no lo muestra. _In the app_: On account of the sale of dd/mm (solo en Record payment y su vista previa).
 _Avoid_: allocation, application, imputación
 
 **Credit**:
-Un Balance menor que cero, que queda solo cuando se elimina una Sale que unos Payments habían saldado; registrar nunca crea uno. Se aplica automáticamente a las próximas Sales del Customer que queden con deuda y no cuenta en ninguna cifra de deuda. _In the app_: In your favor.
+Un Balance menor que cero, que queda solo cuando se elimina una Sale que unos Payments habían saldado; registrar nunca crea uno. Se aplica automáticamente a las próximas Sales del Customer que queden con deuda y no cuenta en ninguna cifra de deuda. En la cuenta del Customer no es una fila propia: "In your favor" en una fila solo marca que el saldo corrido después de esa fila es menor que cero, un punto del libro que no es por sí mismo un Credit. _In the app_: Credit (cabecera de la ficha y Customers); In your favor (saldo corrido de una fila de la cuenta).
 _Avoid_: refund, saldo a favor, overpayment
 
 **Sales still owing**:
-Toda Sale de un Business que no está pagada por completo una vez que se aplica el Settlement, las pagadas en parte incluidas, cada una contada una sola vez. Desde la parte 1 de GH-855 la lista de Sales ya no las marca con "owes you": cada Sale card muestra su Payment state. _In the app_: la línea del conteo de la sección "Owed to you" de Customers y del bloque "Owed to you" de Home.
-_Avoid_: unpaid orders, pending sales, open invoices, owes you
+Toda Sale de un Business que no está pagada por completo una vez que se aplica el Settlement, las pagadas en parte incluidas, cada una contada una sola vez. Desde la parte 1 de GH-831 su conteo se muestra solo en el bloque "Owed to you" de Home y como "owes you" en Sales; Customers ya no lo muestra. _In the app_: owes you (en Sales) y la línea del conteo del bloque "Owed to you" de Home.
+_Avoid_: unpaid orders, pending sales, open invoices
 
 **Total owed**:
-La suma del Balance de cada Customer mayor que $0 en un Business; los Credits nunca la restan. _In the app_: el título de la sección "Owed to you" de Customers y del bloque "Owed to you" de Home.
+La suma del Balance de cada Customer mayor que $0 en un Business; los Credits nunca la restan. Se muestra en la vista "Owed to you" de Customers cuando alguien debe, y en el bloque "Owed to you" de Home. _In the app_: la cifra de la vista "Owed to you" de Customers y el título del bloque "Owed to you" de Home.
 _Avoid_: receivables, outstanding
 
 **Margin**:
@@ -295,6 +295,10 @@ _Avoid_: profit, earnings, markup, ganancia
 **Margin percentage**:
 El Margin de un Product sobre sus Sales de gramos con costo en el período. No hay ninguno cuando esas Sales son $0, como en un Product solo regalado o con todos los gramos pendientes. _In the app_: Margin %.
 _Avoid_: markup, rentabilidad, return
+
+**Cost and margins**:
+El costo por unidad de la última Purchase de un Product con costo mayor que 0 y cantidad mayor que 0, con fecha del día o anterior (en un empate de fecha gana la registrada después), redondeado la mitad hacia arriba a los decimales del Money format del Business, y su margen en porcentaje entero contra cada precio vigente de una regla activada (lista, mayorista y VIP solo para el VIP type con Customer types activado), calculado desde el costo exacto y redondeado la mitad hacia arriba, así que un -2,5 es -2. Es un costo de reposición, no el Lot order ni el Cost of goods sold, y nunca se guarda; un Product sin Purchase con costo no tiene costo ni márgenes, uno sin precio hoy no tiene márgenes y uno archivado no tiene ninguno. En el código: `LatestCostedPurchase` (el puerto de productos que implementa stock), `CostedPurchase`, `PriceRule` y `CostAndMargins`; _In the app_: lo expone `GET /api/products/{id}` como `cost`, y todavía ninguna pantalla lo muestra.
+_Avoid_: markup, ganancia, average cost, COGS
 
 **Average margin**:
 El Margin total de un mes en todos sus Products sobre las Sales de gramos con costo del mes, marcado cuando algún Product tiene gramos pendientes. _In the app_: Average margin.
@@ -625,7 +629,7 @@ Las ventas de un día registradas en su propia fecha hasta la hora local del dí
 _Avoid_: to date, running total, pace, progress, hasta ahora
 
 **Sale in progress**:
-La Sale que se está armando en New sale antes de guardarla: cliente, líneas (a lo sumo una por Product), fecha, Shipping charged, Note y cómo se paga, con el Payment method propuesto por las New sale suggestions. Vive solo en memoria durante una apertura de New sale, nunca se guarda en el dispositivo y cuenta como sin guardar solo con al menos una línea; en el código es `useSaleDraft`. En la app: Sale in progress.
+La Sale que se está armando en New sale antes de guardarla: cliente, líneas (a lo sumo una por Product, cada una con su cantidad y, opcionalmente, un Gift o un Special price, nunca los dos), fecha (un día real no posterior al día del Business), Shipping charged, Note y cómo se paga, con el Payment method propuesto por las New sale suggestions. Vive solo en memoria durante una apertura de New sale, nunca se guarda en el dispositivo y cuenta como sin guardar solo con al menos una línea; en el código es `useSaleDraft`. En la app: Sale in progress.
 _Avoid_: cart, basket, order, pending sale, borrador guardado
 
 **Money in**:
@@ -633,13 +637,17 @@ Los Payments con fecha de hoy de un Business, On-the-spot payments y posteriores
 _Avoid_: income, revenue, collections, takings, cobrado, Cash, cash in hand
 
 **Payment state**:
-Cómo está pagada una Sale: pagada (paid), pagada en parte (part_paid) o sin pagar (unpaid), junto con lo que todavía se debe de ella (`still_owed`), exactamente lo que da el Settlement. Se calcula en el momento con una sola regla de dominio, `payment_state`, y nunca se guarda; una Sale de $0, pagada en el momento o saldada por un Credit está pagada, y una cuyos hechos de pago no se pueden conciliar no tiene ninguno. Desde la parte 1 de GH-855 lo muestra el chip de la Sale card, con una palabra por estado y, para pagada en parte, un círculo lleno a medias y el monto; sin estado, el Attention icon y "Payment can't be shown". _In the app_: Paid · Part paid (con el monto) · Unpaid · Payment can't be shown (`sales:card.payment.*`).
-_Avoid_: status, payment status, settled, paid flag, estado de cobro, owes you
+Cómo está pagada una Sale: pagada (paid), pagada en parte (part_paid) o sin pagar (unpaid), junto con lo que todavía se debe de ella (`still_owed`), exactamente lo que da el Settlement. Lo calcula una sola regla de dominio, `payment_state`, y nunca se guarda; una Sale cuyos hechos de pago no se pueden conciliar no tiene ninguno. Lo muestra el chip de pago de una Sale (payment-state.md), que nunca lo vuelve a calcular y muestra "Payment cannot be shown" cuando falta o cuando una pagada en parte no tiene un monto adeudado mayor que 0. _In the app_: Paid, Unpaid, Part-paid · {amount} owed, Payment cannot be shown (en ninguna pantalla hasta #928).
+_Avoid_: status, payment status, settled, paid flag, estado de cobro
 
 **Best sellers**:
 Hasta 4 Products de un Business con más plata cobrada en las Sales con fecha desde el lunes de la semana en curso hasta hoy: la suma de los totales guardados de sus Sale lines, sin envío y con los Gifts en $0. Se dejan afuera los de $0, los empates van por nombre, entran los Archived y los Hidden products, y nunca se completa con otra semana. En la app: todavía no tiene palabra propia (la muestran partes posteriores de GH-497).
 _Avoid_: top products, top sellers, ranking, most sold, más vendidos, favorites
 
-**Sale card**:
-Cómo se muestra cada Sale en la lista de Sales, en el teléfono y en la computadora: un solo toque que abre el detalle, con el Customer (o "No customer"), la primera Sale line y "+N more" cuando hay otras, el total con el Shipping charged, el chip de su Payment state y la fecha como dd/mm. Lee solo el Payment state y lo que todavía se debe de su propia Sale, nunca el Balance del Customer ni el reloj del dispositivo. _In the app_: no tiene palabra propia; su nombre accesible sale de `sales:card.name`.
-_Avoid_: row, item, sale row, fila de venta, ticket, order card
+**Received**:
+Lo que el Customer entrega en mano al pagar en el momento, tipeado de forma opcional en la Collect Sheet solo para ver el Change. Arranca vacío, nunca viene precargado, nunca se guarda ni se manda y no cambia el Payment, que sigue siendo el total de la Sale con el Payment method elegido. Se oculta mientras la venta queda debiendo y nunca se ata al nombre de un medio ni a una marca de efectivo. _In the app_: Received.
+_Avoid_: tendered, cash given, amount paid, pago, Payment
+
+**Change**:
+El vuelto que la vendedora devuelve: Received menos el total de la Sale, calculado solo por `changeFor` a los decimales del Money format y mostrado solo cuando Received alcanza el total (0 si son iguales). Es una ayuda para la entrega: nunca se guarda, nunca se manda y no es un Credit ni un Payment. _In the app_: Change.
+_Avoid_: refund, Credit, vuelto, balance, difference

@@ -11,6 +11,7 @@ from datetime import date
 from app.payments.application.errors import CustomerNotFound
 from app.payments.application.ports import Ledgers
 from app.payments.domain.account import Account, account_of
+from app.payments.domain.customer_sales import CustomerSales, customer_sales
 from app.payments.domain.debt_age import (
     DebtAgeBucket,
     DebtAgeBuckets,
@@ -18,15 +19,8 @@ from app.payments.domain.debt_age import (
     bucket_of,
     buckets,
 )
-from app.payments.domain.settlement import SaleSettlement, Standing, settle
+from app.payments.domain.settlement import SaleSettlement, SettleResult, Standing, settle
 from app.shared.names import fold
-
-
-def account(ledgers: Ledgers, customer_id: int) -> Account:
-    ledger = ledgers.for_customer(customer_id)
-    if ledger is None:
-        raise CustomerNotFound()
-    return account_of(ledger.sales, ledger.payments)
 
 
 @dataclass(frozen=True)
@@ -37,6 +31,52 @@ class StillOwingLine:
     sale_number: int
     sale_date: date
     remaining: int
+
+
+def still_owing_lines(result: SettleResult) -> tuple[StillOwingLine, ...]:
+    """One line per Sale the Settlement leaves with a remainder above $0, in the
+    Settlement's own order (oldest first): the one place a `StillOwingLine` is built, for
+    the account and for the debtor list alike."""
+    return tuple(
+        StillOwingLine(
+            sale_number=sale.sale_number, sale_date=sale.sale_date, remaining=sale.still_owed
+        )
+        for sale in result.sales
+        if sale.still_owed > 0
+    )
+
+
+@dataclass(frozen=True)
+class AccountRead:
+    """A customer's account plus what the seller reads off it before a Reminder:
+    the age of the oldest debt, the Sales still owing, and the Customer's Sales by month
+    with their Average sale."""
+
+    account: Account
+    age_days: int | None
+    still_owing: tuple[StillOwingLine, ...]
+    sales: CustomerSales
+
+
+def account(ledgers: Ledgers, customer_id: int, today: date) -> AccountRead:
+    """`account_of()` gives the rows and running balances; one `settle()` gives the
+    age (through `age_in_days`) and the lines still owing, so both agree with the
+    Balance. The age is `None` unless the Customer owes: a Credit never ages."""
+    ledger = ledgers.for_customer(customer_id)
+    if ledger is None:
+        raise CustomerNotFound()
+    result = settle(ledger)
+    age_days: int | None = None
+    if result.standing == "owes":
+        # A balance above $0 always leaves a Sale still owing, so Owing since is set.
+        assert result.owing_since is not None
+        age_days = age_in_days(result.owing_since, today)
+    return AccountRead(
+        account=account_of(ledger.sales, ledger.payments),
+        age_days=age_days,
+        still_owing=still_owing_lines(result),
+        sales=customer_sales(ledger.sales, today),
+    )
 
 
 @dataclass(frozen=True)
@@ -94,13 +134,7 @@ def debtors(ledgers: Ledgers, today: date, show_customer_type: bool) -> Debtors:
         # can never spend more of a payment than the business's sales owe in total),
         # so `owing_since` is never `None` here.
         assert result.owing_since is not None
-        lines = tuple(
-            StillOwingLine(
-                sale_number=sale.sale_number, sale_date=sale.sale_date, remaining=sale.still_owed
-            )
-            for sale in result.sales
-            if sale.still_owed > 0
-        )
+        lines = still_owing_lines(result)
         # For the same reason as above: a balance above $0 leaves a sale still owing.
         assert lines
         total_owed += result.balance

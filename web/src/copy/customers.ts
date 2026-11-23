@@ -12,14 +12,15 @@ import { SHELL_TEXT } from './shell.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-/** Heads everyone A–Z, under "Owed to you" (`Clientes.dc.html`). */
-export const EVERYONE = 'Everyone · A–Z'
-
 export const LONG_REFUSALS: readonly string[] = []
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const CUSTOMERS_TEXT = {
   paymentDeleted: 'Payment deleted',
+  /** The notice above the flat list when the owed figures did not load; its name is this sentence. */
+  debtorsUnavailable: 'Owed amounts did not load: tap to try again',
+  /** The accessible name of the All | Owed to you control's radio group; it is never shown. */
+  customersView: 'Customers view',
   owesYou: 'Owes you',
   since: 'since ',
   credit: 'Credit ',
@@ -41,8 +42,7 @@ export const CUSTOMERS_TEXT = {
   nothingToPay: 'Nothing to pay',
   accountHeading: 'Account · running balance',
   paymentTitle: (method: string | number) => `Payment · ${method}`,
-  onAccountOf: (sale_date: string | number) => `On account of the sale of ${sale_date}`,
-  creditAmount: (running_balance: string | number) => `Credit ${running_balance}`,
+  creditAmount: (running_balance: string | number) => `In your favor ${running_balance}`,
   giveItAName: 'Give them a name',
   notAPhone: 'Enter the number with its area code, or start with + and the country code.',
   phoneHintNone: '+ and country code, then the number',
@@ -135,12 +135,12 @@ export function phoneLengthsText(lengths: readonly number[]): string {
 /** The ledger's fixed words, registered with the filled placeholder the screen shows
  * (`SAMPLES`' worst cases), so `copy/copyLimits.test.ts` measures them. */
 export const LIMITED_COPY: readonly LimitedCopy[] = [
+  { kind: 'notice', text: CUSTOMERS_TEXT.debtorsUnavailable },
   { kind: 'help', text: CUSTOMERS_TEXT.saleTitle },
   { kind: 'help', text: CUSTOMERS_TEXT.nothingToPay },
   { kind: 'help', text: CUSTOMERS_TEXT.accountHeading },
   { kind: 'help', text: CUSTOMERS_TEXT.paymentTitle(SAMPLES.name) },
   { kind: 'help', text: CUSTOMERS_TEXT.paidWith(SAMPLES.name) },
-  { kind: 'help', text: CUSTOMERS_TEXT.onAccountOf(SAMPLES.date) },
 ]
 
 
@@ -151,7 +151,6 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'CUSTOMERS_TEXT.deletePaymentOf': [[M, 'cash', D]],
   'CUSTOMERS_TEXT.paymentTitle': [['cash']],
   'CUSTOMERS_TEXT.paidWith': [['cash']],
-  'CUSTOMERS_TEXT.onAccountOf': [[D]],
   'CUSTOMERS_TEXT.creditAmount': [[M]],
   'CUSTOMERS_TEXT.balanceAmount': [[M]],
   'CUSTOMERS_TEXT.phoneCountryOption': [['Uruguay', '598']],

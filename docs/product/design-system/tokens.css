@@ -29,6 +29,7 @@
   --deuda-fondo: #fbf1e3; /* derivado */
   --deuda2: #8a5a1f; /* derivado */
   --deuda-linea: #ecdcc3; /* derivado */
+  --deuda-reciente: #8dbba1;
 
   --critico: #26332b; /* derivado */
   --critico-texto: #f6f7f5; /* derivado */
@@ -108,6 +109,7 @@
   --deuda-fondo: #2b2110; /* derivado */
   --deuda2: #c9944a; /* derivado */
   --deuda-linea: #3d2e17; /* derivado */
+  --deuda-reciente: #3d7a5c; /* derivado */
 
   --critico: #f0bb68; /* derivado */
   --critico-texto: #0e1411; /* derivado */

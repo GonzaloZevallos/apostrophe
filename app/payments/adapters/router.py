@@ -153,9 +153,9 @@ def record_payment(
 
 
 @customers_router.get("/{customer_id}/account")
-def get_account(customer_id: int, ledgers: LedgersDep) -> AccountOut:
+def get_account(customer_id: int, ledgers: LedgersDep, today: TodayDep) -> AccountOut:
     with as_http:
-        return AccountOut.of(account_use_case(ledgers, customer_id))
+        return AccountOut.of(account_use_case(ledgers, customer_id, today))
 
 
 @router.delete("/{payment_id}", status_code=204)

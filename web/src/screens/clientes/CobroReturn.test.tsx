@@ -22,6 +22,7 @@ import { CUSTOMERS, HOME } from '../../routes'
 import { renderWithViewport } from '../../test-viewport'
 import type { Viewport } from '../../routes'
 import { withPaymentMethods } from '../../test-payment-methods'
+import { debtorsOf } from '../../test/debtors'
 
 const ME = { email: 'a@b.com', business_name: 'Business', today: '2026-10-03', money: { symbol: '$', decimals: 0 } }
 const OWING = { id: 1, name: 'Ana Pérez', phone: '+5491122334455', phone_display: '+54 9 11 2233-4455', vip: false, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }
@@ -31,7 +32,11 @@ const ACCOUNT = {
   standing: 'owes',
   rows: [{ kind: 'sale', date: '2026-09-14', running_balance: 11000, standing: 'owes', sale: { id: 10, total: 11000, how_paid: 'owing', payment_method: null } }],
 }
-const DEBTORS = { total_owed: 11000, sales_owing_count: 1, debtors: [{ customer: { id: 1, name: 'Ana Pérez' }, balance: 11000, owing_since: '2026-09-14', standing: 'owes' }] }
+const DEBTORS = debtorsOf({
+  total_owed: 11000,
+  sales_owing_count: 1,
+  debtors: [{ customer: { id: 1, name: 'Ana Pérez' }, balance: 11000, owing_since: '2026-09-14', standing: 'owes', still_owing: null }],
+})
 const RECORDED = {
   payment: { id: 5, paid_on: '2026-10-03', amount: 5000, payment_method: { id: 1, name: 'Cash', icon: 'banknote' } },
   applied_to: [{ sale_id: 10, sale_date: '2026-09-14', amount: 5000 }],

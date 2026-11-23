@@ -7,6 +7,7 @@ import {
   formatDateShort,
   formatMonthLong,
   formatTodayLong,
+  isIsoDate,
   maxSaleDate,
   monthRange,
   parseMonth,
@@ -209,5 +210,18 @@ describe('formatTodayLong', () => {
 
   test('rejects a string that is not an API date', () => {
     expect(() => formatTodayLong('29/10/2026', 'en')).toThrow('not an API date: 29/10/2026')
+  })
+})
+
+describe('isIsoDate', () => {
+  test.each(['', '2026-13-01', '2026-00-10', '2026-02-29', '2026-02-30', '2026-04-31', '0000-01-01', '2026-1-05', '26-01-05', ' 2026-01-05', '2026-01-05 '])(
+    'refuses %j',
+    (text) => {
+      expect(isIsoDate(text)).toBe(false)
+    },
+  )
+
+  test.each(['2024-02-29', '0001-01-01', '2026-02-28', '2026-12-31', '2000-02-29'])('accepts %j', (text) => {
+    expect(isIsoDate(text)).toBe(true)
   })
 })

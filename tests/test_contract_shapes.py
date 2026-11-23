@@ -102,18 +102,23 @@ def test_a_bare_object_in_place_of_an_array_fails_the_checker() -> None:
 
 
 def test_account_rows_are_matched_by_their_own_kind_not_by_position() -> None:
-    # Two sale rows and no credit row at all: a plain "match item 0 against item 0"
+    # Two sale rows and no payment row at all: a plain "match item 0 against item 0"
     # checker would wrongly compare a sale row to the fixture's payment row.
     answer = {
         "balance": 11000,
         "owing_since": "2026-09-14",
         "standing": "owes",
+        "age_days": 18,
+        "still_owing": [],
+        "sales_by_month": [{"month": "2026-09", "total": 11000}],
+        "average_sale": 5500,
         "rows": [
             {
                 "kind": "sale",
                 "date": "2026-09-01",
                 "running_balance": 4000,
                 "standing": "owes",
+                "number": 1,
                 "sale": {"id": 1, "total": 4000, "how_paid": "owing", "payment_method": None},
             },
             {
@@ -121,6 +126,7 @@ def test_account_rows_are_matched_by_their_own_kind_not_by_position() -> None:
                 "date": "2026-09-14",
                 "running_balance": 11000,
                 "standing": "owes",
+                "number": 2,
                 "sale": {
                     "id": 2,
                     "total": 7000,

@@ -151,7 +151,7 @@ export const COLOR_CENSUS: readonly CensusEntry[] = [
     ),
   },
   { selector: '.cuenta-cliente__fila', component: 'AccountRowLine', carries: 'decorative: the line between account rows, each row names what happened', tests: at('screens/clientes/ClienteFicha.test.tsx') },
-  { selector: '.cuenta-cliente__saldo.monto-deuda', component: 'AccountRowLine', carries: 'the word "balance" before the figure (a credit reads "Credit")', tests: at('screens/clientes/ClienteFicha.test.tsx') },
+  { selector: '.cuenta-cliente__saldo.monto-deuda', component: 'AccountRowLine', carries: 'the word "balance" before the figure (below zero the row reads "In your favor")', tests: at('screens/clientes/ClienteFicha.test.tsx') },
   { selector: '.marca-estado--sold_out .marca-estado__forma', component: 'MarcaEstado', carries: 'a square and the word "sold out"', tests: at('components/MarcaEstado.test.tsx') },
   { selector: '.marca-estado--low .marca-estado__forma', component: 'MarcaEstado', carries: 'a filled circle and the word "low"', tests: at('components/MarcaEstado.test.tsx') },
   { selector: '.catalogo__publicar--desactualizado', component: 'PinPublish', carries: '"Out of date"', tests: at('screens/PinPublish.test.tsx') },
@@ -160,4 +160,8 @@ export const COLOR_CENSUS: readonly CensusEntry[] = [
   { selector: '.variedad-resumen', component: 'VarietyPage summary line', carries: 'the grams and the stock word ("low") from MarcaEstado', tests: at('screens/varieties/VarietyPage.test.tsx') },
   { selector: '.seccion-variedad__valor--aviso', component: 'VarietyThresholdSection', carries: '"Warning: 18 g left"', tests: at('screens/varieties/VarietyPage.test.tsx') },
   { selector: '.ficha-deuda', component: 'ClienteFicha, CustomerCardBehind', carries: '"Owes you" and "since dd/mm"', tests: at('screens/clientes/ClienteFicha.test.tsx', 'screens/clientes/ClienteSheet.test.tsx') },
+  { selector: '.payment-chip--unpaid', component: 'SalePaymentChip', carries: 'the word "Unpaid"', tests: at('screens/ventas/SalePaymentChip.test.tsx') },
+  { selector: '.payment-chip--part-paid', component: 'SalePaymentChip', carries: 'the word "Part-paid" and the half-filled circle', tests: at('screens/ventas/SalePaymentChip.test.tsx') },
+  { selector: '.payment-chip--unknown', component: 'SalePaymentChip', carries: 'the Attention icon and the sentence "Payment cannot be shown"', tests: at('screens/ventas/SalePaymentChip.test.tsx') },
+  { selector: '.payment-chip__half', component: 'SalePaymentChip', carries: 'the half-filled circle beside the word "Part-paid"', tests: at('screens/ventas/SalePaymentChip.test.tsx') },
 ]

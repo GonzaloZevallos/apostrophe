@@ -37,6 +37,8 @@ class ShapeOf:
 NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     "account": {
         "owing_since": "string",
+        "age_days": "integer",
+        "average_sale": "integer",
         "rows[sale].sale.payment_method": ShapeOf("sale-detail-gift", "payment_method"),
     },
     "analysis": {

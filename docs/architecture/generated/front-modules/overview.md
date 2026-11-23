@@ -60,6 +60,7 @@ src_copy-->src_api
 src_copy-->src_i18n
 src_customerTypes-->src_api
 src_customerTypes-->src_copy
+src_flash-->src_api
 src_flash-->src_components
 src_format-->src_copy
 src_i18n-->src_api

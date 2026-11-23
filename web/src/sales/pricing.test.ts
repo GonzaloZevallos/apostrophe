@@ -12,6 +12,7 @@ import type { Variety } from '../screens/Variedades'
 import matrix from './pricing-matrix.json'
 import { MAX_QUANTITY_HUNDREDTHS } from './saleDraft'
 import {
+  LINE_STEP_HUNDREDTHS,
   GiftWithSpecialPrice,
   InvalidSpecialPrice,
   NonPositiveGrams,
@@ -26,13 +27,17 @@ import {
   fromHundredths,
   hundredthsOfApiGrams,
   linesRepriced,
+  lineValidationsOf,
   payStateOf,
+  payStateOfEffective,
   paymentChoiceOf,
   priceLine,
   priceSale,
   quantityOfHundredths,
   quoteOf,
+  rowPrices,
   saleTotals,
+  signedHundredthsOfApiGrams,
   toHundredths,
   validateSale,
 } from './pricing'
@@ -671,7 +676,9 @@ describe('changeFor', () => {
     ['empty', '', 11000, null],
     ['not a number', 'abc', 11000, null],
     ['negative', '-5', 11000, null],
-    ['zero', '0', 0, null],
+    ['zero against a $0 sale', '0', 0, 0],
+    ['zero against a sale above $0', '0', 11000, null],
+    ['positive against a $0 sale', '5', 0, 5],
     ['too many decimals', '10,5', 11000, null],
   ])('0 decimals, %s', (_label, received, total, expected) => {
     expect(changeFor(received, total, whole)).toBe(expected)
@@ -684,6 +691,10 @@ describe('changeFor', () => {
     ['1.234,56', 1000, 234.56],
     ['1,234', 1, null],
     ['10,00', 10.1, null],
+    ['0,00', 0, 0],
+    ['0', 0, 0],
+    ['0,00', 10.1, null],
+    ['0,001', 0, null],
   ])('2 decimals, %s against %s', (received, total, expected) => {
     expect(changeFor(received, total, cents)).toBe(expected)
   })
@@ -719,6 +730,60 @@ describe('payStateOf', () => {
   })
 })
 
+describe('payStateOfEffective', () => {
+  test('no method is paying with none known: refused above zero, allowed at zero', () => {
+    expect(payStateOfEffective(null)).toEqual({ payState: 'paid', method: null })
+    expect(validateSale({ ...payStateOfEffective(null), total: 1000, hasCustomer: false, lines: [] })).toEqual([
+      { field: 'method' },
+    ])
+    expect(validateSale({ ...payStateOfEffective(null), total: 0, hasCustomer: false, lines: [] })).toEqual([])
+  })
+
+  test('a $0 sale with no method sends no payment', () => {
+    const { payState, method } = payStateOfEffective(null)
+    expect(paymentChoiceOf(payState, method, 0)).toBeNull()
+  })
+
+  test('any other choice is read as payStateOf reads it', () => {
+    const choices: PaymentChoice[] = [{ kind: 'owing' }, { kind: 'paid', payment_method_id: 7 }]
+    for (const choice of choices) expect(payStateOfEffective(choice)).toEqual(payStateOf(choice))
+    expect(
+      validateSale({ ...payStateOfEffective({ kind: 'paid', payment_method_id: 7 }), total: 1000, hasCustomer: false, lines: [] }),
+    ).toEqual([])
+  })
+})
+
+describe('lineValidationsOf', () => {
+  const pricing = { pricePerGram: 10, rule: 'list', lineTotal: 100, customerTypeId: null } as unknown as NonNullable<
+    PricedSaleLine['pricing']
+  >
+  const sale = (lines: PricedSaleLine[]): PricedSale => ({
+    lines,
+    totals: { total: 0, shippingCharged: 0 } as unknown as PricedSale['totals'],
+  })
+
+  test('an unpriced line is refused as a line error', () => {
+    const errors = validateSale({
+      ...payStateOfEffective({ kind: 'paid', payment_method_id: 1 }),
+      total: 100,
+      hasCustomer: false,
+      lines: lineValidationsOf(sale([{ id: 'a', gift: false, gramsHundredths: 100, pricing: null }])),
+    })
+    expect(errors.map((error) => error.field)).toEqual(['line:a'])
+  })
+
+  test('a priced line gives no error, whatever its rule', () => {
+    const lines = lineValidationsOf(
+      sale([
+        { id: 'a', gift: false, gramsHundredths: 100, pricing },
+        { id: 'b', gift: true, gramsHundredths: 100, pricing: { ...pricing, rule: 'gift' } as typeof pricing },
+      ]),
+    )
+    expect(lines).toHaveLength(2)
+    expect(validateSale({ payState: null, method: null, total: 100, hasCustomer: false, lines })).toEqual([])
+  })
+})
+
 describe('quantityOfHundredths', () => {
   test.each([
     [350, '3.5'],
@@ -737,5 +802,111 @@ describe('quantityOfHundredths', () => {
 
   test.each([-1, 1.5, Number.NaN, Number.MAX_SAFE_INTEGER + 2])('%s is refused', (h) => {
     expect(() => quantityOfHundredths(h)).toThrow('quantityOfHundredths expects a safe integer of hundredths, 0 or more')
+  })
+})
+
+describe('rowPrices', () => {
+  const BOTH_ON = { bulk: true, vip: true }
+  const PRODUCTS = [
+    variety(1, entry({ list_price: 1000 })),
+    variety(2, entry({ list_price: 1000, bulk_price: 900, bulk_minimum: 5 })),
+    variety(3, entry({ list_price: 1000, type_prices: [{ customer_type_id: 7, price: 800 }] })),
+    variety(4, null),
+    variety(5, entry({ list_price: 1000, bulk_price: 900, bulk_minimum: 1e-7 })),
+    variety(6, entry({ list_price: 1000, bulk_price: 900, bulk_minimum: 1 })),
+  ]
+  const rows = (over: Partial<Parameters<typeof rowPrices>[0]> = {}) =>
+    rowPrices({
+      productIds: [1, 2, 3, 4, 99],
+      products: PRODUCTS,
+      customerTypeId: null,
+      pricingSettings: BOTH_ON,
+      ...over,
+    })
+
+  test('a row is priced at one step, at the list price', () => {
+    expect(rows().get(1)).toEqual({ rule: 'list', pricePerGram: 1000, lineTotal: 1000 })
+  })
+
+  test('a bulk price whose minimum is above one step is not met', () => {
+    expect(rows().get(2)).toEqual({ rule: 'list', pricePerGram: 1000, lineTotal: 1000 })
+  })
+
+  test('a Customer-type price applies when the customer has that type', () => {
+    expect(rows({ customerTypeId: 7 }).get(3)).toEqual({ rule: 'type', pricePerGram: 800, lineTotal: 800 })
+  })
+
+  test('a Customer-type price of another type, or no type, is not used', () => {
+    expect(rows({ customerTypeId: 8 }).get(3)).toMatchObject({ rule: 'list' })
+    expect(rows().get(3)).toMatchObject({ rule: 'list' })
+  })
+
+  test('with the switch off the type price is not used', () => {
+    expect(rows({ customerTypeId: 7, pricingSettings: { bulk: true, vip: false } }).get(3)).toMatchObject({
+      rule: 'list',
+      pricePerGram: 1000,
+    })
+  })
+
+  test('with the bulk switch off a bulk price met at one step is not used', () => {
+    expect(rows({ productIds: [6] }).get(6)).toEqual({ rule: 'bulk', pricePerGram: 900, lineTotal: 900 })
+    expect(rows({ productIds: [6], pricingSettings: { bulk: false, vip: true } }).get(6)).toEqual({
+      rule: 'list',
+      pricePerGram: 1000,
+      lineTotal: 1000,
+    })
+  })
+
+  test('a Product with no price, and a Product that is missing, are null', () => {
+    const result = rows()
+    expect(result.get(4)).toBeNull()
+    expect(result.has(99)).toBe(true)
+    expect(result.get(99)).toBeNull()
+  })
+
+  test('every id asked for is in the map', () => {
+    expect([...rows().keys()]).toEqual([1, 2, 3, 4, 99])
+  })
+
+  test('an error that is not a broken sale rule propagates', () => {
+    expect(() => rows({ productIds: [5] })).toThrow('toHundredths expects grams already validated by parse.ts')
+  })
+
+  test('agrees with a one-line priceSale at one step', () => {
+    const result = rows({ customerTypeId: 7, productIds: [1, 2, 3, 4] })
+    for (const id of [1, 2, 3, 4]) {
+      const sold = priceSale({
+        lines: [{ id: 'x', productId: id, gramsHundredths: LINE_STEP_HUNDREDTHS, gift: false, specialPrice: null }],
+        customerTypeId: 7,
+        pricingSettings: BOTH_ON,
+        products: PRODUCTS,
+        shippingCharged: 0,
+      }).lines[0]?.pricing
+      const expected =
+        sold === null || sold === undefined
+          ? null
+          : { rule: sold.rule, pricePerGram: sold.pricePerGram, lineTotal: sold.lineTotal }
+      expect(result.get(id)).toEqual(expected)
+    }
+  })
+})
+
+describe('signedHundredthsOfApiGrams', () => {
+  test('zero and negative zero give 0, never -0', () => {
+    expect(Object.is(signedHundredthsOfApiGrams(0), 0)).toBe(true)
+    expect(Object.is(signedHundredthsOfApiGrams(-0), 0)).toBe(true)
+  })
+
+  test.each([
+    [-3.5, -350],
+    [1.5, 150],
+    [3, 300],
+    [-0.05, -5],
+  ])('%s gives %s', (grams, expected) => {
+    expect(signedHundredthsOfApiGrams(grams)).toBe(expected)
+  })
+
+  test.each([1e-7, 1e21, -1e21])('%s, written with an exponent, throws instead of rendering blank', (grams) => {
+    expect(() => signedHundredthsOfApiGrams(grams)).toThrow('toHundredths expects grams already validated by parse.ts')
   })
 })

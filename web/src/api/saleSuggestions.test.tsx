@@ -44,12 +44,27 @@ test('one call per mount with on = the opening date, and rerenders make no new c
     wrapper,
     initialProps: { openedOn: '2026-11-19' },
   })
-  expect(result.current).toEqual(EMPTY_SUGGESTIONS)
   await waitFor(() => expect(result.current).toEqual(BODY))
   rerender({ openedOn: '2026-11-19' })
   rerender({ openedOn: '2026-11-19' })
   expect(fetchMock).toHaveBeenCalledTimes(1)
   expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/sales/suggestions?on=2026-11-19')
+})
+
+test('null while the read is pending, then the data, and never null again on a rerender', async () => {
+  let answer: (response: Response) => void = () => undefined
+  fetchMock.mockImplementation(() => new Promise<Response>((resolve) => (answer = resolve)))
+  const { result, rerender } = renderHook((props: { openedOn: string }) => useSaleSuggestions(props.openedOn), {
+    wrapper,
+    initialProps: { openedOn: '2026-11-19' },
+  })
+  expect(result.current).toBeNull()
+  rerender({ openedOn: '2026-11-19' })
+  expect(result.current).toBeNull()
+  answer(json(BODY))
+  await waitFor(() => expect(result.current).toEqual(BODY))
+  rerender({ openedOn: '2026-11-19' })
+  expect(result.current).toEqual(BODY)
 })
 
 test('the key is the opening date only, in the frozen sale-form shape', () => {
@@ -67,10 +82,11 @@ test('unmounting and opening again on another day makes one new call with the ne
   expect(fetchMock.mock.calls[1]?.[0]).toBe('/api/sales/suggestions?on=2026-11-20')
 })
 
-test('a 401 leaves no suggestions and reaches the cache error handler as an ApiError 401', async () => {
+test('a 401 settles to no suggestions, not null, and reaches the cache error handler as an ApiError 401', async () => {
   fetchMock.mockImplementation(() => Promise.resolve(json({ code: 'unauthenticated' }, 401)))
   const { result } = renderHook(() => useSaleSuggestions('2026-11-19'), { wrapper })
   await waitFor(() => expect(onError).toHaveBeenCalledTimes(1))
+  await waitFor(() => expect(result.current).not.toBeNull())
   const error: unknown = onError.mock.calls[0]?.[0]
   expect(error).toBeInstanceOf(ApiError)
   expect((error as ApiError).status).toBe(401)

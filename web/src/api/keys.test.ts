@@ -35,6 +35,10 @@ describe('keys', () => {
     expect(keys.debtors()).toEqual(['payments', 'debtors'])
   })
 
+  test('the customer search Sheet\'s list keys outside every resource prefix', () => {
+    expect(keys.saleFormCustomers()).toEqual(['sale-form', 'customers'])
+  })
+
   test('the Registrar cobro preview keys outside the payments resource, by its inputs', () => {
     expect(keys.paymentPreview('1', '2026-10-02', 5000)).toEqual([
       'payment-form',

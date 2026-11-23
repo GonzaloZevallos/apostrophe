@@ -3,7 +3,7 @@
   "sales_owing_count": 4,
   "customer_count": 6,
   "debtor_count": 1,
-  "buckets": { "this_week": 0, "days_8_30": 37000, "over_30": 0 },
+  "buckets": { "this_week": 12000, "days_8_30": 15000, "over_30": 10000 },
   "debtors": [
     {
       "customer": { "id": 1, "name": "Ana Pérez" },

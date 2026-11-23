@@ -17,6 +17,8 @@ import { paymentMethodsQueryOptions } from '../api/paymentMethods'
 import { keys } from '../api/keys'
 import { NetworkError } from '../api/client'
 import type { SelectorOption } from '../components/Selector'
+import type { PaymentChoice } from './pricing'
+import type { DraftChoice } from './saleDraft'
 
 export interface PaymentMethodOption extends SelectorOption {
   value: string
@@ -30,6 +32,8 @@ export interface PaymentMethodOptions {
     loading: boolean
     emptySetMessage: string
   }
+  /** The ids of the list read, or `null` while there is no list. */
+  offeredIds: readonly number[] | null
   /** The reading failed: `offline` shows the notice, `server` marks the field. */
   failure: 'offline' | 'server' | null
   /** Reads the list again (a tap on a field that failed). */
@@ -55,6 +59,7 @@ export function usePaymentMethodOptions(): PaymentMethodOptions {
       loading: query.isPending && !failed,
       emptySetMessage: t(failed ? 'emptyStates:selectorPaymentMethodsFailed' : 'emptyStates:selectorNoPaymentMethods'),
     },
+    offeredIds: query.data === undefined ? null : query.data.map((method) => method.id),
     failure,
     reload: () => {
       void query.refetch()
@@ -71,6 +76,80 @@ export function paymentMethodOf(value: string | null): PaymentMethod | null {
 /** The Selector value of a chosen method id. */
 export function paymentMethodValue(method: PaymentMethod | null): string | null {
   return method === null ? null : String(method)
+}
+
+/** The Selector value of "Owes it": not a Payment method id, so `paymentMethodOf` never takes it for one. */
+export const OWING_VALUE = 'owing'
+
+/** The payment the Collect Sheet decides on: the choice as given (owing included), `null` for no choice. */
+export function collectableChoice(choice: PaymentChoice | null): PaymentChoice | null {
+  return choice
+}
+
+/** The draft choice a Selector value stands for: a method id is a paid choice, `OWING_VALUE` is owing,
+ * anything else unset. */
+export function choiceOfValue(value: string | null): DraftChoice {
+  if (value === OWING_VALUE) return { kind: 'owing' }
+  const method = paymentMethodOf(value)
+  return method === null ? { kind: 'unset' } : { kind: 'paid', payment_method_id: method }
+}
+
+/** The Selector value of a draft choice: the id for paid, `OWING_VALUE` for owing, the proposal for
+ * unset only when it is one of the offered ids. */
+export function selectorValueOf(
+  choice: DraftChoice,
+  proposedMethodId: PaymentMethod | null,
+  offeredIds: readonly number[] | null,
+): string | null {
+  if (choice.kind === 'paid') return paymentMethodValue(choice.payment_method_id)
+  if (choice.kind === 'owing') return OWING_VALUE
+  if (proposedMethodId === null || offeredIds === null || !offeredIds.includes(proposedMethodId)) return null
+  return paymentMethodValue(proposedMethodId)
+}
+
+export interface HowTheyPayView {
+  options: readonly PaymentMethodOption[]
+  value: string | null
+  /** The current choice when it is not in `options`: the Selector shows it with its "no longer available" mark. */
+  selected: { value: string; label: string } | undefined
+}
+
+/**
+ * What the Collect Sheet's "How they pay" Selector shows, in one place: the options (the methods
+ * without the ones this Sheet was refused for, then "Owes it" last and only with a Customer), the
+ * field's value and the entry the Selector marks as no longer available. Owing with no Customer
+ * keeps "Owes it" as the value but never as a row, so the Selector marks it.
+ */
+export function howTheyPayView({
+  choice,
+  customerId,
+  proposedMethodId,
+  offeredIds,
+  methodOptions,
+  refusedIds,
+  methodGone,
+  owesItLabel,
+}: {
+  choice: DraftChoice
+  customerId: number | null
+  proposedMethodId: PaymentMethod | null
+  offeredIds: readonly number[] | null
+  methodOptions: readonly PaymentMethodOption[]
+  refusedIds: readonly number[]
+  methodGone: { id: number; name: string } | null
+  owesItLabel: string
+}): HowTheyPayView {
+  const options: PaymentMethodOption[] = methodOptions.filter((option) => !refusedIds.includes(Number(option.value)))
+  if (customerId !== null) options.push({ value: OWING_VALUE, label: owesItLabel })
+  const shown = selectorValueOf(choice, proposedMethodId, offeredIds)
+  const shownRefused = shown !== null && refusedIds.includes(Number(shown))
+  if (methodGone !== null) {
+    return { options, value: String(methodGone.id), selected: { value: String(methodGone.id), label: methodGone.name } }
+  }
+  if (choice.kind === 'owing' && customerId === null) {
+    return { options, value: OWING_VALUE, selected: { value: OWING_VALUE, label: owesItLabel } }
+  }
+  return { options, value: shownRefused ? null : shown, selected: undefined }
 }
 
 /** The name the list showed for a method id, read before the list is read again (never a guess). */
