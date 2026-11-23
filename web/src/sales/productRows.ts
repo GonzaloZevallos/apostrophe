@@ -1,16 +1,17 @@
 /**
  * The computer register's Products rows, as pure functions: `pricedRows` prices every listed
  * Product at the quantity a click on it would give (`sale-in-progress.md`), and `visibleRows`
- * filters and orders what it returned. Every figure comes from `priceSale`; no money is computed
- * here and no quantity or step is named here: the quantity is whatever `saleDraftReducer` gives a
- * Product added.
+ * filters and orders what it returned. Every figure comes from `newSalePricing.ts`; no money is
+ * computed here and no quantity or step is named here: the quantity is whatever `saleDraftReducer`
+ * gives a Product added.
  */
 
 import type { VarietyStock, Status } from '../api/stock'
 import { matchesQuery } from '../components/selectorSearch'
 import type { Variety } from '../screens/Variedades'
 import { varietiesByName } from '../screens/varieties/varietiesByName'
-import { priceSale, type PricedSaleLine, type PricingSettings } from './pricing'
+import { pricedLineOf } from './newSalePricing'
+import type { PricedSaleLine, PricingSettings } from './pricing'
 import { type DraftState, saleDraftReducer } from './saleDraft'
 
 export interface ProductRow {
@@ -41,16 +42,8 @@ export function pricedRows(input: {
     const line = added.lines.find((candidate) => candidate.productId === productId)
     // `productAdded` always leaves the Product's line in the draft.
     if (line === undefined) throw new Error('productAdded left no line for the product')
-    const { lines: [priced] } = priceSale({
-      // `DraftLine` carries neither `gift` nor `specialPrice`, so they are constants here.
-      lines: [{ id: String(productId), productId, gramsHundredths: line.quantityHundredths, gift: false, specialPrice: null }],
-      customerTypeId,
-      pricingSettings,
-      products: [product],
-      shippingCharged: 0,
-    })
-    // `priceSale` answers one line per line given; a missing one is a fault, never No price.
-    if (priced === undefined) throw new Error('priceSale answered no line for the product')
+    // The only pricing call is `newSalePricing.ts`'s: this module only shapes rows from its answer.
+    const priced = pricedLineOf({ line, product, customerTypeId, pricingSettings })
     const stocked = stockByProduct.get(productId)
     rows.push({
       id: productId,
