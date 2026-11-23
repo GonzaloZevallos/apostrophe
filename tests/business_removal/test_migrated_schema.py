@@ -95,6 +95,23 @@ def test_expense_to_expense_category_fk_reflects_as_one_composite_key() -> None:
     }
 
 
+def test_expense_to_payment_method_fk_is_composite_and_orders_expense_before_the_method() -> None:
+    """0034 gives `expense` a second composite key, to `payment_method`: the delete order
+    must now put `expense` before `payment_method`, and reflection must keep the key whole."""
+    schema = _schema_rows().schema()
+
+    expense = schema.table("expense")
+    to_method = [fk for fk in expense.foreign_keys if fk.target_table == "payment_method"]
+
+    assert len(to_method) == 1
+    assert set(zip(to_method[0].columns, to_method[0].target_columns, strict=True)) == {
+        ("business_id", "business_id"),
+        ("payment_method_id", "id"),
+    }
+    order = delete_order(schema)
+    assert order.index("expense") < order.index("payment_method")
+
+
 def test_every_business_column_but_id_is_a_key_of_the_export_header() -> None:
     schema = _schema_rows().schema()
     columns = {column.name for column in schema.table("business").columns} - {"id"}

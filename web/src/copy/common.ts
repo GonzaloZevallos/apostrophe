@@ -28,6 +28,8 @@ export const LIMITED_COPY: readonly KeyedCopy[] = [
   { kind: 'notice', key: 'common:offline' },
   { kind: 'notice', key: 'common:genericError' },
   { kind: 'notice', key: 'common:saleSavedTo' },
+  { kind: 'notice', key: 'common:undoSaleOffline' },
+  { kind: 'notice', key: 'common:undoSaleFailed' },
 ]
 export const LONG_REFUSALS: readonly string[] = []
 

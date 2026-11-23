@@ -21,11 +21,13 @@ import {
 } from '../../routes'
 import {
   NON_ROW_ROUTES,
+  SETTINGS_GROUP_LABEL_KEYS,
   SETTINGS_GROUPS,
   SETTINGS_ROWS,
   SHARED_TO,
   SHORTCUTS,
   shortcutTarget,
+  shownRowsByGroup,
   unaccountedSettingsRoutes,
   type SettingsRow,
   type SettingsRowContext,
@@ -270,6 +272,69 @@ describe('SHORTCUTS', () => {
     for (const shortcut of SHORTCUTS) {
       for (const ctx of CONTEXTS) expect(row(shortcut.row).isShown(ctx)).toBe(true)
     }
+  })
+})
+
+describe('shownRowsByGroup', () => {
+  const ON_ONE: SettingsRowContext = { selectableLanguages: ['en'], isCustomerTypesOn: true }
+  const ON_TWO: SettingsRowContext = { selectableLanguages: ['en', 'es'], isCustomerTypesOn: true }
+
+  function keysOf(ctx: SettingsRowContext, rows?: readonly SettingsRow[]): string[] {
+    return shownRowsByGroup(ctx, rows).flatMap((entry) => entry.rows.map((candidate) => candidate.key))
+  }
+
+  test('with customer types on and one language: five groups, twelve rows', () => {
+    const groups = shownRowsByGroup(ON_ONE)
+    expect(groups.map((entry) => entry.group)).toEqual([...SETTINGS_GROUPS])
+    expect(groups.flatMap((entry) => entry.rows)).toHaveLength(12)
+    expect(keysOf(ON_ONE)).not.toContain('language')
+  })
+
+  test('with two languages: thirteen rows, the language in the business group', () => {
+    const groups = shownRowsByGroup(ON_TWO)
+    expect(groups.flatMap((entry) => entry.rows)).toHaveLength(13)
+    expect(groups.find((entry) => entry.group === 'business')?.rows.map((candidate) => candidate.key)).toEqual(['businessName', 'currency', 'language'])
+  })
+
+  test('customer types is missing while its switch is off or unknown', () => {
+    expect(keysOf({ ...ON_TWO, isCustomerTypesOn: false })).not.toContain('customerTypes')
+    expect(keysOf({ ...ON_TWO, isCustomerTypesOn: undefined })).not.toContain('customerTypes')
+  })
+
+  test('no language row while the selectable languages are unknown', () => {
+    expect(keysOf({ ...ON_TWO, selectableLanguages: undefined })).not.toContain('language')
+  })
+
+  test('keeps the registry order inside a group', () => {
+    const teamAndApp = shownRowsByGroup(ON_TWO).find((entry) => entry.group === 'teamAndApp')
+    expect(teamAndApp?.rows.map((candidate) => candidate.key)).toEqual(['users', 'theme', 'account'])
+  })
+
+  test('leaves out a group with no shown rows', () => {
+    const rows = SETTINGS_ROWS.filter((candidate) => candidate.group !== 'catalog')
+    expect(shownRowsByGroup(ON_TWO, rows).map((entry) => entry.group)).toEqual([
+      'business',
+      'paymentsAndStock',
+      'channels',
+      'teamAndApp',
+    ])
+  })
+
+  test('leaves out a group whose rows are all hidden by the context', () => {
+    const onlyCustomerTypes = SETTINGS_ROWS.filter((candidate) => candidate.key === 'customerTypes')
+    expect(shownRowsByGroup({ ...ON_TWO, isCustomerTypesOn: false }, onlyCustomerTypes)).toEqual([])
+  })
+
+  test('every group label key resolves to a non-empty English string', () => {
+    for (const group of SETTINGS_GROUPS) {
+      const labelKey = SETTINGS_GROUP_LABEL_KEYS[group]
+      const text = testT(labelKey)
+      expect(text).not.toBe('')
+      expect(text).not.toBe(labelKey)
+    }
+    expect(shownRowsByGroup(ON_TWO).map((entry) => entry.labelKey)).toEqual(
+      SETTINGS_GROUPS.map((group) => SETTINGS_GROUP_LABEL_KEYS[group]),
+    )
   })
 })
 

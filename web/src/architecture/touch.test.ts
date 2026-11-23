@@ -415,6 +415,7 @@ export function orderViolations(css: string): string[] {
 const SELECTABLE: Record<string, string> = Object.fromEntries(
   [
     '.fila-venta',
+    '.sale-card',
     '.fila-gasto',
     '.fila-entrada',
     '.lista-clientes__fila',

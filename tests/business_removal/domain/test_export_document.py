@@ -204,6 +204,65 @@ def test_the_composite_expense_foreign_key_references_the_category_by_id_alone()
     assert "business_id" not in category
 
 
+def test_an_expense_with_no_payment_method_exports_none_and_no_business_id() -> None:
+    schema = Schema(
+        (
+            Table(
+                "expense_category",
+                (_col("id", primary_key=True), _col("business_id"), _col("name")),
+                (),
+            ),
+            Table(
+                "payment_method",
+                (_col("id", primary_key=True), _col("business_id"), _col("name")),
+                (),
+            ),
+            Table(
+                "expense",
+                (
+                    _col("id", primary_key=True),
+                    _col("business_id"),
+                    _col("expense_category_id"),
+                    _col("amount"),
+                    _col("payment_method_id"),
+                ),
+                (
+                    ForeignKey(
+                        ("business_id", "expense_category_id"),
+                        "expense_category",
+                        ("business_id", "id"),
+                    ),
+                    ForeignKey(
+                        ("business_id", "payment_method_id"),
+                        "payment_method",
+                        ("business_id", "id"),
+                    ),
+                ),
+            ),
+        )
+    )
+    rows: dict[str, list[dict[str, Any]]] = {
+        "expense_category": [{"id": 1, "business_id": 1, "name": "Insumos"}],
+        "payment_method": [{"id": 1, "business_id": 1, "name": "Efectivo"}],
+        "expense": [
+            {
+                "id": 1,
+                "business_id": 1,
+                "expense_category_id": 1,
+                "amount": 500,
+                "payment_method_id": None,
+            },
+        ],
+    }
+
+    document = build_document(BUSINESS, schema, rows, EXPORTED_AT)
+
+    expense = document["kinds"]["expense"][0]
+    assert expense["payment_method_id"] is None
+    assert expense["expense_category_id"] == {"id": 1, "name": "Insumos"}
+    assert "business_id" not in expense
+
+
 def test_a_table_with_no_name_column_is_labelled_by_its_variety() -> None:
     rows: dict[str, list[dict[str, Any]]] = {
         "app_user": [],

@@ -107,6 +107,8 @@
   "backArrow": "‹ {{parent}}",
   "offline": "Offline: check your internet and try again.",
   "genericError": "Something went wrong. Try again.",
+  "undoSaleOffline": "No connection. The sale is still saved: delete it from its detail in Sales.",
+  "undoSaleFailed": "The sale is still saved. Delete it from its detail in Sales.",
   "search": "Search",
   "noResults": "No results",
   "noLongerAvailable": "no longer available",
@@ -125,6 +127,11 @@
   "newSaleFabDescription": "Opens New sale. You can also record an expense from there.",
   "newSaleFabName": "Vender",
   "customerSegmentAll": "All",
+  "owedSummaryName": "Summary of what customers owe",
+  "owedSummaryTotal": "Total owed",
+  "owedSummaryThisWeek": "This week",
+  "owedSummaryDays8to30": "8–30 days",
+  "owedSummaryOver30": "Over 30 days",
   "saleSavedTo": "<lead>Sale to</lead> <name>{{name}}</name> <tail>saved</tail>",
   "undo": "Undo"
 }

@@ -629,7 +629,7 @@ Las ventas de un día registradas en su propia fecha hasta la hora local del dí
 _Avoid_: to date, running total, pace, progress, hasta ahora
 
 **Sale in progress**:
-La Sale que se está armando en New sale antes de guardarla: cliente, líneas (a lo sumo una por Product), fecha, Shipping charged, Note y cómo se paga, con el Payment method propuesto por las New sale suggestions. Vive solo en memoria durante una apertura de New sale, nunca se guarda en el dispositivo y cuenta como sin guardar solo con al menos una línea; en el código es `useSaleDraft`. En la app: Sale in progress.
+La Sale que se está armando en New sale antes de guardarla: cliente, líneas (a lo sumo una por Product, cada una con su cantidad y, opcionalmente, un Gift o un Special price, nunca los dos), fecha (un día real no posterior al día del Business), Shipping charged, Note y cómo se paga, con el Payment method propuesto por las New sale suggestions. Vive solo en memoria durante una apertura de New sale, nunca se guarda en el dispositivo y cuenta como sin guardar solo con al menos una línea; en el código es `useSaleDraft`. En la app: Sale in progress.
 _Avoid_: cart, basket, order, pending sale, borrador guardado
 
 **Money in**:
@@ -637,7 +637,7 @@ Los Payments con fecha de hoy de un Business, On-the-spot payments y posteriores
 _Avoid_: income, revenue, collections, takings, cobrado, Cash, cash in hand
 
 **Payment state**:
-Cómo está pagada una Sale: pagada (paid), pagada en parte (part_paid) o sin pagar (unpaid), junto con lo que todavía se debe de ella (`still_owed`), exactamente lo que da el Settlement. Se calcula en el momento con una sola regla de dominio, `payment_state`, y nunca se guarda; una Sale de $0, pagada en el momento o saldada por un Credit está pagada, y una cuyos hechos de pago no se pueden conciliar no tiene ninguno. En la app: todavía no tiene palabra propia (la muestran partes posteriores de GH-500).
+Cómo está pagada una Sale: pagada (paid), pagada en parte (part_paid) o sin pagar (unpaid), junto con lo que todavía se debe de ella (`still_owed`), exactamente lo que da el Settlement. Lo calcula una sola regla de dominio, `payment_state`, y nunca se guarda; una Sale cuyos hechos de pago no se pueden conciliar no tiene ninguno. Lo muestra el chip de pago de una Sale (payment-state.md), que nunca lo vuelve a calcular y muestra "Payment cannot be shown" cuando falta o cuando una pagada en parte no tiene un monto adeudado mayor que 0. _In the app_: Paid, Unpaid, Part-paid · {amount} owed, Payment cannot be shown (en ninguna pantalla hasta #928).
 _Avoid_: status, payment status, settled, paid flag, estado de cobro
 
 **Best sellers**:
@@ -655,3 +655,7 @@ _Avoid_: refund, Credit, vuelto, balance, difference
 **Customer search**:
 La Sheet de New sale con la que se elige el Customer de la Sale in progress, entre los Customers a los que se les vendió más recientemente o tipeando parte del nombre o del Phone number, sin importar acentos ni mayúsculas. Ofrece "Create «query»" y "No customer" como salidas, y nunca elige a nadie sin un toque en una fila. Hasta la parte flip de GH-496 no la monta ninguna ruta. En la app: Customer (título) y Choose a customer (nombre de la Sheet).
 _Avoid_: customer picker, customer selector, lookup, autocomplete, contact search
+
+**Undo**:
+Eliminar con un toque, sin confirmación, la última Sale guardada desde New sale, durante los 5 segundos de su aviso "Sale to {name} saved". Es la misma eliminación que se hace desde el detalle de la Sale, y siempre muestra cómo terminó; un Home que ya está en pantalla conserva sus cifras. _In the app_: Undo.
+_Avoid_: revert, rollback, cancel sale, void, anular, deshacer venta

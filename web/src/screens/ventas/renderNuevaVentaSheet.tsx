@@ -16,7 +16,7 @@ import type { Variety } from '../Variedades'
 import NuevaVentaSheet from './NuevaVentaSheet'
 
 export const TODAY = '2026-10-02'
-export const LATER = '2026-10-05'
+export const OTHER_DAY = '2026-09-28'
 export const FORMAT = { symbol: '$', decimals: 0 }
 
 type PriceEntry = NonNullable<Variety['current_price']>

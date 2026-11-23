@@ -5,7 +5,7 @@
  * on any error it is empty, with no skeleton and no wording (the form route keeps its own errors).
  * It keeps the list's heading and the height of its search field, so the page does not shift under
  * the sheet and a scrolled list is held where it was. It draws the same `CustomerSegments` and
- * follows the same `customersView` as the list, with the list's rows: the total and the debtor
+ * follows the same `customersView` as the list, with the list's rows: the Owed summary card and the debtor
  * rows on "Owed to you" (nothing when nobody owes, with no empty wording) or every customer on
  * "All". Behind the sheet the control is inert. It draws no chrome, no `h1` and no ids.
  */
@@ -16,9 +16,9 @@ import { CUSTOMER_NEW } from '../../routes'
 import { listCustomers } from '../../api/customers'
 import { keys } from '../../api/keys'
 import { useIsVipCustomers } from '../../api/pricingSettings'
-import { useMoney } from '../../format/moneyContext'
 import { COMMON_TEXT } from '../../copy/common'
 import ClienteFila from './ClienteFila'
+import OwedSummary from './OwedSummary'
 import {
   customersListState,
   customersView,
@@ -31,7 +31,6 @@ import {
 import CustomerSegments from './CustomerSegments'
 
 export default function CustomersBehind() {
-  const money = useMoney()
   const { query, segment } = useCustomerSearch()
   const vipCustomers = useIsVipCustomers()
   // The list's own key: a query of only spaces is the full list's, as on the screen.
@@ -76,9 +75,7 @@ export default function CustomersBehind() {
         )}
         {owed !== null && (
           <section>
-            <div className="ventas__resumen">
-              <span className="cifra-xl monto-deuda">{money.money(owed.total_owed)}</span>
-            </div>
+            <OwedSummary debtors={owed} />
             <div className="lista-clientes">
               {owed.debtors.map((debtor) => (
                 <ClienteFila

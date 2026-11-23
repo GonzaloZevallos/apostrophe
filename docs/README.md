@@ -26,6 +26,7 @@ Cada capacidad tiene su página en [docs/product/](product/):
 - [Onboarding](product/onboarding.md)
 - [Pagos](product/payments.md)
 - [Payment methods](product/payment-methods.md)
+- [Payment state](product/payment-state.md)
 - [Phone first](product/phone-first.md)
 - [Pinned catalog](product/pinned-catalog.md)
 - [Pricing settings](product/pricing-settings.md)
@@ -38,9 +39,11 @@ Cada capacidad tiene su página en [docs/product/](product/):
 - [Ventas](product/sales.md)
 - [Selector](product/selector.md)
 - [Customer search](product/customer-search.md)
+- [Settings](product/settings.md)
 - [Stock](product/stock.md)
 - [Stored language](product/stored-language.md)
 - [Elección de tema y paleta](product/theme-choice.md)
+- [Undo](product/undo.md)
 - [Varieties](product/varieties.md)
 
 El contrato de diseño del front está en [el sistema de diseño](product/design-system/).

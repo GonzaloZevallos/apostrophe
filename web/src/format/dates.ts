@@ -233,3 +233,16 @@ export function monthRange(todayIso: string): DateRange {
 export function maxSaleDate(todayIso: string): string {
   return todayIso
 }
+
+/** Whether `text` is a real calendar day written `YYYY-MM-DD`: the year is at least 1 (the API's
+ * `date` has no year 0) and the civil-day arithmetic gives back the same year, month and day, so
+ * `2026-02-30` is refused. It never builds a `Date`. */
+export function isIsoDate(text: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return false
+  const year = Number(text.slice(0, 4))
+  const month = Number(text.slice(5, 7))
+  const day = Number(text.slice(8, 10))
+  if (year < 1) return false
+  const civil = civilFromDays(daysFromCivil(year, month, day))
+  return civil.year === year && civil.month === month && civil.day === day
+}

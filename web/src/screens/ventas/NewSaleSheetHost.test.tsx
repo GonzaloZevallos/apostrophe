@@ -12,6 +12,7 @@ import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
 import { inAppState } from '../../components/inAppState'
 import { SheetRouterProvider, sheetDepth } from '../../components/useSheetStack'
+import FlashProvider from '../../flash/FlashProvider'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import { SALE_NEW, SALES } from '../../routes'
 import { stubViewport } from '../../test-viewport'
@@ -88,7 +89,12 @@ function mount({
     [
       { path: SALES, element: <h1>Sales list</h1> },
       {
-        element: <Outlet context={ME} />,
+        // The gated layout's FlashProvider: the host announces a saved Sale through it.
+        element: (
+          <FlashProvider>
+            <Outlet context={ME} />
+          </FlashProvider>
+        ),
         children: [{ path: SALE_NEW, element: <NewSaleSheetHost onSaved={onSaved} /> }],
       },
     ],

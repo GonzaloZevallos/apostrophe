@@ -76,7 +76,8 @@ export const keys = {
   // New sale's suggestions (`GET /api/sales/suggestions`, `api/saleSuggestions.ts`): fetched once per
   // opening and keyed on the opening date, never on the sale's editable date. Frozen the same way
   // (`gcTime: 0`, `staleTime: Infinity` at the call site) and outside the `Resource`/`PREFIX` system.
-  saleFormSuggestions: (on: string) => ['sale-form', 'suggestions', on] as const,
+  saleFormSuggestionsAll: () => ['sale-form', 'suggestions'] as const,
+  saleFormSuggestions: (on: string) => [...keys.saleFormSuggestionsAll(), on] as const,
   saleFormCustomer: (id: string) => ['sale-form', 'customer', id] as const,
   // "Elegir cliente"'s own search (`NuevaVentaCliente.tsx`): its results are where
   // the preview's `vip` comes from once a customer is chosen, so it is frozen the
