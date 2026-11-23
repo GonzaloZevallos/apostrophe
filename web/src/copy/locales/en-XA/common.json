@@ -125,6 +125,11 @@
   "newSaleFabDescription": "⟦Öṗèňš Ňèŵ šåłè. Ýöû çåň åłšö řèçöřđ åň èẋṗèňšè ḟřöṁ ťĥèřè.·~·~·~·~·~·~·~·~·~·~·⟧",
   "newSaleFabName": "⟦Ṽèňđèř·~·⟧",
   "customerSegmentAll": "⟦Åłł·~⟧",
+  "owedSummaryName": "⟦Šûṁṁåřý öḟ ŵĥåť çûšťöṁèřš öŵè·~·~·~·~·~·⟧",
+  "owedSummaryTotal": "⟦Ťöťåł öŵèđ·~·~⟧",
+  "owedSummaryThisWeek": "⟦Ťĥìš ŵèèķ·~·~⟧",
+  "owedSummaryDays8to30": "⟦8–30 đåýš·~·~⟧",
+  "owedSummaryOver30": "⟦Öṽèř 30 đåýš·~·~·⟧",
   "saleSavedTo": "⟦<lead>Šåłè ťö</lead> <name>{{name}}</name> <tail>šåṽèđ</tail>·~·~·⟧",
   "undo": "⟦Ûňđö·~⟧"
 }
