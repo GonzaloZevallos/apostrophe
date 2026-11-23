@@ -14,6 +14,7 @@ import {
   EXPENSE_NEW,
   EXPENSES,
   pathTo,
+  SETTINGS,
   SETTINGS_ACCOUNT,
   SETTINGS_PAYMENT_METHODS,
   SETTINGS_PAYMENT_METHODS_ARCHIVED,
@@ -32,7 +33,7 @@ import {
 import { AUTH_TEXT } from '../copy/auth.ts'
 import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { REFUSAL_KEY } from '../i18n/refusalTable.ts'
-import { common, emptyState, refusal } from './copy.ts'
+import { common, emptyState, refusal, settings } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
 import { SETTINGS_TEXT } from '../copy/settings.ts'
@@ -125,6 +126,21 @@ const ARCHIVED_ONLY = /^\?archived=true$/
 
 /** The search typed on Customers to reach Nico Parra, the sample debtor. */
 const SEARCH_NICO = { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nico' }
+
+/**
+ * The Users the pinned fixture's business has: its owner (`scripts/design/mobile_seed.py` accepts the
+ * one invitation and only creates, never accepts, the join link), so the Business card reads "1 user".
+ */
+const SAMPLE_USER_COUNT = 1
+
+/** The Settings home with `GET /business` failing: the card's count slot stays empty and the page still draws. */
+export const CARD_WITHOUT_COUNT_STATE: WalkState = {
+  screen: 'ConfiguracionTarjetaSinConteo',
+  route: SETTINGS,
+  steps: [],
+  visible: settings('settings:home.title'),
+  reads: [{ path: /^\/business$/, status: 500 }],
+}
 
 export const RECORDS_STATES: readonly WalkState[] = [
   {
@@ -529,4 +545,11 @@ export const RECORDS_STATES: readonly WalkState[] = [
     steps: [{ click: common('common:changePassword') }],
     visible: AUTH_TEXT.currentPassword,
   },
+  {
+    screen: 'ConfiguracionTarjeta',
+    route: SETTINGS,
+    steps: [],
+    visible: settings('settings:card.users', { count: SAMPLE_USER_COUNT }),
+  },
+  CARD_WITHOUT_COUNT_STATE,
 ]

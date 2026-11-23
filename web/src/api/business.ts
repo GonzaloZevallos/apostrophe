@@ -9,6 +9,9 @@ import { get } from './client'
 import { keys } from './keys'
 import type { LanguageTag } from './language'
 
+/** Where the business query goes; the Settings walk's count-less state fails this path. */
+export const BUSINESS_PATH = '/business'
+
 export interface Business {
   users: { email: string }[]
   selectable_languages: readonly LanguageTag[]
@@ -17,6 +20,6 @@ export interface Business {
 export function businessQueryOptions() {
   return queryOptions({
     queryKey: keys.business(),
-    queryFn: () => get<Business>('/business'),
+    queryFn: () => get<Business>(BUSINESS_PATH),
   })
 }

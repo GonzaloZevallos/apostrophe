@@ -139,6 +139,8 @@ export const STATE_NAMES: readonly string[] = [
   'ConfiguracionMediosPagoArchivados',
   'ConfiguracionMediosPagoArchivadosVacio',
   'ConfiguracionContrasena',
+  'ConfiguracionTarjeta',
+  'ConfiguracionTarjetaSinConteo',
   'ConfiguracionMonedaSimboloInvalido',
   'ConfiguracionMonedaNoBajar',
   'ConfiguracionMotivos',
