@@ -5664,7 +5664,7 @@ a.ajustes-tema__opcion {
  *   .cobrar, .interruptor, .boton-aviso, .aviso-exito__deshacer (the sale-saved toast's Undo);
  *   transparent, so --superficie is the fill cue: .boton--enlace,
  *   .boton--fila, .enlace-texto, .bar-inferior__item, .riel-lateral__item,
- *   .riel-lateral__ajustes, .mas__item, .ajustes__item, .mas-info__boton, .fila-venta,
+ *   .riel-lateral__ajustes, .mas__item, .ajustes__item, .mas-info__boton, .fila-venta, .sale-card,
  *   .fila-gasto, .fila-entrada, .fila-entrada__enlace, .lista-clientes__fila,
  *   .bloque-deben__titulo, .bloque-deben__fila, .bloque-deben__datos, .fila-stock--enlace, .variedad-item,
  *   .variedad-fila, .variedades__todas, .catalogo__fila-nombre, .pestanas__opcion,
@@ -5725,6 +5725,7 @@ a.ajustes-tema__opcion {
     .ajustes__item,
     .mas-info__boton,
     .fila-venta,
+    .sale-card,
     .fila-gasto,
     .fila-entrada,
     .fila-entrada__enlace,

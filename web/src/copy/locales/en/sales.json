@@ -1,10 +1,15 @@
 {
   "card": {
+    "noCustomer": "No customer",
+    "item": "{{name}} × {{quantity}}",
+    "more_one": "+{{count}} more",
+    "more_other": "+{{count}} more",
+    "name": "{{customer}}, {{items}}, {{payment}}, total {{total}}",
     "payment": {
       "paid": "Paid",
       "unpaid": "Unpaid",
       "partPaid": "Part-paid · {{amount}} owed",
-      "unknown": "Payment cannot be shown"
+      "unknown": "Payment can't be shown"
     }
   }
 }
