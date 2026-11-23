@@ -66,7 +66,7 @@ class ExpensesImport:
             return Refusal(InvalidExpenseDate.code)
         if row.amount is None:
             return Refusal(InvalidAmount.code)
-        if row.detail is None:
+        if row.detail is None or not row.detail.strip():
             return Refusal(InvalidDetail.code)
         try:
             Expense.of(

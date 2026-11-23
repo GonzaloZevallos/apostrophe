@@ -40,6 +40,12 @@ def test_an_expense_is_recorded(client: TestClient) -> None:
     assert "recorded_at" not in expense
 
 
+def test_a_blank_detail_is_recorded_as_the_empty_string(client: TestClient) -> None:
+    expense = _record(client, detail="   ")
+
+    assert expense["detail"] == ""
+
+
 def test_a_future_date_is_refused(client: TestClient) -> None:
     response = client.post(
         "/expenses",
