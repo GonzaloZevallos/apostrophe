@@ -1863,8 +1863,20 @@
             "type": "integer"
           },
           "detail": {
+            "default": "",
             "title": "Detail",
             "type": "string"
+          },
+          "payment_method_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Method Id"
           },
           "spent_on": {
             "format": "date",
@@ -1875,8 +1887,7 @@
         "required": [
           "spent_on",
           "category_id",
-          "amount",
-          "detail"
+          "amount"
         ],
         "title": "ExpenseIn",
         "type": "object"
@@ -1906,6 +1917,16 @@
             "title": "Id",
             "type": "integer"
           },
+          "payment_method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExpensePaymentMethodOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "spent_on": {
             "format": "date",
             "title": "Spent On",
@@ -1917,9 +1938,33 @@
           "spent_on",
           "category_id",
           "amount",
-          "detail"
+          "detail",
+          "payment_method"
         ],
         "title": "ExpenseOut",
+        "type": "object"
+      },
+      "ExpensePaymentMethodOut": {
+        "properties": {
+          "icon": {
+            "title": "Icon",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon"
+        ],
+        "title": "ExpensePaymentMethodOut",
         "type": "object"
       },
       "FirstRunKind": {
@@ -4099,7 +4144,7 @@
         "type": "object"
       },
       "ReasonCostOut": {
-        "description": "One withdrawal reason's cost line, in the list order `period_figures` answered\nit: Home's Week, Month and Today and every Análisis row serialise it through here\nand nowhere else. `amount` is `null` when every gram is pending, never 0.",
+        "description": "One withdrawal reason's cost line, in the list order `period_figures` answered\nit: Home's Week, Month and Today and every An\u00e1lisis row serialise it through here\nand nowhere else. `amount` is `null` when every gram is pending, never 0.",
         "properties": {
           "amount": {
             "anyOf": [
@@ -4246,7 +4291,7 @@
         "type": "object"
       },
       "RowCostOut": {
-        "description": "One Análisis cost line (cost of goods or stock shortfall): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
+        "description": "One An\u00e1lisis cost line (cost of goods or stock shortfall): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
         "properties": {
           "all_pending": {
             "title": "All Pending",
@@ -4490,7 +4535,7 @@
         "type": "object"
       },
       "SaleDetailOut": {
-        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` — used by the list and by every write — never\nallocates.",
+        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` \u2014 used by the list and by every write \u2014 never\nallocates.",
         "properties": {
           "bill": {
             "anyOf": [

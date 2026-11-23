@@ -22,6 +22,8 @@
 
 **Cuando** pago algo que no es Stock, **quiero** registrar con cuál de mis propios Payment methods lo pagué, sin tener que escribir una descripción, **para** ver después cómo salió del negocio cada Expense y registrarla en pocos toques desde el teléfono. (GH-837, compartido con payment-methods.md. La parte 2 entrega la mitad de la API: una Expense lleva un Payment method opcional por id, y el Detalle es opcional. La mitad de "pocos toques" llega con la parte del formulario Add expense. Hasta entonces, ninguna pantalla manda `payment_method_id`.)
 
+**Cuando** registro plata que gasté en algo que no es Stock, **quiero** anotar de cuál de mis Payment methods salió, **para** saber después de dónde salió de verdad la plata. (Parte 2 de GH-1010, solo por la API: acá lo sirven la escritura con guarda de `payment_method_id`, el medio con su nombre actual en la lectura de una Expense y en la vista mensual, y el Detalle opcional. Ninguna pantalla cambia.)
+
 En la práctica, estos jobs se juntan así. El vendedor paga algo que no es una Purchase de Stock entre pedidos, o se sienta a mirar en qué se fue la plata de la semana o del mes. Carga la Expense desde Analysis, a 2 toques desde Home y a 3 desde los demás Tab roots del teléfono (el presupuesto de toques vive en navigation.md, criterio 1), o desde New sale en medio de una venta, sin salir de ella y sin perder lo que tipeó en ninguna de las dos. Encuentra las Expenses de cualquier mes, con el total y lo que se llevó cada Expense category, en un solo lugar evidente, y vuelve adonde estaba sin distracciones en el encabezado. La computadora es el mismo job en una pantalla más grande.
 
 Línea de base de la parte 3 de GH-725: antes, el vendedor que tenía que anotar una Expense en medio de una venta terminaba o abandonaba la venta y después iba a Expenses por separado (Home → Analysis → Expenses en el teléfono, la barra lateral en la computadora), y a veces se olvidaba de la Expense. Supuesto: el olvido pasa lo bastante seguido como para justificar el atajo.
@@ -29,6 +31,8 @@ Línea de base de la parte 3 de GH-725: antes, el vendedor que tenía que anotar
 Línea de base de la parte 2 de GH-769: antes, en el teléfono, cerrar una Expense tipeada sobre New sale la tiraba sin preguntar, y lo mismo pasaba al salir de New sale con la venta sin tocar y la Expense tipeada; el vendedor tenía que volver a tipearla. La venta ya estaba protegida por "Discard the sale?" cuando estaba tocada.
 
 Línea de base de GH-837: el medio con que se pagó una Expense vive como texto libre en el Detalle ("pagado por transferencia") o no se registra; por eso el Detalle era obligatorio. El éxito es que el medio sale del texto libre y pasa a la lista propia del Business.
+
+Línea de base de la parte 2 de GH-1010: las Expenses que ya existen no tienen medio. Nada lo deduce del Detalle ni de la Expense category ni lo completa hacia atrás, y su Detalle queda tal como se escribió; un vendedor que quiera un medio en una Expense vieja la edita.
 
 Criterios de éxito:
 
@@ -63,6 +67,7 @@ Criterios de éxito:
 17. **La historia no se rompe** (parte 2 de GH-837): archivar o renombrar un medio nunca rompe ni reescribe una Expense vieja, y las lecturas muestran el nombre actual del medio, los archivados incluidos (ADR-20261111-payment-methods-by-id).
 18. **Editar conservando un medio archivado** (parte 2 de GH-837): editar una Expense y conservar el medio que ya tiene funciona aunque ese medio se haya archivado después. Solo se rechaza *elegir* un medio archivado.
 19. **La exportación nombra el medio** (parte 2 de GH-837): el Business export nombra el medio de cada Expense, y la Business removal sigue funcionando con los conteos coincidentes.
+20. **El medio no cambia ningún total** (parte 2 de GH-1010): con las mismas Expenses, con medio o sin él, el Cash, el Profit, el Money in y cada cifra de Panel y de Analysis quedan iguales al peso.
 
 # Expenses
 
@@ -103,8 +108,9 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
   - Elegir un medio exige que el Business lo ofrezca ahora: del mismo Business y sin archivar.
   - Conservar al editar el medio que la Expense ya tiene se permite aunque se haya archivado después.
   - Nada obliga a una Expense a llevar un medio (Assume nothing).
-  - El medio de una Expense no cambia ningún total: el Cash, el Profit y el Money in siguen igual. El Money in cuenta solo Payments, así que el medio de una Expense nunca entra ahí.
+  - El medio de una Expense no cambia ningún total: el Cash, el Profit, el Money in y cada cifra de Panel y de Analysis siguen igual al peso. El Money in cuenta solo Payments, así que el medio de una Expense nunca entra ahí.
   - Un medio al que apunta alguna Expense solo se puede archivar, nunca eliminar, igual que uno con Payments (payment-methods.md).
+  - Las Expenses que existían antes no tienen medio: nunca se deduce del Detalle ni de la Expense category ni se completa hacia atrás, y su Detalle queda tal como se escribió (parte 2 de GH-1010).
 - Una Expense no tiene gramos, ni producto, ni estado pendiente, de borrador o de aprobación.
 - **Una Expense registrada desde New sale es una Expense común**: su propia fecha, su propia Expense category de la lista del negocio, y baja el Profit y el Cash como cualquier otra. No queda atada a la venta y no cambia ninguna de sus cifras. El Shipping charged sigue siendo lo que paga el Customer, mientras que un costo de envío es una Expense; el costo de una venta sale de los Lots como Cost of goods sold, nunca de una Expense; y lo que se compra para el Stock es una Purchase (una Stock entry), que nunca pasa por este formulario.
 - **Editar**: en pantalla, los cuatro campos del formulario se pueden editar en el lugar, con la misma validación que al registrar; por la API también el Payment method. No se guarda historial de ediciones.
@@ -118,6 +124,7 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
   - `payment_method_id` es opcional: puede faltar o ser `null`, y en los dos casos la Expense queda sin medio.
 - `PUT` es un reemplazo completo, sin caso especial. Un cliente que edita una Expense tiene que mandar su `payment_method_id` actual en cada `PUT`, o el medio se borra. La parte del formulario Add expense hereda esta obligación.
 - Al escribir, un medio que no se puede elegir responde 404 `payment_method.unavailable`, con el mismo cuerpo byte a byte en todos los casos: archivado, eliminado, inexistente, de otro Business, 0 o negativo. Se controla dentro de la misma escritura (`INSERT … SELECT` al registrar, `UPDATE` con su condición al editar), así que no se escribe nada y no se revela nada. Una Expense de otro Business responde `expense.not_found`.
+- El router arma `PaymentMethodId` igual que `app/payments/adapters/router.py`, así que un id de 0 o menos responde el mismo 404 en Payments y en Expenses.
 - Orden de los rechazos, gana el primero:
   - antes que todo, al leer el pedido: un `payment_method_id` de 0 o negativo responde el 404 `payment_method.unavailable`, igual que en Payments, aunque el pedido tenga otra falla (por ejemplo, un Detalle de 201 caracteres, cuyo 422 entonces no se informa). Ningún id así es de ningún Business, así que la respuesta no revela nada, y ninguna pantalla lo manda;
   - al editar, para todo id de 1 o más o sin medio: decimales del monto (422), Expense (404), Expense category (404), reglas del dominio (422), y después la escritura con guarda (404 `payment_method.unavailable`);
@@ -126,6 +133,7 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
 - El Business export nombra el medio de cada Expense con su nombre actual, y la Business removal la borra con los conteos coincidentes.
 - El Spreadsheet import nunca le pone un medio a una Expense y sigue rechazando un Detalle que queda en blanco después de recortar (`InvalidDetail`), así que las filas de la planilla no se aflojan.
 - `expense.payment_method_id` apunta a `payment_method` con la FK de la migración 0034. El dominio rechaza una etiqueta de medio sin id o con otro id (`expense.payment_method_mismatch`, que ninguna ruta mapea).
+- Contar las Expenses en el `in_use` de un Payment method es la parte siguiente de GH-1010.
 
 ### Vista mensual
 
@@ -323,6 +331,7 @@ Se leen de los datos y de las pruebas; no hay telemetría.
 - **M29, solo un medio propio y ofrecido (criterio 16)**: un `POST` con un id archivado, eliminado, inexistente, de otro Business o 0 responde 404 `payment_method.unavailable` y la lista no cambia; un id 0 junto con un Detalle de 201 caracteres también responde ese 404; un `PUT` a otro medio archivado responde 404 y la Expense no cambia; el Business B nombrando un medio de A y nombrando 999999 recibe cuerpos idénticos byte a byte; el `PUT` de B sobre una Expense de A responde `expense.not_found`. 100% de aprobación.
 - **M30, historia intacta y edición conservando el medio (criterios 17 y 18)**: en la lectura de una Expense y en la vista mensual, un medio archivado se sigue mostrando y un renombre muestra el nombre nuevo; un `PUT` que conserva un medio archivado después responde 200 con el medio conservado; `null` o la clave ausente lo borra. 100% de aprobación.
 - **M31, exportación y borrado (criterio 19)**: en `tests/business_removal/`, una Expense con un medio archivado y después renombrado se exporta con su nombre actual, y la Business removal termina con los conteos coincidentes. 100% de aprobación.
+- **M32, el medio no cambia ningún total (criterio 20, parte 2 de GH-1010)**: una prueba registra las mismas Expenses con medio y sin medio y compara el Cash, el Profit y las cifras de Panel de Week y Month. Diferencias: 0. 100% de aprobación.
 
 ## Fuera de alcance
 
@@ -352,3 +361,4 @@ Se leen de los datos y de las pruebas; no hay telemetría.
 - Para la pregunta de salida de la parte 2 de GH-769: cualquier cambio en lo que ve un vendedor cuando se le cierra la sesión (401); cualquier cambio a 900 px o más; cualquier cambio en el texto o las reglas de la guarda "Discard the sale?" de siempre; cambiar `LeaveConfirm` o `ConfirmDialog`; pasar los textos de Expenses de `web/src/copy/expenses.ts` a los JSON de locale (le toca al trabajo del segundo idioma, #317).
 - En esta parte: otros estados recorridos por el Mobile check sobre la Expense desde New sale además de `sale/expense-discard` y `DescartarGastoEnVenta`, las filas del registro de pantallas y la prueba de los 2 toques desde New sale, que #757 cubre con los estados recorridos del Mobile check y no con un conteo de toques por Tab root (navigation.md, criterio 1).
 - En la parte 2 de GH-837: cualquier pantalla (el formulario de la Expense sigue pidiendo el Detalle y no manda ni muestra un medio); dónde va el medio en la fila de una Expense y si lleva ícono; un desglose del gasto por medio; hacer obligatorio el medio; y cualquier cambio en la importación además del chequeo del Detalle.
+- En la parte 2 de GH-1010: filtrar Expenses por medio; totales de gasto por medio y cualquier cifra de Cash o de Money in por medio; cualquier cambio en el Cash o el Profit; contar las Expenses en el `in_use` de un medio (la parte siguiente de GH-1010); deducir o completar hacia atrás el medio de las Expenses existentes; y cualquier pantalla.

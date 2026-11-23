@@ -8,15 +8,12 @@ import run, so rows are built by hand.
 
 from datetime import UTC, date, datetime
 
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.expenses.adapters.import_port import ExpensesImport
-from app.expenses.adapters.sql_expenses import SqlExpenses
-from app.expenses.domain.expense import Expense, InvalidDetail
-from app.shared.payment_method import PaymentMethodId
+from app.expenses.domain.expense import InvalidDetail
 from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.application.ports import Refusal
 from app.spreadsheet_import.domain.rows import GastoRow, SheetRef
@@ -210,26 +207,3 @@ def test_has_records_is_false_after_a_category_is_renamed_or_removed(
         session.commit()
 
         assert port.has_records() is False
-
-
-# SqlExpenses has no declared seam of its own and no route reaches it with a method
-# (the Guard), so its refusal is shown here, in the repository-seam file nearest to it.
-@pytest.mark.parametrize("write", ["add", "save"])
-def test_the_expenses_adapter_refuses_an_expense_with_a_method_until_it_persists_it(
-    client: TestClient, engine: Engine, write: str
-) -> None:
-    expense = Expense.of(
-        TODAY,
-        1,
-        1_000,
-        "una entrega",
-        TODAY,
-        datetime(2026, 10, 2, 18, 0, tzinfo=UTC),
-        1,
-        payment_method=PaymentMethodId(1),
-    )
-    with Session(engine) as session:
-        expenses = SqlExpenses(session, BUSINESS_ID)
-
-        with pytest.raises(AssertionError, match="arrives with #1022"):
-            getattr(expenses, write)(expense)

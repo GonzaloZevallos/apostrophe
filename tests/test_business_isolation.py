@@ -112,6 +112,7 @@ def seed_expenses(client: TestClient) -> dict[str, int]:
     category = client.post("/expense-categories", json={"name": f"{MARKER} category"})
     assert category.status_code == 201, category.text
     category_id = category.json()["id"]
+    method_id = client.get("/api/payment-methods").json()[0]["id"]
     expense = client.post(
         "/expenses",
         json={
@@ -119,6 +120,7 @@ def seed_expenses(client: TestClient) -> dict[str, int]:
             "category_id": category_id,
             "amount": 1_000,
             "detail": f"{MARKER} detail",
+            "payment_method_id": method_id,
         },
     )
     assert expense.status_code == 201, expense.text
@@ -393,12 +395,16 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "category_id": 1,
         "amount": 500,
         "detail": "another expense",
+        # Static, like `category_id`: it is not the isolation proof of the method (that is
+        # `test_a_body_reference_to_a_missing_or_foreign_payment_method_is_refused_the_same_way`).
+        "payment_method_id": 1,
     },
     ("PUT", "/expenses/{expense_id}"): {
         "spent_on": "2026-10-02",
         "category_id": 1,
         "amount": 999,
         "detail": "edited expense",
+        "payment_method_id": 1,
     },
     ("PATCH", "/business"): {"name": "Renamed by B"},
     # `de` is selectable in this module (the `settings` fixture below), so the body really
@@ -697,6 +703,37 @@ def test_a_body_reference_to_a_missing_or_foreign_variety_is_refused_the_same_wa
     valid = business_b.post(
         "/sales", json=_sale_body(variety_id=own_variety["id"], customer_id=customer_id)
     )
+    assert valid.status_code == 201, valid.text
+
+
+def test_a_body_reference_to_a_missing_or_foreign_payment_method_is_refused_the_same_way(
+    business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
+) -> None:
+    foreign_method = business_a.get("/api/payment-methods").json()[0]["id"]
+    category = next(c for c in business_b.get("/expense-categories").json() if c["name"] == "Other")
+
+    def record(method_id: int) -> Any:
+        return business_b.post(
+            "/expenses",
+            json={
+                "spent_on": "2026-10-02",
+                "category_id": category["id"],
+                "amount": 500,
+                "detail": "B expense",
+                "payment_method_id": method_id,
+            },
+        )
+
+    missing = record(999_999)
+    other_business = record(foreign_method)
+
+    assert missing.status_code == 404, missing.text
+    assert other_business.status_code == 404, other_business.text
+    assert missing.json()["code"] == "payment_method.unavailable"
+    assert missing.content == other_business.content
+
+    own_method = business_b.get("/api/payment-methods").json()[0]["id"]
+    valid = record(own_method)
     assert valid.status_code == 201, valid.text
 
 

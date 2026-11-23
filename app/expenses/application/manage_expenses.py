@@ -39,8 +39,8 @@ def record_expense(
     """Checks run in this order, the first rejection wins: the amount's decimals against
     the business's own (docs/adr/0058, 422, before any read), the category (404), the
     domain rules (422), then the guarded write (404 `payment_method.unavailable`), so a
-    foreign or unknown category never reaches the amount or date rules. The guarded write
-    arrives with #1022; the router refuses an id of 0 or below before this runs."""
+    foreign or unknown category never reaches the amount or date rules. The router
+    refuses an id of 0 or below before this runs."""
     whole = _whole_amount(money_format, amount)
     get_category(categories, category_id)
     expense = Expense.of(
@@ -67,8 +67,8 @@ def edit_expense(
 ) -> Expense:
     """Checks run in this order, the first rejection wins: the amount's decimals (422),
     the expense (404), the category (404), the domain rules (422), then the guarded write
-    (404 `payment_method.unavailable`). The guarded write arrives with #1022; the router
-    refuses an id of 0 or below before this runs. `recorded_at` carries through from the
+    (404 `payment_method.unavailable`). The router refuses an id of 0 or below before
+    this runs. `recorded_at` carries through from the
     stored expense: an edit never changes it."""
     whole = _whole_amount(money_format, amount)
     existing = get_expense(expenses, expense_id)
