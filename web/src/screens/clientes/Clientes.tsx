@@ -9,7 +9,7 @@
  * matching state instead of a misleading "no customers yet" (PRD, "Feedback"). Over the list sit
  * the All | Owed to you segments; the typed `query` (not the debounced value), or a debtors read
  * that failed, draws the flat list alone with no segments (`customersView`), and while the debtors
- * read is pending the segments show as a skeleton with nothing below. What the list itself draws
+ * read is pending the segments show as a skeleton and, on "Owed to you", the summary card's skeleton, with nothing else below. What the list itself draws
  * is one decision, `customersListState`; a row is drawn only in `rows`. Clearing the query
  * returns at once to the held segment, and the read keys the full list (`listKeyQuery`) without
  * ever keeping the old query's matches as its placeholder.
@@ -47,6 +47,7 @@ import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import ClienteFila from './ClienteFila'
 import TeDeben from './TeDeben'
+import { OwedSummarySkeleton } from './OwedSummary'
 import { DEBTORS_NOTICE_PLACE, DebtorsSlot } from './DebtorsUnavailable'
 import { COMMON_TEXT } from '../../copy/common'
 import ContentArea from '../../components/ContentArea'
@@ -97,7 +98,8 @@ export default function Clientes() {
   // Back from Record payment the list returns to its place (PM option a). Beside a customer's
   // card the card is where the seller returns to, so the list leaves it to the card.
   const debtors = useDebtors()
-  const view = customersView({ query, debtors: debtors.state, segment })
+  const debtorsRead = debtors.state
+  const view = customersView({ query, debtors: debtorsRead, segment })
   const listState = customersListState({
     typed: typedQuery(query),
     keyQuery,
@@ -107,7 +109,6 @@ export default function Clientes() {
     isError,
     isEmpty: customers.length === 0,
   })
-  const answered = debtors.state === 'ready'
   // A read that fails and then answers lands on "Owed to you", whatever was chosen before.
   const previousState = useRef(debtors.state)
   useEffect(() => {
@@ -161,10 +162,11 @@ export default function Clientes() {
         {view !== 'flat' && (
           <CustomerSegments segment={segment} onChange={setSegment} {...segmentCounts(debtors.data)} />
         )}
-        {view === 'owed' && debtors.data !== null && <TeDeben data={debtors.data} />}
+        {view === 'owed' && debtorsRead === 'pending' && <OwedSummarySkeleton />}
+        {view === 'owed' && debtorsRead === 'ready' && debtors.data !== null && <TeDeben data={debtors.data} />}
         {listState === 'failed' && error instanceof NetworkError && <SinConexion />}
         {listState === 'failed' && !(error instanceof NetworkError) && <ErrorGenerico />}
-        {listState !== 'failed' && listState !== 'loading' && (view === 'flat' || (view === 'all' && answered)) && (
+        {listState !== 'failed' && listState !== 'loading' && (view === 'flat' || (view === 'all' && debtorsRead === 'ready')) && (
           <section className="clientes__todos">
             <div
               className="lista-clientes"

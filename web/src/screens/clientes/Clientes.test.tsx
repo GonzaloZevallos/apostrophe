@@ -1379,3 +1379,90 @@ test('after a save and a failed debtors read focus lands on the customer\'s Coll
   const collect = (await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!
   await waitFor(() => expect(collect).toHaveFocus())
 })
+
+// The Owed summary card (`OwedSummary`): Clientes decides once, from `debtorsState` and
+// `customersView`, whether it draws the card, its skeleton or nothing.
+const SUMMARY_NAME = 'Summary of what customers owe'
+const SKELETON = '[aria-hidden="true"] ul'
+
+test('while the debtors read is held, Owed to you shows the card skeleton and no summary region', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture]), () => new Promise<Response>(() => {}) as never))
+  renderClientes()
+
+  await waitFor(() => expect(fetch).toHaveBeenCalledWith('/payments/debtors', expect.anything()))
+  await waitFor(() => expect(document.querySelector(SKELETON)).not.toBeNull())
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+  expect(screen.queryByText(/^\$ /)).not.toBeInTheDocument()
+})
+
+test('released, the card replaces the skeleton and shows the API total_owed', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture]), () => jsonResponse(200, DEBTORS_FIXTURE)))
+  renderClientes()
+
+  const region = await screen.findByRole('region', { name: SUMMARY_NAME })
+  expect(within(region).getByRole('group', { name: 'Total owed' })).toHaveTextContent(
+    `$ ${DEBTORS_FIXTURE.total_owed.toLocaleString('es-AR')}`,
+  )
+  expect(document.querySelector(SKELETON)).toBeNull()
+})
+
+test('with All held while the debtors read is held, there is no skeleton and no summary region', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture]), () => new Promise<Response>(() => {}) as never))
+  renderClientes()
+  await waitFor(() => expect(fetch).toHaveBeenCalledWith('/payments/debtors', expect.anything()))
+  await waitFor(() => expect(document.querySelector(SKELETON)).not.toBeNull())
+
+  await showAll()
+
+  await waitFor(() => expect(document.querySelector(SKELETON)).toBeNull())
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+})
+
+test('a first failed debtors read shows the flat list with no card and no skeleton', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture]), () => new Response('boom', { status: 500 })))
+  renderClientes()
+
+  expect(await screen.findByText(customerFixture.name)).toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+  expect(document.querySelector(SKELETON)).toBeNull()
+})
+
+test('a card on screen and then a failed debtors re-read drops to the flat list with the notice, not a stale card', async () => {
+  let failing = false
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [customerFixture]), () => (failing ? new Response('boom', { status: 500 }) : jsonResponse(200, DEBTORS_FIXTURE))),
+  )
+  const queryClient = renderClientes()
+  await screen.findByRole('region', { name: SUMMARY_NAME })
+
+  failing = true
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+
+  expect(await screen.findByRole('button', { name: DEBTORS_NOTICE })).toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+  expect(document.querySelector(SKELETON)).toBeNull()
+  expect(screen.getByText(customerFixture.name)).toBeInTheDocument()
+})
+
+test('All, a typed query and nobody owing draw no card and no skeleton', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture, LU_SETTLED]), () => jsonResponse(200, DEBTORS_FIXTURE)))
+  renderClientes()
+  await screen.findByRole('region', { name: SUMMARY_NAME })
+
+  await showAll()
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+  expect(document.querySelector(SKELETON)).toBeNull()
+
+  await userEvent.type(screen.getByLabelText('Search customer'), 'a')
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+  expect(document.querySelector(SKELETON)).toBeNull()
+})
+
+test('nobody owing draws "Nobody owes you" and no card', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [LU_SETTLED]), () => jsonResponse(200, NO_DEBTORS)))
+  renderClientes()
+
+  expect(await screen.findByText(NOBODY_OWES)).toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+  expect(document.querySelector(SKELETON)).toBeNull()
+})

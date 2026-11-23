@@ -5,7 +5,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { keys } from '../../api/keys'
@@ -78,4 +78,26 @@ test('figures shown and then a newer failed read drop to the flat list with none
   await waitFor(() => expect(screen.queryByRole('radiogroup')).not.toBeInTheDocument())
   expect(screen.getByText('Lu')).toBeInTheDocument()
   expect(screen.queryByText(`$ ${debtorsOf().total_owed.toLocaleString('es-AR')}`)).not.toBeInTheDocument()
+})
+
+test('it draws the same summary card from the same read, and the Total owed only inside it', async () => {
+  const debtors = debtorsOf({ total_owed: 57800, buckets: { this_week: 12800, days_8_30: 20100, over_30: 24900 } })
+  stub(() => jsonResponse(200, debtors))
+  renderBehind()
+
+  const region = await screen.findByRole('region', { name: 'Summary of what customers owe' })
+  expect(within(region).getByRole('group', { name: 'Total owed' })).toHaveTextContent(/\$ 57\.800$/)
+  expect(within(region).getAllByRole('listitem')).toHaveLength(3)
+  // A bare figure, the old one, would be a second place the total is written.
+  expect(screen.getAllByText('$ 57.800')).toHaveLength(1)
+})
+
+test('while the debtors read is pending it draws no card and no skeleton', async () => {
+  stub(() => new Promise<Response>(() => {}) as never)
+  renderBehind()
+
+  await waitFor(() => expect(fetch).toHaveBeenCalledWith('/payments/debtors', expect.anything()))
+  await act(async () => {})
+  expect(screen.queryByRole('region', { name: 'Summary of what customers owe' })).not.toBeInTheDocument()
+  expect(document.querySelector('[aria-hidden="true"] ul')).toBeNull()
 })

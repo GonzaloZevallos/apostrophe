@@ -379,7 +379,12 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   // Opens Te deben from the block's own heading, then goes back to Inicio.
   await page.getByRole('link', { name: 'Owed to you' }).click()
   await expectPath(page, CUSTOMERS)
-  await expect(page.locator('.ventas__resumen .cifra-xl')).toHaveText(pesos(panel.debts.total_owed))
+  await expect(
+    page
+      .getByRole('region', { name: 'Summary of what customers owe' })
+      .getByRole('group', { name: 'Total owed' })
+      .getByText(pesos(panel.debts.total_owed), { exact: true }),
+  ).toBeVisible()
   await page.goBack()
   await expectPath(page, HOME)
   await expect(page.locator('.encabezado__titulo')).toHaveText('Home')

@@ -1,6 +1,6 @@
 /**
- * The "Owed to you" view of Clientes (`payments.md`, "En pantalla"): the Total owed figure and
- * every customer with a balance above $0 are the API's own answer (`GET /payments/debtors`),
+ * The "Owed to you" view of Clientes (`payments.md`, "En pantalla"): the Owed summary card
+ * (Total owed, age bar and legend) and every customer with a balance above $0 are the API's own answer (`GET /payments/debtors`),
  * handed in by Clientes only once it answered successfully (oldest owing-since first, ties by
  * name): nothing is sorted, added or compared here, so they equal Inicio's block. With
  * `debtor_count` 0 it reads only the fixed "Nobody owes you", with nothing to tap. Either way its place for focus is marked
@@ -8,15 +8,14 @@
  */
 
 import type { Debtors } from '../../api/payments'
-import { useMoney } from '../../format/moneyContext'
 import { OWED_PLACE } from '../../components/useReturnToPlace'
 import ClienteFila from './ClienteFila'
+import OwedSummary from './OwedSummary'
 import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import { COMMON_TEXT } from '../../copy/common'
 
 export default function TeDeben({ data }: { data: Debtors }) {
-  const money = useMoney()
   const { t } = useTranslation()
 
   if (data.debtor_count === 0) {
@@ -31,9 +30,7 @@ export default function TeDeben({ data }: { data: Debtors }) {
 
   return (
     <section className="clientes__te-deben" aria-label={COMMON_TEXT.owedToYou}>
-      <div className="ventas__resumen">
-        <span className="cifra-xl monto-deuda">{money.money(data.total_owed)}</span>
-      </div>
+      <OwedSummary debtors={data} />
 
       <div className="lista-clientes" tabIndex={-1} data-place={OWED_PLACE}>
         {data.debtors.map((debtor) => (

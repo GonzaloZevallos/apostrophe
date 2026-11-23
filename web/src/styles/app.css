@@ -5479,6 +5479,175 @@ a.ajustes-tema__opcion {
   height: var(--alto-tocable);
 }
 
+/* ===== Owed summary ===== */
+/* `OwedSummary` (`Clientes.dc.html`, the card over "Owed to you"): the Total owed, an age bar and a
+ * three-line legend. Tokens only, and every layout switch below follows content or `ch`, never a
+ * width threshold. The only number TypeScript hands over is `--figure-ch`, the width in `ch` that a
+ * nine-digit amount takes in the Money format; each bar part's width is its API amount (`--amount`)
+ * read here and nowhere else. Every `ch` the legend uses is resolved on the legend itself, which
+ * carries the bold figure weight, so it measures the bold digits the amounts are written in: the
+ * registered lengths below resolve there and the lines read the pixels. */
+@property --owed-figure-w {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --owed-word-w {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --owed-line-min {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --owed-legend-min {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+.owed-summary {
+  --owed-gap: var(--espacio-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-block-end: var(--espacio-md);
+  padding: 14px;
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+}
+
+.owed-summary__total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: var(--espacio-md);
+}
+
+.owed-summary__label {
+  font-size: 13px;
+}
+
+.owed-summary__figure {
+  white-space: nowrap;
+}
+
+.owed-summary__bar {
+  display: flex;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+/* A part's weight is its amount: the `* 100` keeps the bar full for a total under 1 at two
+ * decimals, and a $0 part takes no width and no floor. */
+.owed-summary__part {
+  flex: calc(var(--amount) * 100) 1 0;
+  min-width: 0;
+}
+
+.owed-summary__part + .owed-summary__part {
+  box-shadow: inset 2px 0 0 var(--superficie);
+}
+
+.owed-summary__part--recent {
+  background: var(--deuda-reciente);
+}
+
+.owed-summary__part--middle {
+  background: var(--acento-calido);
+}
+
+.owed-summary__part--old {
+  background: var(--deuda);
+}
+
+/* Three columns while three nine-digit amounts fit; else one line each. */
+.owed-summary__legend {
+  --owed-figure-w: calc(var(--figure-ch) * 1ch);
+  --owed-word-w: 13ch;
+  --owed-legend-min: calc(3 * var(--owed-figure-w) + 2 * var(--owed-gap));
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-xs) var(--owed-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.owed-summary__legend > li {
+  --owed-line-min: calc(var(--owed-figure-w) + var(--owed-word-w) + var(--owed-gap));
+  display: flex;
+  flex: 1 1 calc((var(--owed-legend-min) - 100%) * 999);
+  flex-wrap: wrap-reverse;
+  justify-content: space-between;
+  column-gap: var(--owed-gap);
+  min-width: 0;
+}
+
+/* Inside a line: word left and amount right while both fit, else the amount over its word. */
+.owed-summary__legend > li > * {
+  flex: 0 1 calc((var(--owed-line-min) - 100%) * 999);
+}
+
+/* The word takes what the amount leaves, so it never wraps while there is room beside the amount. */
+.owed-summary__legend > li > .owed-summary__word {
+  flex-grow: 1;
+}
+
+.owed-summary__word {
+  font-weight: 400;
+  color: var(--tinta2);
+}
+
+.owed-summary__amount {
+  white-space: nowrap;
+}
+
+.owed-summary__amount--old {
+  color: var(--deuda);
+}
+
+/* The skeleton: the card's own classes, a block one line high wherever a text goes. */
+.owed-summary__block {
+  display: block;
+  height: 1lh;
+  border-radius: var(--radio-pildora);
+  background: var(--linea);
+}
+
+.owed-summary--skeleton .owed-summary__total > .owed-summary__label {
+  width: 8em;
+}
+
+.owed-summary--skeleton .owed-summary__total > .owed-summary__figure {
+  width: 6ch;
+}
+
+.owed-summary--skeleton .owed-summary__bar {
+  background: var(--linea);
+}
+
+.owed-summary--skeleton .owed-summary__legend .owed-summary__word {
+  min-width: var(--owed-word-w);
+  max-width: var(--owed-word-w);
+}
+
+.owed-summary--skeleton .owed-summary__legend .owed-summary__amount {
+  min-width: var(--owed-figure-w);
+  max-width: var(--owed-figure-w);
+}
+/* ===== end Owed summary ===== */
+
 /* pressed */
 /* The pressed state (GH-77, GH-102): of every control a finger can tap, from tokens only.
  * Two cues, neither colour alone: the control shrinks a little (`transform`), and its
