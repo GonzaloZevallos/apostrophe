@@ -1427,6 +1427,23 @@ test('a first failed debtors read shows the flat list with no card and no skelet
   expect(document.querySelector(SKELETON)).toBeNull()
 })
 
+test('a card on screen and then a failed debtors re-read drops to the flat list with the notice, not a stale card', async () => {
+  let failing = false
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [customerFixture]), () => (failing ? new Response('boom', { status: 500 }) : jsonResponse(200, DEBTORS_FIXTURE))),
+  )
+  const queryClient = renderClientes()
+  await screen.findByRole('region', { name: SUMMARY_NAME })
+
+  failing = true
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+
+  expect(await screen.findByRole('button', { name: DEBTORS_NOTICE })).toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+  expect(document.querySelector(SKELETON)).toBeNull()
+  expect(screen.getByText(customerFixture.name)).toBeInTheDocument()
+})
+
 test('All, a typed query and nobody owing draw no card and no skeleton', async () => {
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture, LU_SETTLED]), () => jsonResponse(200, DEBTORS_FIXTURE)))
   renderClientes()
