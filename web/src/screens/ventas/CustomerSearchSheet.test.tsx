@@ -12,6 +12,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import type { Customer } from '../../api/customers'
 import { invalidateResource } from '../../api/keys'
+import { HOME, SALE_NEW } from '../../routes'
 import { SheetRouterProvider, SheetStackProvider, useSheet } from '../../components/useSheetStack'
 import { useSaleDraft } from '../../sales/useSaleDraft'
 import CustomerSearchSheet from './CustomerSearchSheet'
@@ -114,16 +115,16 @@ function renderParent(recent: Recent = { status: 'ready', ids: [] }) {
   const router = createMemoryRouter(
     [
       {
-        path: '/',
+        path: SALE_NEW,
         element: (
           <SheetStackProvider>
             <Parent recent={recent} />
           </SheetStackProvider>
         ),
       },
-      { path: '/afuera', element: <h1>Before the sale</h1> },
+      { path: HOME, element: <h1>Before the sale</h1> },
     ],
-    { initialEntries: ['/afuera', '/'], initialIndex: 1 },
+    { initialEntries: [HOME, SALE_NEW], initialIndex: 1 },
   )
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   render(
