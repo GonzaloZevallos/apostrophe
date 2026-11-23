@@ -30,6 +30,7 @@ from app.expenses.domain.month import Month
 from app.http_errors import TranslateErrors
 from app.money_route import MoneyJsonRoute
 from app.shared.money import TooManyDecimals
+from app.shared.payment_method import PaymentMethodId, PaymentMethodUnavailable
 
 router = APIRouter(tags=["expenses"])
 categories_router = APIRouter(prefix="/expense-categories")
@@ -67,7 +68,7 @@ ExpensesDep = Annotated[SqlExpenses, Depends(get_expenses)]
 # way, so one translation covers expense categories and expenses alike.
 as_http = TranslateErrors(
     [
-        (404, (CategoryNotFound, ExpenseNotFound)),
+        (404, (CategoryNotFound, ExpenseNotFound, PaymentMethodUnavailable)),
         (409, (CategoryNameTaken, CategoryInUse)),
         (422, (ExpenseRuleBroken, TooManyDecimals)),
     ]
@@ -121,6 +122,8 @@ def record_expense(
     clock: ClockDep,
 ) -> ExpenseOut:
     with as_http:
+        # First, so an id of 0 or below beats every other rejection (as payments' router).
+        method = None if body.payment_method_id is None else PaymentMethodId(body.payment_method_id)
         expense = manage_expenses.record_expense(
             expenses,
             categories,
@@ -132,6 +135,7 @@ def record_expense(
             detail=body.detail,
             today=today,
             recorded_at=clock(),
+            payment_method=method,
         )
         return ExpenseOut.of(expense)
 
@@ -147,6 +151,7 @@ def edit_expense(
     today: TodayDep,
 ) -> ExpenseOut:
     with as_http:
+        method = None if body.payment_method_id is None else PaymentMethodId(body.payment_method_id)
         expense = manage_expenses.edit_expense(
             expenses,
             categories,
@@ -158,6 +163,7 @@ def edit_expense(
             amount=body.amount,
             detail=body.detail,
             today=today,
+            payment_method=method,
         )
         return ExpenseOut.of(expense)
 
