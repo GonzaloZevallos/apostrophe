@@ -184,7 +184,7 @@ _In the app_: Cost of goods sold
 _Avoid_: COGS, average cost, cost per gram
 
 **Expense**:
-Dinero que sale por algo que no es una Purchase, archivado bajo una Expense category. Lo que se compra para el Stock es una Purchase, nunca una Expense.
+Dinero que sale por algo que no es una Purchase, archivado bajo una Expense category, con un detalle opcional (uno en blanco se guarda vacío) y, opcionalmente, uno de los Payment methods del Business, guardado por id para mostrar siempre su nombre actual. Lo que se compra para el Stock es una Purchase, nunca una Expense, y su medio no cambia ningún total. _In the app_: Expense.
 _Avoid_: cost, outflow, bill
 _In the app_: Expense
 
