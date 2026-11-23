@@ -32,6 +32,8 @@ export const SAMPLES = {
   name: 'Name of twenty-four char',
   count: '99',
   quantity: '999,99',
+  items: 'Name of twenty-four char × 999,99 +99 more',
+  payment: 'Part-paid · $ 999.999 owed',
 } as const
 
 /** Code points after NFC: `á` is one whether composed or not, an emoji is one. */
