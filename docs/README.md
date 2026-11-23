@@ -37,6 +37,7 @@ Cada capacidad tiene su página en [docs/product/](product/):
 - [Screen images](product/screen-images.md)
 - [Ventas](product/sales.md)
 - [Selector](product/selector.md)
+- [Customer search](product/customer-search.md)
 - [Stock](product/stock.md)
 - [Stored language](product/stored-language.md)
 - [Elección de tema y paleta](product/theme-choice.md)
