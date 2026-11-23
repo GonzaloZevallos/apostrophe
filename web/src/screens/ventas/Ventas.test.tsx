@@ -5,7 +5,7 @@
  * sum and the count of the sales the list itself renders.
  */
 
-import { SALE, SALES } from '../../routes'
+import { pathTo, SALE, SALES } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -177,8 +177,8 @@ test('one card per sale, each a link to its sale', async () => {
   renderVentas()
 
   const ana = await screen.findByRole('link', { name: /Ana Pérez/ })
-  expect(ana).toHaveAttribute('href', '/sales/11')
-  expect(screen.getByRole('link', { name: /Beto Díaz/ })).toHaveAttribute('href', '/sales/12')
+  expect(ana).toHaveAttribute('href', pathTo(SALE, { id: 11 }))
+  expect(screen.getByRole('link', { name: /Beto Díaz/ })).toHaveAttribute('href', pathTo(SALE, { id: 12 }))
 })
 
 test('each card shows the chip of its own Payment state, from the API', async () => {
