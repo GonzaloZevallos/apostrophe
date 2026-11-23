@@ -629,7 +629,7 @@ Las ventas de un día registradas en su propia fecha hasta la hora local del dí
 _Avoid_: to date, running total, pace, progress, hasta ahora
 
 **Sale in progress**:
-La Sale que se está armando en New sale antes de guardarla: cliente, líneas (a lo sumo una por Product), fecha, Shipping charged, Note y cómo se paga, con el Payment method propuesto por las New sale suggestions. Vive solo en memoria durante una apertura de New sale, nunca se guarda en el dispositivo y cuenta como sin guardar solo con al menos una línea; en el código es `useSaleDraft`. En la app: Sale in progress.
+La Sale que se está armando en New sale antes de guardarla: cliente, líneas (a lo sumo una por Product, cada una con su cantidad y, opcionalmente, un Gift o un Special price, nunca los dos), fecha (un día real no posterior al día del Business), Shipping charged, Note y cómo se paga, con el Payment method propuesto por las New sale suggestions. Vive solo en memoria durante una apertura de New sale, nunca se guarda en el dispositivo y cuenta como sin guardar solo con al menos una línea; en el código es `useSaleDraft`. En la app: Sale in progress.
 _Avoid_: cart, basket, order, pending sale, borrador guardado
 
 **Money in**:

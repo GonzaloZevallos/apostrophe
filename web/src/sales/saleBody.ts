@@ -22,16 +22,16 @@ export interface SaleBody {
   lines: LineBody[]
 }
 
-/** The body lines of the draft's lines: the quantity as the wire text, never a gift or a special price
- * (the Sale in progress holds neither). */
+/** The body lines of the draft's lines: the quantity as the wire text, and the line's `gift` and
+ * `specialPrice` from the same fields `saleLineInputsOf` reads, so what is priced is what is sent. */
 export function bodyLinesOf(
   lines: readonly DraftLine[],
 ): { productId: number; quantity: string; gift: boolean; specialPrice: number | null }[] {
   return lines.map((line) => ({
     productId: line.productId,
     quantity: quantityOfHundredths(line.quantityHundredths),
-    gift: false,
-    specialPrice: null,
+    gift: line.gift,
+    specialPrice: line.specialPrice,
   }))
 }
 
