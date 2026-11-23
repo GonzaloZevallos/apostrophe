@@ -156,7 +156,7 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // and the total/count head the view. ---
   await page.goto(CUSTOMERS)
   const owing = page.getByRole('region', { name: 'Owed to you' })
-  await expect(owing.locator('.cifra-xl')).toHaveText('$ 8.000')
+  await expect(owing.getByRole('group', { name: 'Total owed' }).getByText('$ 8.000', { exact: true })).toBeVisible()
   await owing.getByRole('link', { name: 'Carla Pérez' }).first().click()
   await expectPath(page, CUSTOMER)
   await expect(page.locator('.ficha-deuda', { hasText: /Owes you\s*\$ 8\.000/ })).toBeVisible()
@@ -263,6 +263,8 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(page.getByText('Sale saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
-  await expect(page.getByRole('region', { name: 'Owed to you' }).locator('.cifra-xl')).toHaveText('$ 5.000')
+  await expect(
+    page.getByRole('region', { name: 'Owed to you' }).getByRole('group', { name: 'Total owed' }).getByText('$ 5.000', { exact: true }),
+  ).toBeVisible()
 })
 import { VARIETY_NAME_LABEL } from './helpers/labels.js'

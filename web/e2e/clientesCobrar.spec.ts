@@ -103,7 +103,7 @@ for (const viewport of VIEWPORTS) {
     const owing = page.getByRole('region', { name: 'Owed to you' })
     const owedSegment = page.getByRole('radio', { name: 'Owed to you', exact: true })
     await expect(owedSegment).toBeChecked()
-    await expect(owing.locator('.cifra-xl')).toHaveText('$ 10.000')
+    await expect(owing.getByRole('group', { name: 'Total owed' }).getByText('$ 10.000', { exact: true })).toBeVisible()
     await expect(owedSegment).toHaveText(/^Owed to you\s*·\s*3$/)
     expect(await debtorOrder(page)).toEqual(['Collect from Zoe Vieja', 'Collect from Carla Deudora', 'Collect from Beto Deudor'])
     // Whoever owes nothing is not on it.
@@ -129,7 +129,7 @@ for (const viewport of VIEWPORTS) {
     await expectPath(page, CUSTOMERS)
 
     // The section is the API's new answer: she left, the total and the count follow.
-    await expect(owing.locator('.cifra-xl')).toHaveText('$ 5.000')
+    await expect(owing.getByRole('group', { name: 'Total owed' }).getByText('$ 5.000', { exact: true })).toBeVisible()
     await expect(owedSegment).toHaveText(/^Owed to you\s*·\s*2$/)
     expect(await debtorOrder(page)).toEqual(['Collect from Zoe Vieja', 'Collect from Beto Deudor'])
 
@@ -143,7 +143,7 @@ for (const viewport of VIEWPORTS) {
     await expectPath(page, CUSTOMER_PAYMENT)
     await page.getByRole('button', { name: 'Close' }).click()
     await expectPath(page, CUSTOMERS)
-    await expect(owing.locator('.cifra-xl')).toHaveText('$ 5.000')
+    await expect(owing.getByRole('group', { name: 'Total owed' }).getByText('$ 5.000', { exact: true })).toBeVisible()
 
     // The browser's own back does the same.
     await page.getByRole('region', { name: 'Owed to you' }).getByRole('link', { name: 'Collect from Beto Deudor' }).click()
@@ -165,7 +165,7 @@ for (const viewport of VIEWPORTS) {
 
     // The sale landed on the customer who was chosen: his debt grew from $ 2.000 to $ 3.000.
     await page.goto(CUSTOMERS)
-    await expect(owing.locator('.cifra-xl')).toHaveText('$ 6.000')
+    await expect(owing.getByRole('group', { name: 'Total owed' }).getByText('$ 6.000', { exact: true })).toBeVisible()
 
     await expectOnlyTheThemeStored(page)
     expect(consoleMessages).toEqual([])

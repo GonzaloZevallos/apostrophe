@@ -36,8 +36,10 @@ subgraph src["src"]
       src_screens_clientes_CustomerTypeLine_tsx["CustomerTypeLine.tsx"]
       src_screens_clientes_CustomersBehind_tsx["CustomersBehind.tsx"]
       src_screens_clientes_DebtorsUnavailable_tsx["DebtorsUnavailable.tsx"]
+      src_screens_clientes_OwedSummary_tsx["OwedSummary.tsx"]
       src_screens_clientes_TeDeben_tsx["TeDeben.tsx"]
       src_screens_clientes_accountRows_ts["accountRows.ts"]
+      src_screens_clientes_figureCh_ts["figureCh.ts"]
       src_screens_clientes_usePhoneCountryField_ts["usePhoneCountryField.ts"]
     end
     subgraph src_screens_expenses["expenses"]
@@ -251,6 +253,7 @@ src_screens_clientes_Clientes_tsx-->src_screens_clientes_ClienteFila_tsx
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_CustomerSearch_ts
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_CustomerSegments_tsx
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_DebtorsUnavailable_tsx
+src_screens_clientes_Clientes_tsx-->src_screens_clientes_OwedSummary_tsx
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_TeDeben_tsx
 src_screens_clientes_CobroPanes_tsx-->src_screens_clientes_ClienteFicha_tsx
 src_screens_clientes_CobroPanes_tsx-->src_screens_clientes_Clientes_tsx
@@ -265,7 +268,10 @@ src_screens_clientes_CustomerFields_tsx-->src_screens_clientes_usePhoneCountryFi
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_ClienteFila_tsx
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_CustomerSearch_ts
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_CustomerSegments_tsx
+src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_OwedSummary_tsx
+src_screens_clientes_OwedSummary_tsx-->src_screens_clientes_figureCh_ts
 src_screens_clientes_TeDeben_tsx-->src_screens_clientes_ClienteFila_tsx
+src_screens_clientes_TeDeben_tsx-->src_screens_clientes_OwedSummary_tsx
 src_screens_expenses_ExpenseEditSheet_tsx-->src_screens_expenses_ExpenseForm_tsx
 src_screens_expenses_ExpenseNewRoute_tsx-->src_screens_expenses_ExpenseNewSheet_tsx
 src_screens_expenses_ExpenseNewRoute_tsx-->src_screens_expenses_ExpensesBehind_tsx

@@ -6,7 +6,7 @@
  */
 
 import { CUSTOMER, CUSTOMERS } from '../../routes'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { expect, test } from 'vitest'
 import TeDeben from './TeDeben'
@@ -85,4 +85,19 @@ test('nobody owing shows the fixed "Nobody owes you"', () => {
   expect(nobody).toHaveAttribute('tabindex', '-1')
   expect(screen.queryByRole('link')).not.toBeInTheDocument()
   expect(screen.queryByText(/\$ /)).not.toBeInTheDocument()
+})
+
+test('the summary card heads the view, and the old red figure is gone', () => {
+  renderTeDeben(debtorsOf({ total_owed: 57800, buckets: { this_week: 12800, days_8_30: 20100, over_30: 24900 } }))
+
+  const total = within(screen.getByRole('region', { name: 'Summary of what customers owe' })).getByRole('group', { name: 'Total owed' })
+  expect(total).toHaveTextContent(/\$ 57\.800$/)
+  // The one place the Total owed is written is the card's group: a bare figure would be a second.
+  expect(screen.getAllByText('$ 57.800')).toHaveLength(1)
+})
+
+test('with nobody owing the card is not drawn', () => {
+  renderTeDeben(NO_DEBTORS)
+
+  expect(screen.queryByRole('region', { name: 'Summary of what customers owe' })).not.toBeInTheDocument()
 })
