@@ -9,6 +9,7 @@ import { MemoryRouter } from 'react-router'
 import { describe, expect, test } from 'vitest'
 import type { Sale, SaleLine } from '../../api/sales'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+import { pathTo, SALE } from '../../routes'
 import SaleCard from './SaleCard'
 import { saleWith } from './saleWith'
 
@@ -102,7 +103,7 @@ describe('what the card shows', () => {
   test('the card is one link to the sale', () => {
     renderCard(saleWith('paid', { id: 10, lines: ONE_LINE }))
     expect(screen.getAllByRole('link')).toHaveLength(1)
-    expect(cardOf()).toHaveAttribute('href', '/sales/10')
+    expect(cardOf()).toHaveAttribute('href', pathTo(SALE, { id: 10 }))
     expect(cardOf()).toHaveClass('sale-card')
   })
 })

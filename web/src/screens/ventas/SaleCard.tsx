@@ -11,6 +11,7 @@ import InAppLink from '../../components/InAppLink'
 import { formatDateShort } from '../../format/dates'
 import { formatQuantity } from '../../format/money'
 import { useMoney } from '../../format/moneyContext'
+import { pathTo, SALE } from '../../routes'
 import SalePaymentChip from './SalePaymentChip'
 import { paymentText, paymentView } from './salePayment'
 
@@ -34,7 +35,7 @@ export default function SaleCard({ sale }: SaleCardProps) {
   const name = t('sales:card.name', { customer, items: more === null ? item : `${item} ${more}`, payment, total })
 
   return (
-    <InAppLink className="sale-card" to={`/sales/${sale.id}`} aria-label={name}>
+    <InAppLink className="sale-card" to={pathTo(SALE, { id: sale.id })} aria-label={name}>
       <span className="sale-card__name">{customer}</span>
       <span className="sale-card__items">
         <span className="sale-card__item">{item}</span>
