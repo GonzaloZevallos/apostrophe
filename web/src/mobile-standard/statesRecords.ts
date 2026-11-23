@@ -55,6 +55,44 @@ import type { WalkState } from './states.ts'
  */
 const ENTRY_ROUTE = pathTo(STOCK_ENTRY, { id: 1 })
 
+const DEBTORS_PATH = /^\/payments\/debtors$/
+
+interface OwingRow {
+  customer: { id: number; name: string }
+  balance: number
+  owing_since: string
+  standing: 'owes'
+  age_days: number
+  bucket: string
+  customer_type_id: null
+  still_owing: { sale_number: number; date: string; remaining: number }[]
+}
+
+/** One debtor row of a stubbed `/payments/debtors` answer, owing `balance` in `bucket`. */
+function owingRow(id: number, name: string, balance: number, bucket: string): OwingRow {
+  return {
+    customer: { id, name },
+    balance,
+    owing_since: '2026-09-14',
+    standing: 'owes',
+    age_days: 18,
+    bucket,
+    customer_type_id: null,
+    still_owing: [{ sale_number: id, date: '2026-08-01', remaining: balance }],
+  }
+}
+
+/** A `/payments/debtors` answer, built field by field (the `test/` helper is not importable from the walk's NodeNext build). */
+function debtorsOf(over: {
+  total_owed: number
+  buckets: { this_week: number; days_8_30: number; over_30: number }
+  debtor_count: number
+  sales_owing_count: number
+  debtors: OwingRow[]
+}) {
+  return { customer_count: 6, ...over }
+}
+
 /** The variety the sample app seeds below its stock threshold, by the registry's placeholder. */
 const LOW_VARIETY = VARIETY.replace(':id', '{low}')
 
@@ -297,6 +335,74 @@ export const RECORDS_STATES: readonly WalkState[] = [
     visible: 'Mica Solano',
     // It ends on the Customers page with the search empty, so its placeholder is the row's own listed offender.
     offendersAs: 'Clientes',
+  },
+  {
+    // The Owed summary card over three ordinary buckets; judged as Clientes (the page is its own).
+    screen: 'customer/owed-summary',
+    route: CUSTOMERS,
+    steps: [],
+    visible: common('common:owedSummaryTotal'),
+    offendersAs: 'Clientes',
+    reads: [
+      {
+        path: DEBTORS_PATH,
+        status: 200,
+        body: debtorsOf({
+          total_owed: 37_000,
+          buckets: { this_week: 12_000, days_8_30: 15_000, over_30: 10_000 },
+          debtor_count: 3,
+          sales_owing_count: 3,
+          debtors: [
+            owingRow(1, 'Ana Pérez', 15_000, 'days_8_30'),
+            owingRow(2, 'Beto Ríos', 12_000, 'this_week'),
+            owingRow(3, 'Caro Sosa', 10_000, 'over_30'),
+          ],
+        }),
+      },
+    ],
+  },
+  {
+    // The middle bucket at $0: its legend line stays, its bar part takes no room.
+    screen: 'customer/owed-summary-zero-bucket',
+    route: CUSTOMERS,
+    steps: [],
+    visible: common('common:owedSummaryDays8to30'),
+    offendersAs: 'Clientes',
+    reads: [
+      {
+        path: DEBTORS_PATH,
+        status: 200,
+        body: debtorsOf({
+          total_owed: 35_000,
+          buckets: { this_week: 20_000, days_8_30: 0, over_30: 15_000 },
+          debtor_count: 2,
+          sales_owing_count: 2,
+          debtors: [owingRow(1, 'Ana Pérez', 20_000, 'this_week'), owingRow(3, 'Caro Sosa', 15_000, 'over_30')],
+        }),
+      },
+    ],
+  },
+  {
+    // Nine-digit amounts everywhere (the total, the three buckets and the one debtor). The total label is the
+    // visible text: the formatted figure shows twice (summary and debtor row), so it cannot be matched alone.
+    screen: 'customer/owed-summary-nine-digits',
+    route: CUSTOMERS,
+    steps: [],
+    visible: common('common:owedSummaryTotal'),
+    offendersAs: 'Clientes',
+    reads: [
+      {
+        path: DEBTORS_PATH,
+        status: 200,
+        body: debtorsOf({
+          total_owed: 999_999_999,
+          buckets: { this_week: 333_333_333, days_8_30: 333_333_333, over_30: 333_333_333 },
+          debtor_count: 1,
+          sales_owing_count: 3,
+          debtors: [owingRow(1, 'Ana Pérez', 999_999_999, 'days_8_30')],
+        }),
+      },
+    ],
   },
 
   {
