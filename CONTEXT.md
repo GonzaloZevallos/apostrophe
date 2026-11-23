@@ -395,8 +395,8 @@ Una pantalla principal de una pestaña: Home, Sales, Customers, Products y Analy
 _Avoid_: home, main screen, section, More
 
 **Settings**:
-El único lugar que reúne cada configuración de todo el Business, en grupos: Business (con sus Withdrawal reasons y su Currency and decimals), Users, Prices, Payments and expenses (con sus Payment methods y, debajo, sus Expense categories), Integrations, Catalog message, Appearance y Your account. La configuración de un solo Product vive en el Product, nunca acá, y nada del Operator está acá. _In the app_: Settings.
-_Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
+El único lugar que reúne cada configuración de todo el Business. Sus filas y sus atajos salen solo del registro `settingsRows.ts`. En el celular abre con una tarjeta de solo lectura del Business (inicial, nombre y cantidad de Users) y tres atajos (Prices, Payment methods, Integrations), y sigue con cinco grupos con encabezado: Business, Catalog, Payments and stock, Channels, y Team and app. En la computadora conserva su lista de siempre, y la configuración de un solo Product vive en el Product, nunca acá. _In the app_: Settings.
+_Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group), menu
 
 **Onboarding**:
 La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo. Tiene dos pasos obligatorios (un Product con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories); nunca pregunta cómo se llama lo que vende el Business ni pide una Unit, y no pone ningún aviso en Home. Retoma donde quedó solo cuando se vuelve por su propia entrada (el aterrizaje tras la Invitation o la dirección `/onboarding`), termina para siempre al llegar a su pantalla "Done" o cuando un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.

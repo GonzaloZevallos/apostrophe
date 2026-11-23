@@ -41,6 +41,5 @@
   "^src/screens/ventas/CollectSheet\\.tsx$",
   "^src/screens/ventas/NuevaVentaSheet\\.tsx$",
   "^src/screens/ventas/renderNuevaVentaSheet\\.tsx$",
-  "^src/screens/settings/settingsRows\\.ts$",
-  "^src/screens/settings/SettingsHomeList\\.tsx$"
+  "^src/screens/settings/settingsRows\\.ts$"
 ]

@@ -23,6 +23,9 @@ import {
   SALES,
   SALE_NEW,
   SETTINGS,
+  SETTINGS_INTEGRATIONS,
+  SETTINGS_PAYMENT_METHODS,
+  SETTINGS_PRICES,
   STOCK_ENTRY_NEW,
   VARIETIES,
   VARIETY,
@@ -38,7 +41,8 @@ import { watchConsole } from './console.js'
 import { seedRecords, signUp } from './helpers/seed.js'
 import { uniqueTag } from './helpers/unique.js'
 import { servedCountry } from './helpers/phoneCountries.js'
-import { bottomBar, newSaleEntry, railSettingsLink } from './helpers/chrome.js'
+import { bottomBar, newSaleEntry, railSettingsLink, settingsEntry } from './helpers/chrome.js'
+import { settingsShortcut } from './helpers/settingsHome.js'
 
 
 const PHONE = { width: 390, height: 844 }
@@ -297,6 +301,39 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
 
 /** What a seller taps to give a new customer a phone number in the country the device detected: the form's
  * own two buttons and nothing for the Phone country (customers.md, success criterion 5). */
+const SHORTCUT_TAPS = 1
+
+/** Settings home's three shortcuts, each opening its row's page: one tap from Settings, two from a Tab root. */
+const SHORTCUTS = [
+  ['Prices', SETTINGS_PRICES],
+  ['Payment methods', SETTINGS_PAYMENT_METHODS],
+  ['Telegram catalog', SETTINGS_INTEGRATIONS],
+] as const
+
+test('on the phone each Settings shortcut opens its page in one tap from Settings and two from a Tab root', async ({
+  page,
+}) => {
+  const consoleMessages: string[] = []
+  watchConsole(page, consoleMessages)
+  await page.setViewportSize(PHONE)
+  await signUpNewBusiness(page, { businessName: `Flores de Atajos ${uniqueTag()}`, email: `duena-atajos-${uniqueTag()}@example.com` })
+
+  for (const [label, path] of SHORTCUTS) {
+    await page.goto(SETTINGS)
+    const counter: Counter = { taps: 0 }
+    await tap(counter, settingsShortcut(page, label))
+    await expectPath(page, path)
+    expect(counter.taps, `${label} from Settings`).toBeLessThanOrEqual(SHORTCUT_TAPS)
+
+    await page.goto(HOME)
+    const fromRoot: Counter = { taps: 0 }
+    await tap(fromRoot, settingsEntry(page))
+    await tap(fromRoot, settingsShortcut(page, label))
+    await expectPath(page, path)
+    expect(fromRoot.taps, `${label} from a Tab root`).toBeLessThanOrEqual(SHORTCUT_TAPS + 1)
+  }
+})
+
 const NEW_CUSTOMER_TAPS = 2
 const NEW_CUSTOMER_IN_SALE_TAPS = 3
 /** Picking another country: the field, then the option. */

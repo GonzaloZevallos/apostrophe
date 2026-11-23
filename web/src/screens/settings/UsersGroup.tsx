@@ -10,8 +10,8 @@
 
 import { useQuery } from '@tanstack/react-query'
 import { useOutletContext } from 'react-router'
-import { NetworkError, get } from '../../api/client'
-import { keys } from '../../api/keys'
+import { businessQueryOptions } from '../../api/business'
+import { NetworkError } from '../../api/client'
 import type { Me } from '../../api/me'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import SinConexion from '../../components/SinConexion'
@@ -20,10 +20,6 @@ import InvitePartner from './InvitePartner'
 import SettingsGroup from './SettingsGroup'
 import { SETTINGS_TEXT } from '../../copy/settings'
 import { COMMON_TEXT } from '../../copy/common'
-
-interface Business {
-  users: { email: string }[]
-}
 
 const LEAVE = {
   question: SETTINGS_TEXT.discardTheInvitation,
@@ -34,10 +30,7 @@ const LEAVE = {
 
 export default function UsersGroup() {
   const me = useOutletContext<Me>()
-  const { data, isPending, isError, error } = useQuery({
-    queryKey: keys.business(),
-    queryFn: () => get<Business>('/business'),
-  })
+  const { data, isPending, isError, error } = useQuery(businessQueryOptions())
 
   return (
     <SettingsGroup title={COMMON_TEXT.users} dirty={false} leave={LEAVE}>

@@ -2,7 +2,9 @@
  * `Settings`, the list of groups, mounted through the real route table (`router.routes`)
  * under a memory router, so the test also proves what `router.tsx` registers: which chrome
  * the list and a group get, and which groups exist. `useViewport` is mocked per case since
- * jsdom lays nothing out: the list's back arrow reads the viewport.
+ * jsdom lays nothing out: the list's back arrow reads the viewport. The list of eight groups is
+ * the computer's (`SettingsComputer`), so the cases that read it run on a computer; the phone
+ * home is covered by `SettingsHome.test.tsx`.
  */
 
 import { HOME, SALES, SETTINGS, SETTINGS_ACCOUNT, SETTINGS_APPEARANCE, SETTINGS_BUSINESS, SETTINGS_CATALOG_MESSAGE, SETTINGS_INTEGRATIONS, SETTINGS_PAYMENTS, SETTINGS_PRICES, SETTINGS_USERS } from '../../routes'
@@ -62,7 +64,7 @@ afterEach(() => {
 })
 
 test('lists exactly the nine groups in order, each a link to its own route', async () => {
-  stubComputer(false)
+  stubComputer(true)
   renderApp([SETTINGS])
 
   const list = await screen.findByRole('navigation', { name: 'Settings' })
@@ -75,7 +77,7 @@ test('shows the bar with its + (Vender) and no "+ New sale" link', async () => {
   stubComputer(false)
   const { container } = renderApp([SETTINGS])
 
-  await screen.findByRole('navigation', { name: 'Settings' })
+  await screen.findByRole('heading', { level: 1, name: 'Settings' })
 
   expect(container.querySelector('.bar-inferior')).not.toBeNull()
   expect(screen.getByRole('link', { name: 'Vender' })).toBeInTheDocument()
@@ -94,7 +96,7 @@ test('a group route shows no bar and no + (Vender)', async () => {
 })
 
 test.each(GROUPS)('"%s" opens its group, marking the entry as in-app', async (name, path) => {
-  stubComputer(false)
+  stubComputer(true)
   const user = userEvent.setup()
   const { router } = renderApp([SETTINGS])
 
@@ -159,7 +161,7 @@ test("opened with no in-app state, back from Settings' list goes to Home", async
 })
 
 test("opened with no in-app state, Close from a group goes to Settings' list", async () => {
-  stubComputer(false)
+  stubComputer(true)
   const user = userEvent.setup()
   const { router } = renderApp([SETTINGS_ACCOUNT])
 
