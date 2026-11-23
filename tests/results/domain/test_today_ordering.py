@@ -189,3 +189,12 @@ def test_a_summary_rejects_more_rows_than_the_cut() -> None:
 
     with pytest.raises(ValueError, match="at most 3 rows"):
         OwedSummary(0, len(rows), 0, rows)
+
+
+def test_no_repr_of_a_row_or_a_summary_reveals_the_name_or_the_phone() -> None:
+    row = OwedRow(7, "Zulema Recognisable", 100, TODAY, 3, "none", "+54 11 5555-0199")
+    summary = OwedSummary(100, 1, 1, (row,))
+
+    for text in (repr(row), repr(summary)):
+        assert "Zulema" not in text
+        assert "5555-0199" not in text
