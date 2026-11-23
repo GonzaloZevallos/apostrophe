@@ -170,7 +170,8 @@ test('a network failure shows the offline notice', async () => {
 
   await user.click(undo)
 
-  expect(await screen.findByText(/Offline/)).toBeInTheDocument()
+  expect(await screen.findByText(/No connection\. The sale is still saved: delete it from its detail in Sales\./)).toBeInTheDocument()
+  expect(screen.queryByText(/try again/i)).not.toBeInTheDocument()
   expect(screen.queryByText(/Sale deleted/)).not.toBeInTheDocument()
 })
 
@@ -181,7 +182,8 @@ test('another refusal shows the generic failure and never "deleted"', async () =
 
   await user.click(undo)
 
-  expect(await screen.findByText(/Something went wrong/)).toBeInTheDocument()
+  expect(await screen.findByText(/The sale is still saved\. Delete it from its detail in Sales\./)).toBeInTheDocument()
+  expect(screen.queryByText(/try again/i)).not.toBeInTheDocument()
   expect(screen.queryByText(/Sale deleted/)).not.toBeInTheDocument()
 })
 

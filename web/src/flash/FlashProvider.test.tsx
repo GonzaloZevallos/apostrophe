@@ -285,8 +285,8 @@ function renderUndoRaiser() {
 const UNDO_RESULTS = [
   { result: 'deleted', role: 'status', text: 'Sale deleted · the grams go back to stock' },
   { result: 'gone', role: 'status', text: 'That is gone. The list is up to date.' },
-  { result: 'offline', role: 'status', text: 'Offline: check your internet and try again.' },
-  { result: 'failed', role: 'alert', text: 'Something went wrong. Try again.' },
+  { result: 'offline', role: 'status', text: 'No connection. The sale is still saved: delete it from its detail in Sales.' },
+  { result: 'failed', role: 'alert', text: 'The sale is still saved. Delete it from its detail in Sales.' },
 ] as const
 
 describe('the undoResult toast', () => {
@@ -334,7 +334,7 @@ describe('the undoResult toast', () => {
 
     await user.click(screen.getByRole('button', { name: 'raise sale' }))
 
-    expect(screen.getByRole('alert')).toHaveTextContent('Something went wrong. Try again.')
+    expect(screen.getByRole('alert')).toHaveTextContent('The sale is still saved. Delete it from its detail in Sales.')
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
     act(() => {
       vi.advanceTimersByTime(DEFAULT_TOAST_MS)

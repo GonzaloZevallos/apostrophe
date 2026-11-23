@@ -266,11 +266,11 @@ describe('two Sales and a slow DELETE', () => {
     await waitFor(() => expect(held.has('56')).toBe(true))
     await act(async () => held.get('56')?.(json(200, { returned: [] })))
 
-    expect(await screen.findByText(/Something went wrong/)).toBeInTheDocument()
+    expect(await screen.findByText(/The sale is still saved\. Delete it from its detail in Sales\./)).toBeInTheDocument()
     expect(screen.queryByText(/Sale deleted/)).not.toBeInTheDocument()
     advance(DEFAULT_TOAST_MS)
     expect(await screen.findByText(/Sale deleted/)).toBeInTheDocument()
-    expect(screen.queryByText(/Something went wrong/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/The sale is still saved\. Delete it from its detail in Sales\./)).not.toBeInTheDocument()
     expect(deletes).toEqual(['55', '56'])
   })
 
