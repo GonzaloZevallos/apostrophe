@@ -121,7 +121,7 @@ _Avoid_: collection, settlement, receipt, abono
 _In the app_: Payment
 
 **Payment method**:
-Una forma en que le pagan a un Business, de su lista propia: un nombre único en el Business (sin importar mayúsculas ni espacios, archivados incluidos, hasta 60 caracteres), un ícono de un conjunto fijo y neutro y una posición. Todo Business arranca con "Cash" y "Transfer", medios comunes que se renombran, reordenan, archivan o eliminan como cualquiera; uno con Payments solo se archiva, y el último ofrecido no se puede sacar. Un Payment apunta a su medio por id, así que muestra su nombre actual (ADR-20261111-payment-methods-by-id). _In the app_: Payment method.
+Una forma en que le pagan a un Business, de su lista propia: un nombre único en el Business (sin importar mayúsculas ni espacios, archivados incluidos, hasta 60 caracteres), un ícono de un conjunto fijo y neutro y una posición. Todo Business arranca con "Cash" y "Transfer", medios comunes que se renombran, reordenan, archivan o eliminan como cualquiera; uno con Payments o con Expenses solo se archiva, y el último ofrecido no se puede sacar. Un Payment o una Expense (opcional, GH-837) apunta a su medio por id, así que muestra su nombre actual aunque el medio se archive después (ADR-20261111-payment-methods-by-id); elegir un medio archivado se rechaza, conservar el que ya tiene no. _In the app_: Payment method.
 _Avoid_: payment type, channel, Owing, paid later
 
 **Balance**:
@@ -184,7 +184,7 @@ _In the app_: Cost of goods sold
 _Avoid_: COGS, average cost, cost per gram
 
 **Expense**:
-Dinero que sale por algo que no es una Purchase, archivado bajo una Expense category. Lo que se compra para el Stock es una Purchase, nunca una Expense.
+Dinero que sale por algo que no es una Purchase, archivado bajo una Expense category, con un detalle opcional (uno en blanco se guarda vacío) y, opcionalmente, uno de los Payment methods del Business, guardado por id para mostrar siempre su nombre actual. Lo que se compra para el Stock es una Purchase, nunca una Expense, y su medio no cambia ningún total. _In the app_: Expense.
 _Avoid_: cost, outflow, bill
 _In the app_: Expense
 

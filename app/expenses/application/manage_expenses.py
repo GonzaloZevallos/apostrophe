@@ -7,6 +7,7 @@ from app.expenses.domain.expense import Expense, ExpenseNotFound
 from app.expenses.domain.month import Month
 from app.expenses.domain.monthly_view import MonthlyExpenses
 from app.shared.money import domain_amount_within
+from app.shared.payment_method import PaymentMethodId
 from app.shared.transaction import Transaction
 
 
@@ -33,13 +34,18 @@ def record_expense(
     detail: str,
     today: date,
     recorded_at: datetime,
+    payment_method: PaymentMethodId | None = None,
 ) -> Expense:
-    """Checks run in this order: the amount's decimals against the business's own
-    (docs/adr/0058, 422, before any read), the category (404), then the domain rules
-    (422), so a foreign or unknown category never reaches the amount or date rules."""
+    """Checks run in this order, the first rejection wins: the amount's decimals against
+    the business's own (docs/adr/0058, 422, before any read), the category (404), the
+    domain rules (422), then the guarded write (404 `payment_method.unavailable`), so a
+    foreign or unknown category never reaches the amount or date rules. The guarded write
+    arrives with #1022; the router refuses an id of 0 or below before this runs."""
     whole = _whole_amount(money_format, amount)
     get_category(categories, category_id)
-    expense = Expense.of(spent_on, category_id, whole, detail, today, recorded_at)
+    expense = Expense.of(
+        spent_on, category_id, whole, detail, today, recorded_at, payment_method=payment_method
+    )
     stored = expenses.add(expense)
     transaction.commit()
     return stored
@@ -57,15 +63,25 @@ def edit_expense(
     amount: Decimal,
     detail: str,
     today: date,
+    payment_method: PaymentMethodId | None = None,
 ) -> Expense:
-    """Checks run in this order: the amount's decimals (422), the expense (404), the
-    category (404), then the domain rules (422). `recorded_at` carries through from the
+    """Checks run in this order, the first rejection wins: the amount's decimals (422),
+    the expense (404), the category (404), the domain rules (422), then the guarded write
+    (404 `payment_method.unavailable`). The guarded write arrives with #1022; the router
+    refuses an id of 0 or below before this runs. `recorded_at` carries through from the
     stored expense: an edit never changes it."""
     whole = _whole_amount(money_format, amount)
     existing = get_expense(expenses, expense_id)
     get_category(categories, category_id)
     updated = Expense.of(
-        spent_on, category_id, whole, detail, today, existing.recorded_at, existing.id
+        spent_on,
+        category_id,
+        whole,
+        detail,
+        today,
+        existing.recorded_at,
+        existing.id,
+        payment_method=payment_method,
     )
     stored = expenses.save(updated)
     transaction.commit()

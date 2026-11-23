@@ -47,6 +47,7 @@
     "expense.date_invalid": { "kind": "refusal" },
     "expense.amount_invalid": { "kind": "refusal" },
     "expense.detail_invalid": { "kind": "refusal" },
+    "expense.payment_method_mismatch": { "kind": "refusal" },
     "expense.month_invalid": { "kind": "refusal" },
     "sale.not_found": { "kind": "gone" },
     "sale.customer_not_found": { "kind": "gone" },
