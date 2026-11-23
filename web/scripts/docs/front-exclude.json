@@ -34,6 +34,7 @@
   "^src/sales/useNewSaleReads\\.ts$",
   "^src/screens/ventas/NuevaVentaProductos\\.tsx$",
   "^src/sales/newSalePricing\\.ts$",
+  "^src/sales/useNewSalePricing\\.ts$",
   "^src/sales/newSaleView\\.ts$",
   "^src/screens/ventas/CollectSheet\\.tsx$",
   "^src/screens/ventas/NuevaVentaSheet\\.tsx$",

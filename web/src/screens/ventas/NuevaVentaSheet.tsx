@@ -7,8 +7,9 @@
  * `SheetActions`. Its host owns Escape, the system back, the Customer (a `CustomerView`, Change and
  * the choice of another one) and what happens after Collect.
  *
- * - The one price result is `pricedSaleOf`, run once per render in a `useMemo`: every figure here is
- *   read from it, this component does no money arithmetic and never calls `priceSale`.
+ * - The one price result comes in as the `reads` and `pricing` props, from the host's `useNewSalePricing`
+ *   (the `pricedSaleOf` run once per render): every figure here is read from it, this component does no
+ *   money arithmetic and never calls `priceSale`.
  * - The sale bar's one state is `saleBarState`: Collect exists only in the `total` state and is never
  *   drawn disabled; in every other state there is no Collect button at all. It is a sibling of the
  *   `role="status"` region, never inside it.
@@ -16,14 +17,14 @@
  * - The Sheet is touched exactly when the draft has a line (`isDirty`), and its Close leaves at once.
  */
 
-import { useId, useMemo } from 'react'
+import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import Boton from '../../components/Boton'
 import Loading from '../../components/Loading'
 import Sheet, { SheetActions } from '../../components/Sheet'
 import { SALES_TEXT } from '../../copy/sales'
 import { useMoney } from '../../format/moneyContext'
-import { type CompleteSale, pricedSaleOf } from '../../sales/newSalePricing'
+import type { CompleteSale, NewSalePricing } from '../../sales/newSalePricing'
 import {
   type CustomerView,
   customerPriceLineOf,
@@ -33,7 +34,7 @@ import {
   type SaleBarState,
 } from '../../sales/newSaleView'
 import { isDirty } from '../../sales/saleDraft'
-import { useNewSaleReads } from '../../sales/useNewSaleReads'
+import type { NewSaleReads } from '../../sales/useNewSaleReads'
 import type { SaleDraftApi } from '../../sales/useSaleDraft'
 import NuevaVentaProductos from './NuevaVentaProductos'
 
@@ -42,6 +43,9 @@ const TEXT = SALES_TEXT.newSale
 export interface NuevaVentaSheetProps {
   draft: SaleDraftApi
   customer: CustomerView
+  /** The reads and the one price result, from the host's `useNewSalePricing`. */
+  reads: NewSaleReads
+  pricing: NewSalePricing
   onClose: () => void
   onChangeCustomer: () => void
   onCollect: (sale: CompleteSale) => void
@@ -123,6 +127,8 @@ function BarText({ bar, lineCount, figure }: { bar: SaleBarState; lineCount: num
 export default function NuevaVentaSheet({
   draft,
   customer,
+  reads,
+  pricing,
   onClose,
   onChangeCustomer,
   onCollect,
@@ -134,15 +140,9 @@ export default function NuevaVentaSheet({
   const money = useMoney()
   const titleId = useId()
   const { state } = draft
-  const reads = useNewSaleReads({ date: state.date, openedOn: state.openedOn })
-  const { status, products, settings, mostSoldIds } = reads
+  const { status, settings } = reads
   const customerTypeId = customerTypeIdOf(customer)
-  const { lines, shipping } = state
-  const format = money.format
-  const pricing = useMemo(
-    () => pricedSaleOf({ status, products, settings, mostSoldIds, customerTypeId, lines, shipping, format }),
-    [status, products, settings, mostSoldIds, customerTypeId, lines, shipping, format],
-  )
+  const { lines } = state
   const bar = saleBarState({ status, customer, pricing, lineCount: lines.length })
   const line = customerPriceLineOf({ customer, status, settings })
   const name = nameOf(customer)

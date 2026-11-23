@@ -26,9 +26,53 @@ describe('what the guard refuses', () => {
     const source = "import { priceSale as p } from '../sales/pricing'\n"
     expect(newSalePricingOffenders({ 'src/screens/X.tsx': source })).toEqual(['src/screens/X.tsx: priceSale'])
   })
+
+  test('useNewSaleReads and pricedSaleOf called by a screen', () => {
+    const source = 'const r = useNewSaleReads({ date, openedOn })\nconst p = pricedSaleOf(input)\n'
+    expect(newSalePricingOffenders({ 'src/screens/X.tsx': source })).toEqual([
+      'src/screens/X.tsx: useNewSaleReads call',
+      'src/screens/X.tsx: pricedSaleOf call',
+    ])
+  })
+
+  test('pricedSaleOf called in useNewSaleReads.ts, and useNewSaleReads called in newSalePricing.ts', () => {
+    expect(newSalePricingOffenders({ 'src/sales/useNewSaleReads.ts': 'pricedSaleOf(x)\n' })).toEqual([
+      'src/sales/useNewSaleReads.ts: pricedSaleOf call',
+    ])
+    expect(newSalePricingOffenders({ 'src/sales/newSalePricing.ts': 'useNewSaleReads(x)\n' })).toEqual([
+      'src/sales/newSalePricing.ts: useNewSaleReads call',
+    ])
+  })
+
+  test.each(['NuevaVentaSheet', 'NuevaVentaProductos'])('%s calling useNewSalePricing', (name) => {
+    const path = `src/screens/ventas/${name}.tsx`
+    expect(newSalePricingOffenders({ [path]: 'const p = useNewSalePricing({ state, customer })\n' })).toEqual([
+      `${path}: useNewSalePricing call`,
+    ])
+  })
 })
 
 describe('what the guard lets through', () => {
+  test('the calls in useNewSalePricing.ts, and each one in its own definition file', () => {
+    expect(
+      newSalePricingOffenders({
+        'src/sales/useNewSalePricing.ts': 'useNewSaleReads(x)\npricedSaleOf(y)\n',
+        'src/sales/useNewSaleReads.ts': 'export function useNewSaleReads(x) {}\n',
+        'src/sales/newSalePricing.ts': 'export function pricedSaleOf(x) {}\n',
+      }),
+    ).toEqual([])
+  })
+
+  test('the hook called by a host, and the calls in a test file or an import', () => {
+    expect(
+      newSalePricingOffenders({
+        'src/screens/ventas/NewSaleSheetHost.tsx': 'useNewSalePricing({ state, customer })\n',
+        'src/screens/X.test.tsx': 'useNewSaleReads(x)\npricedSaleOf(y)\n',
+        'src/screens/Y.tsx': "import { pricedSaleOf, useNewSaleReads } from '../sales'\n",
+      }),
+    ).toEqual([])
+  })
+
   test('the names in a comment', () => {
     const source = `// ${CAST}\n/** priceSale */\nexport const A = 1\n`
     expect(newSalePricingOffenders({ 'src/screens/X.tsx': source })).toEqual([])
@@ -62,7 +106,7 @@ describe('the tree', () => {
     expect(Object.keys(modules)).toContain('/src/sales/newSalePricing.ts')
   })
 
-  test('only newSalePricing.ts casts to CompleteSale, and only pricing.ts and newSalePricing.ts name priceSale', () => {
+  test('only newSalePricing.ts casts, only pricing.ts and newSalePricing.ts name priceSale, only the hook calls the reads', () => {
     expect(newSalePricingOffenders(modules)).toEqual([])
   })
 })
