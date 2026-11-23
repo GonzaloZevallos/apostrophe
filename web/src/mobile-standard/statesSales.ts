@@ -9,7 +9,6 @@ import { NO_PRICE_HINT, SALES_TEXT } from '../copy/sales.ts'
 import { DAY_BEFORE_PIN } from './pin.ts'
 import { SAMPLE_TYPED_CUSTOMER, SAMPLE_TYPES } from './statesRecords.ts'
 import type { Expense } from '../api/expenses.ts'
-import type { Sale } from '../api/sales.ts'
 import type { WalkState } from './states.ts'
 
 /** The sale in progress the strip states and `DescartarGastoEnVenta` share: line 1's Product, its grams and the Total they make. */
@@ -43,8 +42,36 @@ const TWELVE_PRODUCTS = Array.from({ length: 12 }, (_unused, index) => ({
   current_price: null,
 }))
 
+/**
+ * The shape of one `GET /sales` row, as `Sale` (`api/sales.ts`) spells it. Not imported: this core
+ * is compiled under `tsconfig.node.json`, whose `nodenext` resolution refuses `api/sales.ts`'s own
+ * extensionless imports. `states.test.ts` checks the rows against the real `Sale` with `satisfies`.
+ */
+interface StubSale {
+  id: number
+  number: number
+  date: string
+  customer: { id: number; name: string; vip: boolean } | null
+  shipping_charged: number
+  note: string | null
+  payment: 'paid' | 'owing' | 'none'
+  total: number
+  lines: {
+    product_id: number
+    product_name: string
+    quantity: number
+    pricing_rule: 'list'
+    customer_type_name: string | null
+    price_per_gram: number
+    line_total: number
+  }[]
+  still_owing: boolean
+  payment_state: 'paid' | 'unpaid' | 'part_paid' | null
+  still_owed: number | null
+}
+
 /** One ordinary line every stub sale below carries. */
-const ORDINARY_LINE = {
+const ORDINARY_LINE: StubSale['lines'][number] = {
   product_id: 1,
   product_name: 'Golden Cookies',
   quantity: 1000,
@@ -52,7 +79,7 @@ const ORDINARY_LINE = {
   customer_type_name: null,
   price_per_gram: 10,
   line_total: 10000,
-} as const
+}
 
 /** The sale whose payment facts cannot be reconciled: both fields null, so its card draws the degraded chip line. */
 export const UNKNOWN_PAYMENT_ROW = {
@@ -68,7 +95,7 @@ export const UNKNOWN_PAYMENT_ROW = {
   still_owing: true,
   payment_state: null,
   still_owed: null,
-} satisfies Sale
+} satisfies StubSale
 
 /** `GET /sales` for the unknown-payment state: a paid, an unpaid, a part-paid and an unknown-payment sale, each for its own customer. */
 export const UNKNOWN_PAYMENT_SALES = [
@@ -115,7 +142,7 @@ export const UNKNOWN_PAYMENT_SALES = [
     still_owed: 4000,
   },
   UNKNOWN_PAYMENT_ROW,
-] satisfies readonly Sale[]
+] satisfies readonly StubSale[]
 
 export const SALES_STATES: readonly WalkState[] = [
   {

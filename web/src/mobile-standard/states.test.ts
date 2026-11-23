@@ -15,6 +15,7 @@ import { EXPENSES_TEXT } from '../copy/expenses.ts'
 import { NO_PRICE_HINT } from '../copy/sales.ts'
 import { DAY_BEFORE_PIN } from './pin.ts'
 import { EXPENSE_RECORDED, SALE_IN_PROGRESS_LINE, UNKNOWN_PAYMENT_SALES } from './statesSales.ts'
+import type { Sale } from '../api/sales.ts'
 import { moneyFormatter } from '../format/money.ts'
 import { paymentView } from '../screens/ventas/salePayment.ts'
 
@@ -273,6 +274,11 @@ describe('the walked state sales/unknown-payment', () => {
     const money = moneyFormatter({ symbol: '$', decimals: 0 })
     const variants = UNKNOWN_PAYMENT_SALES.map((row) => paymentView(row.payment_state, row.still_owed, money).variant)
     expect([...variants].sort()).toEqual(['paid', 'part_paid', 'unknown', 'unpaid'])
+  })
+
+  it('holds rows the real Sale type accepts, so the stub cannot drift from the API', () => {
+    const rows = UNKNOWN_PAYMENT_SALES satisfies readonly Sale[]
+    expect(rows).toHaveLength(4)
   })
 
   it('gives each stub sale its own customer name, so a name finds one card', () => {
