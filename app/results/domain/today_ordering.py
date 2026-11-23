@@ -12,7 +12,9 @@ the days from its Owing since, with levels none, warning and overdue. The Owing 
 the one `settle()` already produced; Sales are never walked against Payments a second
 time. The limits and `age_in_days` live only in `app.shared.debt_age`. `domain/` never
 imports `application/`, so the input is read through structural protocols, as in
-`sorting.py`; `today` is always a parameter.
+`sorting.py`; `today` is always a parameter. The oldest-debtors code needs only the
+standard library, `app.shared.names` and `app.shared.debt_age`; the other imports serve
+`low_stock` and `best_sellers`.
 """
 
 from __future__ import annotations
