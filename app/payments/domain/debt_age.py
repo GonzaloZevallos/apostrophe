@@ -1,8 +1,9 @@
 """Debt age: how long each Sale still owing has been owed, bucketed (docs/adr/20261119-*).
 
-Age is per Sale still owing over Settlement, never per Customer, and comes only from
-`settle()`'s `SaleSettlement` values and this module. `today` is always a parameter: the
-domain reads no clock. A Credit never enters, so the three buckets add up to Total owed.
+The buckets are per Sale still owing over Settlement and come from `settle()`'s
+`SaleSettlement` values; the limits and `age_in_days` live in `app.shared.debt_age`.
+`today` is always a parameter: the domain reads no clock. A Credit never enters, so the
+three buckets add up to Total owed.
 """
 
 from __future__ import annotations
@@ -13,22 +14,19 @@ from datetime import date
 from typing import Literal
 
 from app.payments.domain.settlement import SaleSettlement
+from app.shared.debt_age import RECENT_UP_TO_DAYS, WARNING_UP_TO_DAYS, age_in_days
 
 DebtAgeBucket = Literal["this_week", "days_8_30", "over_30"]
 
 
-def age_in_days(on: date, today: date) -> int:
-    """Whole days from `on` to `today`; a date in the future counts as `0`."""
-    return max(0, (today - on).days)
-
-
 def bucket_of(days: int) -> DebtAgeBucket:
-    """`0`-`7` days is this week, `8`-`30` is `days_8_30`, `31` and more is `over_30`."""
+    """Up to `RECENT_UP_TO_DAYS` is this week, up to `WARNING_UP_TO_DAYS` is `days_8_30`,
+    and anything older is `over_30`."""
     if days < 0:
         raise ValueError(f"age in days cannot be negative: {days}")
-    if days <= 7:
+    if days <= RECENT_UP_TO_DAYS:
         return "this_week"
-    if days <= 30:
+    if days <= WARNING_UP_TO_DAYS:
         return "days_8_30"
     return "over_30"
 
