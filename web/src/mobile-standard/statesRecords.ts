@@ -133,12 +133,16 @@ const SEARCH_NICO = { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nico' }
  */
 const SAMPLE_USER_COUNT = 1
 
-/** The Settings home with `GET /business` failing: the card's count slot stays empty and the page still draws. */
+/**
+ * The Settings home with `GET /business` failing: the card's count slot stays empty and the page still draws.
+ * It waits for the first row's label, not the page title: the walk takes the first element with the
+ * text, and "Settings" is also the text of one that is never visible.
+ */
 export const CARD_WITHOUT_COUNT_STATE: WalkState = {
   screen: 'ConfiguracionTarjetaSinConteo',
   route: SETTINGS,
   steps: [],
-  visible: settings('settings:home.title'),
+  visible: settings('settings:rows.businessName.label'),
   reads: [{ path: /^\/business$/, status: 500 }],
 }
 
