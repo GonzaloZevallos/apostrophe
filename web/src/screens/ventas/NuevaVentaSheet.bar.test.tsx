@@ -10,10 +10,10 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { moneyFormatter } from '../../format/money'
 import type { CustomerView } from '../../sales/newSaleView'
 import { priceSale } from '../../sales/pricing'
-import { saleLineInputsOf } from '../../sales/saleDraft'
+import { draftLineOf, saleLineInputsOf } from '../../sales/saleDraft'
 import {
   FORMAT,
-  LATER,
+  OTHER_DAY,
   PRODUCTS,
   renderNuevaVentaSheet,
   type LineSpec,
@@ -72,7 +72,7 @@ test.each<[string, readonly LineSpec[], string]>([
 ])('the status region for %s reads the count and the total', async (_name, lines, count) => {
   renderNuevaVentaSheet({ customer: KNOWN, lines })
   const total = priceSale({
-    lines: saleLineInputsOf(lines.map((l) => ({ productId: l.productId, quantityHundredths: Number(l.quantity) * 100 }))),
+    lines: saleLineInputsOf(lines.map((l) => draftLineOf(l.productId, Number(l.quantity) * 100))),
     customerTypeId: null,
     pricingSettings: { bulk: true, vip: true },
     products: PRODUCTS,
@@ -86,8 +86,8 @@ test('the total is priceSale totals.total with the shipping charged, in the Mone
   renderNuevaVentaSheet({ customer: KNOWN, lines: [ROSA, ARBOL], shipping: '500' })
   const expected = priceSale({
     lines: saleLineInputsOf([
-      { productId: 1, quantityHundredths: 200 },
-      { productId: 2, quantityHundredths: 300 },
+      draftLineOf(1, 200),
+      draftLineOf(2, 300),
     ]),
     customerTypeId: null,
     pricingSettings: { bulk: true, vip: true },
@@ -157,7 +157,7 @@ test('refreshing: a date change under a loaded list drops the total and Collect,
   const rendered = renderNuevaVentaSheet({ customer: KNOWN, lines: [ROSA] })
   await screen.findByRole('button', { name: 'Collect' })
   rendered.hold('products')
-  act(() => rendered.draft().setDate(LATER))
+  act(() => rendered.draft().setDate(OTHER_DAY))
   await waitFor(() => expect(collect()).toHaveLength(0))
   expect(status().textContent).toBe('1 item')
   rendered.release('products')

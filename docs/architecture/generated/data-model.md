@@ -66,6 +66,7 @@ erDiagram
     INTEGER amount
     VARCHAR(200) detail
     DATETIME recorded_at
+    INTEGER payment_method_id FK "nullable"
   }
   expense_category {
     INTEGER id PK
@@ -281,7 +282,9 @@ erDiagram
   customer_type ||--o{ customer_type_price : customer_type_id
   expense_category ||--o{ expense : expense_category_id
   expense_category }o--o{ expense : business_id
+  payment_method ||--o{ expense : payment_method_id
   payment_method ||--o{ payment : payment_method_id
+  payment_method }o--o{ expense : business_id
   payment_method }o--o{ payment : business_id
   price_entry ||--o{ customer_type_price : price_entry_id
   sale ||--o{ payment : sale_id

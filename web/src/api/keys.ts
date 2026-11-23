@@ -83,6 +83,10 @@ export const keys = {
   // same way — a result cached by an earlier mount, with a since-changed `vip`,
   // must never be the one a seller picks.
   saleFormCustomerSearch: (q: string) => ['sale-form', 'customer-search', q] as const,
+  // New sale's customer search Sheet reads the business's customer list under this key. Like its
+  // sale-form neighbours it is never invalidated: frozen at the call site (`gcTime: 0`,
+  // `staleTime: Infinity`) and outside the `Resource`/`PREFIX` system.
+  saleFormCustomers: () => ['sale-form', 'customers'] as const,
   sales: (dateFrom: string, dateTo: string) => [PREFIX.sales, { dateFrom, dateTo }] as const,
   sale: (id: string) => [PREFIX.sales, id] as const,
   stock: () => [PREFIX.stock] as const,

@@ -3673,6 +3673,29 @@
         "title": "PriceEntryOut",
         "type": "object"
       },
+      "PriceMarginOut": {
+        "properties": {
+          "percent": {
+            "title": "Percent",
+            "type": "integer"
+          },
+          "rule": {
+            "enum": [
+              "list",
+              "bulk",
+              "vip"
+            ],
+            "title": "Rule",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule",
+          "percent"
+        ],
+        "title": "PriceMarginOut",
+        "type": "object"
+      },
       "PricingRule": {
         "enum": [
           "list",
@@ -3704,12 +3727,54 @@
         "title": "PricingSettingsBody",
         "type": "object"
       },
+      "ProductCostOut": {
+        "description": "What the latest costed Purchase cost per unit, in the unit of the business's decimals\nand sent in currency units (docs/adr/0058), and the margin against each price in use.\n`amount` is `null` while the cost is pending.",
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "margins": {
+            "items": {
+              "$ref": "#/components/schemas/PriceMarginOut"
+            },
+            "title": "Margins",
+            "type": "array"
+          }
+        },
+        "required": [
+          "amount",
+          "margins"
+        ],
+        "title": "ProductCostOut",
+        "type": "object"
+      },
       "ProductDetailOut": {
         "description": "One product's page: also the one removal action it offers, worked out from history\nwhen it is read (`null` for an archived product).",
         "properties": {
           "archived": {
             "title": "Archived",
             "type": "boolean"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductCostOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "current_price": {
             "anyOf": [
@@ -3750,7 +3815,8 @@
           "name",
           "current_price",
           "archived",
-          "removal"
+          "removal",
+          "cost"
         ],
         "title": "ProductDetailOut",
         "type": "object"

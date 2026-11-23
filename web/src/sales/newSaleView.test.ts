@@ -9,11 +9,12 @@ import { pricedSaleOf, type NewSaleInputs, type NewSalePricing } from './newSale
 import {
   customerPriceLineOf,
   customerTypeIdOf,
+  customerViewOf,
   priceLineOf,
   saleBarState,
   type CustomerView,
 } from './newSaleView'
-import type { DraftLine } from './saleDraft'
+import { draftLineOf, type DraftLine } from './saleDraft'
 import type { NewSaleStatus } from './useNewSaleReads'
 
 const FORMAT = { symbol: '$', decimals: 0 }
@@ -29,8 +30,8 @@ const READY: NewSaleInputs = {
   mostSoldIds: [1],
   customerTypeId: null,
 }
-const PRICED_LINES: DraftLine[] = [{ productId: 1, quantityHundredths: 200 }]
-const WITH_UNPRICED: DraftLine[] = [...PRICED_LINES, { productId: 2, quantityHundredths: 100 }]
+const PRICED_LINES: DraftLine[] = [draftLineOf(1, 200)]
+const WITH_UNPRICED: DraftLine[] = [...PRICED_LINES, draftLineOf(2, 100)]
 
 function pricing(lines: DraftLine[], shipping: string, reads: NewSaleInputs = READY): NewSalePricing {
   return pricedSaleOf({ ...reads, lines, shipping, format: FORMAT })
@@ -155,5 +156,25 @@ describe('customerPriceLineOf', () => {
     ['type pending with the settings in', TYPE_PENDING, 'ready', SWITCHES_ON, { kind: 'loading' }],
   ])('%s', (_name, customer, status, settings, expected) => {
     expect(customerPriceLineOf({ customer, status, settings })).toEqual(expected)
+  })
+})
+
+describe('customerViewOf', () => {
+  const CHOSEN = { id: 7, name: 'Ana', typeId: 3, typeName: 'Mayorista' }
+
+  test('no customer id is none, whatever record is held', () => {
+    expect(customerViewOf(null, CHOSEN)).toEqual({ kind: 'none' })
+  })
+
+  test('a record whose id is the draft id is known, with its type', () => {
+    expect(customerViewOf(7, CHOSEN)).toEqual({ kind: 'known', name: 'Ana', typeId: 3, typeName: 'Mayorista' })
+  })
+
+  test('an id with no record is name pending', () => {
+    expect(customerViewOf(7, null)).toEqual({ kind: 'namePending' })
+  })
+
+  test('a record of another id is name pending, never shown for this id', () => {
+    expect(customerViewOf(8, CHOSEN)).toEqual({ kind: 'namePending' })
   })
 })

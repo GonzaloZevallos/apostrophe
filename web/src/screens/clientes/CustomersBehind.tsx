@@ -15,29 +15,49 @@ import BotonLink from '../../components/BotonLink'
 import { CUSTOMER_NEW } from '../../routes'
 import { listCustomers } from '../../api/customers'
 import { keys } from '../../api/keys'
-import { debtorsQuery } from '../../api/payments'
 import { useIsVipCustomers } from '../../api/pricingSettings'
 import { useMoney } from '../../format/moneyContext'
 import { COMMON_TEXT } from '../../copy/common'
 import ClienteFila from './ClienteFila'
-import { customersView, debtorsState, segmentCounts, useCustomerSearch } from './CustomerSearch'
+import {
+  customersListState,
+  customersView,
+  listKeyQuery,
+  segmentCounts,
+  typedQuery,
+  useCustomerSearch,
+  useDebtors,
+} from './CustomerSearch'
 import CustomerSegments from './CustomerSegments'
 
 export default function CustomersBehind() {
   const money = useMoney()
   const { query, segment } = useCustomerSearch()
   const vipCustomers = useIsVipCustomers()
+  // The list's own key: a query of only spaces is the full list's, as on the screen.
+  const keyQuery = listKeyQuery(query, query)
   const { data } = useQuery({
-    queryKey: keys.customers(query),
-    queryFn: () => listCustomers(query),
+    queryKey: keys.customers(keyQuery),
+    queryFn: () => listCustomers(keyQuery),
     retry: false,
   })
 
-  const debtors = useQuery(debtorsQuery)
+  const debtors = useDebtors()
 
   if (data === undefined) return null
-  const view = customersView({ query, isPlaceholderData: false, debtors: debtorsState(debtors), segment })
-  const owed = view === 'owed' && debtors.data !== undefined && debtors.data.debtor_count !== 0 ? debtors.data : null
+  const view = customersView({ query, debtors: debtors.state, segment })
+  // It draws only from resolved data, so the read's own flags are settled here: a row is drawn
+  // only when the list's one decision says `rows`.
+  const listState = customersListState({
+    typed: typedQuery(query),
+    keyQuery,
+    isPending: false,
+    isPlaceholderData: false,
+    isFetching: false,
+    isError: false,
+    isEmpty: data.length === 0,
+  })
+  const owed = view === 'owed' && debtors.data !== null && debtors.data.debtor_count !== 0 ? debtors.data : null
 
   return (
     <div className="pantalla">
@@ -76,7 +96,7 @@ export default function CustomersBehind() {
         {(view === 'flat' || view === 'all') && (
         <section className="clientes__todos">
           <div className="lista-clientes">
-            {data.map((customer) => (
+            {listState === 'rows' && data.map((customer) => (
               <ClienteFila
                 key={customer.id}
                 id={customer.id}
