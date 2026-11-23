@@ -49,7 +49,7 @@ El chip dibuja esa oración y la tarjeta la lleva en su nombre accesible, así q
   - En la lista, una venta sin estado muestra "Payment can't be shown" solo en su propia tarjeta; las demás tarjetas no se ven afectadas.
 - **Nunca solo por color**: cada estado se lee por su palabra, y pagada en parte también por su círculo. Unpaid y Part-paid comparten el tono de deuda y se distinguen por la palabra y el círculo.
 - **Nombre accesible**: el círculo y el Attention icon (un `Icono` sin etiqueta) son decorativos, con `aria-hidden`. El texto del chip es su nombre accesible, según la **Icon and text rule**. El chip no se toca y no tiene estado de presión.
-- **Teléfono angosto**: el chip (`inline-flex` con `flex-wrap: wrap`) pasa a una segunda línea cuando hace falta. No usa `nowrap`, elipsis ni `overflow: hidden`, así que el monto nunca se corta, se acorta ni se oculta (**Phone first**).
+- **Teléfono angosto**: el chip (`inline-flex` con `flex-wrap: wrap`) pasa a una segunda línea cuando hace falta. No usa elipsis ni `overflow: hidden`, así que el monto nunca se corta, se acorta ni se oculta (**Phone first**). Dentro de la tarjeta, el monto (`.sale-card .payment-chip .cifra-n`) lleva `white-space: nowrap`: el chip se parte entre palabras, nunca dentro de la cifra.
 - **Aspecto**: una píldora chica (`border-radius: 999px`, `padding: 2px 8px`) con la letra de `.rotulo` y sin borde, el mismo lenguaje de la píldora de VentaDetalle. El círculo mide 0,8em, así que crece con el texto.
 - **Colores**: las reglas `.payment-chip*` de `app.css` usan solo tokens, y solo pares que ya están en la tabla de contraste del README. Cada color está en una regla de una sola clase. No se usa verde (`--positivo`) ni ningún hex.
   - Paid es neutro: `--tinta2` sobre `--superficie`, por decisión del dueño (estilo limpio: solo resalta lo que pide atención). Sobre una tarjeta blanca se lee como texto apagado, sin píldora visible.
@@ -57,18 +57,17 @@ El chip dibuja esa oración y la tarjeta la lleva en su nombre accesible, así q
   - Pagada en parte va en `--deuda2` sobre `--deuda-fondo`, con el círculo (`.payment-chip__half`) en `--deuda`: borde de 1px y mitad rellena.
   - La línea desconocida sigue la regla del Attention icon (Icon and text rule y regla Attention del README): `--critico` sobre `--superficie`, y el ícono toma ese color por `currentColor`.
   - Si el chip o la tarjeta necesitaran un par que no está en la tabla de contraste, el trabajo se frena y se informa; nunca se agrega un par.
-- **Censo de colores** (`colorCensus.ts`): lleva una entrada por cada selector del chip y de la tarjeta cuya regla usa un color de estado. Cada una nombra la palabra o la forma que lleva su significado y cita su test:
+- **Censo de colores** (`colorCensus.ts`): lleva una entrada por cada selector del chip cuya regla usa un color de estado. Cada una nombra la palabra o la forma que lleva su significado y cita `SalePaymentChip.test.tsx`:
   - `.payment-chip--unpaid`: la palabra "Unpaid".
   - `.payment-chip--part-paid`: la palabra "Part-paid" y el círculo.
   - `.payment-chip--unknown`: el Attention icon y la oración "Payment can't be shown".
   - `.payment-chip__half`: el círculo junto a la palabra "Part-paid".
-  - Los selectores `.sale-card*` que usen un color de estado, con su entrada y su test (#1020).
 
-  `.payment-chip--paid` no entra, porque es neutro y el control del censo rechaza una entrada sin color de estado.
+  `.payment-chip--paid` no entra, porque es neutro y el control del censo rechaza una entrada sin color de estado. Por lo mismo, ninguna regla `.sale-card*` entra: la tarjeta usa solo tokens neutros (`--tinta`, `--tinta2`, `--linea`). Una regla `.sale-card*` futura con un color de estado llevaría su propia entrada y su test.
 
 ### La tarjeta de Sales (`SaleCard`)
 
-- **Qué es**: un solo `InAppLink` con clase `.sale-card` que lleva al detalle de la Sale (`/sales/:id`, armado desde la tabla de rutas con `pathTo(SALE, { id })`). Recibe la Sale (prop `sale`) y usa `useMoney()`. Mide al menos 44 px de alto.
+- **Qué es**: un solo `InAppLink` con clase `.sale-card` que lleva al detalle de la Sale (`/sales/:id`, armado desde la tabla de rutas con `pathTo(SALE, { id })`). Recibe la Sale (prop `sale`) y usa `useMoney()`. Mide al menos 44 px de alto (`min-height: var(--alto-tocable)`).
 - **Qué lee**: de la Sale, solo `payment_state`, `still_owed`, `total`, `lines`, el nombre del Customer, `id` y `date`. Nunca lee `still_owing`, los Payments, una marca VIP ni el Balance del Customer, y nunca lee el reloj del dispositivo.
 - **Contenido, en este orden**:
   1. `.sale-card__name`: el nombre del Customer, o "No customer" en una **Sale without a customer**. Nunca muestra una marca VIP, aunque el Customer la tenga.
@@ -83,10 +82,12 @@ El chip dibuja esa oración y la tarjeta la lleva en su nombre accesible, así q
   - El nombre no lleva la fecha.
 - **Presión**: `.sale-card` está en el grupo `--superficie` del bloque `/* pressed */` vivo y en `SELECTABLE` de `touch.test.ts`. `.fila-venta` ya no está en ninguno de los dos (#1020); solo queda en la foto congelada `pressedBlock.bdc2945.ts`.
 - **Disposición** (`app.css`, solo tokens, #1020):
-  - la columna de texto tiene min-width 0;
-  - el nombre y la línea de productos se cortan con elipsis, y la línea de productos se achica primero;
-  - el total y el chip nunca se achican; el chip igual puede pasar a una segunda línea y su monto nunca se corta.
-- **Dibujo**: el dibujo de la tarjeta está en `Pedidos.dc.html` (decisión 2 del humano en GH-928). Ante una diferencia, rige **Drawing as guide**: cuenta solo si el dueño, en el teléfono, leería o haría algo distinto.
+  - una grilla de dos columnas: a la izquierda el texto (`minmax(0, 1fr)`, así que puede achicarse), a la derecha el total y el chip (`fit-content(60%)`). Fila 1: nombre y total; fila 2: línea de productos y chip; fila 3: fecha, con el chip pudiendo ocupar también esa fila;
+  - el nombre (16 px, 600) y la línea de productos se cortan con elipsis, y la línea de productos se achica primero (`flex: 0 10 auto`); "+N more" no se achica;
+  - el total (17 px, 600) y el chip nunca se achican; el total va en `nowrap` y el chip igual puede pasar a una segunda línea, con su monto nunca cortado;
+  - la línea de productos y la fecha van en 13 px y `--tinta2`; el nombre y el total en `--tinta`;
+  - las tarjetas se separan con una línea de 1 px en `--linea`, sin línea bajo la última.
+- **Dibujo**: el dibujo de la tarjeta está en `Pedidos.dc.html` (decisión 2 del humano en GH-928). Las diferencias con ese dibujo (los chips dibujados como texto de color, el ícono en Pagado y Sin pagar, las tarjetas con botones de acción y Pagado en verde) quedan resueltas por esta definición y por las decisiones de GH-928: una tarjeta es un solo link, sin acciones, y Paid es neutro. Ante una diferencia, rige **Drawing as guide**: cuenta solo si el dueño, en el teléfono, leería o haría algo distinto.
 
 ### En pantalla: Sales
 
@@ -94,11 +95,12 @@ El chip dibuja esa oración y la tarjeta la lleva en su nombre accesible, así q
 
 (La imagen se vuelve a tomar después del merge de #1020; hasta entonces puede mostrar las filas de antes, y gana el texto).
 
-- **La lista**: `Ventas.tsx` dibuja una `SaleCard` por venta dentro de `.sale-card-list`, en todo ancho. Cada tarjeta es un solo link a su venta, así que encontrar y abrir una venta, y llegar a su Sale bill, no lleva más toques que antes.
+- **La lista**: `Ventas.tsx` dibuja una `SaleCard` por venta dentro de `.sale-card-list`, en todo ancho. Cada tarjeta es un solo link a su venta, así que encontrar y abrir una venta lleva 2 toques desde cualquier Tab root y llegar a su Sale bill lleva 3, los mismos que con las filas.
 - **Lo que no cambia**: las pestañas de período, el total y la cantidad del período, el orden, el estado de carga y el estado vacío siguen como los define sales.md.
-- **Lo que se fue, para siempre**: las filas `.lista-ventas`/`.fila-venta*`, la marca "owes you" con su total ámbar (`SALES_TEXT.owesYou`, sacado del Copy module y de `en.baseline.json`), la insignia VIP y los gramos de cada venta. Ninguno vuelve, ni visible ni oculto (D-69509906). El conteo de **Sales still owing** ya no se muestra en Sales: se ve solo en el bloque "Owed to you" de Home.
+- **Lo que se fue, para siempre**: las filas `.lista-ventas`/`.fila-venta*`, la marca "owes you" con su total ámbar (`SALES_TEXT.owesYou`, sacado del Copy module y de `en.baseline.json`), la insignia VIP y los gramos de cada venta. Ninguno vuelve, ni visible ni oculto (D-69509906). La lista ya no lee la configuración de precios para la insignia VIP, así que abrir Sales hace un pedido menos. El conteo de **Sales still owing** ya no se muestra en Sales: se ve solo en el bloque "Owed to you" de Home.
 - **En la computadora**: las mismas tarjetas, más anchas, sin pulido dedicado (**Phone first**). `Ventas.dc.html` y `VentasCompu.dc.html` quedan reemplazados para la lista (decisiones 1 y 2 del humano en GH-928).
 - **Sin filtro ni orden por estado**: la lista no filtra ni ordena por Payment state.
+- **Salida ante "Payment can't be shown"**: abrir la venta. El detalle de la Sale muestra cómo se pagó, no el `payment_state` ni el `still_owed`; lo que se debe se lee en la cuenta del Customer.
 - **e2e**: los localizadores de la lista son `.sale-card`; `payments.spec.ts` encuentra la tarjeta por `.sale-card__total` y espera que su `.payment-chip` diga `Unpaid`.
 
 ### Textos
@@ -132,7 +134,7 @@ Son las palabras exactas de la tabla del Tech Writer que el humano pegó en la d
 2. **El monto de la venta, tal cual**: lo que se debe de una venta pagada en parte es exactamente su `still_owed`, en el Money format del Business, también cuando no coincide con el total. Evidencia: el test con un `stillOwed` distinto del total.
 3. **Nunca un estado adivinado**: el chip muestra "Payment can't be shown" con el Attention icon decorativo en tres casos: cuando los hechos de pago no se concilian (null), cuando llega un valor desconocido y cuando un `part_paid` trae un `still_owed` inservible. Nunca muestra un estado adivinado ni $0, y en la lista no afecta a las demás tarjetas.
 4. **Assume nothing**: ningún texto del chip ni de la tarjeta nombra una unidad, una moneda, un Payment method ni un tipo de producto, los montos siguen el Money format del Business, y todos los textos viven solo en `web/src/copy/`.
-5. **Nada se corta**: el chip pasa a una segunda línea y el monto nunca queda cortado ni oculto. El Mobile check (sin infractores nuevos) y la **Design capture** de `/sales` contra `Pedidos.dc.html` lo juzgan en el teléfono.
+5. **Nada se corta**: el chip pasa a una segunda línea y el monto nunca queda cortado ni oculto. Evidencia: el test de `Ventas.test.tsx` con un monto de nueve dígitos que queda entero en un solo `.cifra-n`. El Mobile check (sin infractores nuevos) recorre `/sales` en el teléfono, pero su negocio de muestra solo tiene ventas pagadas, así que todavía no ve un chip pagado en parte ni desconocido en un navegador.
 6. **Lo que se ve es lo que se escucha**: el nombre accesible de la tarjeta contiene, para cada estado, exactamente el texto visible de su chip, porque los dos salen de `salePayment.ts`. Evidencia: `SaleCard.test.tsx`.
 7. **Solo los hechos de esta venta**: la tarjeta toma la fecha de la propia Sale (dd/mm) y nunca del reloj. Tampoco lee `still_owing`, los Payments ni el Balance del Customer.
 8. **Cada venta, sin abrirla** (#1020): en el teléfono, para cada venta de la lista, la vendedora sabe sin abrirla si está Paid, Part-paid (con lo que todavía se debe) o Unpaid.
@@ -141,6 +143,8 @@ Son las palabras exactas de la tabla del Tech Writer que el humano pegó en la d
 
 ## Pendiente
 
-- Confirmar en la pantalla real que Paid, neutro, se sigue leyendo como parte de la misma familia de chips (Design capture de #1020).
+- Confirmar con la **Design capture** de `/sales` contra `Pedidos.dc.html`, que ningún líder pudo ver antes del merge, que Paid, neutro, se sigue leyendo como parte de la misma familia de chips.
+- Que un chip pagado en parte y uno desconocido se vean en un navegador en el teléfono: el negocio de muestra fijado solo tiene ventas pagadas, y cambiarlo cambia todas las listas de infractores.
 - Decidir si "Payment can't be shown" necesita una forma de resolverlo ahí mismo. Hoy la salida es abrir la Sale.
 - Volver a tomar `Ventas.webp` después del merge de #1020.
+- Los comentarios de cabecera de `SaleCard.tsx` y `SalePaymentChip.tsx` todavía dicen que no están en ninguna pantalla; ya no es cierto.
