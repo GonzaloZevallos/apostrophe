@@ -8,7 +8,10 @@
  *   beneath it) and is empty on the next opening.
  * - A customer saved from Create shows only on the next opening (the customers are read once per
  *   opening): the parent chooses the new customer itself and closes the Sheet.
- * - The Sheet raises `onCreate(query)` and mounts no Create form; it holds no part of the sale.
+ * - The Sheet raises `onCreate(query)` with the query trimmed, and mounts no Create form; it holds no
+ *   part of the sale.
+ * - Escape is the parent's: neither this Sheet nor the sheet stack listens for it, so the flip part of
+ *   GH-496 wires it to the same close as Close.
  * - Loading and failure states arrive in GH-1013: until then a pending or failed read shows no rows,
  *   no heading and no no-match line, and Create and No customer stay.
  * - The level comes from `SheetLevel` only: Close is the entry at `level + 1`, and while the entry
