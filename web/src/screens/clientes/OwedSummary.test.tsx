@@ -12,7 +12,8 @@ import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import type { MoneyFormat } from '../../format/money'
 import { debtorsOf } from '../../test/debtors'
 import type { Debtors } from '../../api/payments'
-import OwedSummary, { figureChOf, OwedSummarySkeleton } from './OwedSummary'
+import { figureChOf } from './figureCh'
+import OwedSummary, { OwedSummarySkeleton } from './OwedSummary'
 
 const BUCKETS = { this_week: 12800, days_8_30: 20100, over_30: 24900 }
 const SUMMARY: Debtors = debtorsOf({ total_owed: 57800, buckets: BUCKETS })

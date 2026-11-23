@@ -16,7 +16,7 @@ import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { Debtors } from '../../api/payments'
 import { useMoney } from '../../format/moneyContext'
-import type { MoneyFormat } from '../../format/money'
+import { figureChOf } from './figureCh'
 
 declare module 'react' {
   interface CSSProperties {
@@ -25,20 +25,6 @@ declare module 'react' {
     /** The width, in `ch`, that a nine-digit amount takes in the Money format. */
     '--figure-ch'?: number
   }
-}
-
-const NINE_DIGITS_WITH_DOTS = 11
-const SPACE_AFTER_SYMBOL = 1
-
-/**
- * How many `ch` the widest amount can take in this Money format, from the format alone: the symbol
- * counted twice (it can be wider than a digit), the space, nine digits with their two dots and the
- * decimals with their separator.
- */
-export function figureChOf(format: MoneyFormat): number {
-  const symbolLength = Array.from(format.symbol).length
-  const decimals = format.decimals > 0 ? format.decimals + 1 : 0
-  return 2 * symbolLength + SPACE_AFTER_SYMBOL + NINE_DIGITS_WITH_DOTS + decimals
 }
 
 type Bucket = 'this_week' | 'days_8_30' | 'over_30'
