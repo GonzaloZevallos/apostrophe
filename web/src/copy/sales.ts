@@ -79,6 +79,22 @@ const NEW_SALE_TEXT = {
   addProductToCollect: 'Add a product to collect',
 }
 
+/** New sale's customer search Sheet (`CustomerSearchSheet.tsx`). `query` is what the seller typed. The loading and
+ * failure texts arrive with #1013. */
+const CUSTOMER_SEARCH_TEXT = {
+  title: 'Customer',
+  sheetName: 'Choose a customer',
+  close: COMMON_TEXT.close,
+  hint: 'Search by name or phone, with or without accents.',
+  searchLabel: 'Search customers',
+  recentHeading: 'Recent customers',
+  create: (query: string) => `Create «${query}»`,
+  createName: (query: string) => `Create customer ${query}`,
+  none: 'No customer',
+  noneName: 'Continue without a customer',
+  noMatch: (query: string) => `No customer matches «${query}».`,
+}
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: OWING_HINT },
   { kind: 'help', text: NO_PRICE_HINT },
@@ -100,6 +116,12 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: NEW_SALE_TEXT.productSearchPlaceholder },
   { kind: 'help', text: NEW_SALE_TEXT.addProductToCollect },
   { kind: 'help', text: RECEIVED_HELP },
+  { kind: 'help', text: CUSTOMER_SEARCH_TEXT.hint },
+  { kind: 'help', text: CUSTOMER_SEARCH_TEXT.searchLabel },
+  { kind: 'help', text: CUSTOMER_SEARCH_TEXT.recentHeading },
+  { kind: 'help', text: CUSTOMER_SEARCH_TEXT.create(SAMPLES.name) },
+  { kind: 'help', text: CUSTOMER_SEARCH_TEXT.createName(SAMPLES.name) },
+  { kind: 'emptyLine', text: CUSTOMER_SEARCH_TEXT.noMatch(SAMPLES.name) },
 ]
 
 /** Nothing here is over 80 characters. */
@@ -139,6 +161,9 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.newSale.pricesFor': [['Regulars']],
   'SALES_TEXT.newSale.itemsCount': counted((n) => [n]),
   'SALES_TEXT.newSale.itemsTotal': counted((n) => [n, M]),
+  'SALES_TEXT.customerSearch.create': [['Lucía']],
+  'SALES_TEXT.customerSearch.createName': [['Lucía']],
+  'SALES_TEXT.customerSearch.noMatch': [['Lucía']],
   'SALE_BILL_TEXT.header': [['Flores Test', 'Sale #1284', D]],
   'SALE_BILL_TEXT.item': [['Rosa', '3,5', 'g', M]],
   'SALE_BILL_TEXT.bulk': [['Rosa', '10', 'g', M, M]],
@@ -229,4 +254,5 @@ export const SALES_TEXT = {
   changeLabel: COMMON_TEXT.change,
   saving: 'Saving…',
   newSale: NEW_SALE_TEXT,
+  customerSearch: CUSTOMER_SEARCH_TEXT,
 } as const
