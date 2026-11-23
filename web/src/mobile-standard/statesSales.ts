@@ -9,6 +9,7 @@ import { NO_PRICE_HINT, SALES_TEXT } from '../copy/sales.ts'
 import { DAY_BEFORE_PIN } from './pin.ts'
 import { SAMPLE_TYPED_CUSTOMER, SAMPLE_TYPES } from './statesRecords.ts'
 import type { Expense } from '../api/expenses.ts'
+import type { Sale } from '../api/sales.ts'
 import type { WalkState } from './states.ts'
 
 /** The sale in progress the strip states and `DescartarGastoEnVenta` share: line 1's Product, its grams and the Total they make. */
@@ -41,6 +42,80 @@ const TWELVE_PRODUCTS = Array.from({ length: 12 }, (_unused, index) => ({
   archived: false,
   current_price: null,
 }))
+
+/** One ordinary line every stub sale below carries. */
+const ORDINARY_LINE = {
+  product_id: 1,
+  product_name: 'Golden Cookies',
+  quantity: 1000,
+  pricing_rule: 'list',
+  customer_type_name: null,
+  price_per_gram: 10,
+  line_total: 10000,
+} as const
+
+/** The sale whose payment facts cannot be reconciled: both fields null, so its card draws the degraded chip line. */
+export const UNKNOWN_PAYMENT_ROW = {
+  id: 9004,
+  number: 4,
+  date: '2026-09-16',
+  customer: { id: 9004, name: 'Dora Vega', vip: false },
+  shipping_charged: 0,
+  note: null,
+  payment: 'owing',
+  total: 10000,
+  lines: [ORDINARY_LINE],
+  still_owing: true,
+  payment_state: null,
+  still_owed: null,
+} satisfies Sale
+
+/** `GET /sales` for the unknown-payment state: a paid, an unpaid, a part-paid and an unknown-payment sale, each for its own customer. */
+export const UNKNOWN_PAYMENT_SALES = [
+  {
+    id: 9001,
+    number: 1,
+    date: '2026-09-16',
+    customer: { id: 9001, name: 'Ana Ruiz', vip: false },
+    shipping_charged: 0,
+    note: null,
+    payment: 'paid',
+    total: 10000,
+    lines: [ORDINARY_LINE],
+    still_owing: false,
+    payment_state: 'paid',
+    still_owed: 0,
+  },
+  {
+    id: 9002,
+    number: 2,
+    date: '2026-09-16',
+    customer: { id: 9002, name: 'Beto Sosa', vip: false },
+    shipping_charged: 0,
+    note: null,
+    payment: 'owing',
+    total: 10000,
+    lines: [ORDINARY_LINE],
+    still_owing: true,
+    payment_state: 'unpaid',
+    still_owed: 10000,
+  },
+  {
+    id: 9003,
+    number: 3,
+    date: '2026-09-16',
+    customer: { id: 9003, name: 'Caro Paz', vip: false },
+    shipping_charged: 0,
+    note: null,
+    payment: 'owing',
+    total: 10000,
+    lines: [ORDINARY_LINE],
+    still_owing: true,
+    payment_state: 'part_paid',
+    still_owed: 4000,
+  },
+  UNKNOWN_PAYMENT_ROW,
+] satisfies readonly Sale[]
 
 export const SALES_STATES: readonly WalkState[] = [
   {
@@ -308,5 +383,15 @@ export const SALES_STATES: readonly WalkState[] = [
     route: SALES,
     steps: [{ click: SALES_TEXT.dates }],
     visible: SALES_TEXT.to,
+  },
+  {
+    // The Sales list with a sale whose payment cannot be shown, so the walk visits the degraded chip line beside the other three.
+    // The stub answers `/sales` for any date range. The wait is the sale's own customer: the degraded sentence lives in the `sales:` namespace the browserless core cannot load.
+    screen: 'sales/unknown-payment',
+    route: SALES,
+    steps: [],
+    visible: UNKNOWN_PAYMENT_ROW.customer.name,
+    reads: [{ path: /^\/sales$/, status: 200, body: UNKNOWN_PAYMENT_SALES }],
+    offendersAs: 'Ventas',
   },
 ]
