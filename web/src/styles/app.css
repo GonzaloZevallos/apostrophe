@@ -2988,6 +2988,121 @@ a.ajustes-tema__opcion {
   padding-left: 42px;
 }
 
+/* New sale's customer search Sheet (`CustomerSearchSheet.tsx`): the same full-bleed bottom sheet as
+ * "Elegí el cliente" above, over the sale, with tokens only. Rows are at least the touch height and
+ * have an `:active` state; the matched text is bold with an accent underline. */
+.customer-search {
+  position: fixed;
+  inset: 0;
+  padding: var(--inset-arriba) var(--inset-derecha) 0 var(--inset-izquierda);
+  z-index: 20;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.customer-search::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--tinta);
+  opacity: 0.4;
+}
+
+.customer-search__content {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: 88dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--papel);
+  border-radius: var(--radio-hoja) var(--radio-hoja) 0 0;
+  padding: var(--espacio-lg) var(--margen-pantalla) calc(var(--espacio-xxl) + var(--inset-abajo));
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+.customer-search__handle {
+  align-self: center;
+  width: 40px;
+  height: 4px;
+  border-radius: var(--radio-pildora);
+  background: var(--linea);
+}
+
+.customer-search__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+}
+
+.customer-search__hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.customer-search__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
+.customer-search__heading {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tinta2);
+}
+
+.customer-search__list .boton--fila {
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-sm) 0;
+  gap: 2px;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.customer-search__list .boton--fila:active {
+  background: var(--acento-suave);
+}
+
+.customer-search__name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.customer-search__phone {
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.customer-search__mark {
+  background: none;
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--acento);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.customer-search__no-match {
+  margin: 0;
+  padding: var(--espacio-sm) 0;
+  color: var(--tinta2);
+}
+
+.customer-search__create {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* `Stock` and `EntradaStock` (stock.md, "On screen"). The status mark is told by
  * shape and word, never by color alone: a square for agotada (the inverted chip,
  * never red), a filled circle for baja, an empty circle for ok/no entries. */

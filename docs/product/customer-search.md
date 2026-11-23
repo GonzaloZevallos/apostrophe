@@ -12,7 +12,9 @@ La Sheet de New sale con la que se elige el Customer de la Sale in progress. Hay
 - buscar tipeando parte del nombre o del Phone number, sin importar acentos ni mayúsculas;
 - salir creando un Customer nuevo con lo tipeado, o siguiendo sin Customer.
 
-Estado actual (GH-865 parte 2): el componente `web/src/screens/ventas/CustomerSearchSheet.tsx` existe, pero ninguna ruta ni entrada de la Navigation lo monta hasta la parte flip de GH-496. Por eso no tiene imagen de pantalla ni fila en el registro de pantallas.
+Estado actual (GH-865 parte 2): el componente `web/src/screens/ventas/CustomerSearchSheet.tsx` existe, pero ninguna ruta ni entrada de la Navigation lo monta hasta la parte flip de GH-496. Por eso no tiene imagen de pantalla ni fila en el registro de pantallas. Tampoco está en `WalkState` ni en `scripts/design/screens.json`, así que el chequeo Mobile no la visita (excepción del §10 para una Sheet sin montar): la parte flip de GH-496 agrega ambos y quita su entrada de `web/scripts/docs/front-exclude.json`.
+
+La Sheet no tiene acción primaria fija (§10.4): elegir es tocar una fila, y "No customer" va al final de la lista que se desplaza, como lo ubica el dibujo. Con una búsqueda tipeada, las coincidencias van primero y sin título, "Create «query»" va debajo y no se muestra el bloque de Recientes (desvío 1 del dibujo, aceptado por el dueño: gana lo escrito en el PRD, que además evita duplicar Customers). Hasta GH-1013, una lectura de Customers pendiente o fallida no muestra ningún estado extra: ni filas, ni título, ni la línea de sin coincidencias; Create y "No customer" siguen visibles.
 
 ## Comportamiento
 
@@ -52,9 +54,9 @@ En todos los estados, la lista desplazable va en este orden:
 3. "No customer" (nombre accesible "Continue without a customer"), que lanza `onContinueWithout()`. Que una Sale without a customer no quede debiendo lo hace cumplir el formulario de la Sale, no esta Sheet.
 
 ### Estados
-- **Cargando:** `RECENT_ROWS` filas esqueleto bajo `aria-busy` (nombre "Loading customers"), hasta que estén listas la lectura de Customers y las sugerencias, una vez por apertura.
+- **Cargando** (lo entrega GH-1013): `RECENT_ROWS` filas esqueleto bajo `aria-busy` (nombre "Loading customers"), hasta que estén listas la lectura de Customers y las sugerencias, una vez por apertura.
 - **Sin coincidencias:** "No customer matches «query».", sin ícono.
-- **Falla la lectura de Customers:** el aviso "Customers did not load." con el Attention icon y "Try again". Reemplaza solo las filas.
+- **Falla la lectura de Customers** (lo entrega GH-1013): el aviso "Customers did not load." con el Attention icon y "Try again". Reemplaza solo las filas.
 - **Falla la lectura de sugerencias:** simplemente no hay filas recientes.
 
 ### Vida de la Sheet
@@ -79,13 +81,12 @@ En todos los estados, la lista desplazable va en este orden:
 Nada de esto se verificó contra NuevaVentaCliente. Toda diferencia es un desvío que decide el dueño:
 
 - qué muestra una fila;
-- que Create aparezca con una coincidencia exacta de nombre;
-- la posición de No customer al final.
+- que Create aparezca con una coincidencia exacta de nombre.
 
 ## Métricas
 
 - **Elegir un reciente:** un Customer reciente se elige con un toque en su fila, sin tipear. Lo verifica el test "choosing sets the draft customer".
 - **Buscar:** unas letras del nombre, con o sin acentos, o unos dígitos del teléfono encuentran al Customer, resaltado. Lo verifica el test de coincidencia sin acentos.
 - **No perder líneas:** cerrar, volver, Create y No customer nunca pierden líneas de la Sale in progress. Lo verifican los tests de Close/back y de Create.
-- **Lectura fallida:** muestra el motivo y "Try again". Lo verifica el test de falla.
+- **Lectura fallida:** muestra el motivo y "Try again". Lo verificará el test de falla de GH-1013.
 - **Duplicados y tiempo:** cuando la Sheet esté montada, no debería aparecer un mismo Customer registrado dos veces, y se apunta a una Sale registrada desde el teléfono en menos de un minuto.

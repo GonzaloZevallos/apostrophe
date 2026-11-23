@@ -9,7 +9,7 @@
  * - A customer saved from Create shows only on the next opening (the customers are read once per
  *   opening): the parent chooses the new customer itself and closes the Sheet.
  * - The Sheet raises `onCreate(query)` and mounts no Create form; it holds no part of the sale.
- * - Loading and failure states arrive in #1013: until then a pending or failed read shows no rows,
+ * - Loading and failure states arrive in GH-1013: until then a pending or failed read shows no rows,
  *   no heading and no no-match line, and Create and No customer stay.
  * - The level comes from `SheetLevel` only: Close is the entry at `level + 1`, and while the entry
  *   over this one is open everything here is `inert`; when it closes, focus returns to the field.
