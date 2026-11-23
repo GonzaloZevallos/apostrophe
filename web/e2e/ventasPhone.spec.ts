@@ -116,7 +116,7 @@ test('Ventas and a sale detail fit, and are thumb-sized, at 320, 430 and 130 % o
     await expectNoSidewaysOverflow(page)
 
     await tabs.getByRole('button', { name: 'Today' }).click()
-    await page.locator('.fila-venta').first().click()
+    await page.locator('.sale-card').first().click()
     await expect(page.getByRole('button', { name: 'Delete sale' })).toBeVisible()
     await expectNoSidewaysOverflow(page)
     const borrar = await box(page.getByRole('button', { name: 'Delete sale' }))
