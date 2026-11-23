@@ -84,6 +84,7 @@ En todos los estados, la lista desplazable va en este orden:
 UI Lead comparó el código con NuevaVentaCliente, sin captura porque la Sheet no está montada. Quedan como desvíos que decide el dueño:
 
 - qué muestra una fila: el dibujo lleva una etiqueta de tipo y un ícono de reloj que acá no están, y sus filas miden unos 60 px;
+- la primera coincidencia que el dibujo muestra ya marcada como elegida, que acá no se marca (ninguna fila lleva `aria-selected`);
 - que Create aparezca con una coincidencia exacta de nombre, caso que el dibujo no muestra.
 
 ## Métricas
