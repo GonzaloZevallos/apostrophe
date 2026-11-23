@@ -1,7 +1,8 @@
+import { useViewport } from '../../shell/useViewport'
 import SettingsComputer from './SettingsComputer'
+import SettingsHome from './SettingsHome'
 
-// The Settings route entry: it renders SettingsComputer on every width for now;
-// issue 927 adds the phone branch on useViewport().
+// The Settings route entry: the computer keeps its list of groups, the phone gets the home.
 export default function Settings() {
-  return <SettingsComputer />
+  return useViewport() === 'computer' ? <SettingsComputer /> : <SettingsHome />
 }

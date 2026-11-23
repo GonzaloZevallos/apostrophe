@@ -5,22 +5,35 @@
  * sum and the count of the sales the list itself renders.
  */
 
-import { SALE, SALES } from '../../routes'
+import { pathTo, SALE, SALES } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
-import saleFixture from '../../api/fixtures/sale.json'
 import type { Me } from '../../api/me'
 import { SHOWN_EN } from '../../test/shownLanguage'
+import type { SaleLine } from '../../api/sales'
 import Ventas from './Ventas'
+import { saleWith } from './saleWith'
 import { stubFetchWithSettings } from '../stubFetchWithSettings'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { gone } from '../../components/feedback'
 import { baselineText } from '../../i18n/testing'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
+
+function line(name: string, quantity: number): SaleLine {
+  return {
+    product_id: 1,
+    product_name: name,
+    quantity,
+    pricing_rule: 'list',
+    customer_type_name: null,
+    price_per_gram: 0,
+    line_total: 0,
+  }
+}
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -124,40 +137,16 @@ test('Fechas opens on the current month and never lets the start run past the en
 test("the period's total and count are the sum and the number of sales shown", async () => {
   api.mockResolvedValue(
     jsonResponse(200, [
-      {
-        id: 1,
-        date: '2026-10-03',
-        customer: { id: 5, name: 'Nico', vip: true },
-        shipping_charged: 0,
-        note: null,
-        payment: 'paid',
-        total: 6000,
-        lines: [
-          { product_id: 1, product_name: 'Blue Dream', quantity: 5, pricing_rule: 'list', price_per_gram: 1200, line_total: 6000 },
-        ],
-      },
-      {
-        id: 2,
-        date: '2026-10-02',
-        customer: null,
-        shipping_charged: 0,
-        note: null,
-        payment: 'none',
-        total: 4000,
-        lines: [
-          { product_id: 2, product_name: 'OG Kush', quantity: 2, pricing_rule: 'list', price_per_gram: 2000, line_total: 4000 },
-        ],
-      },
+      saleWith('paid', { id: 1, total: 6000, customer: { id: 5, name: 'Nico', vip: true }, lines: [line('Blue Dream', 5)] }),
+      saleWith('unpaid', { id: 2, total: 4000, customer: null, lines: [line('OG Kush', 2)] }),
     ]),
   )
   renderVentas()
 
   expect(await screen.findByText('$ 10.000')).toBeInTheDocument()
   expect(screen.getByText('03/10 · 2 sales')).toBeInTheDocument()
-  expect(screen.getByText('Nico')).toBeInTheDocument()
-  expect(screen.getByText('VIP')).toBeInTheDocument()
-  expect(screen.getByText('No customer')).toBeInTheDocument()
-  expect(screen.getByText('Blue Dream · 5 g')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /Nico/ })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /No customer/ })).toBeInTheDocument()
 })
 
 test('the header shows the range next to the total, dd/mm, collapsed to one date for Hoy', async () => {
@@ -178,56 +167,102 @@ test('the header shows the range next to the total, dd/mm, collapsed to one date
   expect(await screen.findByText('01/10 – 31/10 · 0 sales')).toBeInTheDocument()
 })
 
-test('each row carries the chevron icon', async () => {
-  api.mockResolvedValue(jsonResponse(200, [saleFixture]))
-  renderVentas()
-
-  const row = await screen.findByRole('link', { name: /^(?!Settings$)/ })
-  expect(row.querySelector('svg')).not.toBeNull()
-})
-
-test('a sale with no customer shows "No customer" and no VIP badge', async () => {
+test('one card per sale, each a link to its sale', async () => {
   api.mockResolvedValue(
     jsonResponse(200, [
-      {
-        id: 3,
-        date: '2026-10-03',
-        customer: null,
-        shipping_charged: 0,
-        note: null,
-        payment: 'none',
-        total: 1000,
-        lines: [
-          { product_id: 1, product_name: 'Blue Dream', quantity: 1, pricing_rule: 'list', price_per_gram: 1000, line_total: 1000 },
-        ],
-      },
+      saleWith('paid', { id: 11, customer: { id: 1, name: 'Ana Pérez', vip: false } }),
+      saleWith('unpaid', { id: 12, customer: { id: 2, name: 'Beto Díaz', vip: false } }),
     ]),
   )
   renderVentas()
 
-  expect(await screen.findByText('No customer')).toBeInTheDocument()
-  expect(screen.queryByText('VIP')).not.toBeInTheDocument()
+  const ana = await screen.findByRole('link', { name: /Ana Pérez/ })
+  expect(ana).toHaveAttribute('href', pathTo(SALE, { id: 11 }))
+  expect(screen.getByRole('link', { name: /Beto Díaz/ })).toHaveAttribute('href', pathTo(SALE, { id: 12 }))
 })
 
-test('a sale still owing shows its total in amber with "owes you" under it, from the API', async () => {
-  // `sale.json` (plan, invariants: "used by the front's fetch fakes"): `still_owing`
-  // true, `total` 11000.
-  api.mockResolvedValue(jsonResponse(200, [saleFixture]))
-  renderVentas()
-
-  const row = await screen.findByRole('link', { name: /^(?!Settings$)/ })
-  expect(within(row).getByText('owes you')).toBeInTheDocument()
-  expect(within(row).getByText('$ 11.000')).toHaveClass('monto-deuda')
-})
-
-test('a sale paid in full shows no "owes you" mark', async () => {
+test('each card shows the chip of its own Payment state, from the API', async () => {
   api.mockResolvedValue(
-    jsonResponse(200, [{ ...saleFixture, payment: 'paid', still_owing: false }]),
+    jsonResponse(200, [
+      saleWith('paid', { id: 1, customer: { id: 1, name: 'Ana Pérez', vip: false } }),
+      saleWith('unpaid', { id: 2, customer: { id: 2, name: 'Beto Díaz', vip: false } }),
+      saleWith('part_paid', { id: 3, customer: { id: 3, name: 'Carla Ruiz', vip: false } }),
+    ]),
   )
   renderVentas()
 
-  const row = await screen.findByRole('link', { name: /^(?!Settings$)/ })
-  expect(within(row).queryByText('owes you')).not.toBeInTheDocument()
+  const ana = await screen.findByRole('link', { name: /Ana Pérez/ })
+  expect(within(ana).getByText('Paid')).toBeInTheDocument()
+  expect(within(screen.getByRole('link', { name: /Beto Díaz/ })).getByText('Unpaid')).toBeInTheDocument()
+  const carla = screen.getByRole('link', { name: /Carla Ruiz/ })
+  expect(within(carla).getByText('$ 4.000').parentElement).toHaveTextContent('Part-paid · $ 4.000 owed')
+})
+
+test('a nine-digit part-paid amount is one element, never split from its symbol', async () => {
+  api.mockResolvedValue(
+    jsonResponse(200, [
+      saleWith('part_paid', { id: 4, total: 1500000000, still_owed: 999999999, lines: [line('Blue Dream', 5)] }),
+    ]),
+  )
+  renderVentas()
+
+  const card = await screen.findByRole('link', { name: /Ana Pérez/ })
+  const amount = within(card).getByText('$ 999.999.999')
+  expect(amount).toHaveClass('cifra-n')
+  expect(amount.parentElement).toHaveTextContent('Part-paid · $ 999.999.999 owed')
+  expect(within(card).getByText('$ 1.500.000.000')).toHaveClass('sale-card__total')
+})
+
+test("a state that cannot be shown says so, and the card beside it is unaffected", async () => {
+  api.mockResolvedValue(
+    jsonResponse(200, [
+      saleWith(null, { id: 1, customer: { id: 1, name: 'Ana Pérez', vip: false } }),
+      saleWith('part_paid', { id: 2, still_owed: 0, customer: { id: 2, name: 'Beto Díaz', vip: false } }),
+      saleWith('part_paid', { id: 3, still_owed: null, customer: { id: 3, name: 'Carla Ruiz', vip: false } }),
+      saleWith('paid', { id: 4, customer: { id: 4, name: 'Dora Gil', vip: false } }),
+    ]),
+  )
+  renderVentas()
+
+  for (const name of [/Ana Pérez/, /Beto Díaz/, /Carla Ruiz/]) {
+    const card = await screen.findByRole('link', { name })
+    expect(within(card).getByText("Payment can't be shown")).toBeInTheDocument()
+    expect(within(card).queryByText('Paid')).not.toBeInTheDocument()
+  }
+  const dora = screen.getByRole('link', { name: /Dora Gil/ })
+  expect(within(dora).getByText('Paid')).toBeInTheDocument()
+})
+
+test('a sale with no customer shows "No customer"', async () => {
+  api.mockResolvedValue(jsonResponse(200, [saleWith('paid', { id: 3, customer: null })]))
+  renderVentas()
+
+  expect(await screen.findByText('No customer')).toBeInTheDocument()
+})
+
+test('a sale with two lines shows the first and "+1 more"', async () => {
+  api.mockResolvedValue(
+    jsonResponse(200, [saleWith('paid', { lines: [line('Blue Dream', 5), line('Rosa', 1.5)] })]),
+  )
+  renderVentas()
+
+  const card = await screen.findByRole('link', { name: /Ana Pérez/ })
+  expect(within(card).getByText('Blue Dream × 5')).toBeInTheDocument()
+  expect(within(card).getByText('+1 more')).toBeInTheDocument()
+})
+
+test('the list shows no "owes you" mark, VIP badge or grams, even for a VIP customer still owing', async () => {
+  api.mockResolvedValue(
+    jsonResponse(200, [
+      saleWith('unpaid', { customer: { id: 1, name: 'Ana Pérez', vip: true }, lines: [line('Blue Dream', 5)] }),
+    ]),
+  )
+  renderVentas()
+
+  await screen.findByRole('link', { name: /Ana Pérez/ })
+  expect(screen.queryByText('owes you')).not.toBeInTheDocument()
+  expect(screen.queryByText('VIP')).not.toBeInTheDocument()
+  expect(screen.queryByText(/\d g\b/)).not.toBeInTheDocument()
 })
 
 test('an empty period shows the empty-list text, not a blank list', async () => {

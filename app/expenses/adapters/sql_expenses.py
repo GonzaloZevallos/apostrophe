@@ -27,6 +27,7 @@ class SqlExpenses:
         return self._read(expense_id)
 
     def add(self, expense: Expense) -> Expense:
+        assert expense.payment_method is None, "persisting a payment method arrives with #1022"
         row = ExpenseRow(
             business_id=self._business_id,
             expense_category_id=expense.category_id,
@@ -42,6 +43,7 @@ class SqlExpenses:
         return stored
 
     def save(self, expense: Expense) -> Expense:
+        assert expense.payment_method is None, "persisting a payment method arrives with #1022"
         assert expense.id is not None, "save takes an expense that was added"
         row = self._row(expense.id)
         assert row is not None, "save takes an expense of this business"

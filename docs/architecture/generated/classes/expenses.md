@@ -129,6 +129,8 @@ classDiagram
     category_id : int
     detail : str
     id : int #124; None
+    payment_method : PaymentMethodId #124; None
+    payment_method_label : PaymentMethodLabel #124; None
     recorded_at : datetime
     spent_on : date
     of(spent_on: date, category_id: int, amount: int, detail: str, today: date, recorded_at: datetime, id: int #124; None) Expense
@@ -170,6 +172,9 @@ classDiagram
     total : int
     of(month: Month, categorized: Sequence~CategorizedExpense~) MonthlyExpenses
   }
+  class PaymentMethodMismatch {
+    code : ClassVar~str~
+  }
   CategorizedExpense --> Expense : expense
   ExpenseCategory --> CategoryName : name
   InvalidAmount --|> ExpenseRuleBroken
@@ -178,6 +183,7 @@ classDiagram
   InvalidExpenseDate --|> ExpenseRuleBroken
   InvalidMonth --|> ExpenseRuleBroken
   MonthlyExpenses --> Month : month
+  PaymentMethodMismatch --|> ExpenseRuleBroken
 ```
 
 ## application

@@ -24,7 +24,7 @@
 
 **Cuando** le comparto un Sale bill a un cliente, o más tarde necesito señalar esa venta exacta en nuestro chat, **quiero** que la venta lleve un número corto propio de mi negocio, **para** que los dos nombremos la misma venta sin confusión, y que el número nunca revele cuántas ventas tiene ningún otro negocio. (El **Sale number**; mostrarlo, no buscar por él).
 
-**Cuando** un cliente me paga parte o todo lo que me debe, con cualquiera de los medios que acepta mi negocio, el mismo día o semanas después, **quiero** registrarlo desde el teléfono en pocos toques y ver que su Balance y su "owing since" bajan en el acto, **para** saber siempre quién me debe qué y desde cuándo, y que nada de lo que pagó o todavía debe se pierda ni caiga en la persona equivocada. (Acá lo sirve la marca "owes you" en Sales; definido en `payments.md`).
+**Cuando** un cliente me paga parte o todo lo que me debe, con cualquiera de los medios que acepta mi negocio, el mismo día o semanas después, **quiero** registrarlo desde el teléfono en pocos toques y ver que su Balance y su "owing since" bajan en el acto, **para** saber siempre quién me debe qué y desde cuándo, y que nada de lo que pagó o todavía debe se pierda ni caiga en la persona equivocada. (Acá lo sirve el chip de pago de la tarjeta de Sales; definido en `payments.md` y `payment-state.md`).
 
 **Cuando** doy de alta un cliente (desde Customers, en medio de una venta o con la **Spreadsheet import** única) y no tengo su **Phone number**, **quiero** guardarlo igual con su nombre y agregar el número más adelante si algún día lo consigo, **para** registrar cada venta y cada deuda a nombre de la persona que de verdad debe, sin inventar un número ni dejar a esa persona fuera de la app. (Acá lo sirve "New customer" de Pick a customer; definido en `customers.md`).
 
@@ -38,7 +38,7 @@
 
 **Cuando** entrego un pedido y empiezo a registrarlo en el teléfono, **quiero** tener adelante los Customers a los que les vendí más recientemente, los Products que más se vendieron en los últimos 30 días y el Payment method de mi última venta pagada en el momento, **para** completar la venta en pocos toques en lugar de buscar o desplazarme, y registrarla en menos de un minuto. (Parte 1 de GH-496: acá lo sirve la lectura de las **New sale suggestions**, que solo devuelve ids; la pantalla que las muestra llega en partes posteriores de GH-496. Las sugerencias solo acortan elecciones: nunca fijan ni cambian un precio, un monto ni una cantidad).
 
-**Cuando** reviso mi lista de Sales en el teléfono, **quiero** ver en cada venta si está pagada, pagada en parte o sin pagar, y cuánto se debe todavía de ella, **para** saber a quién reclamarle y cuánto sin abrir cada venta. (Parte 1 de GH-500: sirve al trabajo del Brief "saber quién me debe qué y desde cuándo". Acá lo sirven los campos `payment_state` y `still_owed` de la API de ventas, el **Payment state** de cada venta; la pantalla que los muestra llega en partes posteriores de GH-500. No reemplaza el Balance del cliente ni agrega ningún total nuevo).
+**Cuando** reviso mi lista de Sales en el teléfono, **quiero** ver en cada venta si está pagada, pagada en parte o sin pagar, y cuánto se debe todavía de ella, **para** saber a quién reclamarle y cuánto sin abrir cada venta. (Parte 1 de GH-500: sirve al trabajo del Brief "saber quién me debe qué y desde cuándo". Acá lo sirven los campos `payment_state` y `still_owed` de la API de ventas, el **Payment state** de cada venta; la pantalla que los muestra, la tarjeta de Sales, existe desde la parte 2 de GH-500 (#1020). No reemplaza el Balance del cliente ni agrega ningún total nuevo).
 
 **Cuando** toco Undo en una venta que acabo de guardar, **quiero** ver en el acto si se sacó, si ya no estaba o si no se pudo, **para** confiar en mis cuentas y en mi stock sin abrir Sales para fijarme. (GH-869: acá lo sirven los cuatro resultados del aviso de Undo, en "Sale saved"; esta parte los dibuja y una parte posterior de GH-869 los conecta a Undo).
 
@@ -493,7 +493,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
   - El resultado de Undo no se comparó con ningún dibujo: si un dibujo del aviso con el resultado de Undo existe y difiere, lo decide el dueño (Drawing as guide).
   - Ante una diferencia, ganan esta definición y los ADRs (Drawing as guide).
 
-### En pantalla: Sales (`Sales`, `VentasCompu`)
+### En pantalla: Sales (`Sales`)
 
 - **Una Tab root** (navigation.md): la barra con su + en el celular, o la barra lateral y su "+ New sale" en la computadora.
 - **Períodos**: Today · Week · Month · Dates, en hora de Argentina.
@@ -504,20 +504,11 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
   - el total es la suma de los totales de las ventas mostradas, pagadas o no, envío incluido;
   - la cantidad es de ventas, no de líneas;
   - el total nunca se presenta como **Profit** ni como **Cash**.
-- **Cada venta** muestra:
-  - su fecha;
-  - su cliente, o "No customer" en gris;
-  - una insignia VIP, solo mientras VIP customers está encendido;
-  - sus productos y gramos;
-  - su total. Una venta que sigue debiendo, las pagadas en parte incluidas, muestra su total en ámbar con "owes you" debajo, tal como lo responde la API.
-  - No muestra el Sale number.
-  - Todavía no muestra el Payment state ni `still_owed`: la API ya los trae desde la parte 1 de GH-500, y los muestra una parte posterior de GH-500.
-- **La insignia VIP muestra el estado VIP actual del cliente**, no cómo se cotizó la venta.
-  - La insignia de regla de cada línea en el detalle es el registro de cómo se cotizó.
-  - Un cliente que deja de ser VIP pierde la insignia en ventas pasadas, mientras sus líneas siguen diciendo "VIP" o el nombre del tipo que las cotizó. Eso no es volver a cotizar (ADR-0003).
-  - Mientras VIP customers está apagado, ninguna fila muestra la insignia, y las marcas de los clientes quedan guardadas (customers.md).
+- **Cada venta** es una tarjeta (`SaleCard`), una por venta y en todo ancho. `payment-state.md` ("La tarjeta de Sales") es su definición.
+  - Muestra, en este orden: el cliente o "No customer", la primera línea más "+N more", el total, el chip del Payment state y la fecha dd/mm.
+  - No hay marca VIP, ni gramos, ni "owes you", ni Sale number.
 - **Carga**: antes de su primera respuesta, la lista muestra el estado de carga compartido, nunca una pantalla en blanco.
-- **En el teléfono** (`VentasCompu` sin cambios):
+- **En el teléfono**:
   - cada pestaña de período mide al menos 44 px de alto;
   - con el texto normal, las cuatro pestañas comparten una fila en partes iguales; cuando no entran (por ejemplo a 320 px o con el texto al 130 %) pasan a celdas de igual ancho, de a dos, cada una de al menos 44 px de alto; nunca desplazamiento horizontal, nunca una etiqueta acortada;
   - la pestaña elegida se marca con algo más que el color;

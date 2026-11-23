@@ -40,8 +40,8 @@ const ROSA = {
   current_price: { id: 9, effective_from: '2026-09-01', list_price: 1000, bulk_price: null, bulk_minimum: null },
 }
 const ANA = { id: 5, name: 'Ana', phone: '+5491100000000', phone_display: '+54 9 11 0000-0000', vip: false }
-// The Settings avatar is a text-only link by design: its initials are its glyph.
-const OPTIONS = { limits: LIMITS, samples: SAMPLES, optionClasses: ['inicio__avatar'] }
+// The Settings avatar is a text-only link by design: its initials are its glyph. A Sales card is a record row: one link, text only, no chevron (payment-state.md).
+const OPTIONS = { limits: LIMITS, samples: SAMPLES, optionClasses: ['inicio__avatar', 'sale-card'] }
 
 function json(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })

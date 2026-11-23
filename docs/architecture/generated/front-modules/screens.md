@@ -99,6 +99,8 @@ subgraph src["src"]
       src_screens_settings_PricingGroup_tsx["PricingGroup.tsx"]
       src_screens_settings_SettingsComputer_tsx["SettingsComputer.tsx"]
       src_screens_settings_SettingsGroup_tsx["SettingsGroup.tsx"]
+      src_screens_settings_SettingsHomeList_tsx["SettingsHomeList.tsx"]
+      src_screens_settings_SettingsHome_tsx["SettingsHome.tsx"]
       src_screens_settings_Settings_tsx["Settings.tsx"]
       src_screens_settings_UsersGroup_tsx["UsersGroup.tsx"]
       src_screens_settings_WithdrawalReasons_tsx["WithdrawalReasons.tsx"]
@@ -154,12 +156,15 @@ subgraph src["src"]
       src_screens_ventas_NuevaVentaLinea_tsx["NuevaVentaLinea.tsx"]
       src_screens_ventas_NuevaVenta_tsx["NuevaVenta.tsx"]
       src_screens_ventas_SaleBillButton_tsx["SaleBillButton.tsx"]
+      src_screens_ventas_SaleCard_tsx["SaleCard.tsx"]
       src_screens_ventas_SaleExpenseSheet_tsx["SaleExpenseSheet.tsx"]
       src_screens_ventas_SaleInProgressStrip_tsx["SaleInProgressStrip.tsx"]
+      src_screens_ventas_SalePaymentChip_tsx["SalePaymentChip.tsx"]
       src_screens_ventas_VentaDetalle_tsx["VentaDetalle.tsx"]
       src_screens_ventas_Ventas_tsx["Ventas.tsx"]
       src_screens_ventas_leaveQuestion_ts["leaveQuestion.ts"]
       src_screens_ventas_saleLineCount_ts["saleLineCount.ts"]
+      src_screens_ventas_salePayment_ts["salePayment.ts"]
     end
     subgraph src_screens_withdrawals["withdrawals"]
       src_screens_withdrawals_WithdrawalDetailBehind_tsx["WithdrawalDetailBehind.tsx"]
@@ -357,7 +362,9 @@ src_screens_settings_PaymentMethodsArchived_tsx-->src_screens_settings_SettingsG
 src_screens_settings_PaymentMethods_tsx-->src_screens_settings_PaymentMethodForm_tsx
 src_screens_settings_PaymentsGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_PricingGroup_tsx-->src_screens_settings_SettingsGroup_tsx
+src_screens_settings_SettingsHome_tsx-->src_screens_settings_SettingsHomeList_tsx
 src_screens_settings_Settings_tsx-->src_screens_settings_SettingsComputer_tsx
+src_screens_settings_Settings_tsx-->src_screens_settings_SettingsHome_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_InvitePartner_tsx
 src_screens_settings_UsersGroup_tsx-->src_screens_settings_SettingsGroup_tsx
 src_screens_settings_WithdrawalReasons_tsx-->src_screens_settings_SettingsGroup_tsx
@@ -448,11 +455,15 @@ src_screens_ventas_NuevaVenta_tsx-->src_screens_ventas_NuevaVentaLinea_tsx
 src_screens_ventas_NuevaVenta_tsx-->src_screens_ventas_SaleExpenseSheet_tsx
 src_screens_ventas_NuevaVenta_tsx-->src_screens_ventas_leaveQuestion_ts
 src_screens_ventas_NuevaVenta_tsx-->src_screens_ventas_saleLineCount_ts
+src_screens_ventas_SaleCard_tsx-->src_screens_ventas_SalePaymentChip_tsx
+src_screens_ventas_SaleCard_tsx-->src_screens_ventas_salePayment_ts
 src_screens_ventas_SaleExpenseSheet_tsx-->src_screens_expenses_ExpenseNewSheet_tsx
 src_screens_ventas_SaleExpenseSheet_tsx-->src_screens_ventas_SaleInProgressStrip_tsx
+src_screens_ventas_SalePaymentChip_tsx-->src_screens_ventas_salePayment_ts
 src_screens_ventas_VentaDetalle_tsx-->src_screens_ventas_NuevaVentaCliente_tsx
 src_screens_ventas_VentaDetalle_tsx-->src_screens_ventas_NuevaVenta_tsx
 src_screens_ventas_VentaDetalle_tsx-->src_screens_ventas_SaleBillButton_tsx
+src_screens_ventas_Ventas_tsx-->src_screens_ventas_SaleCard_tsx
 src_screens_ventas_saleLineCount_ts-->src_screens_ventas_NuevaVentaLinea_tsx
 src_screens_withdrawals_WithdrawalDetailBehind_tsx-->src_screens_withdrawals_WithdrawalFacts_tsx
 src_screens_withdrawals_WithdrawalDetail_tsx-->src_screens_withdrawals_WithdrawalFacts_tsx

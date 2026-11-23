@@ -19,6 +19,7 @@ import {
   SETTINGS_PAYMENT_METHODS,
   SETTINGS_PAYMENT_METHODS_ARCHIVED,
   SETTINGS_PRICES,
+  type Viewport,
 } from '../../routes'
 import { stubViewport } from '../../test-viewport'
 
@@ -39,9 +40,9 @@ function serve() {
   )
 }
 
-async function open(path: string) {
+async function open(path: string, viewport: Viewport = 'phone') {
   serve()
-  stubViewport('phone')
+  stubViewport(viewport)
   await act(() => router.navigate(path))
   render(<App />)
   await screen.findByRole('main')
@@ -54,8 +55,8 @@ afterEach(async () => {
   await act(() => router.navigate(HOME))
 })
 
-test('the Settings list has no Expense categories row', async () => {
-  await open(SETTINGS)
+test("the computer's Settings list has no Expense categories row", async () => {
+  await open(SETTINGS, 'computer')
 
   const list = await screen.findByRole('navigation', { name: 'Settings' })
   expect(within(list).getByRole('link', { name: 'Payments and expenses' })).toBeInTheDocument()

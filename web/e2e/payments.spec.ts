@@ -164,9 +164,13 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   // --- Deleting a sale names the grams returning to stock (sales.md, left over
   // from #20), never the debt or the credit it leaves. ---
   await page.goto(SALES)
-  const saleTwoRow = page.locator('.fila-venta').filter({ hasText: '$ 8.000' })
-  await expect(saleTwoRow.getByText('owes you')).toBeVisible()
-  await saleTwoRow.click()
+  const saleTwoCard = page
+    .locator('.sale-card')
+    .filter({ has: page.locator('.sale-card__total', { hasText: /^\$ 8\.000$/ }) })
+    .filter({ hasText: 'Carla Pérez' })
+  await expect(saleTwoCard).toHaveCount(1)
+  await expect(saleTwoCard.locator('.payment-chip')).toHaveText('Unpaid')
+  await saleTwoCard.click()
   await page.getByRole('button', { name: 'Delete sale' }).click()
   await expect(
     page.getByRole('alertdialog', {
