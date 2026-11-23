@@ -27,6 +27,11 @@ UNDERLINE_EXCEPTIONS: dict[str, str] = {
         "text-only 'Cambiar' span inside the customer row of Nueva venta: a link's look on "
         "plain text, not a control drawn as an action"
     ),
+    ".customer-search__mark": (
+        "the matched part of a customer name or phone in the customer search Sheet: a "
+        "non-interactive <mark> inside a row, never a control; the owner decided to keep "
+        "the brief's accent underline (GH-1008)"
+    ),
 }
 
 
@@ -90,3 +95,16 @@ def test_the_guard_rejects_a_base_boton_without_text_decoration_none() -> None:
     assert not base_boton_sets_no_decoration(css_rules(".boton { color: red; }"))
     assert not base_boton_sets_no_decoration(css_rules(".boton { text-decoration: underline; }"))
     assert base_boton_sets_no_decoration(css_rules(".boton { text-decoration: none; }"))
+
+
+def test_the_mark_exception_does_not_exempt_a_control_in_the_same_sheet() -> None:
+    css = """
+    .customer-search__mark { text-decoration: underline; }
+    .customer-search .boton { text-decoration: underline; }
+    .customer-search__row { box-shadow: 0 1px 0 var(--acento); }
+    .customer-search .boton--enlace { text-decoration: underline; }
+    """
+    assert underline_offenders(css_rules(css)) == [
+        ".customer-search .boton",
+        ".customer-search__row",
+    ]
