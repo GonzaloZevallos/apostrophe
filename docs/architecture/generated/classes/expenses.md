@@ -248,6 +248,7 @@ classDiagram
     amount
     category_id : int
     detail : str
+    payment_method_id : int #124; None
     spent_on : date
   }
   class ExpenseOut {
@@ -255,8 +256,14 @@ classDiagram
     category_id : int
     detail : str
     id : int
+    payment_method : ExpensePaymentMethodOut #124; None
     spent_on : date
     of(expense: Expense) 'ExpenseOut'
+  }
+  class ExpensePaymentMethodOut {
+    icon : str
+    id : int
+    name : str
   }
   class ExpenseRow {
     amount : Mapped~int~

@@ -1863,8 +1863,20 @@
             "type": "integer"
           },
           "detail": {
+            "default": "",
             "title": "Detail",
             "type": "string"
+          },
+          "payment_method_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Method Id"
           },
           "spent_on": {
             "format": "date",
@@ -1875,8 +1887,7 @@
         "required": [
           "spent_on",
           "category_id",
-          "amount",
-          "detail"
+          "amount"
         ],
         "title": "ExpenseIn",
         "type": "object"
@@ -1906,6 +1917,16 @@
             "title": "Id",
             "type": "integer"
           },
+          "payment_method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExpensePaymentMethodOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "spent_on": {
             "format": "date",
             "title": "Spent On",
@@ -1917,9 +1938,33 @@
           "spent_on",
           "category_id",
           "amount",
-          "detail"
+          "detail",
+          "payment_method"
         ],
         "title": "ExpenseOut",
+        "type": "object"
+      },
+      "ExpensePaymentMethodOut": {
+        "properties": {
+          "icon": {
+            "title": "Icon",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon"
+        ],
+        "title": "ExpensePaymentMethodOut",
         "type": "object"
       },
       "FirstRunKind": {
