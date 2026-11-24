@@ -18,6 +18,7 @@ import { businessQueryOptions } from '../../api/business'
 import type { Me } from '../../api/me'
 import { pricingSettingsQueryOptions } from '../../api/pricingSettings'
 import ContentArea from '../../components/ContentArea'
+import Icono from '../../components/Icono'
 import { useLoading } from '../../components/useLoading'
 import SettingsHomeList from './SettingsHomeList'
 
@@ -43,6 +44,21 @@ function HomeBody() {
   return (
     <div className="cuerpo ajustes-inicio__marco">
       <h1 className="ajustes-inicio__encabezado">{t('settings:home.title')}</h1>
+      <div className="ajustes-inicio-busqueda__fila">
+        <div className="ajustes-inicio-busqueda__campo">
+          <span className="ajustes-inicio-busqueda__lupa" aria-hidden="true">
+            <Icono nombre="buscar" />
+          </span>
+          <input
+            className="ajustes-inicio-busqueda__input"
+            type="search"
+            autoComplete="off"
+            enterKeyHint="search"
+            placeholder={t('settings:search.placeholder')}
+            aria-label={t('settings:search.label')}
+          />
+        </div>
+      </div>
       <div className="ajustes-inicio-tarjeta__tarjeta">
         <span className="ajustes-inicio-tarjeta__inicial">{initial}</span>
         <span className="ajustes-inicio-tarjeta__textos">

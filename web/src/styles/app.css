@@ -7863,3 +7863,52 @@ button:has(> .venta-en-curso) {
   line-height: 20px;
   color: var(--tinta2);
 }
+
+/* ===== ajustes-inicio: search field (`SettingsSearch`) ===== */
+/* A flex row under the title: the field box (magnifier, the input, the clear button), then Cancel
+ * while search is open. The input is 16 px or more so the phone does not zoom in on focus. Tokens only. */
+.ajustes-inicio-busqueda__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  margin-block: var(--espacio-md);
+}
+
+.ajustes-inicio-busqueda__campo {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  min-inline-size: 0;
+  min-block-size: var(--alto-tocable);
+  padding-inline: var(--espacio-md);
+  gap: var(--espacio-sm);
+  background-color: var(--superficie);
+  border-radius: var(--radio-campo);
+}
+
+.ajustes-inicio-busqueda__lupa {
+  display: flex;
+  flex: none;
+  color: var(--tinta2);
+}
+
+.ajustes-inicio-busqueda__input {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: var(--alto-tocable);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  font: inherit;
+  font-size: 17px;
+}
+
+.ajustes-inicio-busqueda__input::placeholder {
+  color: var(--tinta2);
+}
+
+.ajustes-inicio-busqueda__input::-webkit-search-cancel-button {
+  appearance: none;
+}
+/* ===== end ajustes-inicio: search field ===== */

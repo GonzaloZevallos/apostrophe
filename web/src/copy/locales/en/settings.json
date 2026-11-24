@@ -2,6 +2,13 @@
   "home": {
     "title": "Settings"
   },
+  "search": {
+    "placeholder": "Search settings",
+    "label": "Search settings",
+    "clear": "Clear",
+    "results_one": "{{count}} result",
+    "results_other": "{{count}} results"
+  },
   "card": {
     "users_one": "{{count}} user",
     "users_other": "{{count}} users"
