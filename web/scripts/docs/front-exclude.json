@@ -42,5 +42,6 @@
   "^src/screens/ventas/renderNuevaVentaSheet\\.tsx$",
   "^src/screens/settings/settingsRows\\.ts$",
   "^src/screens/settings/settingsSearch\\.ts$",
-  "^src/screens/settings/useSettingsSearchEntry\\.ts$"
+  "^src/screens/settings/useSettingsSearchEntry\\.ts$",
+  "^src/screens/varieties/productsSegment\\.ts$"
 ]
