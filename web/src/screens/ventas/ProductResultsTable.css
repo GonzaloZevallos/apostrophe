@@ -32,9 +32,24 @@
   text-align: left;
 }
 
+.prt__head--stock,
+.prt__cell--stock,
 .prt__head--price,
 .prt__cell--price {
   text-align: right;
+}
+
+/* The status word after the figure: words carry the status, never colour alone. */
+.prt__word {
+  margin-left: var(--espacio-sm);
+  color: var(--tinta2);
+}
+
+/* The Add column keeps a fixed width: the button inside is the touch target. */
+.prt__cell--add {
+  width: 44px;
+  padding: 0;
+  text-align: center;
 }
 
 .prt__row {
@@ -82,6 +97,16 @@
 .prt__loading {
   padding: var(--espacio-lg) var(--espacio-md);
   color: var(--tinta2);
+}
+
+.prt__state {
+  padding: var(--espacio-lg) var(--espacio-md);
+  color: var(--tinta2);
+  text-align: center;
+}
+
+.prt__state--failed {
+  color: var(--tinta);
 }
 
 .prt__help {
