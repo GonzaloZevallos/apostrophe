@@ -95,7 +95,7 @@ export default function Ventas() {
 
           {!isError && !isPending && (
             <div className="ventas__resumen">
-              <span className="ventas__rango">{`${rangeLabel(range, me.today)} · ${salesCount(sales.length)}`}</span>
+              <span className="ventas__rango">{`${rangeLabel(range, me.today)} · ${salesCount(t, sales.length)}`}</span>
               <span className="ventas__total cifra-s">{money.money(total)}</span>
             </div>
           )}

@@ -11,7 +11,9 @@
  * go through `money.signed`, the rest through `money.money` / `formatGrams`.
  */
 
+import type { TFunction } from 'i18next'
 import { useId } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { PanelPeriod, PanelTab } from '../../api/panel'
 import { salesCount } from '../../format/counts'
 import { formatGrams, type MoneyFormatter } from '../../format/money'
@@ -84,8 +86,8 @@ function listFigures(period: PanelPeriod, money: MoneyFormatter): ListFigure[] {
   ]
 }
 
-function salesSubtitle(period: PanelPeriod, money: MoneyFormatter): string {
-  const count = salesCount(period.sales_count)
+function salesSubtitle(period: PanelPeriod, money: MoneyFormatter, t: TFunction): string {
+  const count = salesCount(t, period.sales_count)
   const grams = formatGrams(period.quantity_sold)
   return period.average_sale === null
     ? `${count} · ${grams}`
@@ -94,11 +96,12 @@ function salesSubtitle(period: PanelPeriod, money: MoneyFormatter): string {
 
 function Headline({ tab, period }: { tab: PanelTab; period: PanelPeriod }) {
   const money = useMoney()
+  const { t } = useTranslation()
   return (
     <div className="panel-ventas">
       <span className="rotulo">{SALES_HEADING[tab]}</span>
       <span className="cifra-xl">{money.money(period.sales)}</span>
-      <span className="pie">{salesSubtitle(period, money)}</span>
+      <span className="pie">{salesSubtitle(period, money, t)}</span>
     </div>
   )
 }

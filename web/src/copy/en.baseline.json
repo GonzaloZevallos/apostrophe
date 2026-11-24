@@ -290,7 +290,6 @@
   {"source":"dates.ts:DATES_TEXT.oneSale","args":null,"text":"1 sale"},
   {"source":"dates.ts:DATES_TEXT.owingSuffix","args":["3 sales"],"text":"3 sales owing"},
   {"source":"dates.ts:DATES_TEXT.salesN","args":[0],"text":"0 sales"},
-  {"source":"dates.ts:DATES_TEXT.salesN","args":[1],"text":"1 sales"},
   {"source":"dates.ts:DATES_TEXT.salesN","args":[2],"text":"2 sales"},
   {"source":"dates.ts:DATES_TEXT.septiembre","args":null,"text":"September"},
   {"source":"dates.ts:LANGUAGE","args":null,"text":"en"},
