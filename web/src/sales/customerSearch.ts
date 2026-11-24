@@ -1,4 +1,4 @@
-import { foldForSearch, matchesQuery, matchRange } from '../components/selectorSearch'
+import { byFoldedName, foldForSearch, matchesQuery, matchRange } from '../components/selectorSearch'
 
 /** What the search needs from a customer; the API's `Customer` satisfies it. */
 export type SearchableCustomer = { id: number; name: string; phone_display: string | null }
@@ -37,19 +37,6 @@ function phoneRange(display: string | null, query: string): [number, number] | n
   return [start, last + 1]
 }
 
-function before(left: string, right: string): number {
-  if (left < right) return -1
-  return left > right ? 1 : 0
-}
-
-function compareCustomers(left: SearchableCustomer, right: SearchableCustomer): number {
-  return (
-    before(foldForSearch(left.name), foldForSearch(right.name)) ||
-    before(left.name, right.name) ||
-    left.id - right.id
-  )
-}
-
 /** The customers whose name holds the trimmed `query` or whose phone digits hold the query's digits.
  * A blank query matches nothing. Names that start with the query come first, the rest (phone-only
  * matches included) after; each group is alphabetical ignoring accents and capitals. */
@@ -64,7 +51,7 @@ export function matchCustomers<C extends SearchableCustomer>(customers: readonly
     if (foldForSearch(customer.name).startsWith(needle)) starting.push(customer)
     else rest.push(customer)
   }
-  return [...starting.sort(compareCustomers), ...rest.sort(compareCustomers)]
+  return [...starting.sort(byFoldedName), ...rest.sort(byFoldedName)]
 }
 
 /** The customers for `ids`, in the order of `ids`: the ids with no customer are dropped first, then

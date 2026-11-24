@@ -30,7 +30,7 @@ import { NetworkError } from '../../api/client'
 import Boton from '../../components/Boton'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import Icono from '../../components/Icono'
-import { foldForSearch, matchesQuery, matchRange } from '../../components/selectorSearch'
+import { byFoldedName, matchesQuery, matchRange } from '../../components/selectorSearch'
 import Loading, { LoadingWhile } from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
 import { formatQuantity } from '../../format/money'
@@ -125,12 +125,7 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
     if (!listed || !searching) return []
     return products
       .filter((product) => matchesQuery(product.name, query))
-      .sort((a, b) => {
-        const [x, y] = [foldForSearch(a.name), foldForSearch(b.name)]
-        if (x !== y) return x < y ? -1 : 1
-        if (a.name !== b.name) return a.name < b.name ? -1 : 1
-        return a.id - b.id
-      })
+      .sort(byFoldedName)
   }, [listed, searching, products, query])
 
   const matchPrices = useMemo(
