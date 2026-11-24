@@ -46,6 +46,11 @@
   background: var(--acento-suave);
 }
 
+/* The pressed state: a click on a row selects it, so the row answers the press. */
+.prt__row:active {
+  background: var(--linea);
+}
+
 .prt__row[aria-selected='true'] .prt__name {
   font-weight: 600;
 }
