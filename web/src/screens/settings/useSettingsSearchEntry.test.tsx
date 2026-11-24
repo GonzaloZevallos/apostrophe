@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { StrictMode, useState } from 'react'
 import { createMemoryRouter, type InitialEntry, MemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
+import { inAppState } from '../../components/inAppState'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { isSettingsSearchState, useSettingsSearchEntry } from './useSettingsSearchEntry'
 
@@ -91,7 +92,7 @@ afterEach(cleanup)
 describe('isSettingsSearchState', () => {
   test('is true only for an object whose flag is exactly true', () => {
     expect(isSettingsSearchState({ settingsSearch: true })).toBe(true)
-    expect(isSettingsSearchState({ inApp: true, settingsSearch: true })).toBe(true)
+    expect(isSettingsSearchState({ ...inAppState({ pathname: SETTINGS }), settingsSearch: true })).toBe(true)
   })
 
   test('rejects everything else', () => {
@@ -226,7 +227,7 @@ describe('useSettingsSearchEntry', () => {
 
   test('inApp and enteredFrom are kept through open, Cancel and the clean-up', async () => {
     const user = userEvent.setup()
-    const kept = { inApp: true, enteredFrom: '/home' }
+    const kept = inAppState({ pathname: '/home' }, { enteredFrom: '/home' })
     const { router } = mount([{ pathname: SETTINGS, state: kept }])
     await open(user)
     expect(router.state.location.state).toEqual({ ...kept, settingsSearch: true })
