@@ -447,15 +447,14 @@ test('an Add click on a Product already in the sale raises its line and adds no 
   )
 })
 
-test('the Add button of a No price row is disabled and a click on it adds nothing', async () => {
+test('the Add button of a No price row is aria-disabled: a click adds nothing and focus stays in the search', async () => {
   const user = userEvent.setup()
   await ready()
-  expect(addButton('Sin precio')).toBeDisabled()
-  expect(addButton('Rosa')).toBeEnabled()
+  expect(addButton('Sin precio')).toHaveAttribute('aria-disabled', 'true')
+  expect(addButton('Rosa')).toHaveAttribute('aria-disabled', 'false')
   await user.click(addButton('Sin precio'))
   expect(lines()).toEqual([])
-  // A disabled control gets no mouse event, so Add never runs: focus is the browser's to keep.
-  expect(addButton('Sin precio')).toBeDisabled()
+  expect(input()).toHaveFocus()
 })
 
 test('a click elsewhere on a row selects it without adding', async () => {

@@ -31,6 +31,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import type { Status } from '../../api/stock'
 import { AvisoCuerpo } from '../../components/AvisoAmbar'
+import Boton from '../../components/Boton'
 import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import { SALE_PRODUCT_TABLE_TEXT as TEXT } from '../../copy/sales'
 import { formatQuantity } from '../../format/money'
@@ -257,21 +258,19 @@ export default function ProductResultsTable({ draft, customerTypeId }: ProductRe
                   {row.pricing === null ? TEXT.noPrice : money.money(row.pricing.pricePerGram)}
                 </td>
                 <td role="gridcell" className="prt__cell prt__cell--add">
-                  <button
-                    type="button"
-                    className="prt__add"
+                  <Boton
+                    variant="icon"
+                    action="add"
+                    ariaLabel={TEXT.addProduct(row.name)}
                     tabIndex={-1}
-                    aria-label={TEXT.addProduct(row.name)}
-                    disabled={row.pricing === null}
+                    ariaDisabled={row.pricing === null}
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={(event) => {
                       event.stopPropagation()
                       addRow(row)
                       inputRef.current?.focus()
                     }}
-                  >
-                    <span aria-hidden="true">+</span>
-                  </button>
+                  />
                 </td>
               </ResultRow>
             )
