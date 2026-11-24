@@ -4,15 +4,14 @@ import { StrictMode, useState } from 'react'
 import { createMemoryRouter, type InitialEntry, MemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import { inAppState } from '../../components/inAppState'
+import { CUSTOMERS, SALES, SETTINGS } from '../../routes'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { isSettingsSearchState, useSettingsSearchEntry } from './useSettingsSearchEntry'
-
-const SETTINGS = '/settings'
 
 function Probe({ label }: { label: string }) {
   const { isOpen, open, close } = useSettingsSearchEntry()
   return (
-    <main>
+    <section aria-label="Settings screen">
       <h1>{label}</h1>
       <p>{isOpen ? 'search open' : 'search closed'}</p>
       <button type="button" onClick={open}>
@@ -21,7 +20,7 @@ function Probe({ label }: { label: string }) {
       <button type="button" onClick={close}>
         Cancel
       </button>
-    </main>
+    </section>
   )
 }
 
@@ -69,7 +68,7 @@ function mount(entries: InitialEntry[], options: { strict?: boolean; index?: num
   const router = createMemoryRouter(
     [
       { path: SETTINGS, element: <Screen /> },
-      { path: '/other', element: <h1>Other</h1> },
+      { path: SALES, element: <h1>Other</h1> },
     ],
     { initialEntries: entries, initialIndex: options.index ?? entries.length - 1 },
   )
@@ -152,7 +151,7 @@ describe('useSettingsSearchEntry', () => {
 
   test('Cancel with search closed does nothing', async () => {
     const user = userEvent.setup()
-    const { position } = mount([{ pathname: '/other' }, SETTINGS])
+    const { position } = mount([{ pathname: SALES }, SETTINGS])
     await cancel(user)
     expect(position).toMatchObject({ index: 1, length: 2, pops: 0 })
   })
@@ -197,7 +196,7 @@ describe('useSettingsSearchEntry', () => {
     const user = userEvent.setup()
     const { router, position } = mount([SETTINGS])
     await open(user)
-    await act(() => router.navigate('/other'))
+    await act(() => router.navigate(SALES))
     expect(screen.getByRole('heading', { name: 'Other' })).toBeInTheDocument()
 
     await act(() => router.navigate(-1))
@@ -227,7 +226,7 @@ describe('useSettingsSearchEntry', () => {
 
   test('inApp and enteredFrom are kept through open, Cancel and the clean-up', async () => {
     const user = userEvent.setup()
-    const kept = inAppState({ pathname: '/home' }, { enteredFrom: '/home' })
+    const kept = inAppState({ pathname: CUSTOMERS }, { enteredFrom: CUSTOMERS })
     const { router } = mount([{ pathname: SETTINGS, state: kept }])
     await open(user)
     expect(router.state.location.state).toEqual({ ...kept, settingsSearch: true })
@@ -236,7 +235,7 @@ describe('useSettingsSearchEntry', () => {
     expect(router.state.location.state).toEqual(kept)
 
     await open(user)
-    await act(() => router.navigate('/other'))
+    await act(() => router.navigate(SALES))
     await act(() => router.navigate(-1))
     expect(isOpen()).toBe(false)
     expect(router.state.location.state).toEqual(kept)
