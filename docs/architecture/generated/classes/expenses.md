@@ -30,6 +30,8 @@ classDiagram
   }
   class manage_expenses {
   }
+  class method_usage {
+  }
   class month {
   }
   class monthly_view {
@@ -67,6 +69,7 @@ classDiagram
   manage_expenses --> month
   manage_expenses --> monthly_view
   manage_expenses --> ports
+  method_usage --> tables
   month --> category
   monthly_view --> expense
   monthly_view --> month
@@ -281,6 +284,9 @@ classDiagram
     has_records() bool
     write_category(name: str, transaction: Transaction) int
     write_expense(category_id: int, row: GastoRow, recorded_at: datetime, today: date, transaction: Transaction) None
+  }
+  class ExpensesUsingAMethod {
+    in_use_among(method_ids: Sequence~int~) frozenset~int~
   }
   class MonthlyViewOut {
     categories : list~CategorySubtotalOut~
