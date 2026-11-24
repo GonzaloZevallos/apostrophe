@@ -65,6 +65,13 @@ export function SheetRouterProvider({
   return createElement(RouterContext.Provider, { value: router }, children)
 }
 
+/** The router `SheetRouterProvider` handed over, for a hook that reads the current location at call time. */
+export function useRouterHandle(): RouterHandle {
+  const router = useContext(RouterContext)
+  if (router === null) throw new Error('useRouterHandle needs a SheetRouterProvider')
+  return router
+}
+
 interface Book {
   keys: Record<string, number>
   pending: number | null
