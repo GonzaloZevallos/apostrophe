@@ -9,8 +9,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, test } from 'vitest'
 import { EMPTY_STATE_KEYS, EMPTY_STATE_LIMITS } from '../../src/copy/emptyStates.ts'
-import { resolveKey } from '../../src/i18n/resolve.ts'
 import { copyProblems, LIMITS, type CopyModule } from '../../src/copy/limits.ts'
+import { resolveKey } from '../../src/i18n/resolve.ts'
 import { loadBundle, LOCALES_ROOT } from './loadBundle.ts'
 
 const COPY = join(import.meta.dirname, '../../src/copy')
@@ -38,7 +38,9 @@ describe('the empty-state keys', () => {
   })
 
   test('salesUnpaid resolves to its English line', () => {
-    expect(resolveKey(en, EMPTY_STATE_KEYS.salesUnpaid)).toBe('No sales are waiting for payment in this period.')
+    expect(resolveKey(en, EMPTY_STATE_KEYS.salesUnpaid)).toBe(
+      'No sales are waiting for payment in this period.',
+    )
   })
 
   test('fit their limit in the en bundle, and the test locale never judges a limit', () => {
