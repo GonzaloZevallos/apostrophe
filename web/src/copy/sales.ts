@@ -79,6 +79,19 @@ const NEW_SALE_TEXT = {
   addProductToCollect: 'Add a product to collect',
 }
 
+/** The computer register's Product results table (`ProductResultsTable.tsx`). The Add header
+ * is visually hidden; the Add buttons and the Stock, failure and empty lines come with GH-1034. */
+export const SALE_PRODUCT_TABLE_TEXT = {
+  searchLabel: 'Search products',
+  searchPlaceholder: 'Search products',
+  columnProduct: COMMON_TEXT.variety,
+  columnPrice: 'Price',
+  columnAdd: 'Add',
+  noPrice: 'No price',
+  helpLine: '↑ ↓ to move, Enter to add.',
+  loading: 'Loading products…',
+} as const
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: OWING_HINT },
   { kind: 'help', text: NO_PRICE_HINT },
