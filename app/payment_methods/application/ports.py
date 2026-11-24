@@ -38,14 +38,15 @@ class PaymentMethods(Protocol):
     def restore(self, method_id: int) -> None: ...
 
     def delete(self, method_id: int) -> bool:
-        """False, with nothing written, when it would leave no offered method."""
+        """False, with nothing written, when it would leave no offered method. Raises
+        `InUse` when a payment or an expense still points at the method."""
         ...
 
 
 class PaymentMethodUsage(Protocol):
-    """Which methods have payments. `app/main.py` wires the adapter; the payments
-    adapter replaces the stub that answers nothing is in use
-    (docs/adr/20261111-payment-methods-by-id)."""
+    """Which of these methods any Payment or Expense of the business points at.
+    `AnyUsage` answers it from the sources `app/main.py` wires
+    (docs/adr/20261124-a-payment-method-is-in-use-when-any-payment-or-expense-points-at-it)."""
 
     def in_use_among(self, method_ids: Sequence[int]) -> frozenset[int]: ...
 
