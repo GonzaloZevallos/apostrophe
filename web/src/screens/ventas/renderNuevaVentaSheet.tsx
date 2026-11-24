@@ -11,6 +11,7 @@ import { vi } from 'vitest'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import type { CompleteSale } from '../../sales/newSalePricing'
 import type { CustomerView } from '../../sales/newSaleView'
+import { useNewSalePricing } from '../../sales/useNewSalePricing'
 import { type SaleDraftApi, useSaleDraft } from '../../sales/useSaleDraft'
 import type { Variety } from '../Variedades'
 import NuevaVentaSheet from './NuevaVentaSheet'
@@ -124,6 +125,7 @@ export function renderNuevaVentaSheet(spec: SheetCase = {}): RenderedSheet {
 
   function Host() {
     const draft = useSaleDraft({ today: TODAY })
+    const { reads, pricing } = useNewSalePricing({ state: draft.state, customer })
     const { addProduct, typeQuantity, setShipping } = draft
     useEffect(() => {
       for (const line of lines) {
@@ -139,6 +141,8 @@ export function renderNuevaVentaSheet(spec: SheetCase = {}): RenderedSheet {
       <NuevaVentaSheet
         draft={draft}
         customer={customer}
+        reads={reads}
+        pricing={pricing}
         onClose={onClose}
         onChangeCustomer={onChangeCustomer}
         onCollect={onCollect}

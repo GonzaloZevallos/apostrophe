@@ -16,9 +16,6 @@
   "^src/screens/analisis/rowOf\\.ts$",
   "^src/screens/stubFetchWithSettings\\.ts$",
   "^src/screens/ventas/lineProduct\\.ts$",
-  "^src/screens/ventas/SalePaymentChip\\.tsx$",
-  "^src/screens/ventas/SaleCard\\.tsx$",
-  "^src/screens/ventas/salePayment\\.ts$",
   "^src/screens/ventas/saleWith\\.ts$",
   "^src/screens/ventas/NewSaleSheetHost\\.tsx$",
   "^src/i18n/switchFixture\\.ts$",
@@ -37,11 +34,11 @@
   "^src/sales/useNewSaleReads\\.ts$",
   "^src/screens/ventas/NuevaVentaProductos\\.tsx$",
   "^src/sales/newSalePricing\\.ts$",
+  "^src/sales/useNewSalePricing\\.ts$",
   "^src/sales/newSaleView\\.ts$",
   "^src/screens/ventas/CollectSheet\\.tsx$",
   "^src/screens/ventas/CustomerSearchSheet\\.tsx$",
   "^src/screens/ventas/NuevaVentaSheet\\.tsx$",
   "^src/screens/ventas/renderNuevaVentaSheet\\.tsx$",
-  "^src/screens/settings/settingsRows\\.ts$",
-  "^src/screens/settings/SettingsHomeList\\.tsx$"
+  "^src/screens/settings/settingsRows\\.ts$"
 ]

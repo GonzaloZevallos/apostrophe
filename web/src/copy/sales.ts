@@ -210,7 +210,6 @@ export const SALES_TEXT = {
   deleteSale: 'Delete sale',
   from: 'From',
   to: 'To',
-  owesYou: 'owes you',
   addAtLeastOne: 'Add at least one product.',
   pickHowPaid: 'Pick how it was paid, or leave the sale owing',
   /** `zero` is the business's zero amount written attached to its symbol (`useMoney().attached(0)`). */

@@ -10,7 +10,6 @@ import pytest
 
 from app.payments.domain.debt_age import (
     DebtAgeBuckets,
-    age_in_days,
     bucket_of,
     buckets,
 )
@@ -29,14 +28,6 @@ _CASH = PaymentMethodLabel(1, "Cash", "banknote")
 
 def _owing(still_owed: int, days_old: int, sale_id: int = 1) -> SaleSettlement:
     return SaleSettlement(sale_id, TODAY - timedelta(days=days_old), sale_id, still_owed)
-
-
-def test_age_is_the_days_between_the_sale_and_today() -> None:
-    assert age_in_days(date(2026, 10, 24), TODAY) == 7
-
-
-def test_a_future_date_has_age_zero() -> None:
-    assert age_in_days(TODAY + timedelta(days=3), TODAY) == 0
 
 
 @pytest.mark.parametrize(

@@ -31,6 +31,7 @@ import { SheetLevel, SheetStackProvider, useSheet, useSheetDepthReader } from '.
 import type { CompleteSale } from '../../sales/newSalePricing'
 import { type ChosenCustomer, customerViewOf } from '../../sales/newSaleView'
 import { isDirty } from '../../sales/saleDraft'
+import { useNewSalePricing } from '../../sales/useNewSalePricing'
 import { useSaleDraft } from '../../sales/useSaleDraft'
 import { useUndoSale } from '../../sales/useUndoSale'
 import { parentOf } from '../../routes'
@@ -100,6 +101,7 @@ function NewSaleSheetBody({ onSaved }: NewSaleSheetHostProps) {
       ? null
       : { ...chosen, typeName: types.data?.find((type) => type.id === chosen.typeId)?.name ?? null }
   const customer = customerViewOf(draft.state.customerId, chosenView)
+  const { reads, pricing } = useNewSalePricing({ state: draft.state, customer })
 
   function onChosen(picked: Customer | null): void {
     if (picked === null) {
@@ -175,6 +177,8 @@ function NewSaleSheetBody({ onSaved }: NewSaleSheetHostProps) {
       <NuevaVentaSheet
         draft={draft}
         customer={customer}
+        reads={reads}
+        pricing={pricing}
         onClose={close}
         onChangeCustomer={() => ask({ kind: 'customer' })}
         onCollect={(sale) => ask({ kind: 'collect', priced: sale })}

@@ -133,8 +133,8 @@ El contenedor `web/src/screens/ventas/NuevaVentaSheet.tsx` (parte 2 de GH-864), 
 
 ### Lecturas y cifras
 
-- Lee con `useNewSaleReads({ date: draft.state.date, openedOn: draft.state.openedOn })`, las mismas lecturas que la lista de Products (ver "Lista de Products de New sale").
-- Corre `pricedSaleOf` una sola vez por render, en un `useMemo`, con el Money format de `useMoney`. Toda cifra que muestra sale de ahí; el componente no hace ninguna operación de dinero ni llama a `priceSale`.
+- Recibe las lecturas y el precio como props (`reads` y `pricing`) de `useNewSalePricing` (`web/src/sales/useNewSalePricing.ts`), que llama su anfitrión; la Sheet no llama ni `useNewSaleReads` ni `pricedSaleOf`. El hook lee con `useNewSaleReads({ date: draft.state.date, openedOn: draft.state.openedOn })`, las mismas lecturas que la lista de Products (ver "Lista de Products de New sale").
+- El hook corre `pricedSaleOf` una sola vez por render, en un `useMemo`, con el Money format de `useMoney`, y guarda el último nombre conocido de cada Product (`nameOf`), así un Product que la fecha nueva ya no lista conserva su nombre. Toda cifra que muestra la Sheet sale de ahí; el componente no hace ninguna operación de dinero ni llama a `priceSale`.
 - El estado de la barra lo decide solo `saleBarState`, y la línea de precios de la fila solo `customerPriceLineOf`, las dos funciones puras de `web/src/sales/newSaleView.ts`.
 - La Sheet cuenta como tocada (`touched`) exactamente cuando `isDirty(draft.state)`, es decir con al menos una línea, y por ningún otro motivo.
 

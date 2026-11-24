@@ -196,7 +196,7 @@ describe('findActionLinks', () => {
   })
 
   test('accepts a row link with no icon', () => {
-    const content = '<InAppLink to={X} className="fila-venta"><span>t</span></InAppLink>'
+    const content = '<InAppLink to={X} className="sale-card"><span>t</span></InAppLink>'
     expect(findActionLinks(at(content))).toEqual([])
   })
 
@@ -224,7 +224,7 @@ describe('findActionLinks', () => {
   })
 
   test('accepts a row whose only icon is the trailing chevron, and rejects one that also draws another icon', () => {
-    const row = '<InAppLink to={A} className="fila-venta"><span>t</span><Icono nombre="chevron" /></InAppLink>'
+    const row = '<InAppLink to={A} className="sale-card"><span>t</span><Icono nombre="chevron" /></InAppLink>'
     expect(findActionLinks(at(row))).toEqual([])
     const action = '<InAppLink to={A}><Icono nombre="agregar" /><Icono nombre="chevron" /></InAppLink>'
     expect(findActionLinks(at(action))).toEqual([offence('{A}')])
@@ -248,8 +248,8 @@ describe('findActionLinks', () => {
       expect(findActionLinks(at(link(body)))).toEqual([offence('{A}')])
     })
 
-    test('accepts the Ventas row shape split over lines', () => {
-      const row = `<InAppLink to={A} className="fila-venta">\n  <span>t</span>{' '}\n    ${chevron}\n  </InAppLink>`
+    test('accepts a record row split over lines', () => {
+      const row = `<InAppLink to={A} className="sale-card">\n  <span>t</span>{' '}\n    ${chevron}\n  </InAppLink>`
       expect(findActionLinks(at(row))).toEqual([])
     })
 

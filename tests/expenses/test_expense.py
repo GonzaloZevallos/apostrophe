@@ -10,7 +10,9 @@ from app.expenses.domain.expense import (
     InvalidAmount,
     InvalidDetail,
     InvalidExpenseDate,
+    PaymentMethodMismatch,
 )
+from app.shared.payment_method import PaymentMethodId, PaymentMethodLabel
 
 TODAY = date(2026, 10, 2)
 RECORDED_AT = datetime(2026, 10, 2, 18, 0, tzinfo=UTC)
@@ -62,9 +64,8 @@ def test_an_amount_at_the_maximum_is_accepted() -> None:
 
 
 @pytest.mark.parametrize("detail", ["", "   "])
-def test_a_blank_detail_is_refused(detail: str) -> None:
-    with pytest.raises(InvalidDetail, match="a detail is required"):
-        _expense(detail=detail)
+def test_a_blank_detail_becomes_the_empty_string(detail: str) -> None:
+    assert _expense(detail=detail).detail == ""
 
 
 def test_a_detail_is_trimmed() -> None:
@@ -90,3 +91,40 @@ def test_editing_keeps_the_id_and_the_original_recorded_at() -> None:
     assert edited.id == 7
     assert edited.recorded_at == created.recorded_at
     assert edited.category_id == 2
+
+
+def test_a_method_given_to_of_is_kept() -> None:
+    expense = Expense.of(
+        TODAY, 1, 1_000, "x", TODAY, RECORDED_AT, payment_method=PaymentMethodId(3)
+    )
+
+    assert expense.payment_method == PaymentMethodId(3)
+    assert expense.payment_method_label is None
+
+
+def test_an_expense_has_no_method_by_default() -> None:
+    assert _expense().payment_method is None
+
+
+def _built(payment_method: PaymentMethodId | None, label: PaymentMethodLabel | None) -> Expense:
+    return Expense(TODAY, 1, 1_000, "x", RECORDED_AT, 1, payment_method, label)
+
+
+def test_a_label_matching_the_stored_id_is_accepted() -> None:
+    label = PaymentMethodLabel(3, "Efectivo", "cash")
+
+    assert _built(PaymentMethodId(3), label).payment_method_label == label
+
+
+def test_a_label_without_an_id_is_refused() -> None:
+    with pytest.raises(PaymentMethodMismatch) as raised:
+        _built(None, PaymentMethodLabel(3, "Efectivo", "cash"))
+
+    assert raised.value.code == "expense.payment_method_mismatch"
+
+
+def test_a_label_of_another_id_is_refused() -> None:
+    with pytest.raises(PaymentMethodMismatch) as raised:
+        _built(PaymentMethodId(4), PaymentMethodLabel(3, "Efectivo", "cash"))
+
+    assert raised.value.code == "expense.payment_method_mismatch"

@@ -102,3 +102,67 @@ export function pricedLineOf(input: {
   if (priced === undefined) throw new Error('priceSale answered no line for the product')
   return priced
 }
+
+/** What Collect can do with the sale: the one place that decides it. Checked in this order: not ready is
+ * `loading`; any line whose `pricing` is `null` is `unpriced` (whatever the shipping text); a shipping the
+ * save cannot read is `shippingInvalid`; otherwise `ready` with the sale the save takes. */
+export type CollectState =
+  | { kind: 'loading' }
+  | { kind: 'unpriced'; lines: readonly { id: number; name: string }[] }
+  | { kind: 'shippingInvalid' }
+  | { kind: 'ready'; sale: CompleteSale }
+
+/** A line has no price only when its `pricing` is `null`: a Gift or a Special price line is never judged
+ * by those fields here. `nameOf` gives the product's name for the id of each unpriced line, in draft order
+ * (a draft line's id is its product id as text, `saleLineInputsOf`). */
+export function collectStateOf(pricing: NewSalePricing, nameOf: (id: number) => string): CollectState {
+  if (pricing.kind === 'notReady') return { kind: 'loading' }
+  const lines = pricing.sale.lines
+    .filter((line) => line.pricing === null)
+    .map((line) => ({ id: Number(line.id), name: nameOf(Number(line.id)) }))
+  if (lines.length > 0) return { kind: 'unpriced', lines }
+  if (pricing.complete === null) return { kind: 'shippingInvalid' }
+  return { kind: 'ready', sale: pricing.complete }
+}
+
+export type CollectFigure = { kind: 'loading' } | { kind: 'none' } | { kind: 'total'; total: number }
+
+export interface CollectView {
+  figure: CollectFigure
+  warnings: readonly { id: number; name: string }[]
+  /** Set only when the sale is ready and both the date and the total differ from the snapshot's. */
+  note: { date: string; oldTotal: number; newTotal: number } | null
+  canSend: boolean
+}
+
+/** What Collect shows and whether it can send, all read from the one `collectState`. `snapshot` is the
+ * date and total Collect opened with. */
+export function collectViewOf(input: {
+  collectState: CollectState
+  snapshot: { date: string; total: number }
+  date: string
+}): CollectView {
+  const { collectState, snapshot, date } = input
+  switch (collectState.kind) {
+    case 'loading':
+      return { figure: { kind: 'loading' }, warnings: [], note: null, canSend: false }
+    case 'unpriced':
+      return { figure: { kind: 'none' }, warnings: collectState.lines, note: null, canSend: false }
+    case 'shippingInvalid':
+      return { figure: { kind: 'none' }, warnings: [], note: null, canSend: false }
+    case 'ready': {
+      const total = collectState.sale.totals.total
+      const changed = date !== snapshot.date && total !== snapshot.total
+      return {
+        figure: { kind: 'total', total },
+        warnings: [],
+        note: changed ? { date, oldTotal: snapshot.total, newTotal: total } : null,
+        canSend: true,
+      }
+    }
+    default: {
+      const unreachable: never = collectState
+      return unreachable
+    }
+  }
+}

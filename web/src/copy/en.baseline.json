@@ -663,7 +663,6 @@
   {"source":"sales.ts:SALES_TEXT.noCustomer","args":null,"text":"No customer"},
   {"source":"sales.ts:SALES_TEXT.noVariety","args":null,"text":"No product"},
   {"source":"sales.ts:SALES_TEXT.noteTooLong","args":null,"text":"The note is too long"},
-  {"source":"sales.ts:SALES_TEXT.owesYou","args":null,"text":"owes you"},
   {"source":"sales.ts:SALES_TEXT.paid","args":null,"text":"paid"},
   {"source":"sales.ts:SALES_TEXT.perGram","args":null,"text":" per gram"},
   {"source":"sales.ts:SALES_TEXT.pickCustomer","args":null,"text":"Pick a customer"},

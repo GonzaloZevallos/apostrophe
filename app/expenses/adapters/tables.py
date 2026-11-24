@@ -54,8 +54,5 @@ class ExpenseRow(Base):
     detail: Mapped[str] = mapped_column(String(DETAIL_MAX_LENGTH))
     # Set once at creation from the injected clock; never changed by an edit.
     recorded_at: Mapped[datetime] = mapped_column(UtcDateTime)
-    # How the expense was paid, in the same business; NULL for every expense recorded
-    # before the column existed. Nothing reads or writes it yet, so it is deferred: an
-    # `ExpenseRow` loaded over a schema older than 0034 (migration 0028's round-trip test
-    # reads one) does not select a column that is not there. Part 2 of GH-837 undefers it.
-    payment_method_id: Mapped[int | None] = mapped_column(deferred=True)
+    # How the expense was paid, in the same business; NULL when none.
+    payment_method_id: Mapped[int | None] = mapped_column()

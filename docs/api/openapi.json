@@ -1863,8 +1863,20 @@
             "type": "integer"
           },
           "detail": {
+            "default": "",
             "title": "Detail",
             "type": "string"
+          },
+          "payment_method_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Method Id"
           },
           "spent_on": {
             "format": "date",
@@ -1875,8 +1887,7 @@
         "required": [
           "spent_on",
           "category_id",
-          "amount",
-          "detail"
+          "amount"
         ],
         "title": "ExpenseIn",
         "type": "object"
@@ -1906,6 +1917,16 @@
             "title": "Id",
             "type": "integer"
           },
+          "payment_method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExpensePaymentMethodOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "spent_on": {
             "format": "date",
             "title": "Spent On",
@@ -1917,9 +1938,33 @@
           "spent_on",
           "category_id",
           "amount",
-          "detail"
+          "detail",
+          "payment_method"
         ],
         "title": "ExpenseOut",
+        "type": "object"
+      },
+      "ExpensePaymentMethodOut": {
+        "properties": {
+          "icon": {
+            "title": "Icon",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon"
+        ],
+        "title": "ExpensePaymentMethodOut",
         "type": "object"
       },
       "FirstRunKind": {
@@ -2654,6 +2699,109 @@
         ],
         "title": "Origin",
         "type": "string"
+      },
+      "OwedDebtorOut": {
+        "description": "One of the oldest debtors on the panel: the only schema that carries a Customer's\nstored `phone` (`null` when it has none).",
+        "properties": {
+          "age_days": {
+            "title": "Age Days",
+            "type": "integer"
+          },
+          "age_level": {
+            "enum": [
+              "none",
+              "warning",
+              "overdue"
+            ],
+            "title": "Age Level",
+            "type": "string"
+          },
+          "balance": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Balance"
+          },
+          "customer_id": {
+            "title": "Customer Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "owing_since": {
+            "format": "date",
+            "title": "Owing Since",
+            "type": "string"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "required": [
+          "customer_id",
+          "name",
+          "balance",
+          "owing_since",
+          "age_days",
+          "age_level",
+          "phone"
+        ],
+        "title": "OwedDebtorOut",
+        "type": "object"
+      },
+      "OwedOut": {
+        "description": "What the debts block already reports (`total_owed`, `sales_owing_count`), the\nnumber of Customers owing and the oldest few of them, never `null`.",
+        "properties": {
+          "debtor_count": {
+            "title": "Debtor Count",
+            "type": "integer"
+          },
+          "debtors": {
+            "items": {
+              "$ref": "#/components/schemas/OwedDebtorOut"
+            },
+            "title": "Debtors",
+            "type": "array"
+          },
+          "sales_owing_count": {
+            "title": "Sales Owing Count",
+            "type": "integer"
+          },
+          "total_owed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total Owed"
+          }
+        },
+        "required": [
+          "total_owed",
+          "debtor_count",
+          "sales_owing_count",
+          "debtors"
+        ],
+        "title": "OwedOut",
+        "type": "object"
       },
       "OwingIn": {
         "properties": {
@@ -5365,6 +5513,9 @@
           "month_profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
           },
+          "owed": {
+            "$ref": "#/components/schemas/OwedOut"
+          },
           "sales": {
             "anyOf": [
               {
@@ -5405,7 +5556,8 @@
           "money_in",
           "low_stock",
           "best_sellers",
-          "month_profit"
+          "month_profit",
+          "owed"
         ],
         "title": "TodayOut",
         "type": "object"

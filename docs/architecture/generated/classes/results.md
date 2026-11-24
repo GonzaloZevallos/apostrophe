@@ -220,6 +220,21 @@ classDiagram
     shortfall : RowCost #124; None
     withdrawals : tuple~ReasonCost, ...~
   }
+  class OwedRow {
+    age_days : int
+    age_level : Literal
+    balance : int
+    customer_id : int
+    name : str
+    owing_since : date
+    phone : str #124; None
+  }
+  class OwedSummary {
+    debtor_count : int
+    debtors : tuple~OwedRow, ...~
+    sales_owing_count : int
+    total_owed : int
+  }
   class PaymentMethodMissing {
   }
   class PaymentMethodRecord {
@@ -334,6 +349,11 @@ classDiagram
     sales_of_costed : int
     sales_without_shipping : int
   }
+  class _DebtsRead {
+    debtors : Sequence~_OwedDebt~
+    sales_owing_count : int
+    total_owed : int
+  }
   class _LowStockRow {
     days_left : int #124; None
     name : str
@@ -350,6 +370,13 @@ classDiagram
   class _NamedVariety {
     name : str
     variety_id : int
+  }
+  class _OwedDebt {
+    balance : int
+    customer_id : int
+    name : str
+    owing_since : date
+    phone : str #124; None
   }
   class _VarietyDayTotals {
     costed_cost : int
@@ -487,6 +514,7 @@ classDiagram
     low_stock : LowStock~StockRow~
     money_in : MoneyIn
     month_profit : AmountWithPending
+    owed : OwedSummary
     sales : int
     sales_count : int
     so_far : int
@@ -623,6 +651,23 @@ classDiagram
     shortfall : RowCostOut #124; None
     withdrawals : list~ReasonCostOut~
   }
+  class OwedDebtorOut {
+    age_days : int
+    age_level : Literal
+    balance
+    customer_id : int
+    name : str
+    owing_since : date
+    phone : str #124; None
+    of(row: OwedRow) OwedDebtorOut
+  }
+  class OwedOut {
+    debtor_count : int
+    debtors : list~OwedDebtorOut~
+    sales_owing_count : int
+    total_owed
+    of(summary: OwedSummary) OwedOut
+  }
   class PanelOut {
     debts
     periods
@@ -706,6 +751,7 @@ classDiagram
     low_stock
     money_in
     month_profit
+    owed
     sales
     sales_count : int
     so_far
@@ -748,6 +794,7 @@ classDiagram
   TodayOut --> AmountWithPendingOut : month_profit
   TodayOut --> LowStockOut : low_stock
   TodayOut --> MoneyInOut : money_in
+  TodayOut --> OwedOut : owed
   WeekOut --> AmountWithPendingOut : profit
   WeekOut --> RowCostOut : cost_of_goods
 ```

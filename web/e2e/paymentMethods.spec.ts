@@ -11,13 +11,14 @@ import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, HOME, SALE_NEW, SETTINGS_PAYMENT_MET
 import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { fillSaleLine } from './helpers/sale.js'
 import { settingsEntry } from './helpers/chrome.js'
+import { settingsShortcut } from './helpers/settingsHome.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { expectToast } from './helpers/toast.js'
 import { expectPath } from './helpers/url.js'
 
 test.use({ viewport: { width: 390, height: 844 } })
 
-const TAP_BUDGET_TO_THE_LIST = 3
+const TAP_BUDGET_TO_THE_LIST = 2
 
 interface Counter {
   taps: number
@@ -59,12 +60,11 @@ test('a seller adds, edits, deletes, archives and restores payment methods in Se
   await choosePaymentMethod(page, 'Cash')
   await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
 
-  // Settings → Payments and expenses → Payment methods: three taps from a Tab root.
+  // Settings → the Payment methods shortcut: two taps from a Tab root (the avatar, then the shortcut).
   await page.goto(HOME)
   const counter: Counter = { taps: 0 }
   await tap(counter, settingsEntry(page))
-  await tap(counter, page.getByRole('link', { name: /^Payments and expenses/ }))
-  await tap(counter, page.getByRole('link', { name: /^Payment methods/ }))
+  await tap(counter, settingsShortcut(page, 'Payment methods'))
   await expectPath(page, SETTINGS_PAYMENT_METHODS)
   expect(counter.taps).toBeLessThanOrEqual(TAP_BUDGET_TO_THE_LIST)
 

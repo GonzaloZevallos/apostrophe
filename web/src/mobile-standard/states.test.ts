@@ -14,7 +14,10 @@ import { SALES_TEXT } from '../copy/sales.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
 import { NO_PRICE_HINT } from '../copy/sales.ts'
 import { DAY_BEFORE_PIN } from './pin.ts'
-import { EXPENSE_RECORDED, SALE_IN_PROGRESS_LINE } from './statesSales.ts'
+import { EXPENSE_RECORDED, SALE_IN_PROGRESS_LINE, UNKNOWN_PAYMENT_SALES } from './statesSales.ts'
+import type { Sale } from '../api/sales.ts'
+import { moneyFormatter } from '../format/money.ts'
+import { paymentView } from '../screens/ventas/salePayment.ts'
 
 describe('the walked states name no key yet', () => {
   it('has no key-shaped click, press, wait or fill.label in any state', () => {
@@ -89,12 +92,13 @@ describe('a state that lists its offenders as a registry row', () => {
     expect(offendersAsProblems(STATES, rows)).toEqual([])
   })
 
-  it('is only the New sale states whose page the walk ends on, as NuevaVenta, the cleared Customers search and the Customers notice state, as Clientes', () => {
+  it('is only the New sale states whose page the walk ends on, as NuevaVenta, the unknown-payment Sales list, as Ventas, the cleared Customers search and the Customers notice state, as Clientes', () => {
     const borrowing = STATES.filter((state) => state.offendersAs !== undefined)
     expect(borrowing.map((state) => [state.screen, state.offendersAs])).toEqual([
       ['new-sale/nothing-priced', 'NuevaVenta'],
       ['new-sale/date-change-refetching', 'NuevaVenta'],
       ['sale/expense-returned', 'NuevaVenta'],
+      ['sales/unknown-payment', 'Ventas'],
       ['customer/search-cleared-to-all', 'Clientes'],
       ['ClientesSinCifras', 'Clientes'],
     ])
@@ -262,5 +266,36 @@ describe('the walked states of an expense over a sale in progress', () => {
     for (const name of ['sale/expense-strip', 'sale/expense-returned']) {
       expect(state(name).visible, name).not.toMatch(/loading|saving|…/i)
     }
+  })
+})
+
+describe('the walked state sales/unknown-payment', () => {
+  it('stubs one sale for each way the chip can read, so the degraded line is really visited', () => {
+    const money = moneyFormatter({ symbol: '$', decimals: 0 })
+    const variants = UNKNOWN_PAYMENT_SALES.map((row) => paymentView(row.payment_state, row.still_owed, money).variant)
+    expect([...variants].sort()).toEqual(['paid', 'part_paid', 'unknown', 'unpaid'])
+  })
+
+  it('holds rows the real Sale type accepts, so the stub cannot drift from the API', () => {
+    const rows = UNKNOWN_PAYMENT_SALES satisfies readonly Sale[]
+    expect(rows).toHaveLength(4)
+  })
+
+  it('gives each stub sale its own customer name, so a name finds one card', () => {
+    const names = UNKNOWN_PAYMENT_SALES.map((row) => row.customer.name)
+    expect(new Set(names).size).toBe(names.length)
+  })
+
+  it('keeps each row\'s still_owing and payment in agreement with its payment pair', () => {
+    for (const row of UNKNOWN_PAYMENT_SALES) {
+      expect(row.still_owing, row.customer.name).toBe(row.payment_state !== 'paid')
+      expect(row.payment, row.customer.name).toBe(row.payment_state === 'paid' ? 'paid' : 'owing')
+    }
+  })
+
+  it('refuses a row read as the unknown line when its pair is not null (rejects a wrong reading)', () => {
+    const money = moneyFormatter({ symbol: '$', decimals: 0 })
+    expect(paymentView('part_paid', null, money).variant).toBe('unknown')
+    expect(paymentView('part_paid', 0, money).variant).toBe('unknown')
   })
 })

@@ -121,7 +121,7 @@ _Avoid_: collection, settlement, receipt, abono
 _In the app_: Payment
 
 **Payment method**:
-Una forma en que le pagan a un Business, de su lista propia: un nombre único en el Business (sin importar mayúsculas ni espacios, archivados incluidos, hasta 60 caracteres), un ícono de un conjunto fijo y neutro y una posición. Todo Business arranca con "Cash" y "Transfer", medios comunes que se renombran, reordenan, archivan o eliminan como cualquiera; uno con Payments solo se archiva, y el último ofrecido no se puede sacar. Un Payment apunta a su medio por id, así que muestra su nombre actual (ADR-20261111-payment-methods-by-id). _In the app_: Payment method.
+Una forma en que le pagan a un Business, de su lista propia: un nombre único en el Business (sin importar mayúsculas ni espacios, archivados incluidos, hasta 60 caracteres), un ícono de un conjunto fijo y neutro y una posición. Todo Business arranca con "Cash" y "Transfer", medios comunes que se renombran, reordenan, archivan o eliminan como cualquiera; uno con Payments o con Expenses solo se archiva, y el último ofrecido no se puede sacar. Un Payment o una Expense (opcional, GH-837) apunta a su medio por id, así que muestra su nombre actual aunque el medio se archive después (ADR-20261111-payment-methods-by-id); elegir un medio archivado se rechaza, conservar el que ya tiene no. _In the app_: Payment method.
 _Avoid_: payment type, channel, Owing, paid later
 
 **Balance**:
@@ -184,7 +184,7 @@ _In the app_: Cost of goods sold
 _Avoid_: COGS, average cost, cost per gram
 
 **Expense**:
-Dinero que sale por algo que no es una Purchase, archivado bajo una Expense category. Lo que se compra para el Stock es una Purchase, nunca una Expense.
+Dinero que sale por algo que no es una Purchase, archivado bajo una Expense category, con un detalle opcional (uno en blanco se guarda vacío) y, opcionalmente, uno de los Payment methods del Business, guardado por id para mostrar siempre su nombre actual. Lo que se compra para el Stock es una Purchase, nunca una Expense, y su medio no cambia ningún total. _In the app_: Expense.
 _Avoid_: cost, outflow, bill
 _In the app_: Expense
 
@@ -281,8 +281,8 @@ Un Balance menor que cero, que queda solo cuando se elimina una Sale que unos Pa
 _Avoid_: refund, saldo a favor, overpayment
 
 **Sales still owing**:
-Toda Sale de un Business que no está pagada por completo una vez que se aplica el Settlement, las pagadas en parte incluidas, cada una contada una sola vez. Desde la parte 1 de GH-831 su conteo se muestra solo en el bloque "Owed to you" de Home y como "owes you" en Sales; Customers ya no lo muestra. _In the app_: owes you (en Sales) y la línea del conteo del bloque "Owed to you" de Home.
-_Avoid_: unpaid orders, pending sales, open invoices
+Toda Sale de un Business que no está pagada por completo una vez que se aplica el Settlement, las pagadas en parte incluidas, cada una contada una sola vez. Su conteo se muestra solo en el bloque "Owed to you" de Home: desde #1020 la lista de Sales ya no muestra la marca "owes you", y Customers no lo muestra desde la parte 1 de GH-831. _In the app_: la línea del conteo del bloque "Owed to you" de Home.
+_Avoid_: unpaid orders, pending sales, open invoices, owes you
 
 **Total owed**:
 La suma del Balance de cada Customer mayor que $0 en un Business; los Credits nunca la restan. Se muestra en la vista "Owed to you" de Customers cuando alguien debe, y en el bloque "Owed to you" de Home. _In the app_: la cifra de la vista "Owed to you" de Customers y el título del bloque "Owed to you" de Home.
@@ -395,8 +395,8 @@ Una pantalla principal de una pestaña: Home, Sales, Customers, Products y Analy
 _Avoid_: home, main screen, section, More
 
 **Settings**:
-El único lugar que reúne cada configuración de todo el Business, en grupos: Business (con sus Withdrawal reasons y su Currency and decimals), Users, Prices, Payments and expenses (con sus Payment methods y, debajo, sus Expense categories), Integrations, Catalog message, Appearance y Your account. La configuración de un solo Product vive en el Product, nunca acá, y nada del Operator está acá. _In the app_: Settings.
-_Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
+El único lugar que reúne cada configuración de todo el Business. Sus filas y sus atajos salen solo del registro `settingsRows.ts`. En el celular abre con una tarjeta de solo lectura del Business (inicial, nombre y cantidad de Users) y tres atajos (Prices, Payment methods, Integrations), y sigue con cinco grupos con encabezado: Business, Catalog, Payments and stock, Channels, y Team and app. En la computadora conserva su lista de siempre, y la configuración de un solo Product vive en el Product, nunca acá. _In the app_: Settings.
+_Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group), menu
 
 **Onboarding**:
 La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo. Tiene dos pasos obligatorios (un Product con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories); nunca pregunta cómo se llama lo que vende el Business ni pide una Unit, y no pone ningún aviso en Home. Retoma donde quedó solo cuando se vuelve por su propia entrada (el aterrizaje tras la Invitation o la dirección `/onboarding`), termina para siempre al llegar a su pantalla "Done" o cuando un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.
@@ -637,8 +637,8 @@ Los Payments con fecha de hoy de un Business, On-the-spot payments y posteriores
 _Avoid_: income, revenue, collections, takings, cobrado, Cash, cash in hand
 
 **Payment state**:
-Cómo está pagada una Sale: pagada (paid), pagada en parte (part_paid) o sin pagar (unpaid), junto con lo que todavía se debe de ella (`still_owed`), exactamente lo que da el Settlement. Lo calcula una sola regla de dominio, `payment_state`, y nunca se guarda; una Sale cuyos hechos de pago no se pueden conciliar no tiene ninguno. Lo muestra el chip de pago de una Sale (payment-state.md), que nunca lo vuelve a calcular y muestra "Payment cannot be shown" cuando falta o cuando una pagada en parte no tiene un monto adeudado mayor que 0. _In the app_: Paid, Unpaid, Part-paid · {amount} owed, Payment cannot be shown (en ninguna pantalla hasta #928).
-_Avoid_: status, payment status, settled, paid flag, estado de cobro
+Cómo está pagada una Sale: pagada (paid), pagada en parte (part_paid) o sin pagar (unpaid), junto con lo que todavía se debe de ella (`still_owed`), exactamente lo que da el Settlement. Lo calcula una sola regla de dominio, `payment_state`, y nunca se guarda; una Sale cuyos hechos de pago no se pueden conciliar no tiene ninguno. Lo muestra el chip de pago de cada tarjeta de la lista de Sales desde #1020 (payment-state.md), que nunca lo vuelve a calcular y muestra "Payment can't be shown" cuando falta o cuando una pagada en parte no tiene un monto adeudado mayor que 0. _In the app_: Paid, Unpaid, Part-paid · {amount} owed, Payment can't be shown.
+_Avoid_: status, payment status, settled, paid flag, estado de cobro, owes you
 
 **Best sellers**:
 Hasta 4 Products de un Business con más plata cobrada en las Sales con fecha desde el lunes de la semana en curso hasta hoy: la suma de los totales guardados de sus Sale lines, sin envío y con los Gifts en $0. Se dejan afuera los de $0, los empates van por nombre, entran los Archived y los Hidden products, y nunca se completa con otra semana. En la app: todavía no tiene palabra propia (la muestran partes posteriores de GH-497).

@@ -4,6 +4,7 @@ category, each with its subtotal and the expenses filed under it.
 The total and every subtotal are summed here, from the expenses the repository
 returns for the month; no SQL aggregate computes an amount. A category with no
 expenses that month is left out, and the categories that remain are sorted by name.
+Each expense carries its Payment method label, read by the repository; no total reads it.
 """
 
 from __future__ import annotations

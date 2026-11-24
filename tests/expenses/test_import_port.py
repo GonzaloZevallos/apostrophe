@@ -13,6 +13,7 @@ from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.expenses.adapters.import_port import ExpensesImport
+from app.expenses.domain.expense import InvalidDetail
 from app.spreadsheet_import.application.no_commit import NoCommit
 from app.spreadsheet_import.application.ports import Refusal
 from app.spreadsheet_import.domain.rows import GastoRow, SheetRef
@@ -153,13 +154,16 @@ def test_check_expense_refuses_an_amount_at_or_below_zero(
     assert isinstance(result, Refusal)
 
 
-def test_check_expense_refuses_a_blank_detail(client: TestClient, engine: Engine) -> None:
+def test_check_expense_refuses_a_whitespace_only_detail_and_writes_nothing(
+    client: TestClient, engine: Engine
+) -> None:
     with Session(engine) as session:
         port = ExpensesImport(session, BUSINESS_ID)
 
-        result = port.check_expense(_row(detail="   "), TODAY)
+        results = [port.check_expense(_row(detail=blank), TODAY) for blank in ("", "   ", " \t ")]
 
-    assert isinstance(result, Refusal)
+        assert results == [Refusal(InvalidDetail.code)] * 3
+        assert port.has_records() is False
 
 
 def test_check_expense_refuses_a_detail_over_the_limit(client: TestClient, engine: Engine) -> None:

@@ -71,6 +71,7 @@ export const STATE_NAMES: readonly string[] = [
   'CobroBorrar',
   'customer/card-with-bar',
   'VentasFechas',
+  'sales/unknown-payment',
   // Getting in and the shared Estados (`states-getting-in`).
   'EntrarFreno',
   'EntrarOlvido',
@@ -139,6 +140,8 @@ export const STATE_NAMES: readonly string[] = [
   'ConfiguracionMediosPagoArchivados',
   'ConfiguracionMediosPagoArchivadosVacio',
   'ConfiguracionContrasena',
+  'ConfiguracionTarjeta',
+  'ConfiguracionTarjetaSinConteo',
   'ConfiguracionMonedaSimboloInvalido',
   'ConfiguracionMonedaNoBajar',
   'ConfiguracionMotivos',
