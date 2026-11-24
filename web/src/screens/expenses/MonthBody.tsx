@@ -31,8 +31,7 @@ interface ExpenseRowProps {
 /** One "Latest" row: the lower line holds the detail and the method's name, only the ones there are. */
 function ExpenseRow({ expense, categoryName, today, onEdit }: ExpenseRowProps) {
   const money = useMoney()
-  // The monthly view always answers `payment_method`; an answer without it reads as no method.
-  const method = expense.payment_method ?? null
+  const method = expense.payment_method
   return (
     <button
       type="button"

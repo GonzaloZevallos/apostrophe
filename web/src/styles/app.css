@@ -1864,6 +1864,9 @@ a.ajustes-tema__opcion {
 .fila-gasto__metodo {
   flex: 0 1 auto;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .fila-gasto__separador {
