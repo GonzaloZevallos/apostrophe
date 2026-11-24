@@ -1,7 +1,7 @@
 /**
  * The computer register's Product results table at the component seam (Testing Library, `fetch`
  * faked). The wrapper calls the real `useSaleDraft` and shows the draft's lines; it is local to
- * this file. Stock, Add buttons and the failure, empty and no-match lines are GH-1034's.
+ * this file.
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -30,7 +30,19 @@ const PRODUCTS = [
   product(4, 'Tulipán', 300),
 ]
 
+const stockRow = (productId: number, quantity: number, status: string) => ({
+  product_id: productId,
+  quantity,
+  status,
+  sold_out_since: null,
+  threshold: null,
+  days_left: null,
+})
+const STOCK = [stockRow(1, 12.5, 'ok'), stockRow(2, 3, 'low'), stockRow(3, -2, 'sold_out')]
+const FAILURE = 'The products could not load. Reload this screen to try again.'
+
 let productsByDate: Map<string, unknown>
+let stockRows: unknown[]
 let broken: Set<string>
 let held: Set<string>
 let gates: Map<string, () => void>
@@ -40,12 +52,14 @@ const json = (status: number, body: unknown) =>
 
 function answerOf(path: string): Response {
   if (path === '/pricing-settings') return json(200, { is_bulk_pricing: true, is_vip_customers: true })
+  if (path === '/stock') return json(200, { total: 0, products: stockRows, entries: [] })
   const body = productsByDate.get(new URL(path, 'http://x').searchParams.get('on') ?? '')
   return body === undefined ? json(500, {}) : json(200, body)
 }
 
 beforeEach(() => {
   productsByDate = new Map([[TODAY, PRODUCTS]])
+  stockRows = STOCK
   broken = new Set()
   held = new Set()
   gates = new Map()
@@ -54,7 +68,7 @@ beforeEach(() => {
     'fetch',
     vi.fn((input: RequestInfo | URL) => {
       const path = String(input)
-      const read = path === '/pricing-settings' ? 'settings' : 'products'
+      const read = path === '/pricing-settings' ? 'settings' : path === '/stock' ? 'stock' : 'products'
       if (broken.has(read)) return Promise.resolve(json(500, {}))
       if (held.has(read)) {
         return new Promise<Response>((resolve) => {
@@ -122,10 +136,10 @@ test('the search is focused on mount and the rows come in name order with their 
   expect(input()).toHaveFocus()
   expect(names()).toEqual(['Árbol', 'Rosa', 'Sin precio', 'Tulipán'])
   const rosa = bodyRows()[1] as HTMLElement
-  expect(within(rosa).getAllByRole('gridcell')[1]?.textContent).toMatch(/1\.000/)
+  expect(within(rosa).getAllByRole('gridcell')[2]?.textContent).toMatch(/1\.000/)
   expect(within(bodyRows()[2] as HTMLElement).getByText('No price')).toBeInTheDocument()
   expect(screen.getByText('↑ ↓ to move, Enter to add.')).toBeInTheDocument()
-  expect(screen.getAllByRole('columnheader').map((header) => header.textContent)).toEqual(['Product', 'Price', 'Add'])
+  expect(screen.getAllByRole('columnheader').map((header) => header.textContent)).toEqual(['Product', 'Stock', 'Price', 'Add'])
   expect(grid()).toHaveAttribute('aria-busy', 'false')
 })
 
@@ -201,18 +215,27 @@ test('a Product with no price shows No price in words and Enter on it adds nothi
   expect(lines()).toEqual([])
 })
 
-test('rows show no figure other than the price: no stock figure and no stock word', async () => {
+const cellsOf = (name: string) => {
+  const row = bodyRows().find((candidate) => within(candidate).getAllByRole('gridcell')[0]?.textContent === name)
+  if (row === undefined) throw new Error(`no row for ${name}`)
+  return within(row).getAllByRole('gridcell')
+}
+const stockCell = (name: string) => cellsOf(name)[1] as HTMLElement
+
+test('the Stock cell is the bare figure: ok shows no word, low and sold out add theirs, a negative keeps its sign', async () => {
   await ready()
-  const text = bodyRows().map((row) => row.textContent ?? '').join(' ')
-  for (const row of bodyRows()) {
-    const [, priceCell, addCell] = within(row).getAllByRole('gridcell')
-    expect(priceCell?.textContent).toMatch(/^(\$ [\d.]+|No price)$/)
-    expect(addCell?.textContent).toBe('')
-  }
-  for (const word of Object.values(STOCK_TEXT)) {
-    if (typeof word === 'string') expect(text).not.toContain(word)
-  }
-  expect(screen.queryByRole('columnheader', { name: 'Stock' })).toBeNull()
+  expect(stockCell('Rosa').textContent).toBe('12,5')
+  expect(stockCell('Árbol').textContent).toBe(`3${STOCK_TEXT.statusLow}`)
+  expect(stockCell('Sin precio').textContent).toBe(`-2${STOCK_TEXT.statusSoldOut}`)
+  expect(stockCell('Rosa')).toHaveClass('cifra-n')
+})
+
+test('a no entries row shows 0 and its word, and a Product with no stock row shows an empty cell', async () => {
+  stockRows = [stockRow(1, 0, 'no_entries')]
+  await ready()
+  expect(stockCell('Rosa').textContent).toBe(`0${STOCK_TEXT.statusNoEntries}`)
+  expect(stockCell('Árbol').textContent).toBe('')
+  expect(stockCell('Tulipán').textContent).toBe('')
 })
 
 test('a date change holds the table with aria-busy and no rows until the answer, keeping text and focus', async () => {
@@ -254,26 +277,70 @@ test('when a new answer drops the selected Product the selection moves to the fi
   expect(lines().map((line) => line.productId)).toEqual([2])
 })
 
-test.each([['products'], ['settings']])('a rejected %s read shows no rows and no text, and Enter adds nothing', async (read) => {
-  const user = userEvent.setup()
-  broken.add(read)
-  renderTable()
-  await waitFor(() => expect(grid()).toHaveAttribute('aria-busy', 'false'))
-  expect(within(grid()).queryAllByRole('gridcell')).toHaveLength(0)
-  expect(grid().textContent).toBe('ProductPriceAdd')
-  await user.keyboard('r{Enter}')
-  expect(lines()).toEqual([])
-})
+test.each([['products'], ['settings'], ['stock']])(
+  'a rejected %s read shows the failure line and no rows, and Enter adds nothing',
+  async (read) => {
+    const user = userEvent.setup()
+    broken.add(read)
+    renderTable()
+    await waitFor(() => expect(within(grid()).getByText(FAILURE)).toBeInTheDocument())
+    expect(grid()).toHaveAttribute('aria-busy', 'false')
+    expect(bodyRows()).toHaveLength(0)
+    expect(within(grid()).getByText(FAILURE).closest('td')).toHaveAttribute('colspan', '4')
+    expect(screen.getByText('↑ ↓ to move, Enter to add.')).toBeInTheDocument()
+    await user.keyboard('r{Enter}')
+    expect(lines()).toEqual([])
+  },
+)
 
-test('one read failed while the other is still pending: aria-busy stays true and no row or text shows', async () => {
+test('one read failed while the other is still pending: aria-busy stays true and the failure line shows', async () => {
   broken.add('products')
   held.add('settings')
   renderTable()
   await waitFor(() => expect(gates.has('settings')).toBe(true))
-  // The Products read has failed once the loading line is gone; the settings read is still held.
-  await waitFor(() => expect(within(grid()).queryAllByRole('gridcell')).toHaveLength(0))
+  await waitFor(() => expect(within(grid()).getByText(FAILURE)).toBeInTheDocument())
   expect(grid()).toHaveAttribute('aria-busy', 'true')
-  expect(grid().textContent).toBe('ProductPriceAdd')
+  expect(bodyRows()).toHaveLength(0)
+})
+
+test('after Stock fails, a window focus and an online event keep the failure line and ask for Stock no more', async () => {
+  broken.add('stock')
+  renderTable()
+  await waitFor(() => expect(within(grid()).getByText(FAILURE)).toBeInTheDocument())
+  const stockCalls = () => vi.mocked(fetch).mock.calls.filter(([url]) => String(url) === '/stock').length
+  const before = stockCalls()
+  act(() => {
+    window.dispatchEvent(new Event('focus'))
+    document.dispatchEvent(new Event('visibilitychange'))
+    window.dispatchEvent(new Event('online'))
+  })
+  await act(async () => {
+    await Promise.resolve()
+  })
+  expect(within(grid()).getByText(FAILURE)).toBeInTheDocument()
+  expect(stockCalls()).toBe(before)
+})
+
+test('no products at all shows the no-products line over the four columns, with no link', async () => {
+  productsByDate.set(TODAY, [])
+  renderTable()
+  const line = await within(grid()).findByText('No products yet.')
+  expect(line.closest('td')).toHaveAttribute('colspan', '4')
+  expect(within(grid()).queryByRole('link')).toBeNull()
+  expect(bodyRows()).toHaveLength(0)
+  expect(screen.getByText('↑ ↓ to move, Enter to add.')).toBeInTheDocument()
+})
+
+test('a search with no match shows the no-match line, and clearing it brings the rows back', async () => {
+  const user = userEvent.setup()
+  await ready()
+  await user.keyboard('zzz')
+  expect(within(grid()).getByText('No product matches that search.')).toBeInTheDocument()
+  expect(bodyRows()).toHaveLength(0)
+  expect(input()).toHaveFocus()
+  await user.clear(input())
+  expect(bodyRows()).toHaveLength(4)
+  expect(within(grid()).queryByText('No product matches that search.')).toBeNull()
 })
 
 test('aria-controls always resolves and aria-activedescendant resolves or is absent', async () => {
@@ -342,4 +409,76 @@ test('the selected row is kept in view with scrollIntoView nearest', async () =>
   await ready()
   await user.keyboard('{ArrowDown}')
   expect(Element.prototype.scrollIntoView).toHaveBeenLastCalledWith({ block: 'nearest' })
+})
+
+const addButton = (name: string) => screen.getByRole('button', { name: `Add ${name}` })
+
+test('an Add click on the third row adds its line, empties the search, selects the first row and keeps focus in the search', async () => {
+  const user = userEvent.setup()
+  await ready()
+  await user.keyboard('{ArrowDown}')
+  await user.click(addButton('Tulipán'))
+  expect(lines().map((line) => line.productId)).toEqual([4])
+  expect(input()).toHaveValue('')
+  expect(input()).toHaveFocus()
+  expect(selectedName()).toBe('Árbol')
+})
+
+test('an Add click after a search adds the clicked Product and clears the search', async () => {
+  const user = userEvent.setup()
+  await ready()
+  await user.keyboard('ro')
+  await user.click(addButton('Rosa'))
+  expect(lines().map((line) => line.productId)).toEqual([1])
+  expect(input()).toHaveValue('')
+  expect(bodyRows()).toHaveLength(4)
+})
+
+test('an Add click on a Product already in the sale raises its line and adds no second one', async () => {
+  const user = userEvent.setup()
+  await ready()
+  await user.click(addButton('Rosa'))
+  const first = lines()
+  await user.click(addButton('Rosa'))
+  const second = lines()
+  expect(second).toHaveLength(1)
+  expect((second[0] as { quantityHundredths: number }).quantityHundredths).toBeGreaterThan(
+    (first[0] as { quantityHundredths: number }).quantityHundredths,
+  )
+})
+
+test('the Add button of a No price row is disabled and a click on it adds nothing', async () => {
+  const user = userEvent.setup()
+  await ready()
+  expect(addButton('Sin precio')).toBeDisabled()
+  expect(addButton('Rosa')).toBeEnabled()
+  await user.click(addButton('Sin precio'))
+  expect(lines()).toEqual([])
+  // A disabled control gets no mouse event, so Add never runs: focus is the browser's to keep.
+  expect(addButton('Sin precio')).toBeDisabled()
+})
+
+test('a click elsewhere on a row selects it without adding', async () => {
+  const user = userEvent.setup()
+  await ready()
+  await user.click(stockCell('Tulipán'))
+  expect(selectedName()).toBe('Tulipán')
+  expect(lines()).toEqual([])
+})
+
+test('the Add buttons are out of the tab order: Tab from the search leaves the table', async () => {
+  const user = userEvent.setup()
+  render(
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+      <Harness />
+      <button type="button">after the table</button>
+    </QueryClientProvider>,
+  )
+  await waitFor(() => expect(bodyRows().length).toBeGreaterThan(0))
+  for (const row of bodyRows()) {
+    expect(within(row).getByRole('button')).toHaveAttribute('tabindex', '-1')
+  }
+  expect(input()).toHaveFocus()
+  await user.tab()
+  expect(screen.getByRole('button', { name: 'after the table' })).toHaveFocus()
 })
