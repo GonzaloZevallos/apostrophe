@@ -8,7 +8,7 @@
 import type { CopyKind } from './limits.ts'
 
 /**
- * The eleven wordings as keys of the `emptyStates` namespace (`locales/<tag>/emptyStates.json`).
+ * The twelve wordings as keys of the `emptyStates` namespace (`locales/<tag>/emptyStates.json`).
  * Customers and Home share `nobodyOwes`. No words here: a screen resolves the key at render.
  */
 export const EMPTY_STATE_KEYS = {
@@ -23,6 +23,7 @@ export const EMPTY_STATE_KEYS = {
   analysisEmptyMonth: 'emptyStates:analysisEmptyMonth',
   customerTypesList: 'emptyStates:customerTypesList',
   paymentMethodsArchived: 'emptyStates:paymentMethodsArchived',
+  salesUnpaid: 'emptyStates:salesUnpaid',
 } as const
 
 /** The limit kind of each empty state, measured in `en` by `copyLimits.real.test.ts`. */
@@ -38,4 +39,5 @@ export const EMPTY_STATE_LIMITS = {
   analysisEmptyMonth: 'emptyLine',
   customerTypesList: 'emptyTitle',
   paymentMethodsArchived: 'emptyTitle',
+  salesUnpaid: 'emptyLine',
 } as const satisfies Record<keyof typeof EMPTY_STATE_KEYS, CopyKind>

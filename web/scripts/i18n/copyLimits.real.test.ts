@@ -9,6 +9,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, test } from 'vitest'
 import { EMPTY_STATE_KEYS, EMPTY_STATE_LIMITS } from '../../src/copy/emptyStates.ts'
+import { resolveKey } from '../../src/i18n/resolve.ts'
 import { copyProblems, LIMITS, type CopyModule } from '../../src/copy/limits.ts'
 import { loadBundle, LOCALES_ROOT } from './loadBundle.ts'
 
@@ -29,11 +30,15 @@ const emptyStates: CopyModule = {
 describe('the empty-state keys', () => {
   const en = loadBundle('en')
 
-  test('are eleven, each with a limit kind, and the nobodyOwes key is one key', () => {
-    expect(Object.keys(EMPTY_STATE_KEYS)).toHaveLength(11)
+  test('are twelve, each with a limit kind, and the nobodyOwes key is one key', () => {
+    expect(Object.keys(EMPTY_STATE_KEYS)).toHaveLength(12)
     expect(Object.keys(EMPTY_STATE_LIMITS).sort()).toEqual(Object.keys(EMPTY_STATE_KEYS).sort())
     expect(EMPTY_STATE_KEYS.nobodyOwes).toBe('emptyStates:nobodyOwes')
-    expect(new Set(Object.values(EMPTY_STATE_KEYS)).size).toBe(11)
+    expect(new Set(Object.values(EMPTY_STATE_KEYS)).size).toBe(12)
+  })
+
+  test('salesUnpaid resolves to its English line', () => {
+    expect(resolveKey(en, EMPTY_STATE_KEYS.salesUnpaid)).toBe('No sales are waiting for payment in this period.')
   })
 
   test('fit their limit in the en bundle, and the test locale never judges a limit', () => {
