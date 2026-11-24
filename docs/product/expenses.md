@@ -133,7 +133,7 @@ La plata que un negocio paga por cualquier cosa que no sea una Purchase de Stock
 - El Business export nombra el medio de cada Expense con su nombre actual, y la Business removal la borra con los conteos coincidentes.
 - El Spreadsheet import nunca le pone un medio a una Expense y sigue rechazando un Detalle que queda en blanco después de recortar (`InvalidDetail`), así que las filas de la planilla no se aflojan.
 - `expense.payment_method_id` apunta a `payment_method` con la FK de la migración 0034. El dominio rechaza una etiqueta de medio sin id o con otro id (`expense.payment_method_mismatch`, que ninguna ruta mapea).
-- Contar las Expenses en el `in_use` de un Payment method es la parte siguiente de GH-1010.
+- Contar las Expenses en el `in_use` de un Payment method está hecho (parte 3 de GH-1010): un medio que usa algún Payment o alguna Expense solo se archiva, y borrarlo responde 409 `payment_method.in_use` ([ADR](../adr/20261124-a-payment-method-is-in-use-when-any-payment-or-expense-points-at-it.md)).
 
 ### Vista mensual
 
@@ -361,4 +361,4 @@ Se leen de los datos y de las pruebas; no hay telemetría.
 - Para la pregunta de salida de la parte 2 de GH-769: cualquier cambio en lo que ve un vendedor cuando se le cierra la sesión (401); cualquier cambio a 900 px o más; cualquier cambio en el texto o las reglas de la guarda "Discard the sale?" de siempre; cambiar `LeaveConfirm` o `ConfirmDialog`; pasar los textos de Expenses de `web/src/copy/expenses.ts` a los JSON de locale (le toca al trabajo del segundo idioma, #317).
 - En esta parte: otros estados recorridos por el Mobile check sobre la Expense desde New sale además de `sale/expense-discard` y `DescartarGastoEnVenta`, las filas del registro de pantallas y la prueba de los 2 toques desde New sale, que #757 cubre con los estados recorridos del Mobile check y no con un conteo de toques por Tab root (navigation.md, criterio 1).
 - En la parte 2 de GH-837: cualquier pantalla (el formulario de la Expense sigue pidiendo el Detalle y no manda ni muestra un medio); dónde va el medio en la fila de una Expense y si lleva ícono; un desglose del gasto por medio; hacer obligatorio el medio; y cualquier cambio en la importación además del chequeo del Detalle.
-- En la parte 2 de GH-1010: filtrar Expenses por medio; totales de gasto por medio y cualquier cifra de Cash o de Money in por medio; cualquier cambio en el Cash o el Profit; contar las Expenses en el `in_use` de un medio (la parte siguiente de GH-1010); deducir o completar hacia atrás el medio de las Expenses existentes; y cualquier pantalla.
+- En la parte 2 de GH-1010: filtrar Expenses por medio; totales de gasto por medio y cualquier cifra de Cash o de Money in por medio; cualquier cambio en el Cash o el Profit; deducir o completar hacia atrás el medio de las Expenses existentes; y cualquier pantalla.

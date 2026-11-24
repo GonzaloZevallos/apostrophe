@@ -78,7 +78,7 @@ class PaymentMethod:
 
     def check_removable(self, in_use: bool, offered_count: int) -> None:
         """Raises `LastOffered` for the only offered method, `InUse` for one that has
-        payments (it can only be archived)."""
+        payments or expenses (it can only be archived)."""
         self.check_archivable(offered_count)
         if in_use:
             raise InUse()
