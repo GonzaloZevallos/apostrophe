@@ -50,6 +50,12 @@
   font-weight: 600;
 }
 
+/* Pressed: a row click is a mouse convenience, but a row still shows it was pressed. */
+.prt__row:active,
+.prt__row[aria-selected='true']:active {
+  background: var(--linea);
+}
+
 .prt__cell {
   padding: var(--espacio-sm) var(--espacio-md);
 }

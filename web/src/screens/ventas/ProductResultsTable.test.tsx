@@ -265,6 +265,17 @@ test.each([['products'], ['settings']])('a rejected %s read shows no rows and no
   expect(lines()).toEqual([])
 })
 
+test('one read failed while the other is still pending: aria-busy stays true and no row or text shows', async () => {
+  broken.add('products')
+  held.add('settings')
+  renderTable()
+  await waitFor(() => expect(gates.has('settings')).toBe(true))
+  // The Products read has failed once the loading line is gone; the settings read is still held.
+  await waitFor(() => expect(within(grid()).queryAllByRole('gridcell')).toHaveLength(0))
+  expect(grid()).toHaveAttribute('aria-busy', 'true')
+  expect(grid().textContent).toBe('ProductPriceAdd')
+})
+
 test('aria-controls always resolves and aria-activedescendant resolves or is absent', async () => {
   const user = userEvent.setup()
   renderTable()

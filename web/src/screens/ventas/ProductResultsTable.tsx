@@ -151,7 +151,7 @@ export default function ProductResultsTable({ draft, customerTypeId }: ProductRe
           onKeyDown={onKeyDown}
         />
       </label>
-      <table id={gridId} className="prt__grid" role="grid" aria-labelledby={labelId} aria-busy={body === 'loading'}>
+      <table id={gridId} className="prt__grid" role="grid" aria-labelledby={labelId} aria-busy={loading}>
         <thead>
           <tr role="row">
             <th role="columnheader" scope="col" className="prt__head">
