@@ -7910,5 +7910,69 @@ button:has(> .venta-en-curso) {
 
 .ajustes-inicio-busqueda__input::-webkit-search-cancel-button {
   appearance: none;
+  display: none;
+}
+
+/* The field row and the heading slot sit in one box, so a closed slot (0 high) adds no gap of the
+ * frame's column. The slot is open at one token height, so the list does not jump when it fills. */
+.ajustes-inicio-busqueda__ranura {
+  margin: 0;
+  block-size: 0;
+  overflow: hidden;
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.ajustes-inicio-busqueda__ranura--abierta {
+  block-size: var(--espacio-xxl);
+  line-height: var(--espacio-xxl);
+}
+
+.ajustes-inicio-busqueda__borrar,
+.ajustes-inicio-busqueda__cancelar {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--alto-tocable);
+  min-inline-size: var(--alto-tocable);
+  padding: 0 var(--espacio-sm);
+  border: 0;
+  background: transparent;
+  color: var(--tinta2);
+  font: inherit;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ajustes-inicio-busqueda__cancelar {
+  color: var(--acento);
+}
+
+.ajustes-inicio-busqueda__borrar:active,
+.ajustes-inicio-busqueda__cancelar:active {
+  background-color: var(--superficie);
+  border-radius: var(--radio-campo);
+  transition: none;
+}
+
+.ajustes-inicio-busqueda__resultados {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background-color: var(--superficie);
+  border-radius: var(--radio-panel);
+  overflow: hidden;
+}
+
+.ajustes-inicio-busqueda__linea {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.ajustes-inicio-busqueda__resultados .ajustes-inicio__fila {
+  -webkit-tap-highlight-color: transparent;
 }
 /* ===== end ajustes-inicio: search field ===== */

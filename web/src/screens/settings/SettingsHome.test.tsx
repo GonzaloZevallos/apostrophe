@@ -8,6 +8,7 @@
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
+import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import { testT } from '../../i18n/testing'
 import { queryClient } from '../../queryClient'
 import App from '../../App'
@@ -236,4 +237,145 @@ describe('opening a page from Settings home', () => {
     },
     20_000,
   )
+})
+
+const QUIET = { business: users(1), pricing: { is_bulk_pricing: false, is_vip_customers: false } }
+const SEARCH_LABEL = testT('settings:search.label')
+const NOTHING = testT(EMPTY_STATE_KEYS.settingsSearchNothing)
+const PAYMENT_LABEL = testT('settings:rows.paymentMethods.label')
+
+/** The one polite live region of the screen: the heading slot of the search. */
+function slot(): HTMLElement {
+  return screen.getByRole('status')
+}
+
+function field(): HTMLElement {
+  return screen.getByRole('searchbox', { name: SEARCH_LABEL })
+}
+
+async function typeInField(text: string): Promise<void> {
+  await userEvent.setup().type(await screen.findByRole('searchbox', { name: SEARCH_LABEL }), text)
+}
+
+describe('searching the settings', () => {
+  test('lists the rows that match with their group name, and the count in the slot', async () => {
+    await open(QUIET)
+
+    await typeInField('pay')
+
+    const result = await screen.findByRole('link', {
+      name: `${PAYMENT_LABEL} ${testT('settings:groups.paymentsAndStock')}`,
+    })
+    expect(result).toHaveAttribute('href', rowOf('paymentMethods').to)
+    await waitFor(() => expect(slot()).toHaveTextContent(testT('settings:search.results', { count: 1 })))
+    expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument()
+    expect(screen.queryByText(ME.business_name)).not.toBeInTheDocument()
+  })
+
+  test('a text with several matches shows the plural count', async () => {
+    await open(QUIET)
+
+    await typeInField('s')
+
+    await waitFor(() => expect(slot()).toHaveTextContent(/^\d+ results$/))
+    expect(within(screen.getByRole('list')).getAllByRole('link').length).toBeGreaterThan(1)
+  })
+
+  test('no match shows Nothing found in place of the list', async () => {
+    await open(QUIET)
+
+    await typeInField('zzz')
+
+    await waitFor(() => expect(slot()).toHaveTextContent(NOTHING))
+    expect(screen.queryByRole('list')).not.toBeInTheDocument()
+  })
+
+  test('a row the Business hides is never shown: Language with one language, Customer types off', async () => {
+    await open(QUIET)
+    await screen.findByText(testT('settings:card.users', { count: 1 }))
+
+    await typeInField('language')
+    await waitFor(() => expect(slot()).toHaveTextContent(NOTHING))
+    await userEvent.setup().clear(field())
+    await typeInField('customer types')
+
+    await waitFor(() => expect(slot()).toHaveTextContent(NOTHING))
+    expect(screen.queryByRole('link', { name: new RegExp(testT('settings:rows.customerTypes.label')) })).not.toBeInTheDocument()
+  })
+
+  test('while /business is held the matches are listed, the slot is empty with no digit and the area is busy', async () => {
+    await open({ business: 'held', pricing: QUIET.pricing })
+
+    await typeInField('pay')
+
+    expect(await screen.findByRole('link', { name: new RegExp(PAYMENT_LABEL) })).toBeInTheDocument()
+    expect(slot().textContent).toBe('')
+    expect(screen.getByRole('main')).toHaveAttribute('aria-busy', 'true')
+  })
+
+  test('the slot is the same node before and after the read answers, and it fills', async () => {
+    let release: (response: Response) => void = () => undefined
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation((input: RequestInfo | URL) => {
+        const url = String(input)
+        if (url.includes('/auth/me')) return Promise.resolve(json(ME))
+        if (url.includes('/pricing-settings')) return Promise.resolve(json(QUIET.pricing))
+        if (url.includes('/business')) return new Promise<Response>((resolve) => (release = resolve))
+        return Promise.resolve(json([]))
+      }),
+    )
+    await act(() => router.navigate(SETTINGS))
+    render(<App />)
+    const before = await screen.findByRole('status')
+
+    await typeInField('pay')
+    expect(slot().textContent).toBe('')
+    await act(async () => release(json(users(1))))
+
+    await waitFor(() => expect(slot()).toHaveTextContent(testT('settings:search.results', { count: 1 })))
+    expect(slot()).toBe(before)
+  })
+
+  test('the slot also fills when the read fails', async () => {
+    await open({ business: 'failed', pricing: QUIET.pricing })
+
+    await typeInField('pay')
+
+    await waitFor(() => expect(slot()).toHaveTextContent(testT('settings:search.results', { count: 1 })))
+  })
+
+  test('Clear empties the field, keeps search open and focus, and brings back the groups', async () => {
+    await open(QUIET)
+    await typeInField('pay')
+
+    await userEvent.setup().click(await screen.findByRole('button', { name: testT('settings:search.clear') }))
+
+    expect(field()).toHaveValue('')
+    expect(field()).toHaveFocus()
+    expect(screen.getByRole('button', { name: testT('common:cancel') })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: testT('settings:search.clear') })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(SETTINGS_GROUPS.length)
+  })
+
+  test('Cancel closes search and brings back the Business card and the groups', async () => {
+    await open(QUIET)
+    await typeInField('pay')
+
+    await userEvent.setup().click(await screen.findByRole('button', { name: testT('common:cancel') }))
+
+    expect(await screen.findByText(ME.business_name)).toBeInTheDocument()
+    expect(field()).toHaveValue('')
+    expect(screen.queryByRole('button', { name: testT('common:cancel') })).not.toBeInTheDocument()
+  })
+
+  test('focusing the field alone does not open search', async () => {
+    await open(QUIET)
+    await screen.findByRole('searchbox', { name: SEARCH_LABEL })
+
+    act(() => field().focus())
+
+    expect(field()).toHaveFocus()
+    expect(screen.queryByRole('button', { name: testT('common:cancel') })).not.toBeInTheDocument()
+  })
 })
