@@ -1853,8 +1853,28 @@ a.ajustes-tema__opcion {
 }
 
 .fila-gasto__texto {
+  display: flex;
+  min-width: 0;
   font-size: 13px;
   color: var(--tinta2);
+  white-space: nowrap;
+}
+
+.fila-gasto__detalle,
+.fila-gasto__metodo {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.fila-gasto__separador {
+  flex-shrink: 0;
+  margin-inline: var(--espacio-xs);
+}
+
+/* Next to a detail, only the detail gives up space until the name reaches its cap. */
+.fila-gasto__detalle ~ .fila-gasto__metodo {
+  flex-shrink: 0;
+  max-width: 60%;
 }
 
 .fila-gasto__monto {
@@ -6755,7 +6775,8 @@ a.ajustes-tema__opcion {
   .fila-entrada__linea1,
   .fila-entrada__linea2,
   .fila-gasto__categoria,
-  .fila-gasto__texto,
+  .fila-gasto__detalle,
+  .fila-gasto__metodo,
   .catalogo__fila-detalle {
     overflow: hidden;
     text-overflow: ellipsis;

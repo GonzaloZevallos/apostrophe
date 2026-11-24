@@ -21,6 +21,45 @@ export interface MonthBodyProps {
   onEdit?: (expense: Expense) => void
 }
 
+interface ExpenseRowProps {
+  expense: Expense
+  categoryName: string
+  today: string
+  onEdit?: (expense: Expense) => void
+}
+
+/** One "Latest" row: the lower line holds the detail and the method's name, only the ones there are. */
+function ExpenseRow({ expense, categoryName, today, onEdit }: ExpenseRowProps) {
+  const money = useMoney()
+  // The monthly view always answers `payment_method`; an answer without it reads as no method.
+  const method = expense.payment_method ?? null
+  return (
+    <button
+      type="button"
+      className="fila-gasto"
+      tabIndex={onEdit === undefined ? -1 : undefined}
+      onClick={onEdit === undefined ? undefined : () => onEdit(expense)}
+    >
+      <span className="fila-gasto__fecha">{formatDate(expense.spent_on, today)}</span>
+      <span className="fila-gasto__cuerpo">
+        <span className="fila-gasto__categoria">{categoryName}</span>
+        {(expense.detail !== '' || method !== null) && (
+          <span className="fila-gasto__texto">
+            {expense.detail !== '' && <span className="fila-gasto__detalle">{expense.detail}</span>}
+            {expense.detail !== '' && method !== null && (
+              <span aria-hidden="true" className="fila-gasto__separador">
+                ·
+              </span>
+            )}
+            {method !== null && <span className="fila-gasto__metodo">{method.name}</span>}
+          </span>
+        )}
+      </span>
+      <span className="fila-gasto__monto cifra-s">{money.money(expense.amount)}</span>
+    </button>
+  )
+}
+
 export default function MonthBody({ view, today, onEdit }: MonthBodyProps) {
   const money = useMoney()
   const latest = view.categories
@@ -68,20 +107,13 @@ export default function MonthBody({ view, today, onEdit }: MonthBodyProps) {
         <div className="gastos__ultimos">
           <span className="gastos__seccion">{EXPENSES_TEXT.latest}</span>
           {latest.map(({ expense, categoryName }) => (
-            <button
+            <ExpenseRow
               key={expense.id}
-              type="button"
-              className="fila-gasto"
-              tabIndex={onEdit === undefined ? -1 : undefined}
-              onClick={onEdit === undefined ? undefined : () => onEdit(expense)}
-            >
-              <span className="fila-gasto__fecha">{formatDate(expense.spent_on, today)}</span>
-              <span className="fila-gasto__cuerpo">
-                <span className="fila-gasto__categoria">{categoryName}</span>
-                <span className="fila-gasto__texto">{expense.detail}</span>
-              </span>
-              <span className="fila-gasto__monto cifra-s">{money.money(expense.amount)}</span>
-            </button>
+              expense={expense}
+              categoryName={categoryName}
+              today={today}
+              onEdit={onEdit}
+            />
           ))}
         </div>
       )}
