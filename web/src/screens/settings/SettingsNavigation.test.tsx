@@ -126,7 +126,7 @@ function field(): HTMLElement {
 
 async function groupsAreShown(): Promise<void> {
   await screen.findByRole('heading', { level: 2, name: testT('settings:groups.business') })
-  expect(screen.queryByRole('button', { name: CANCEL })).not.toBeInTheDocument()
+  await waitFor(() => expect(screen.queryByRole('button', { name: CANCEL })).not.toBeInTheDocument())
 }
 
 test('a tap on the search field and then typing push one history entry', async () => {
