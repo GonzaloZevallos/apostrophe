@@ -119,7 +119,8 @@ class SqlPaymentMethods:
         # A record written between the use case's in-use check and this statement is
         # stopped by the foreign keys (ON DELETE RESTRICT). Only the keys that point at
         # this row can fail a DELETE, so an integrity error here is always "in use"; the
-        # savepoint keeps the outer transaction usable (docs/adr/20261124-a-payment-method-is-in-use-when-any-payment-or-expense-points-at-it).
+        # savepoint keeps the outer transaction usable (docs/adr/20261124-a-payment-
+        # method-is-in-use-when-any-payment-or-expense-points-at-it).
         try:
             with self._session.begin_nested():
                 result = self._execute(statement)

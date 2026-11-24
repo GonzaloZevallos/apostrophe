@@ -287,8 +287,8 @@ def create_app(
     app.state.line_costs = SqlLineCosts
     # Which payment methods any Payment or Expense points at, read through the payment
     # methods hexagon's own `PaymentMethodUsage` port, never `app.payments` or
-    # `app.expenses` (docs/adr/20261124-a-payment-method-is-in-use-when-any-payment-or-expense-points-at-it):
-    # each of those adapters answers from its own table, and `AnyUsage` joins them.
+    # `app.expenses` (the ADR 20261124 on when a payment method is in use): each of
+    # those adapters answers from its own table, and `AnyUsage` joins them.
     app.state.payment_method_usage = _payment_method_usage
     # The same shape again: sales reads the switches only through its own
     # `PricingSettingsReader` port, never `app.pricing_settings` (docs/adr/0034).
