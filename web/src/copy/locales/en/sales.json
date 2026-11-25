@@ -7,6 +7,7 @@
     "name": "{{customer}}, {{items}}, {{payment}}, total {{total}}",
     "payment": {
       "paid": "Paid",
+      "paidWith": "Paid · {{method}}",
       "unpaid": "Unpaid",
       "partPaid": "Part-paid · {{amount}} owed",
       "unknown": "Payment can't be shown"
