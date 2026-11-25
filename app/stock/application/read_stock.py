@@ -20,6 +20,7 @@ from app.stock.application.ports import (
     WithdrawalDraws,
 )
 from app.stock.domain.entry import StockEntry
+from app.stock.domain.movement_order import ENTRY_RANK, MovementKey
 from app.stock.domain.stock_level import StockLevel, stock_level
 from app.stock.domain.threshold import Threshold
 
@@ -70,12 +71,13 @@ def read_stock(
         for variety_id in sorted(catalog.archived_ids() if archived else catalog.listed_ids())
     ]
 
-    sorted_entries = sorted(
-        business.entries,
-        key=lambda entry: (entry.entry_date, entry.recorded_at, entry.id),
-        reverse=True,
-    )
+    sorted_entries = sorted(business.entries, key=_newest_first)
     return StockView(Quantity(total), varieties, sorted_entries)
+
+
+def _newest_first(entry: StockEntry) -> tuple[int, int, int, int]:
+    assert entry.id is not None
+    return MovementKey(entry.entry_date, entry.recorded_at, ENTRY_RANK, entry.id).newest_first()
 
 
 def read_variety_stock(
