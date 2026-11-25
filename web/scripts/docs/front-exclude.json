@@ -39,6 +39,7 @@
   "^src/sales/newSaleView\\.ts$",
   "^src/screens/ventas/CollectSheet\\.tsx$",
   "^src/screens/ventas/NuevaVentaSheet\\.tsx$",
+  "^src/screens/ventas/LineDetailSheet\\.tsx$",
   "^src/screens/ventas/renderNuevaVentaSheet\\.tsx$",
   "^src/screens/settings/settingsRows\\.ts$",
   "^src/screens/settings/settingsSearch\\.ts$",
