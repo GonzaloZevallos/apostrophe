@@ -24,6 +24,7 @@ class PaymentRow(Base):
     __table_args__ = (
         Index(None, "sale_id"),
         Index(None, "payment_method_id", "business_id"),
+        Index(None, "recorded_by_app_user_id"),
         ForeignKeyConstraint(
             ["business_id", "payment_method_id"],
             ["payment_method.business_id", "payment_method.id"],
@@ -42,6 +43,14 @@ class PaymentRow(Base):
     sale_id: Mapped[int | None] = mapped_column(ForeignKey("sale.id"))
     recorded_at: Mapped[datetime] = mapped_column(UtcDateTime)
     payment_method_id: Mapped[int] = mapped_column()
+    recorded_by_initials: Mapped[str | None] = mapped_column(String(32))
+    # A plain foreign key: the database does not check that the User belongs to the
+    # Payment's Business. Whoever writes this column checks it inside its own
+    # INSERT ... SELECT against app_user.business_id, the way payment_method_id is checked,
+    # and takes the id from the session's User, never from a request.
+    recorded_by_app_user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("app_user.id", ondelete="SET NULL")
+    )
 
 
 LATER = PaymentRow.sale_id.is_(None)

@@ -6,19 +6,23 @@ database must never trip `unowned_tables`, `secret_columns` or a `delete_order` 
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import text
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.business_removal.adapters.sql_schema_rows import SqlSchemaRows
 from app.business_removal.domain.classification import (
     delete_order,
     looks_secret,
+    other_type_columns,
     owned_tables,
     secret_columns,
     unowned_tables,
 )
-from app.business_removal.domain.export_document import Business, build_document
+from app.business_removal.domain.export_document import Business, build_document, id_sets
+from app.business_removal.domain.labels import exported_tables
 from app.db import make_engine
 from app.migrations.runner import upgrade_to_head
 
@@ -182,3 +186,77 @@ def test_the_export_carries_catalog_attribute_with_is_shown_and_is_vip_on_custom
     assert "is_vip" in columns["customer"]
     assert "catalog_attributes" not in columns
     assert not {"shown", "vip"} & (columns["catalog_attribute"] | columns["customer"])
+
+
+def test_payment_has_one_single_column_key_to_app_user_and_is_deleted_before_it() -> None:
+    """0035 gives `payment` a plain key to `app_user` for who recorded it: reflection must
+    keep it single-column, and the delete order must put `payment` before `app_user`."""
+    schema = _schema_rows().schema()
+
+    payment = schema.table("payment")
+    to_user = [fk for fk in payment.foreign_keys if fk.target_table == "app_user"]
+
+    assert len(to_user) == 1
+    assert to_user[0].columns == ("recorded_by_app_user_id",)
+    assert to_user[0].target_columns == ("id",)
+    order = delete_order(schema)
+    assert order.index("payment") < order.index("app_user")
+    assert secret_columns(schema) == ()
+    assert other_type_columns(schema) == ()
+
+
+def _seed_recorders(engine: Engine) -> None:
+    with engine.begin() as connection:
+        connection.execute(
+            text("INSERT INTO business (id, name, language) VALUES (1, 'Flor', 'en')")
+        )
+        connection.execute(
+            text(
+                "INSERT INTO app_user (id, business_id, email, password_hash) "
+                "VALUES (1, 1, 'ana@example.com', 'x')"
+            )
+        )
+        connection.execute(
+            text(
+                "INSERT INTO payment_method (id, business_id, name, name_key, icon, position) "
+                "VALUES (1, 1, 'Efectivo', 'efectivo', 'cash', 1)"
+            )
+        )
+        connection.execute(
+            text(
+                "INSERT INTO payment (id, business_id, paid_on, amount, recorded_at, "
+                "payment_method_id, recorded_by_initials, recorded_by_app_user_id) VALUES "
+                "(1, 1, '2026-09-01', 100, '2026-09-01 10:00:00', 1, 'AB', 1), "
+                "(2, 1, '2026-09-01', 200, '2026-09-01 10:00:00', 1, NULL, NULL), "
+                "(3, 1, '2026-09-01', 300, '2026-09-01 10:00:00', 1, 'CD', NULL)"
+            )
+        )
+
+
+def _export(rows: SqlSchemaRows) -> dict[str, Any]:
+    schema = rows.schema()
+    owned = {name: rows.rows(name, 1) for name in exported_tables(schema)}
+    return build_document(Business(1, "Flor", "en", None, 0), schema, owned, datetime(2026, 1, 1))
+
+
+def test_the_export_writes_the_recorder_of_each_payment_and_a_removal_counts_match() -> None:
+    engine = make_engine("sqlite://")
+    upgrade_to_head(engine)
+    _seed_recorders(engine)
+
+    with Session(engine) as session:
+        rows = SqlSchemaRows(session)
+        document = _export(rows)
+        deleted = rows.delete_business(1, delete_order(rows.schema()))
+        session.commit()
+
+    by_id = {record["id"]: record for record in document["kinds"]["payment"]}
+    assert (by_id[1]["recorded_by_initials"], by_id[1]["recorded_by_app_user_id"]) == (
+        "AB",
+        {"id": 1, "name": "ana@example.com"},
+    )
+    assert (by_id[2]["recorded_by_initials"], by_id[2]["recorded_by_app_user_id"]) == (None, None)
+    assert (by_id[3]["recorded_by_initials"], by_id[3]["recorded_by_app_user_id"]) == ("CD", None)
+    exported = id_sets(document)
+    assert {name: deleted.tables[name] for name in exported} == exported
+    assert exported["payment"] == frozenset({1, 2, 3})
