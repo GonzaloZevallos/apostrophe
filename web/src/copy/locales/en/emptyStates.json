@@ -10,6 +10,7 @@
   "analysisEmptyMonth": "You did not sell or give away anything this month.",
   "customerTypesList": "No customer types yet",
   "paymentMethodsArchived": "No archived payment methods.",
+  "settingsSearchNothing": "Nothing found",
   "productResultsEmpty": "No products yet.",
   "productResultsNoMatch": "No product matches that search.",
   "customersNoMatch": "No customer matches «{{name}}».",

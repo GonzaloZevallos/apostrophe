@@ -395,7 +395,7 @@ Una pantalla principal de una pestaña: Home, Sales, Customers, Products y Analy
 _Avoid_: home, main screen, section, More
 
 **Settings**:
-El único lugar que reúne cada configuración de todo el Business. Sus filas y sus atajos salen solo del registro `settingsRows.ts`. En el celular abre con una tarjeta de solo lectura del Business (inicial, nombre y cantidad de Users) y tres atajos (Prices, Payment methods, Integrations), y sigue con cinco grupos con encabezado: Business, Catalog, Payments and stock, Channels, y Team and app. En la computadora conserva su lista de siempre, y la configuración de un solo Product vive en el Product, nunca acá. _In the app_: Settings.
+El único lugar que reúne cada configuración de todo el Business. Sus filas, sus atajos y su búsqueda salen solo del registro `settingsRows.ts`. En el celular abre con el campo de la Settings search, sigue con una tarjeta de solo lectura del Business (inicial, nombre y cantidad de Users) y tres atajos (Prices, Payment methods, Integrations), y termina con cinco grupos con encabezado: Business, Catalog, Payments and stock, Channels, y Team and app. En la computadora conserva su lista de siempre, sin búsqueda; la configuración de un solo Product vive en el Product, nunca acá. _In the app_: Settings.
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group), menu
 
 **Onboarding**:
@@ -655,3 +655,7 @@ _Avoid_: refund, Credit, vuelto, balance, difference
 **Undo**:
 Eliminar con un toque, sin confirmación, la última Sale guardada desde New sale, durante los 5 segundos de su aviso "Sale to {name} saved". Es la misma eliminación que se hace desde el detalle de la Sale, y siempre muestra cómo terminó; un Home que ya está en pantalla conserva sus cifras. _In the app_: Undo.
 _Avoid_: revert, rollback, cancel sale, void, anular, deshacer venta
+
+**Settings search**:
+El campo "Search settings" de la pantalla de inicio de Settings en el celular. Encuentra por etiqueta solo las filas que Settings muestra para el Business y abre la pantalla de la elegida con un toque. Su estado es una marca del historial, no un Sheet. Nunca muestra una fila oculta ni da una cantidad o "Nothing found" antes de que lleguen los datos, y al volver cae en los grupos con el campo vacío. _In the app_: Search settings.
+_Avoid_: filter, finder, lookup, global search, command palette

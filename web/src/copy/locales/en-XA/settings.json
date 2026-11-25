@@ -2,6 +2,13 @@
   "home": {
     "title": "⟦Šèťťìňĝš·~·⟧"
   },
+  "search": {
+    "placeholder": "⟦Šèåřçĥ šèťťìňĝš·~·~·~⟧",
+    "label": "⟦Šèåřçĥ šèťťìňĝš·~·~·~⟧",
+    "clear": "⟦Çłèåř·~⟧",
+    "results_one": "⟦{{count}} řèšûłť·~·⟧",
+    "results_other": "⟦{{count}} řèšûłťš·~·⟧"
+  },
   "card": {
     "users_one": "⟦{{count}} ûšèř·~⟧",
     "users_other": "⟦{{count}} ûšèřš·~·⟧"

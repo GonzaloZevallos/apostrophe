@@ -16,6 +16,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { queryClient } from '../../queryClient'
 import { router as appRouter } from '../../router'
+import { SheetRouterProvider } from '../../components/useSheetStack'
 
 const GROUPS = [
   ['Business', SETTINGS_BUSINESS],
@@ -52,7 +53,9 @@ function renderApp(entries: string[], index?: number) {
   })
   const view = render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <SheetRouterProvider router={router}>
+        <RouterProvider router={router} />
+      </SheetRouterProvider>
     </QueryClientProvider>,
   )
   return { router, ...view }

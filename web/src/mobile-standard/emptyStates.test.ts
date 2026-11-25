@@ -22,27 +22,27 @@ const EN = bundleOf('en')
 const XA = bundleOf('en-XA')
 
 describe('forbiddenWhileLoading', () => {
-  test('an en run forbids exactly the fourteen English wordings of the en bundle', () => {
+  test('an en run forbids exactly the fifteen English wordings of the en bundle', () => {
     const english = forbiddenWhileLoading(EN, EN, 'en')
     expect(english).toHaveLength(Object.values(EMPTY_STATE_KEYS).length)
-    expect(english).toHaveLength(14)
+    expect(english).toHaveLength(15)
     expect(english).toContain('Nobody owes you')
     expect(english).toContain('There is nothing to analyze yet.')
     expect(english).toContain("You haven't recorded any sales in this period yet.")
   })
 
-  test('an en-XA run forbids the English wordings and the fourteen en-XA ones, all distinct', () => {
+  test('an en-XA run forbids the English wordings and the fifteen en-XA ones, all distinct', () => {
     const english = forbiddenWhileLoading(EN, EN, 'en')
     const forbidden = forbiddenWhileLoading(EN, XA, 'en-XA')
-    expect(forbidden).toHaveLength(28)
-    expect(new Set(forbidden).size).toBe(28)
+    expect(forbidden).toHaveLength(30)
+    expect(new Set(forbidden).size).toBe(30)
     for (const wording of forbidden) expect(wording).not.toBe('')
-    expect(forbidden.slice(0, 14)).toEqual(english)
-    forbidden.slice(14).forEach((wording, index) => expect(wording).not.toBe(english[index]))
+    expect(forbidden.slice(0, 15)).toEqual(english)
+    forbidden.slice(15).forEach((wording, index) => expect(wording).not.toBe(english[index]))
   })
 
   test('the run bundle is read only for a tag that is not en', () => {
-    expect(forbiddenWhileLoading(EN, {}, 'en')).toHaveLength(14)
+    expect(forbiddenWhileLoading(EN, {}, 'en')).toHaveLength(15)
     expect(() => forbiddenWhileLoading(EN, {}, 'en-XA')).toThrow()
   })
 

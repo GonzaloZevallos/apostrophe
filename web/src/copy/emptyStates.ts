@@ -8,7 +8,8 @@
 import type { CopyKind } from './limits.ts'
 
 /**
- * The fourteen wordings as keys of the `emptyStates` namespace (`locales/<tag>/emptyStates.json`).
+ * The twelve wordings as keys of the `emptyStates` namespace (`locales/<tag>/emptyStates.json`).
+ * The fifteen wordings as keys of the `emptyStates` namespace (`locales/<tag>/emptyStates.json`).
  * Customers and Home share `nobodyOwes`. No words here: a screen resolves the key at render.
  */
 export const EMPTY_STATE_KEYS = {
@@ -23,6 +24,7 @@ export const EMPTY_STATE_KEYS = {
   analysisEmptyMonth: 'emptyStates:analysisEmptyMonth',
   customerTypesList: 'emptyStates:customerTypesList',
   paymentMethodsArchived: 'emptyStates:paymentMethodsArchived',
+  settingsSearchNothing: 'emptyStates:settingsSearchNothing',
   productResultsEmpty: 'emptyStates:productResultsEmpty',
   productResultsNoMatch: 'emptyStates:productResultsNoMatch',
   customersNoMatch: 'emptyStates:customersNoMatch',
@@ -41,6 +43,7 @@ export const EMPTY_STATE_LIMITS = {
   analysisEmptyMonth: 'emptyLine',
   customerTypesList: 'emptyTitle',
   paymentMethodsArchived: 'emptyTitle',
+  settingsSearchNothing: 'emptyLine',
   productResultsEmpty: 'emptyLine',
   productResultsNoMatch: 'emptyLine',
   customersNoMatch: 'emptyLine',
