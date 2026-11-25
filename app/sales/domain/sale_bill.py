@@ -13,7 +13,6 @@ from enum import StrEnum
 from typing import Literal, assert_never
 
 from app.sales.domain.pricing import PricingRule
-from app.shared.payment_method import PaymentMethodId
 from app.shared.quantity import Quantity
 
 BillState = Literal["paid", "owed", "none"]
@@ -53,29 +52,45 @@ class PaymentState(StrEnum):
 
 def payment_state(
     total: int,
-    on_the_spot_method: PaymentMethodId | None,
+    on_the_spot_amount: int,
     has_customer: bool,
     still_owed: int | None,
 ) -> PaymentState:
     """The one rule that decides a sale's Payment state; the first that applies wins.
-    `still_owed` is what settlement reports for this sale, `None` when it does not list
-    it. The only place a customer's amount owed is checked against `0..total`."""
+    `on_the_spot_amount` is what was paid on the spot, `0` when nothing was; a part of
+    the total is a Deposit. `still_owed` is what settlement reports for this sale,
+    `None` when it does not list it. The only place a customer's amount owed is checked
+    against its bounds."""
+    if on_the_spot_amount < 0 or on_the_spot_amount > total:
+        raise SaleBillInconsistent(
+            "a sale's amount paid on the spot lies outside zero and its total"
+        )
     if total == 0:
         return PaymentState.PAID
-    if on_the_spot_method is not None:
+    if on_the_spot_amount == total:
         if still_owed is not None:
             raise SaleBillInconsistent("a sale paid on the spot is never reported as owed")
         return PaymentState.PAID
     if not has_customer:
+        if on_the_spot_amount > 0:
+            raise SaleBillInconsistent("a deposit sale has a customer")
         raise SaleBillInconsistent("a sale with no customer is paid on the spot or is a gift")
     if still_owed is None:
         raise SaleBillInconsistent("a customer's sale is missing from settlement")
-    if still_owed < 0 or still_owed > total:
-        raise SaleBillInconsistent("a sale's amount owed lies outside zero and its total")
+    if on_the_spot_amount == 0:
+        if still_owed < 0 or still_owed > total:
+            raise SaleBillInconsistent("a sale's amount owed lies outside zero and its total")
+        if still_owed == 0:
+            return PaymentState.PAID
+        if still_owed == total:
+            return PaymentState.UNPAID
+        return PaymentState.PART_PAID
+    if still_owed < 0 or still_owed > total - on_the_spot_amount:
+        raise SaleBillInconsistent(
+            "a deposit sale's amount owed lies outside zero and what its deposit leaves"
+        )
     if still_owed == 0:
         return PaymentState.PAID
-    if still_owed == total:
-        return PaymentState.UNPAID
     return PaymentState.PART_PAID
 
 
@@ -101,12 +116,12 @@ class SalePayment:
 
 def sale_payment(
     total: int,
-    on_the_spot_method: PaymentMethodId | None,
+    on_the_spot_amount: int,
     has_customer: bool,
     still_owed: int | None,
 ) -> SalePayment:
     """`payment_state` with the amount: `0` when paid, settlement's figure otherwise."""
-    state = payment_state(total, on_the_spot_method, has_customer, still_owed)
+    state = payment_state(total, on_the_spot_amount, has_customer, still_owed)
     if state is PaymentState.PAID:
         return SalePayment(state, 0, total)
     assert still_owed is not None, "a sale that is not paid has an amount owed"
@@ -122,14 +137,19 @@ def bill_payment_of(payment: SalePayment) -> BillPayment:
 
 def bill_payment(
     total: int,
-    on_the_spot_method: PaymentMethodId | None,
+    on_the_spot_amount: int,
     has_customer: bool,
     still_owed: int | None,
 ) -> BillPayment:
-    """A total of 0 is `none`; otherwise the Payment state decides."""
+    """A total of 0 is `none`; otherwise the Payment state decides. The amount paid on
+    the spot is checked first, as `payment_state` does."""
+    if on_the_spot_amount < 0 or on_the_spot_amount > total:
+        raise SaleBillInconsistent(
+            "a sale's amount paid on the spot lies outside zero and its total"
+        )
     if total == 0:
         return BillPayment("none", None)
-    return bill_payment_of(sale_payment(total, on_the_spot_method, has_customer, still_owed))
+    return bill_payment_of(sale_payment(total, on_the_spot_amount, has_customer, still_owed))
 
 
 def bill_balance(has_customer: bool, balance: int) -> int | None:
