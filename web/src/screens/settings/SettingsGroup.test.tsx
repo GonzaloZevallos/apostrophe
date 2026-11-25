@@ -11,6 +11,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, RouterProvider, useNavigate } from 'react-router'
 import { expect, test } from 'vitest'
 import SettingsGroup from './SettingsGroup'
+import { SettingsPaneContext } from './SettingsPaneContext'
 import ContentArea from '../../components/ContentArea'
 import type { ReactElement, ReactNode } from 'react'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
@@ -166,4 +167,61 @@ test('"Close" is the icon-only close: a 44 px control named "Close" with no visi
   expect(close.querySelector('svg')).not.toBeNull()
   expect(screen.queryByText('Volver')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Volver' })).not.toBeInTheDocument()
+})
+
+function renderInPane(options: { pane: boolean; state: unknown; dirty?: boolean }) {
+  const router = createMemoryRouter(
+    [
+      { path: SETTINGS, element: <h1>Lista</h1> },
+      {
+        path: SETTINGS_BUSINESS,
+        element: (
+          <SettingsPaneContext.Provider value={options.pane}>
+            <Group dirty={options.dirty === true} />
+          </SettingsPaneContext.Provider>
+        ),
+      },
+      { path: '/afuera', element: <h1>Afuera</h1> },
+    ],
+    { initialEntries: [{ pathname: SETTINGS_BUSINESS, state: options.state }] },
+  )
+  render(<RouterProvider router={router} />)
+  return router
+}
+
+test('in the pane, a group opened from a Settings row has no Close but keeps its title and main', () => {
+  renderInPane({ pane: true, state: { enteredFrom: 'settings' } })
+
+  expect(screen.queryByRole('button', { name: 'Close' })).not.toBeInTheDocument()
+  expect(screen.getByText('Business')).toBeInTheDocument()
+  expect(screen.getByRole('main')).toBeInTheDocument()
+})
+
+test('in the pane, a group opened any other way keeps its Close', () => {
+  renderInPane({ pane: true, state: undefined })
+  expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
+})
+
+test('in the pane, a group whose entry mark is not "settings" keeps its Close', () => {
+  renderInPane({ pane: true, state: { enteredFrom: 'sales' } })
+  expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
+})
+
+test('in the pane, a state that is not an object keeps the Close', () => {
+  renderInPane({ pane: true, state: 'settings' })
+  expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
+})
+
+test('outside the pane, a group opened from a Settings row keeps its Close', () => {
+  renderInPane({ pane: false, state: { enteredFrom: 'settings' } })
+  expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
+})
+
+test('in the pane, a dirty group still asks before leaving', async () => {
+  const router = renderInPane({ pane: true, state: { enteredFrom: 'settings' }, dirty: true })
+
+  await act(() => router.navigate('/afuera'))
+
+  expect(router.state.location.pathname).toBe(SETTINGS_BUSINESS)
+  expect(screen.getByRole('alertdialog', { name: 'Discard the name?' })).toBeInTheDocument()
 })
