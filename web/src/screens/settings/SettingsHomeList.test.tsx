@@ -1,5 +1,5 @@
 /**
- * `SettingsHomeList` through what the person sees: the three shortcuts, then the groups with
+ * `SettingsNav` through what the person sees: the three shortcuts, then the groups with
  * their shown rows, every entry one link that carries `enteredFrom: 'settings'`. The registry
  * (`settingsRows.ts`) is the oracle for names and addresses: nothing here repeats an address.
  * `ctx` is passed explicitly every time.
@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { expect, test } from 'vitest'
 import { testT } from '../../i18n/testing'
-import SettingsHomeList from './SettingsHomeList'
+import SettingsNav from './SettingsNav'
 import {
   SETTINGS_GROUP_LABEL_KEYS,
   SETTINGS_GROUPS,
@@ -29,7 +29,7 @@ const ON_TWO: SettingsRowContext = { selectableLanguages: ['en', 'es'], isCustom
 function renderList(ctx: SettingsRowContext, rows?: readonly SettingsRow[]) {
   const router = createMemoryRouter(
     [
-      { path: HOME, element: <SettingsHomeList ctx={ctx} rows={rows} /> },
+      { path: HOME, element: <SettingsNav ctx={ctx} rows={rows} /> },
       { path: '*', element: <p>arrived</p> },
     ],
     { initialEntries: [HOME] },
