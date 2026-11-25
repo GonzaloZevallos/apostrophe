@@ -4725,7 +4725,7 @@ a.ajustes-tema__opcion {
   justify-content: center;
   height: 32px;
   padding: 0 var(--espacio-lg);
-  border-radius: 16px;
+  border-radius: var(--radio-pildora);
   white-space: nowrap;
   color: var(--tinta2);
   font-weight: 400;
