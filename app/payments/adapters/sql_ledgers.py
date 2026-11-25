@@ -75,7 +75,7 @@ class SqlLedgers:
             ).all()
         )
 
-        on_the_spot_methods: dict[int, PaymentMethodLabel] = {}
+        on_the_spot: dict[int, tuple[PaymentMethodLabel, int]] = {}
         later_by_customer: dict[int, list[LaterPaymentEntry]] = {}
         for payment, amount, label in self._session.execute(
             select(PaymentRow, scaled(PaymentRow.amount, factor), PaymentMethodRow)
@@ -93,7 +93,10 @@ class SqlLedgers:
         ):
             method = PaymentMethodLabel(id=label.id, name=label.name, icon=label.icon)
             if payment.sale_id is not None:
-                on_the_spot_methods[payment.sale_id] = method
+                on_the_spot[payment.sale_id] = (
+                    method,
+                    domain_amount(self._session, self._business_id, amount),
+                )
             else:
                 assert payment.customer_id is not None, "a later payment always names a customer"
                 later_by_customer.setdefault(payment.customer_id, []).append(
@@ -117,6 +120,7 @@ class SqlLedgers:
             total = domain_amount(
                 self._session, self._business_id, shipping + line_totals.get(sale.id, 0)
             )
+            spot_method, paid_amount = on_the_spot.get(sale.id, (None, 0))
             sales_by_customer.setdefault(sale.customer_id, []).append(
                 OwedSale(
                     id=sale.id,
@@ -124,7 +128,8 @@ class SqlLedgers:
                     recorded_at=sale.recorded_at,
                     total=total,
                     number=sale.number,
-                    on_the_spot_method=on_the_spot_methods.get(sale.id),
+                    on_the_spot_method=spot_method,
+                    on_the_spot_amount=paid_amount,
                 )
             )
 

@@ -4,8 +4,8 @@ Settlement, Credit; ADR-0012; the ledger-walk ADR
 
 One row per Sale and one row per later Payment, ordered by `ledger_key`:
 `(date, recorded_at, Sale before Payment, id)`. That is a plain ledger walk, not the
-Settlement order: a Sale adds its total (`0` when paid on the spot) and a Payment
-subtracts its full amount, whatever Sales it settles.
+Settlement order: a Sale adds what it owes at its start (`opening_owed`) and a
+Payment subtracts its full amount, whatever Sales it settles.
 
 Every row carries its own `running_balance` and `standing`, read only from
 `standing_of`. A row can go below zero mid-ledger (a Payment dated before its Sale, or
@@ -116,7 +116,7 @@ def account_of(sales: Sequence[OwedSale], payments: Sequence[LaterPaymentEntry])
     running = 0
     for _, entry in entries:
         if isinstance(entry, OwedSale):
-            running += 0 if entry.paid_on_the_spot else entry.total
+            running += entry.opening_owed
             rows.append(
                 SaleRow(
                     date=entry.date,
