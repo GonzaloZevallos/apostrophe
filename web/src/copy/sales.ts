@@ -61,7 +61,8 @@ export const SALE_BILL_TEXT = {
 const RECEIVED_HELP = "Type what they hand over to see the change. It isn't saved."
 
 /** The line detail Sheet: its fixed Done, the Remove line that sits apart from it, and the quantity
- * field's neutral label and refusal (no unit word: `enterGrams` stays with the live New sale). */
+ * field's neutral label and refusal (no unit word: `enterGrams` stays with the live New sale). Their
+ * `en.baseline.json` entries are inserted in sorted order: the baseline script never adds one. */
 const LINE_DETAIL_TEXT = {
   lineDetailDone: COMMON_TEXT.done,
   removeLineButton: 'Remove line',
