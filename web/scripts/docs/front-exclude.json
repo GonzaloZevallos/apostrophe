@@ -43,5 +43,6 @@
   "^src/screens/settings/settingsRows\\.ts$",
   "^src/screens/settings/settingsSearch\\.ts$",
   "^src/screens/settings/useSettingsSearchEntry\\.ts$",
-  "^src/screens/varieties/productsSegment\\.ts$"
+  "^src/screens/varieties/productsSegment\\.ts$",
+  "^src/screens/varieties/ProductsPhoneBodies\\.tsx$"
 ]
