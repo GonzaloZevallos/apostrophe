@@ -621,7 +621,7 @@ Las reglas de redacción del texto que la app muestra en pantalla: límites de l
 _Avoid_: style guide, copy guide, UI guidelines
 
 **New sale suggestions**:
-Los ids que la lectura de ventas le ofrece a New sale para acortar elecciones: hasta 8 Customers a los que se les vendió más recientemente, hasta 8 Products más vendidos en los 30 días que terminan en la fecha de la venta (sin Gifts ni Archived products) y el Payment method de la última Sale pagada en el momento, o ninguno si ese medio está archivado. Solo acortan elecciones: nunca fijan un precio, un monto ni una cantidad, y salen solo del propio Business. En la app: todavía no tiene palabra propia.
+Los ids que la lectura de ventas le ofrece a New sale para acortar elecciones: hasta 8 Customers a los que se les vendió más recientemente, hasta 8 Products más vendidos en los 30 días que terminan en la fecha de la venta (sin Gifts ni Archived products) y el Payment method de la última Sale pagada por completo en el momento (su On-the-spot payment igual a sus líneas más el Shipping charged, así que un pago parcial en el momento nunca cuenta), o ninguno si ese medio está archivado. Solo acortan elecciones: nunca fijan un precio, un monto ni una cantidad, y salen solo del propio Business.
 _Avoid_: recommendations, favorites, shortcuts, defaults, quick picks
 
 **So far**:
