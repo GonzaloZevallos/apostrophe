@@ -224,6 +224,19 @@ def test_the_sale_bill_and_the_sale_list_are_the_same_at_both_scales(
     ]
 
 
+def test_a_sale_paid_on_the_spot_reads_paid_on_the_list_the_detail_and_the_bill(
+    client: TestClient, money_scale: int
+) -> None:
+    created = _sell(client, _product(client), shipping_charged=1_500)
+
+    listed = client.get("/sales").json()
+    detail = client.get(f"/sales/{created['id']}").json()
+
+    assert [sale["payment_state"] for sale in listed] == ["paid"]
+    assert detail["payment_state"] == "paid"
+    assert detail["bill"]["payment"] == {"state": "paid", "still_owed": None}
+
+
 @pytest.mark.parametrize("field", ["shipping_charged", "special_price"])
 def test_a_sale_amount_with_a_decimal_is_refused_before_anything_is_saved(field: str) -> None:
     line = LineInput(
