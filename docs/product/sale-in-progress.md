@@ -58,7 +58,7 @@ En la planilla, una venta sin pagar era una fila sin pago, y saldarla después p
   1. `quantity`: la cantidad rompe la regla de `typedQuantity`;
   2. `giftWithSpecial`: gift con cualquier texto de Special price no vacío, antes de leer su valor (un Gift con "0" tipeado es `giftWithSpecial`);
   3. `specialZero`: un texto de Special price no vacío que no se lee como dinero, o que da 0 o menos.
-  Un texto de Special price vacío es ningún Special price (`null`), no un rechazo. Desde la parte 3 de GH-868, el detalle de línea muestra debajo del campo el texto de cantidad existente para `quantity` y `specialPriceAboveZero` para `specialZero`; `giftWithSpecial` no tiene texto propio porque el detalle nunca lo produce (ver "Detalle de línea").
+  Un texto de Special price vacío es ningún Special price (`null`), no un rechazo. Desde la parte 3 de GH-868, el detalle de línea muestra debajo del campo `lineQuantityInvalid` ("Enter a quantity above 0, with up to two decimals.") para `quantity` y `specialPriceAboveZero` para `specialZero`; `giftWithSpecial` no tiene texto propio porque el detalle nunca lo produce (ver "Detalle de línea"). El texto `enterGrams` de la New sale en vivo nunca se reutiliza en la nueva, porque nombra una Unit.
 
 ### Sin guardar
 
@@ -449,7 +449,8 @@ El dibujo aprobado NuevaVentaProductos no muestra un detalle de línea, Remove l
 
 ### Reglas
 
-- El buffer se valida solo con `lineEditOf` (ver Líneas). Done no está disponible solo mientras `lineEditOf` lo rechaza, y el motivo se muestra debajo del campo: el texto de cantidad existente para `quantity` y `specialPriceAboveZero` para `specialZero` (un Special price de 0, menor que 0 o ilegible). `giftWithSpecial` no tiene texto propio: el detalle nunca lo produce, porque el Gift y el Special price se excluyen; si llegara, Done tampoco estaría disponible.
+- El buffer se valida solo con `lineEditOf` (ver Líneas). Done no está disponible solo mientras `lineEditOf` lo rechaza, y el motivo se muestra debajo del campo: `lineQuantityInvalid` ("Enter a quantity above 0, with up to two decimals.") para `quantity` (vacía, 0, más de dos decimales o más de 13 dígitos enteros) y `specialPriceAboveZero` para `specialZero` (un Special price de 0, menor que 0 o ilegible). `giftWithSpecial` no tiene texto propio: el detalle nunca lo produce, porque el Gift y el Special price se excluyen; si llegara, Done tampoco estaría disponible.
+- El texto de cantidad es neutro: nunca nombra una Unit ni el separador decimal. `enterGrams`, el rechazo de la New sale en vivo, dice "grams" y nunca se usa acá (invariante 10, criterio 4 "Assume nothing").
 - Done manda `editLine` exactamente una vez y cierra. Con el buffer igual a la línea, cierra sin mandar `editLine`, así que abrir una línea solo para mirarla nunca deja trabada a la vendedora.
 - Close y el gesto de volver del teléfono son la misma acción: cierran de inmediato y descartan lo tipeado, sin confirmación, y nunca preguntan "Discard the sale?" (cerrar una Sheet apilada vuelve un nivel, ver Anfitrión de New sale).
 - El Gift y el Special price se excluyen como en el formulario de hoy: activar el Gift vacía y deshabilita el Special price, y tipear un Special price apaga el Gift. Una línea gratis es un Gift, nunca un Special price de $0.
@@ -459,12 +460,13 @@ El dibujo aprobado NuevaVentaProductos no muestra un detalle de línea, Remove l
 
 ### Textos
 
-- En `web/src/copy/sales.ts`, en inglés y sin palabras de Unit ni de tipo de producto, registrados en LIMITED_COPY y BASELINE_ARGS: `lineDetailDone` ("Done"), `removeLineButton` ("Remove line"), `lineNoPrice` ("No price"), `lineOpenDetail(name)` (el nombre accesible de la línea) y `specialPriceAboveZero`, agregado solo si todavía no existe. Se reutilizan el texto de cantidad existente, la ayuda existente del Special price y "no longer available". `en.baseline.json` se regenera con su script, nunca a mano.
+- En `web/src/copy/sales.ts`, en inglés y sin palabras de Unit ni de tipo de producto, registrados en LIMITED_COPY y BASELINE_ARGS: `lineDetailDone` ("Done"), `removeLineButton` ("Remove line"), `lineNoPrice` ("No price"), `lineOpenDetail(name)` (el nombre accesible de la línea), `lineQuantityInvalid` ("Enter a quantity above 0, with up to two decimals.") y `specialPriceAboveZero`, agregado solo si todavía no existe. Se reutilizan la ayuda existente del Special price y "no longer available". `en.baseline.json` se regenera con su script, nunca a mano.
 
 ### Huecos conocidos
 
 - Sin ruta, el detalle no se recorrió en la app en marcha ni se comparó con un dibujo; queda "not compared", sin verificar y no fallado, hasta el flip. Lo mismo para las reglas del Mobile check del campo de cantidad y del Special price.
 - La forma en que se ve "Done no disponible" la da la Sheet compartida; si en el teléfono no se lee como tal, lo juzga el flip.
+- `SALES_TEXT.enterGrams` ("Enter the grams: comma, up to two decimals") sigue en la New sale en vivo y nombra una Unit: es un supuesto existente que barre #330. El flip no lo pasa a la pantalla nueva, que usa `lineQuantityInvalid`.
 
 ## Tabla de resultados de Products de la computadora
 
@@ -583,6 +585,7 @@ Se decide uno solo por dibujo, el primero que corresponda, y reemplaza el cuerpo
 - Un texto propio de la Collect Sheet para una línea sin precio.
 - El control de fecha y los textos de los rechazos de la fecha (partes posteriores de GH-868). Un límite inferior para la fecha de la venta.
 - En el detalle de línea: un aviso o un Undo para Remove line, una confirmación al cerrar con cambios o al sacar una línea, un chevron o una marca "Edit" en la línea, un texto propio para `giftWithSpecial` y un comportamiento de foco propio. Cualquier cambio a cómo se cotizan las líneas.
+- Cambiar o retirar `SALES_TEXT.enterGrams` de la New sale en vivo (lo barre #330).
 - Conservar la venta en curso tras una recarga.
 - Cualquier cambio en el servidor, incluida la protección contra el doble registro.
 
@@ -603,13 +606,13 @@ Se decide uno solo por dibujo, el primero que corresponda, y reemplaza el cuerpo
   - `LineDetailSheet.tsx` figura en `front-exclude.json`;
   - Gift y Special price se excluyen: activar el Gift vacía y deshabilita el Special price, y tipear un Special price apaga el Gift;
   - un Special price de 0 muestra `specialPriceAboveZero` y Done no está disponible;
-  - cantidades vacía, 0, con tres decimales y de 14 dígitos muestran el texto de cantidad existente y Done no está disponible;
+  - cantidades vacía, 0, con tres decimales y de 14 dígitos muestran `lineQuantityInvalid` y Done no está disponible;
   - Done actualiza el total de la fila y manda exactamente 1 `editLine`; Done sin cambios cierra con 0 `editLine`;
   - Close descarta lo tipeado y la línea queda igual;
   - Remove line saca la línea y cierra; en la última línea la venta queda sin cambios sin guardar, la barra no tiene Collect y el cliente, la fecha, el Shipping charged y la Note no cambian;
   - una línea con `pricing` null muestra `lineNoPrice` con el Attention icon, sin $0, y su toque (`lineOpenDetail(name)`) abre el detalle; "−", la cantidad y "+" no lo abren;
   - los atributos de teléfono de cada campo de texto, en el test propio del componente.
-- Detalle de línea: líneas con `pricing` null mostradas como $0: 0. Ediciones guardadas mientras `lineEditOf` rechaza: 0. `editLine` por toque en Done: exactamente 1 con cambios y 0 sin cambios. Confirmaciones al cerrar o al sacar una línea: 0. Avisos o Undo después de Remove line: 0. Preguntas "Discard the sale?" al cerrar el detalle: 0. Operaciones de dinero propias del detalle o de la línea: 0. Lugares que deciden "sin precio" mirando `gift` o `specialPrice`: 0. Rutas, banderas o hooks `data-*` solo para tests: 0. Textos fuera de `web/src/copy/` o con palabras de Unit o de tipo de producto: 0. Ediciones a mano de `en.baseline.json`: 0.
+- Detalle de línea: líneas con `pricing` null mostradas como $0: 0. Ediciones guardadas mientras `lineEditOf` rechaza: 0. `editLine` por toque en Done: exactamente 1 con cambios y 0 sin cambios. Confirmaciones al cerrar o al sacar una línea: 0. Avisos o Undo después de Remove line: 0. Preguntas "Discard the sale?" al cerrar el detalle: 0. Operaciones de dinero propias del detalle o de la línea: 0. Lugares que deciden "sin precio" mirando `gift` o `specialPrice`: 0. Rutas, banderas o hooks `data-*` solo para tests: 0. Textos fuera de `web/src/copy/` o con palabras de Unit o de tipo de producto (incluido `enterGrams` en la New sale nueva): 0. Ediciones a mano de `en.baseline.json`: 0.
 - Vara del detalle de línea, que se juzga cuando el flip lo monte: corregir la cantidad, el Gift o el Special price de una línea lleva abrirla, cambiarla y Done, sin salir de New sale, y una línea sin precio se arregla o se saca sin perder el cliente ni las otras líneas; la venta entera sigue por debajo del minuto de sales.md, criterio 1. No hay medición de uso en la app hasta el flip de GH-496.
 - Cliente de sugerencias, a nivel de fetch: exactamente 1 pedido por apertura, con `on` igual a la fecha de apertura; 0 pedidos nuevos después de editar la fecha o volver a dibujar; 1 pedido nuevo en una apertura de otro día; una lectura fallida da ninguna sugerencia y 0 errores lanzados.
 - Lista de Products, en tests de componente a nivel de fetch: cada caso de la lista (pasos, cantidades tipeadas, una línea por Product, "No price", línea que pierde su precio, línea cuyo Product ya no vuelve, sugerencias filtradas y con tope, Stock, bulk a 10, recotización por Customer y por fecha, aviso, símbolo y decimales del Money format) tiene su test y pasa; 0 pedidos nuevos de sugerencias tras cambiar la fecha; 0 cambios en los totales de la venta al mostrar más filas.
