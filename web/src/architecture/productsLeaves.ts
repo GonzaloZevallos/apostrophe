@@ -9,6 +9,7 @@
  *      the same diff, so a stale entry is found here.
  */
 
+import { posix } from 'node:path'
 import type { Source } from './productsFiles'
 
 const IMPORT = /(?:^[ \t]*(?:import|export)\s+(?:type\s+)?(?:[^'";]*?\sfrom\s+)?|\bimport\s*\(\s*)['"]([^'"]+)['"]/gm
@@ -17,18 +18,10 @@ const COMPUTER_ENTRY = 'src/screens/varieties/ProductsComputer.tsx'
 const SEGMENT_MODULE = /(?:^|\/)productsSegment$/
 const VARIETIES_PATTERN = /src\/screens\/varieties\//
 
-function dirname(path: string): string {
-  return path.slice(0, path.lastIndexOf('/'))
-}
-
 /** `from` joined with a relative `module`, `..` and `.` resolved; null when it leaves `src/`. */
 function join(from: string, module: string): string | null {
-  const parts = dirname(from).split('/')
-  for (const part of module.split('/')) {
-    if (part === '..') parts.pop()
-    else if (part !== '.') parts.push(part)
-  }
-  return parts[0] === 'src' ? parts.join('/') : null
+  const resolved = posix.join(posix.dirname(from), module)
+  return resolved.startsWith('src/') ? resolved : null
 }
 
 /** The modules a file imports, as written. */

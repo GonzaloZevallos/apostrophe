@@ -16,7 +16,6 @@ import Loading from '../../components/Loading'
 import Notice from '../../components/Notice'
 import SinConexion from '../../components/SinConexion'
 import { ARCHIVED_VARIETIES, STOCK } from '../../routes'
-import { VARIETIES_TEXT } from '../../copy/varieties'
 import type { ProductsView } from './ProductsBody'
 import ProductsEmpty from './ProductsEmpty'
 import ProductsSummary from './ProductsSummary'
@@ -76,10 +75,7 @@ export function StockBody({ view }: { view: ProductsView }) {
       </InAppLink>
       {!loading && view.archivedCount > 0 && (
         <InAppLink to={ARCHIVED_VARIETIES} className="variedades__todas">
-          <span>
-            {VARIETIES_TEXT.archivadas}
-            {view.archivedCount})
-          </span>
+          <span>{`${t('common:archived')} (${view.archivedCount})`}</span>
           <span aria-hidden="true">›</span>
         </InAppLink>
       )}

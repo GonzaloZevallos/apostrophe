@@ -110,7 +110,7 @@ describe('StockBody', () => {
     expect(screen.getByRole('link', { name: /take from stock/i })).toBeTruthy()
     expect(screen.getByText('24K Gold')).toBeTruthy()
     expect(screen.getByText(/all entries/i)).toBeTruthy()
-    expect(screen.getByText(`${VARIETIES_TEXT.archivadas}3)`)).toBeTruthy()
+    expect(screen.getByText('Archived (3)')).toBeTruthy()
     expect(sendCatalog()).toBeNull()
   })
 
