@@ -42,7 +42,7 @@ def test_initials_of_matches_the_fixture_row(name: str, initials: str) -> None:
 def test_the_whitespace_set_is_js_s_and_nothing_else() -> None:
     whitespace = recorder._WHITESPACE
     assert len(whitespace) == 25
-    assert "﻿" in whitespace
+    assert "\ufeff" in whitespace
     assert "\u0085" not in whitespace
     assert not {chr(code) for code in range(0x1C, 0x20)} & whitespace
 

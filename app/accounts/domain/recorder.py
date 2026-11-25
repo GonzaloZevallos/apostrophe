@@ -25,19 +25,19 @@ _WHITESPACE = frozenset(
         "\r",
         " ",
         "\xa0",
-        " ",
+        "\u1680",
         *(chr(code) for code in range(0x2000, 0x200B)),
-        " ",
-        " ",
-        " ",
-        " ",
-        "　",
-        "﻿",
+        "\u2028",
+        "\u2029",
+        "\u202f",
+        "\u205f",
+        "\u3000",
+        "\ufeff",
     }
 )
 
-_ZWJ = "‍"
-_ALWAYS_JOINING = frozenset({"‌"})
+_ZWJ = "\u200d"
+_ALWAYS_JOINING = frozenset({"\u200c"})
 _JOINING_CATEGORIES = frozenset({"Mn", "Mc", "Me"})
 
 
