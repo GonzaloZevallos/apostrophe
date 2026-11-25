@@ -11,7 +11,11 @@ from sqlalchemy import func, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
-from app.stock.adapters.tables import StockWithdrawalLineRow, StockWithdrawalRow
+from app.stock.adapters.tables import (
+    StockEntryRow,
+    StockWithdrawalLineRow,
+    StockWithdrawalRow,
+)
 from tests.conftest import MovableClock, reason_id
 from tests.contract_shapes import assert_matches_fixture
 from tests.fakes.archive import archive_by_hand
@@ -330,6 +334,26 @@ def test_movements_mix_entries_and_withdrawals_newest_first(
     assert rows[1]["quantity"] == 1.5  # one row for the withdrawal, its repeated lines summed
     assert rows[3]["cost_per_gram"] == 2_000
     assert [(row["kind"], row["quantity"]) for row in other] == [("withdrawal", 2.0)]
+
+
+def test_movements_keep_the_entry_before_a_withdrawal_that_ties_it(
+    client: TestClient, engine: Engine
+) -> None:
+    variety_id = _variety(client)
+    _stock_in(client, variety_id, "50", date=TODAY)
+    _record(client, variety_id, date=TODAY)
+    with Session(engine) as session:
+        entry_at = session.scalars(select(StockEntryRow.recorded_at)).one()
+        withdrawal_at = session.scalars(select(StockWithdrawalRow.recorded_at)).one()
+    # The answer carries no `recorded_at`: the stored rows prove the frozen clock tied them.
+    assert entry_at == withdrawal_at
+
+    rows = client.get(f"/stock/products/{variety_id}/movements").json()
+
+    assert [(row["kind"], row["date"]) for row in rows] == [
+        ("entry", TODAY),
+        ("withdrawal", TODAY),
+    ]
 
 
 def test_movements_of_another_business_variety_answer_404(
