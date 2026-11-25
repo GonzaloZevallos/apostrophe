@@ -24,6 +24,7 @@ export const RECORDED_EXPENSE_BODY = {
   category_id: 1,
   amount: 1500,
   detail: 'Cinta',
+  payment_method: null,
 } satisfies Expense
 
 /** Line 1 with a Product and its grams, then the Expense tile: the strip is over the form. The first tap is a click on the text, as the registry rows say it (a row's step text must be a copy value). */

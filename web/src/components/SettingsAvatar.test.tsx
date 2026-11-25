@@ -78,7 +78,7 @@ describe('on the phone', () => {
 describe('Expenses on the phone', () => {
   const MONTH = (categories: unknown[]) => ({ month: '2026-10', total: 0, categories })
   const WITH_ONE = MONTH([
-    { id: 1, name: 'Rent', subtotal: 500, expenses: [{ id: 7, spent_on: '2026-10-01', category_id: 1, amount: 500, detail: '' }] },
+    { id: 1, name: 'Rent', subtotal: 500, expenses: [{ id: 7, spent_on: '2026-10-01', category_id: 1, amount: 500, detail: '', payment_method: null }] },
   ])
 
   // Each state also names what shows the screen got there, so a state never reached fails here.

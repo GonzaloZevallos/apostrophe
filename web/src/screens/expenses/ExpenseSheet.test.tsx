@@ -24,7 +24,7 @@ const VIEW = {
       id: 1,
       name: 'Packaging',
       subtotal: 4500,
-      expenses: [{ id: 9, spent_on: '2026-10-01', category_id: 1, amount: 4500, detail: 'Bolsas' }],
+      expenses: [{ id: 9, spent_on: '2026-10-01', category_id: 1, amount: 4500, detail: 'Bolsas', payment_method: null }],
     },
   ],
 }
