@@ -1,5 +1,25 @@
 import { describe, expect, test } from 'vitest'
-import { foldForSearch, matchRange, matchesQuery } from './selectorSearch'
+import { byFoldedName, foldForSearch, matchRange, matchesQuery } from './selectorSearch'
+
+test('byFoldedName orders names that fold equal by the name as typed, then by id', () => {
+  const rows = [
+    { id: 3, name: 'arbol' },
+    { id: 1, name: 'Árbol' },
+    { id: 2, name: 'Arbol' },
+    { id: 0, name: 'Zebra' },
+  ]
+  expect([...rows].sort(byFoldedName).map((row) => row.name)).toEqual(['Arbol', 'arbol', 'Árbol', 'Zebra'])
+  expect([...rows].reverse().sort(byFoldedName).map((row) => row.id)).toEqual([2, 3, 1, 0])
+})
+
+test('byFoldedName orders equal names by id', () => {
+  const rows = [
+    { id: 9, name: 'Papa' },
+    { id: 4, name: 'Papa' },
+  ]
+  expect([...rows].sort(byFoldedName).map((row) => row.id)).toEqual([4, 9])
+  expect(byFoldedName(rows[0] as (typeof rows)[number], rows[0] as (typeof rows)[number])).toBe(0)
+})
 
 test('folds case and accents so ñ matches n and ü matches u', () => {
   expect(foldForSearch('Ñandú ÜBER')).toBe('nandu uber')

@@ -1862,3 +1862,34 @@ def test_another_business_never_changes_still_owed(
     for read in (listed[0], detail):
         assert (read["payment_state"], read["still_owed"]) == ("unpaid", mine["total"])
     assert business_a.get(f"/sales/{theirs['id']}").status_code == 404
+
+
+def test_each_business_lists_only_its_own_methods_each_in_use_by_its_own_expense(
+    business_a: TestClient, business_b: TestClient
+) -> None:
+    """`in_use` reads each business's own Expenses: a method only an Expense points at
+    is in use for its owner, and neither list names the other's method."""
+    used: dict[str, int] = {}
+    for key, client in (("a", business_a), ("b", business_b)):
+        method = client.post("/api/payment-methods", json={"name": f"Used {key}"})
+        assert method.status_code == 201, method.text
+        used[key] = int(method.json()["id"])
+        category = next(c for c in client.get("/expense-categories").json() if c["name"] == "Other")
+        expense = client.post(
+            "/expenses",
+            json={
+                "spent_on": "2026-10-02",
+                "category_id": category["id"],
+                "amount": 1_000,
+                "detail": "fletes",
+                "payment_method_id": used[key],
+            },
+        )
+        assert expense.status_code == 201, expense.text
+
+    for key, client in (("a", business_a), ("b", business_b)):
+        listed = client.get("/api/payment-methods").json()
+        other = "b" if key == "a" else "a"
+        assert [m["id"] for m in listed if m["in_use"]] == [used[key]]
+        assert used[other] not in [m["id"] for m in listed]
+        assert f"Used {other}" not in [m["name"] for m in listed]

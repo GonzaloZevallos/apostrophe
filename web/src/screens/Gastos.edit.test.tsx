@@ -19,8 +19,8 @@ const CATEGORIES = [
 
 function fetchFake(): FetchImpl {
   const rows = [
-    { id: 9, spent_on: '2026-09-28', category_id: 1, amount: 4500, detail: 'Bolsas' },
-    { id: 8, spent_on: '2026-10-01', category_id: 1, amount: 1200, detail: 'Cinta' },
+    { id: 9, spent_on: '2026-09-28', category_id: 1, amount: 4500, detail: 'Bolsas', payment_method: null },
+    { id: 8, spent_on: '2026-10-01', category_id: 1, amount: 1200, detail: 'Cinta', payment_method: null },
   ]
   return async (url, init) => {
     const method = init?.method ?? 'GET'
@@ -40,7 +40,7 @@ function fetchFake(): FetchImpl {
     if (url === '/expense-categories' && method === 'GET') return jsonResponse(200, CATEGORIES)
     const one = /^\/expenses\/(\d+)$/.exec(url)
     if (one !== null && method === 'PUT') {
-      return jsonResponse(200, { id: Number(one[1]), ...JSON.parse(String(init?.body)) })
+      return jsonResponse(200, { id: Number(one[1]), payment_method: null, ...JSON.parse(String(init?.body)) })
     }
     if (one !== null && method === 'DELETE') return new Response(null, { status: 204 })
     throw new Error(`unexpected ${method} ${url}`)

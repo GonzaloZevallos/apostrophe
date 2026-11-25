@@ -42,6 +42,7 @@ import { baselineText } from '../../i18n/testing'
 
 const EMPTY_CUSTOMERS = baselineText('customers.ts:EMPTY_CUSTOMERS')
 const NOBODY_OWES = baselineText('customers.ts:NOBODY_OWES')
+const noMatchLine = (q: string): string => `No customer matches «${q}».`
 const SAVED_TOAST_TEXT = baselineText('common.ts:COMMON_TEXT.customerSaved')
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
 import { debtorsOf, NO_DEBTORS } from '../../test/debtors'
@@ -1016,11 +1017,78 @@ test('no match shows only the no-match line, and never while the answer is pendi
 
   answer?.(jsonResponse(200, []))
 
-  expect(await screen.findByText(EMPTY_CUSTOMERS)).toBeInTheDocument()
+  expect(await screen.findByText(noMatchLine('zz'))).toBeInTheDocument()
+  expect(screen.queryByText(EMPTY_CUSTOMERS)).not.toBeInTheDocument()
   expect(screen.queryByText('Searching…')).not.toBeInTheDocument()
   expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
   expect(screen.queryByRole('region', { name: 'Owed to you' })).not.toBeInTheDocument()
   expect(screen.queryByText(NOBODY_OWES)).not.toBeInTheDocument()
+})
+
+test('a query that matches nobody says so with its own line, with the header, the search and the segments in place', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub((query) => jsonResponse(200, query === '' ? [MICA] : []), () => jsonResponse(200, DEBTORS_FIXTURE)),
+  )
+  renderClientes()
+  await screen.findByRole('region', { name: 'Owed to you' })
+
+  await userEvent.type(screen.getByLabelText('Search customer'), 'Zzzzz')
+
+  const line = await screen.findByText(noMatchLine('Zzzzz'))
+  expect(line).toHaveAttribute('data-copy', 'emptyLine')
+  expect(screen.queryByText(EMPTY_CUSTOMERS)).not.toBeInTheDocument()
+  expect(screen.getByLabelText('Search customer')).toHaveValue('Zzzzz')
+  expect(screen.getByRole('link', { name: 'New customer' })).toBeInTheDocument()
+  expectIconAndTextRule(document.body, RULE)
+})
+
+test('no customers and no query keeps the empty wording, not the no-match line', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [])))
+  renderClientes()
+  await showAll()
+
+  const empty = await screen.findByText(EMPTY_CUSTOMERS)
+
+  expect(empty).toHaveAttribute('data-copy', 'emptyTitle')
+  expect(screen.queryByText(/No customer matches/)).not.toBeInTheDocument()
+})
+
+test('clearing a query that matched nobody brings the list back', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub((query) => jsonResponse(200, query === '' ? [MICA] : []), () => jsonResponse(200, DEBTORS_FIXTURE)),
+  )
+  renderClientes()
+  await showAll()
+  await screen.findByText('Mica Solano')
+
+  await userEvent.type(screen.getByLabelText('Search customer'), 'Zzzzz')
+  await screen.findByText(noMatchLine('Zzzzz'))
+  await userEvent.clear(screen.getByLabelText('Search customer'))
+
+  expect(await screen.findByText('Mica Solano')).toBeInTheDocument()
+  expect(screen.queryByText(/No customer matches/)).not.toBeInTheDocument()
+})
+
+test('the no-match line shows the query without its trailing space', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub((query) => jsonResponse(200, query === '' ? [MICA] : [])))
+  renderClientes()
+  await showAll()
+
+  await userEvent.type(screen.getByLabelText('Search customer'), 'Zzzzz ')
+
+  expect(await screen.findByText('No customer matches «Zzzzz».')).toBeInTheDocument()
+})
+
+test('a 60-character query shows the whole no-match line', async () => {
+  const long = 'q'.repeat(60)
+  vi.mocked(fetch).mockImplementation(fetchStub((query) => jsonResponse(200, query === '' ? [MICA] : [])))
+  renderClientes()
+  await showAll()
+
+  await userEvent.type(screen.getByLabelText('Search customer'), long)
+
+  const line = await screen.findByText(`No customer matches «${long}».`)
+  expect(line.textContent).toBe(`No customer matches «${long}».`)
 })
 
 test('a failed search shows the load-failure message, not the no-match line', async () => {

@@ -6,5 +6,7 @@
   "sales.ts:SALE_PAYMENT_TEXT.paid": { "key": "sales:card.payment.paid" },
   "sales.ts:SALE_PAYMENT_TEXT.unpaid": { "key": "sales:card.payment.unpaid" },
   "sales.ts:SALE_PAYMENT_TEXT.partPaid": { "key": "sales:card.payment.partPaid", "params": ["amount"] },
-  "sales.ts:SALE_PAYMENT_TEXT.unknown": { "key": "sales:card.payment.unknown" }
+  "sales.ts:SALE_PAYMENT_TEXT.unknown": { "key": "sales:card.payment.unknown" },
+  "dates.ts:DATES_TEXT.oneSale": { "key": "sales:section.count_one", "fill": { "count": "1" } },
+  "dates.ts:DATES_TEXT.salesN": { "key": "sales:section.count", "params": ["count"] }
 }

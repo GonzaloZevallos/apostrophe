@@ -1,10 +1,12 @@
 ---
 status: accepted
 date: 2026-11-10
-summary: "los medios de pago se identifican por id y la columna `payment.method` queda congelada"
+summary: "los medios de pago se identifican por id, la columna `payment.method` queda congelada y una Expense puede apuntar a su medio por id"
 ---
 
 # Los medios de pago se identifican por id y la columna `payment.method` queda congelada
+
+Enmendada por la [ADR 20261124](20261124-a-payment-method-is-in-use-when-any-payment-or-expense-points-at-it.md): `in_use` cuenta también las Expenses (ver "Enmienda: las Expenses").
 
 Épica GH-318 (GH-407). Hasta acá un Payment decía cómo se pagó con una palabra fija (`cash` o `transfer`).
 Ahora cada Business tiene su propia lista de Payment methods (CONTEXT.md: Payment method). Esto registra
@@ -43,3 +45,18 @@ cómo se enlazan.
   existentes los reciben en inglés por la migración.
 - La API de pagos y ventas rompe (`payment_method_id` en lugar de `method`): el PR lleva `Breaking-API:`
   (ADR-0066).
+
+## Enmienda: las Expenses (GH-837 y GH-520)
+
+Esto registra lo que ya rige; no reabre nada de lo de arriba.
+
+- **Una Expense puede nombrar un medio por id, de forma opcional.** `expense.payment_method_id` es nullable y
+  usa la misma clave foránea compuesta `(business_id, payment_method_id)` con `ON DELETE RESTRICT`. Una
+  Expense sin medio es válida y no cuenta para ninguno.
+- **Su escritura usa la misma guarda dentro de la sentencia.** El `INSERT` o el `UPDATE` de la Expense
+  comprueba el medio dentro de su propia sentencia y responde 404 `payment_method.unavailable` si está
+  archivado o es de otro Business; ningún `SELECT` previo del caso de uso o del router lo decide. Al editar,
+  un medio archivado que la Expense ya tiene y no cambió se acepta. `tests/expenses/test_sql_expenses_guard.py`
+  lo cubre.
+- **`in_use` también cuenta las Expenses.** Un medio al que apunta una Expense solo se archiva; la regla y su
+  cableado están en la [ADR 20261124](20261124-a-payment-method-is-in-use-when-any-payment-or-expense-points-at-it.md).

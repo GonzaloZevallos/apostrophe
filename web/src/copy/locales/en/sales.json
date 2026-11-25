@@ -11,5 +11,13 @@
       "partPaid": "Part-paid · {{amount}} owed",
       "unknown": "Payment can't be shown"
     }
+  },
+  "section": {
+    "count_one": "{{count}} sale",
+    "count_other": "{{count}} sales",
+    "label": "Sales summary"
+  },
+  "loading": {
+    "label": "Loading sales"
   }
 }

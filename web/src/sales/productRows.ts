@@ -7,9 +7,8 @@
  */
 
 import type { VarietyStock, Status } from '../api/stock'
-import { matchesQuery } from '../components/selectorSearch'
+import { byFoldedName, matchesQuery } from '../components/selectorSearch'
 import type { Variety } from '../screens/Variedades'
-import { varietiesByName } from '../screens/varieties/varietiesByName'
 import { pricedLineOf } from './newSalePricing'
 import type { PricedSaleLine, PricingSettings } from './pricing'
 import { type DraftState, saleDraftReducer } from './saleDraft'
@@ -55,7 +54,7 @@ export function pricedRows(input: {
   return rows
 }
 
-/** The rows whose name matches `query`, in the Products tab's one order. */
+/** The rows whose name matches `query`, in the order of New sale's search results. */
 export function visibleRows(priced: readonly ProductRow[], query: string): ProductRow[] {
-  return varietiesByName(priced.filter((row) => matchesQuery(row.name, query)))
+  return priced.filter((row) => matchesQuery(row.name, query)).sort(byFoldedName)
 }

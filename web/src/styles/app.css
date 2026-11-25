@@ -128,6 +128,11 @@ body {
   color: var(--tinta2);
 }
 
+/* The Customers no-match line carries what was typed: a long query wraps, it is never cut. */
+.campo__rotulo--consulta {
+  overflow-wrap: anywhere;
+}
+
 /* The Customer's number on the card and the card behind: whole, on one line, never cut. */
 .campo__valor-telefono {
   white-space: nowrap;
@@ -1853,8 +1858,31 @@ a.ajustes-tema__opcion {
 }
 
 .fila-gasto__texto {
+  display: flex;
+  min-width: 0;
   font-size: 13px;
   color: var(--tinta2);
+  white-space: nowrap;
+}
+
+.fila-gasto__detalle,
+.fila-gasto__metodo {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fila-gasto__separador {
+  flex-shrink: 0;
+  margin-inline: var(--espacio-xs);
+}
+
+/* Next to a detail, only the detail gives up space until the name reaches its cap. */
+.fila-gasto__detalle ~ .fila-gasto__metodo {
+  flex-shrink: 0;
+  max-width: 60%;
 }
 
 .fila-gasto__monto {
@@ -4699,6 +4727,50 @@ a.ajustes-tema__opcion {
   }
 }
 
+/* `Pestanas ajuste="pastilla"`: the opt-in pill look. The button is at least 44 px each way
+ * (`.boton--enlace` and `.pestanas__opcion` keep their own resets and colours; nothing is
+ * re-reset here), the pill inside is 32 px tall. The selected pill is filled and heavier, so
+ * the state is never colour alone, and the underline of the plain list is off. */
+.pestanas--pastilla {
+  align-items: center;
+  gap: var(--espacio-xs);
+}
+
+.pestanas--pastilla .pestanas__opcion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--alto-tocable);
+  min-height: var(--alto-tocable);
+  box-shadow: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.pestanas--pastilla .pestanas__pastilla {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 var(--espacio-lg);
+  border-radius: var(--radio-pildora);
+  white-space: nowrap;
+  color: var(--tinta2);
+  font-weight: 400;
+}
+
+.pestanas--pastilla .pestanas__opcion[aria-pressed="true"] .pestanas__pastilla {
+  background: var(--acento-suave);
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+@media (forced-colors: active) {
+  .pestanas--pastilla .pestanas__opcion[aria-pressed="true"] .pestanas__pastilla {
+    border: 2px solid CanvasText;
+  }
+}
+
 /* `OpcionInterruptor`: the whole row is the label, at least 44 px tall. The native
  * checkbox is visually hidden but stays focusable; the track and thumb are drawn from
  * its state. Off: the thumb sits left on an open track; on: it sits right on a filled
@@ -6755,7 +6827,8 @@ a.ajustes-tema__opcion {
   .fila-entrada__linea1,
   .fila-entrada__linea2,
   .fila-gasto__categoria,
-  .fila-gasto__texto,
+  .fila-gasto__detalle,
+  .fila-gasto__metodo,
   .catalogo__fila-detalle {
     overflow: hidden;
     text-overflow: ellipsis;

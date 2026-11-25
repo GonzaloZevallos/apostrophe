@@ -105,6 +105,10 @@ export interface BotonIconOnly extends BotonCommon {
   action: IconOnlyAction
   /** The control's name: the exact current word of the action. */
   ariaLabel: string
+  /** `-1` for a control that is a mouse convenience and never a Tab stop (a result row's Add). */
+  tabIndex?: -1
+  /** For a control that must never take the focus from the field beside it (`preventDefault`). */
+  onMouseDown?: (event: MouseEvent<HTMLElement>) => void
   children?: undefined
   icon?: undefined
   textOnly?: undefined
@@ -126,6 +130,8 @@ export default function Boton(props: BotonProps) {
       type={props.type ?? 'button'}
       className={className}
       onClick={props.onClick}
+      onMouseDown={props.variant === 'icon' ? props.onMouseDown : undefined}
+      tabIndex={props.variant === 'icon' ? props.tabIndex : undefined}
       disabled={props.disabled ?? false}
       aria-label={ariaLabel}
       aria-describedby={props.ariaDescribedBy}

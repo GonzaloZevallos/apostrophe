@@ -79,6 +79,25 @@ const NEW_SALE_TEXT = {
   addProductToCollect: 'Add a product to collect',
 }
 
+/** The computer register's Product results table (`ProductResultsTable.tsx`). The Add header
+ * is visually hidden; the Add buttons and the Stock, failure and empty lines come with GH-1034. */
+export const SALE_PRODUCT_TABLE_TEXT = {
+  searchLabel: 'Search products',
+  searchPlaceholder: 'Search products',
+  columnProduct: COMMON_TEXT.variety,
+  columnStock: 'Stock',
+  columnPrice: 'Price',
+  columnAdd: 'Add',
+  addProduct: (name: string) => `Add ${name}`,
+  noPrice: 'No price',
+  helpLine: '↑ ↓ to move, Enter to add.',
+  loading: 'Loading products…',
+  failed: 'The products could not load. Reload this screen to try again.',
+  statusNoEntries: STOCK_TEXT.statusNoEntries,
+  statusSoldOut: STOCK_TEXT.statusSoldOut,
+  statusLow: STOCK_TEXT.statusLow,
+} as const
+
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: OWING_HINT },
   { kind: 'help', text: NO_PRICE_HINT },
@@ -87,6 +106,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'notice', text: SALE_BILL_TEXT.shareFailed },
   { kind: 'notice', text: SALE_BILL_TEXT.copyFailed },
   { kind: 'notice', text: SALE_NOT_SAVED },
+  { kind: 'notice', text: SALE_PRODUCT_TABLE_TEXT.failed },
   { kind: 'notice', text: OWING_NEEDS_CUSTOMER },
   { kind: 'help', text: NEW_SALE_TEXT.productsInSale(Number(SAMPLES.count)) },
   { kind: 'help', text: NEW_SALE_TEXT.productsMostSold },
@@ -111,6 +131,7 @@ const { money: M, attachedZero: AZ, date: D, grams: G } = FIXTURE
 /** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   noPriceMessage: [['Rosa']],
+  'SALE_PRODUCT_TABLE_TEXT.addProduct': [['Rosa']],
   'SALES_TEXT.giftGrams': [[G]],
   'SALES_TEXT.lineLabel': [['2', 'Rosa']],
   'SALES_TEXT.withUnit': [['3,5']],

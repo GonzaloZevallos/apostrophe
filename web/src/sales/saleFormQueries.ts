@@ -11,6 +11,7 @@ import { keepPreviousData, queryOptions } from '@tanstack/react-query'
 import { get } from '../api/client'
 import { keys } from '../api/keys'
 import type { PricingSettings as ApiPricingSettings } from '../api/pricingSettings'
+import { readStock } from '../api/stock'
 import type { Variety } from '../screens/Variedades'
 import type { PricingSettings } from './pricing'
 
@@ -36,6 +37,20 @@ export function saleFormPricingSettingsQuery(date: string) {
     placeholderData: keepPreviousData,
     gcTime: 0,
     staleTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  })
+}
+
+/**
+ * The Stock view the computer's Product results table reads (`keys.stock()`, shared with the Stock
+ * screens, so it sets neither `placeholderData` nor `gcTime`). It is never re-read by itself: no
+ * refetch on focus or reconnect.
+ */
+export function saleFormStockQuery() {
+  return queryOptions({
+    queryKey: keys.stock(),
+    queryFn: readStock,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   })
