@@ -8,7 +8,7 @@ summary: "un medio de pago está en uso cuando algún Payment o alguna Expense d
 
 GH-1010, parte 3 (GH-837). Extiende [Los medios de pago se identifican por id](20261111-payment-methods-by-id.md):
 reemplaza solo la descripción de `PaymentMethodUsage` como "¿tiene Payments?". No lo reemplaza entero, y
-ese ADR no se edita.
+ese ADR lleva una nota de enmienda que apunta de vuelta a este.
 
 ## Decisión
 

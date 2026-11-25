@@ -17,9 +17,11 @@ from fastapi.testclient import TestClient
 from app.business_removal.adapters.cli import main
 from tests.business_removal.adapters.seed import (
     EMAIL_LEAVING,
+    EXPENSE_DETAIL,
     PINNED,
     build_app,
     seed,
+    seeded_days,
     set_env,
 )
 from tests.conftest import MovableClock
@@ -97,4 +99,64 @@ def test_the_export_carries_each_payment_s_method_by_id_and_current_name_and_del
     assert _count(db_path, "payment", "La Huerta") == 0
     assert _count(db_path, "payment_method", "La Huerta") == 0
     assert _count(db_path, "payment", "Otro Negocio") == staying_payments
+    assert _count(db_path, "payment_method", "Otro Negocio") == staying_methods
+
+
+def test_the_export_carries_an_expense_s_method_by_id_and_name_and_removal_succeeds_under_restrict(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    db_path = tmp_path / "apostrophe.db"
+    export_dir = tmp_path / "exports"
+    clock = MovableClock(PINNED)
+    token, _staying = seed(db_path, clock)
+    set_env(monkeypatch, db_path, export_dir)
+
+    app, engine = build_app(db_path, clock)
+    with TestClient(app) as client:
+        client.headers["Authorization"] = f"Bearer {token}"
+        created = client.post("/api/payment-methods", json={"name": "Tarjeta"})
+        assert created.status_code == 201, created.text
+        card = created.json()
+        category_id = client.get("/expense-categories").json()[0]["id"]
+        expense = client.post(
+            "/expenses",
+            json={
+                "spent_on": seeded_days(clock).expense.isoformat(),
+                "category_id": category_id,
+                "amount": 4500,
+                "detail": "Pagado con tarjeta",
+                "payment_method_id": card["id"],
+            },
+        )
+        assert expense.status_code == 201, expense.text
+        # An archived method stays in the export, with the expense that names it.
+        assert client.post(f"/api/payment-methods/{card['id']}/archive").status_code == 204
+    engine.dispose()
+
+    expenses_before = _count(db_path, "expense", "La Huerta")
+    methods_before = _count(db_path, "payment_method", "La Huerta")
+    staying_expenses = _count(db_path, "expense", "Otro Negocio")
+    staying_methods = _count(db_path, "payment_method", "Otro Negocio")
+    assert expenses_before >= 2
+
+    result = main(
+        [EMAIL_LEAVING], stdin=io.StringIO("La Huerta\n"), stdout=io.StringIO(), clock=clock
+    )
+
+    assert result == 0
+    (export,) = export_dir.glob("*.json")
+    kinds = json.loads(export.read_text())["kinds"]
+    assert card["id"] in {record["id"] for record in kinds["payment_method"]}
+    references = {
+        record["detail"]: record["payment_method_id"]
+        for record in kinds["expense"]
+        if record["detail"] is not None
+    }
+    assert references["Pagado con tarjeta"] == {"id": card["id"], "name": "Tarjeta"}
+    assert references[EXPENSE_DETAIL] is None
+    assert len(kinds["expense"]) == expenses_before
+    assert len(kinds["payment_method"]) == methods_before
+    assert _count(db_path, "expense", "La Huerta") == 0
+    assert _count(db_path, "payment_method", "La Huerta") == 0
+    assert _count(db_path, "expense", "Otro Negocio") == staying_expenses
     assert _count(db_path, "payment_method", "Otro Negocio") == staying_methods

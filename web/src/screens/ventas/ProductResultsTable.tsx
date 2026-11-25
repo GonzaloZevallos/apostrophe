@@ -5,13 +5,16 @@
  * (`architecture/productResultsUnrouted.test.ts` guards it).
  *
  * Every figure is `productRows.pricedRows`'s and the order is `productRows.visibleRows`'s; this
- * component names no pricing function and computes no money. The Stock column, the Add buttons and
- * the failure, no-products and no-match lines belong to GH-1034: here a failed read, an empty list
- * and a search with no match render no body rows and no text.
+ * component names no pricing function and computes no money. The Stock figure is the phone list's
+ * call (`formatQuantity(signedHundredthsOfApiGrams(...))`). The body is one of: the failure line
+ * (any of the three reads failed, Stock included, unlike the phone), the loading line, "No products
+ * yet.", "No product matches that search." or the rows. No state clears the Sale in progress, and
+ * nothing here re-reads a failed read.
  *
  * The keyboard stays in the search box: the arrows move the selection (held as a Product id,
  * resolved at render so a re-price or a new answer never leaves it on a missing row), Enter adds
- * the selected priced Product, Escape clears the text.
+ * the selected priced Product, Escape clears the text. An Add button does what Enter does on its
+ * row and hands the focus back to the search box.
  */
 
 import { useQuery } from '@tanstack/react-query'
@@ -25,13 +28,21 @@ import {
   type KeyboardEvent,
   type Ref,
 } from 'react'
+import { useTranslation } from 'react-i18next'
+import type { Status } from '../../api/stock'
+import { AvisoCuerpo } from '../../components/AvisoAmbar'
+import Boton from '../../components/Boton'
+import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import { SALE_PRODUCT_TABLE_TEXT as TEXT } from '../../copy/sales'
+import { formatQuantity } from '../../format/money'
 import { useMoney } from '../../format/moneyContext'
+import { signedHundredthsOfApiGrams } from '../../sales/pricing'
 import { pricedRows, visibleRows } from '../../sales/productRows'
 import {
   pricingSettingsOf,
   saleFormPricingSettingsQuery,
   saleFormProductsQuery,
+  saleFormStockQuery,
 } from '../../sales/saleFormQueries'
 import type { SaleDraftApi } from '../../sales/useSaleDraft'
 import './ProductResultsTable.css'
@@ -48,13 +59,31 @@ function ResultRow({ rowRef, ...rest }: ResultRowProps) {
   return <tr ref={rowRef} role="row" className="prt__row" {...rest} />
 }
 
+/** The word a Stock status adds after the figure; `ok` adds none. Exhaustive over `Status`. */
+function stockWord(status: Status): string | null {
+  switch (status) {
+    case 'no_entries':
+      return TEXT.statusNoEntries
+    case 'sold_out':
+      return TEXT.statusSoldOut
+    case 'low':
+      return TEXT.statusLow
+    case 'ok':
+      return null
+  }
+  const unreachable: never = status
+  return unreachable
+}
+
 export default function ProductResultsTable({ draft, customerTypeId }: ProductResultsTableProps) {
   const money = useMoney()
+  const { t } = useTranslation()
   const gridId = useId()
   const labelId = useId()
   const date = draft.state.date
   const productsRead = useQuery(saleFormProductsQuery(date))
   const settingsRead = useQuery(saleFormPricingSettingsQuery(date))
+  const stockRead = useQuery(saleFormStockQuery())
   const [query, setQuery] = useState('')
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -62,27 +91,29 @@ export default function ProductResultsTable({ draft, customerTypeId }: ProductRe
 
   useEffect(() => inputRef.current?.focus(), [])
 
-  const failed = productsRead.isError || settingsRead.isError
+  const failed = productsRead.isError || settingsRead.isError || stockRead.isError
   const loading =
     productsRead.isPending ||
     settingsRead.isPending ||
+    stockRead.isPending ||
     productsRead.isPlaceholderData ||
     settingsRead.isPlaceholderData
   const products = failed || loading ? undefined : productsRead.data
   const settings = failed || loading ? undefined : settingsRead.data
+  const stock = failed || loading ? undefined : stockRead.data
 
   const priced = useMemo(
     () =>
-      products === undefined || settings === undefined
+      products === undefined || settings === undefined || stock === undefined
         ? []
         : pricedRows({
             products,
-            stock: [],
+            stock: stock.products,
             draft: draft.state,
             customerTypeId,
             pricingSettings: pricingSettingsOf(settings),
           }),
-    [products, settings, draft.state, customerTypeId],
+    [products, settings, stock, draft.state, customerTypeId],
   )
   const visible = useMemo(() => visibleRows(priced, query), [priced, query])
 
@@ -103,6 +134,14 @@ export default function ProductResultsTable({ draft, customerTypeId }: ProductRe
     selectedRowRef.current?.scrollIntoView({ block: 'nearest' })
   }, [activeId])
 
+  /** The one add: Enter and an Add click both come here. A No price row adds nothing. */
+  function addRow(row: (typeof priced)[number]) {
+    if (row.pricing === null) return
+    draft.addProduct(row.id)
+    setQuery('')
+    setSelectedId(null)
+  }
+
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
     if (event.nativeEvent.isComposing) return
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
@@ -114,9 +153,7 @@ export default function ProductResultsTable({ draft, customerTypeId }: ProductRe
     } else if (event.key === 'Enter') {
       if (selected === null || selected.pricing === null) return
       event.preventDefault()
-      draft.addProduct(selected.id)
-      setQuery('')
-      setSelectedId(null)
+      addRow(selected)
     } else if (event.key === 'Escape') {
       if (query === '') return
       event.preventDefault()
@@ -157,6 +194,9 @@ export default function ProductResultsTable({ draft, customerTypeId }: ProductRe
             <th role="columnheader" scope="col" className="prt__head">
               {TEXT.columnProduct}
             </th>
+            <th role="columnheader" scope="col" className="prt__head prt__head--stock">
+              {TEXT.columnStock}
+            </th>
             <th role="columnheader" scope="col" className="prt__head prt__head--price">
               {TEXT.columnPrice}
             </th>
@@ -166,15 +206,37 @@ export default function ProductResultsTable({ draft, customerTypeId }: ProductRe
           </tr>
         </thead>
         <tbody>
+          {body === 'failed' ? (
+            <tr role="row">
+              <td role="gridcell" colSpan={4} className="prt__state prt__state--failed">
+                <AvisoCuerpo attention>{TEXT.failed}</AvisoCuerpo>
+              </td>
+            </tr>
+          ) : null}
           {body === 'loading' ? (
             <tr role="row">
-              <td role="gridcell" colSpan={3} className="prt__loading">
+              <td role="gridcell" colSpan={4} className="prt__loading">
                 {TEXT.loading}
+              </td>
+            </tr>
+          ) : null}
+          {body === 'empty' ? (
+            <tr role="row">
+              <td role="gridcell" colSpan={4} className="prt__state">
+                {t(EMPTY_STATE_KEYS.productResultsEmpty)}
+              </td>
+            </tr>
+          ) : null}
+          {body === 'noMatch' ? (
+            <tr role="row">
+              <td role="gridcell" colSpan={4} className="prt__state">
+                {t(EMPTY_STATE_KEYS.productResultsNoMatch)}
               </td>
             </tr>
           ) : null}
           {shown.map((row) => {
             const isSelected = row.id === activeId
+            const word = row.stock === null ? null : stockWord(row.stock.status)
             return (
               <ResultRow
                 key={row.id}
@@ -188,10 +250,28 @@ export default function ProductResultsTable({ draft, customerTypeId }: ProductRe
                   {isSelected ? <span className="prt__mark" aria-hidden="true" /> : null}
                   <span className="prt__name">{row.name}</span>
                 </td>
+                <td role="gridcell" className="prt__cell prt__cell--stock cifra-n">
+                  {row.stock === null ? null : formatQuantity(signedHundredthsOfApiGrams(row.stock.quantity))}
+                  {word === null ? null : <span className="prt__word">{word}</span>}
+                </td>
                 <td role="gridcell" className="prt__cell prt__cell--price cifra-n">
                   {row.pricing === null ? TEXT.noPrice : money.money(row.pricing.pricePerGram)}
                 </td>
-                <td role="gridcell" className="prt__cell" />
+                <td role="gridcell" className="prt__cell prt__cell--add">
+                  <Boton
+                    variant="icon"
+                    action="add"
+                    ariaLabel={TEXT.addProduct(row.name)}
+                    tabIndex={-1}
+                    ariaDisabled={row.pricing === null}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      addRow(row)
+                      inputRef.current?.focus()
+                    }}
+                  />
+                </td>
               </ResultRow>
             )
           })}
