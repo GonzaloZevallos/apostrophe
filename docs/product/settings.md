@@ -93,7 +93,7 @@ Métrica: la cumplen los tests de Testing Library de los criterios 1 a 3: orden 
 
 Solo por debajo de 900 px. `SettingsHome` (`web/src/screens/settings/SettingsHome.tsx`) va dentro de `ContentArea`, con el marco de Tab root que define navigation.md. De arriba abajo:
 
-1. el título "Settings" (`settings:home.title`), un `h1` de 26 px y peso 600, con `tabIndex=-1` para poder recibir el foco;
+1. el título "Settings" (`settings:home.title`), un `h1` de 26 px y peso 600;
 2. el campo de búsqueda "Search settings" (ver Búsqueda);
 3. la tarjeta del Business;
 4. los tres atajos;
@@ -143,7 +143,7 @@ La **Settings search** vive en `web/src/screens/settings/SettingsSearch.tsx`, qu
 - Cancel y el gesto de volver del teléfono vuelven a los grupos con la búsqueda cerrada.
 - Abrir un resultado reemplaza la entrada de búsqueda y llega a la pantalla de la fila. Volver, o el "‹" o el "Close" de la pantalla, cae en los grupos con la búsqueda cerrada y el campo vacío: el texto buscado no se recuerda. El texto se vacía en el render, al cerrarse la búsqueda, nunca en un efecto.
 - Recargar sobre una entrada de búsqueda muestra los grupos.
-- Todavía no se mueve el foco después de Cancel o de volver, así que puede quedar en el `body`. Que vuelva al campo sin reabrir la búsqueda, o al `h1` si el campo no puede tomarlo, queda para #1044 (decisión 2 del humano en GH-1029).
+- Todavía no se mueve el foco después de Cancel o de volver, así que puede quedar en el `body`. Que vuelva al campo sin reabrir la búsqueda, o al `h1` (con `tabIndex=-1`) si el campo no puede tomarlo, queda para #1044 (decisión 2 del humano en GH-1029).
 - No se agrega ninguna dirección, redirección ni ruta del front. Las filas de captura del estado de búsqueda en el registro de pantallas, con la ruta y la dirección `/settings`, y sus estados para el Mobile check llegan con #1044.
 
 **Assume nothing.** La búsqueda compara con las etiquetas del propio registro, leídas por el Copy module, y no fija ninguna palabra de un tipo de Business.
