@@ -30,6 +30,7 @@ LEGACY_REASON_MAX_LENGTH = 9
 
 class StockEntryRow(Base):
     __tablename__ = "stock_entry"
+    __table_args__ = (Index(None, "business_id", "entered_on"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
     business_id: Mapped[int] = mapped_column(ForeignKey("business.id"))
@@ -90,6 +91,7 @@ class StockWithdrawalRow(Base):
             ondelete="RESTRICT",
         ),
         Index(None, "business_id", "withdrawal_reason_id"),
+        Index(None, "business_id", "withdrawn_on"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
