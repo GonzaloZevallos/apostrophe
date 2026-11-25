@@ -25,6 +25,8 @@ WITHDRAWAL_RANK = 1
 
 MOVEMENTS_PAGE_MAX = 100
 MOVEMENTS_PAGE_DEFAULT = 20
+# The longest cursor `encode` makes is 91 characters (a 19-digit id, the widest date).
+MOVEMENTS_CURSOR_MAX_LENGTH = 128
 
 _EPOCH = datetime(1970, 1, 1, tzinfo=UTC)
 _DAY_MICROSECONDS = 86_400_000_000
@@ -87,7 +89,10 @@ class MovementCursor:
     @staticmethod
     def decode(text: str) -> MovementKey:
         """Only the canonical text `encode` makes is accepted: anything else, however it
-        happens to parse, raises `InvalidMovementCursor`."""
+        happens to parse, raises `InvalidMovementCursor`. Text over
+        `MOVEMENTS_CURSOR_MAX_LENGTH` is refused before any base64 work."""
+        if len(text) > MOVEMENTS_CURSOR_MAX_LENGTH:
+            raise InvalidMovementCursor
         try:
             key = MovementCursor._parsed(text)
             if MovementCursor.encode(key) != text:

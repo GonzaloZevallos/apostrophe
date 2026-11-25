@@ -8,6 +8,7 @@ import pytest
 
 from app.stock.domain.movement_order import (
     ENTRY_RANK,
+    MOVEMENTS_CURSOR_MAX_LENGTH,
     WITHDRAWAL_RANK,
     InvalidMovementCursor,
     MovementCursor,
@@ -154,3 +155,35 @@ def test_a_non_canonical_but_decodable_cursor_is_refused() -> None:
     for variant in variants:
         with pytest.raises(InvalidMovementCursor):
             MovementCursor.decode(variant)
+
+
+def test_the_cursor_of_the_largest_key_fits_the_length_cap_and_round_trips() -> None:
+    largest = _key(
+        WITHDRAWAL_RANK,
+        9_999_999_999_999_999_999,
+        date.max,
+        datetime(9999, 12, 31, 23, 59, 59, 999999, tzinfo=UTC),
+    )
+
+    text = MovementCursor.encode(largest)
+
+    assert len(text) == 91
+    assert len(text) <= MOVEMENTS_CURSOR_MAX_LENGTH
+    assert MovementCursor.decode(text) == largest
+
+
+def test_a_cursor_one_character_over_the_length_cap_is_refused_before_any_decoding(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def _no_base64(_: bytes) -> bytes:
+        raise AssertionError("base64 was reached")
+
+    monkeypatch.setattr(base64, "urlsafe_b64decode", _no_base64)
+    text = "A" * (MOVEMENTS_CURSOR_MAX_LENGTH + 1)
+
+    with pytest.raises(InvalidMovementCursor) as refused:
+        MovementCursor.decode(text)
+
+    assert MOVEMENTS_CURSOR_MAX_LENGTH == 128
+    assert len(text) == 129
+    assert str(refused.value) == LITERAL
