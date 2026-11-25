@@ -203,3 +203,25 @@ def test_a_clean_downgrade_restores_the_0034_shape_and_values() -> None:
     with engine.connect() as connection:
         assert connection.exec_driver_sql("PRAGMA foreign_key_check").fetchall() == []
     engine.dispose()
+
+
+def test_the_upgrade_refuses_a_payment_left_pointing_at_nothing_and_stays_at_0034() -> None:
+    engine = _engine_at_0034()
+    with engine.connect() as connection:
+        connection.exec_driver_sql("PRAGMA foreign_keys=OFF")
+        connection.execute(text("UPDATE payment SET customer_id = 99 WHERE id = 1"))
+        connection.commit()
+    before = snapshot(engine)
+
+    with pytest.raises(Exception, match="^0035$") as refusal:
+        upgrade_to_head(engine)
+
+    assert type(refusal.value).__name__ == "RebuildLeftBrokenReferences"
+    with engine.connect() as connection:
+        version = connection.execute(text("SELECT version_num FROM alembic_version")).scalar_one()
+    assert version == "0034"
+    assert "recorded_by_initials" not in {
+        column["name"] for column in sa.inspect(engine).get_columns("payment")
+    }
+    compare(before, snapshot(engine))
+    engine.dispose()
