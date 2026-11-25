@@ -26,7 +26,11 @@ import {
   pathTo,
 } from '../routes'
 import { NO_PRICE_TODAY, type Variety } from './Variedades'
+import { SheetRouterProvider } from '../components/useSheetStack'
 import { tapStock } from './varieties/renderVarieties'
+import { toast } from '../components/feedback'
+import { withSegment } from './varieties/productsSegment'
+import { flipViewport } from '../test-viewport'
 import { EMPTY_DETAIL, EMPTY_TITLE } from '../copy/varieties'
 import { LIMITS, SAMPLES } from '../copy/limits'
 import { chooseTheme } from '../theme'
@@ -112,7 +116,9 @@ function renderApp(path: string, { computer = false, answers = {} }: { computer?
   renderWithViewport(computer ? 'computer' : 'phone', () =>
     render(
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <SheetRouterProvider router={router}>
+          <RouterProvider router={router} />
+        </SheetRouterProvider>
       </QueryClientProvider>,
     ),
   )
@@ -861,5 +867,150 @@ describe.each([
     expect(within(block).getByRole('heading', { level: 1, name: 'Products' })).toBeInTheDocument()
     expect(within(block).getByRole('link', { name: 'New product' })).toHaveAttribute('href', VARIETY_NEW)
     expect(screen.getAllByRole('link', { name: 'New product' })).toHaveLength(1)
+  })
+})
+
+describe('the Catalog | Stock pills on the phone', () => {
+  const pill = (name: 'Catalog' | 'Stock') => screen.getByRole('button', { name })
+  const segmentOf = (router: ReturnType<typeof renderApp>['router']) => (router.state.location.state as { productsSegment?: string } | null)?.productsSegment
+  const NEVER: Answers = { 'GET /stock': () => new Promise<Response>(() => undefined) }
+  const scrollIntoView = vi.fn()
+
+  afterEach(() => scrollIntoView.mockReset())
+
+  test('the pills are named Catalog and Stock; a tap swaps the body and replaces the entry', async () => {
+    const { router } = renderApp(VARIETIES_PATH)
+    await screen.findByText('24K Gold')
+    expect(screen.getByRole('group', { name: 'Products view' })).toBeInTheDocument()
+    expect(pill('Catalog')).toHaveAttribute('aria-pressed', 'true')
+    expect(pill('Stock')).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.queryByRole('link', { name: '+ Stock entry' })).not.toBeInTheDocument()
+
+    await tapStock()
+
+    expect(pill('Stock')).toHaveAttribute('aria-pressed', 'true')
+    expect(pill('Catalog')).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('link', { name: '+ Stock entry' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Send catalog' })).not.toBeInTheDocument()
+    expect(router.state.historyAction).toBe('REPLACE')
+    expect(segmentOf(router)).toBe('stock')
+  })
+
+  test.each([
+    ['the Stock entry form', () => screen.getByRole('link', { name: '+ Stock entry' })],
+    ['a Product page', () => screen.getByRole('link', { name: /Sir Jack/ })],
+    ['All entries', () => screen.getByRole('link', { name: /All entries/ })],
+  ])('Back from %s returns to Stock', async (_name, link) => {
+    const { router } = renderApp(VARIETIES_PATH)
+    await tapStock()
+    await screen.findByText('24K Gold')
+    await userEvent.click(link())
+    await waitFor(() => expect(router.state.location.pathname).not.toBe(VARIETIES_PATH))
+
+    await act(() => router.navigate(-1))
+
+    expect(router.state.location.pathname).toBe(VARIETIES_PATH)
+    expect(await screen.findByRole('button', { name: 'Stock' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  test('Back from Archived returns to Stock', async () => {
+    const { router } = renderApp(VARIETIES_PATH, { answers: { 'GET /api/products?archived=true': () => json(200, [{ ...VARIETIES[0], archived: true }]) } })
+    await tapStock()
+    await userEvent.click(await screen.findByRole('link', { name: /Archived \(1\)/ }))
+    await waitFor(() => expect(router.state.location.pathname).not.toBe(VARIETIES_PATH))
+
+    await act(() => router.navigate(-1))
+
+    expect(await screen.findByRole('button', { name: 'Stock' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  test('a Products tab tap on Stock gives Catalog without a new history entry, and scrolls to the top from deep in the list', async () => {
+    Element.prototype.scrollIntoView = scrollIntoView
+    const { router } = renderApp(VARIETIES_PATH)
+    await tapStock()
+    await screen.findByText('24K Gold')
+    const title = screen.getByRole('heading', { level: 1, name: 'Products' }).parentElement as HTMLElement
+    title.getBoundingClientRect = () => ({ bottom: -80 }) as DOMRect
+    const bar = screen.getAllByRole('navigation', { name: 'Navigation' }).at(-1) as HTMLElement
+
+    await userEvent.click(within(bar).getByRole('link', { name: 'Products' }))
+
+    expect(await screen.findByRole('link', { name: 'Send catalog' })).toBeInTheDocument()
+    expect(pill('Catalog')).toHaveAttribute('aria-pressed', 'true')
+    expect(router.state.historyAction).toBe('REPLACE')
+    expect(scrollIntoView).toHaveBeenCalledTimes(1)
+  })
+
+  test('a pill tap with the title block in view makes no scroll call', async () => {
+    Element.prototype.scrollIntoView = scrollIntoView
+    renderApp(VARIETIES_PATH)
+    await screen.findByText('24K Gold')
+    await tapStock()
+    expect(scrollIntoView).not.toHaveBeenCalled()
+  })
+
+  test('Stock, then a computer width, then the phone again stays on Stock when the screen has no variety to select', async () => {
+    const { router } = renderApp(VARIETIES_PATH, { answers: { ...NEVER, 'GET /api/products': () => new Promise<Response>(() => undefined) } })
+    await tapStock()
+
+    flipViewport('computer')
+    expect(screen.queryByRole('group', { name: 'Products view' })).not.toBeInTheDocument()
+    flipViewport('phone')
+
+    expect(router.state.location.pathname).toBe(VARIETIES_PATH)
+    expect(await screen.findByRole('button', { name: 'Stock' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  test('a computer render with first-run held draws Send catalog at once and no pill', async () => {
+    renderApp(VARIETIES_PATH, { computer: true, answers: { 'GET /first-run': () => new Promise<Response>(() => undefined) } })
+    expect(await screen.findByRole('link', { name: 'Send catalog' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Stock' })).not.toBeInTheDocument()
+  })
+
+  test.each(['Catalog', 'Stock'] as const)('with the API held, %s shows no empty wording and no digit', async (segment) => {
+    renderApp(VARIETIES_PATH, { answers: NEVER })
+    if (segment === 'Stock') await tapStock()
+
+    await screen.findByRole('progressbar')
+    expect(screen.queryByText(EMPTY_TITLE)).not.toBeInTheDocument()
+    expect(screen.queryByText(/\d/, { selector: 'main *:not(h1)' })).not.toBeInTheDocument()
+    expect(screen.queryByText(/all ok|Archived \(/)).not.toBeInTheDocument()
+  })
+
+  test.each(['Catalog', 'Stock'] as const)('with a failing API, %s shows the failure once, also after a switch', async (segment) => {
+    renderApp(VARIETIES_PATH, { answers: { 'GET /stock': () => json(500, { code: 'unknown' }) } })
+    if (segment === 'Stock') await tapStock()
+    expect(await screen.findAllByText('Something went wrong. Try again.')).toHaveLength(1)
+
+    await userEvent.click(pill(segment === 'Stock' ? 'Catalog' : 'Stock'))
+
+    expect(screen.getAllByText('Something went wrong. Try again.')).toHaveLength(1)
+  })
+
+  test('a saved Stock entry returns to Stock and says "Entry saved"', async () => {
+    const entry = { id: 10, date: '2026-10-02', product_id: 4, origin: 'harvest', quantity: 30, total_cost: null, cost_per_gram: null, note: null }
+    const { router } = renderApp(VARIETIES_PATH, { answers: { 'POST /stock/entries': () => json(201, entry) } })
+    await tapStock()
+    await userEvent.click(await screen.findByRole('link', { name: '+ Stock entry' }))
+    await userEvent.type(await screen.findByLabelText('Grams'), '30')
+    const field = await screen.findByRole('button', { name: /^Product/ })
+    await waitFor(() => expect(field).not.toHaveAttribute('aria-busy'))
+    await userEvent.click(field)
+    await userEvent.click(await screen.findByRole('button', { name: 'Sir Jack' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Save the entry' }))
+
+    expect(await screen.findByText('Entry saved')).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe(VARIETIES_PATH)
+    expect(pill('Stock')).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  test('a notice shows once, across a switch', async () => {
+    const { router } = renderApp(VARIETIES_PATH)
+    await act(() => router.navigate(VARIETIES_PATH, { replace: true, state: withSegment(toast('common:entrySaved'), 'catalog') }))
+    expect(await screen.findAllByText('Entry saved')).toHaveLength(1)
+
+    await tapStock()
+
+    expect(screen.getAllByText('Entry saved')).toHaveLength(1)
   })
 })
