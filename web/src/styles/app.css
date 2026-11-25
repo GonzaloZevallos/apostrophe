@@ -128,6 +128,11 @@ body {
   color: var(--tinta2);
 }
 
+/* The Customers no-match line carries what was typed: a long query wraps, it is never cut. */
+.campo__rotulo--consulta {
+  overflow-wrap: anywhere;
+}
+
 /* The Customer's number on the card and the card behind: whole, on one line, never cut. */
 .campo__valor-telefono {
   white-space: nowrap;

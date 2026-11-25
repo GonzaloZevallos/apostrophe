@@ -301,8 +301,8 @@ export const RECORDS_STATES: readonly WalkState[] = [
     // A search nobody matches: only the no-match line.
     screen: 'customer/search-no-match',
     route: CUSTOMERS,
-    steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Zzzzz' } }],
-    visible: emptyState('emptyStates:customersList'),
+    steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Gelato' } }],
+    visible: emptyState('emptyStates:customersNoMatch', { name: 'Gelato' }),
   },
   {
     // All chosen, a search typed and answered, then cleared: back on All with the full list (Mica Solano owes nothing).

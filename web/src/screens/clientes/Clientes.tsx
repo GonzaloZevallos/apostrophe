@@ -174,7 +174,12 @@ export default function Clientes() {
               aria-label={listState === 'searching' ? SEARCHING : undefined}
             >
               {listState === 'searching' && <span className="campo__rotulo">{SEARCHING}</span>}
-              {(listState === 'no-match' || listState === 'empty') && (
+              {listState === 'no-match' && (
+                <span className="campo__rotulo campo__rotulo--consulta" data-copy="emptyLine">
+                  {t(EMPTY_STATE_KEYS.customersNoMatch, { name: typedQuery(query).trim() })}
+                </span>
+              )}
+              {listState === 'empty' && (
                 <span className="campo__rotulo" data-copy="emptyTitle">
                   {t(EMPTY_STATE_KEYS.customersList)}
                 </span>
