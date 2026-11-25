@@ -207,6 +207,11 @@ test('in the pane, a group whose entry mark is not "settings" keeps its Close', 
   expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
 })
 
+test('in the pane, a state that is not an object keeps the Close', () => {
+  renderInPane({ pane: true, state: 'settings' })
+  expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
+})
+
 test('outside the pane, a group opened from a Settings row keeps its Close', () => {
   renderInPane({ pane: false, state: { enteredFrom: 'settings' } })
   expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
