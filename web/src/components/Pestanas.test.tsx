@@ -9,7 +9,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test, vi } from 'vitest'
-import { type FixedSet, HOME_PERIODS, SALES_PERIODS } from './fixedSets'
+import { type FixedSet, HOME_PERIODS, PRODUCTS_SEGMENTS, SALES_PERIODS } from './fixedSets'
 import Pestanas from './Pestanas'
 
 /** The shown name of one option of a registry set, read the way the tab reads it. */
@@ -83,4 +83,54 @@ test('with ajuste celdas aria-pressed and onChange behave as without it', async 
   await userEvent.click(screen.getByRole('button', { name: DATES }))
 
   expect(onChange).toHaveBeenCalledWith('fechas')
+})
+
+test('without ajuste and with celdas the markup is exactly what it was before the pill look', () => {
+  const plain = render(
+    <Pestanas items={HOME_PERIODS} value="week" onChange={() => {}} ariaLabel="Period" />,
+  )
+  expect(plain.container.innerHTML).toBe(
+    '<div class="pestanas" role="group" aria-label="Period">' +
+      '<button type="button" class="boton--enlace pestanas__opcion" aria-pressed="false">Today</button>' +
+      '<button type="button" class="boton--enlace pestanas__opcion pestanas__opcion--activa" aria-pressed="true">Week</button>' +
+      '<button type="button" class="boton--enlace pestanas__opcion" aria-pressed="false">Month</button>' +
+      '</div>',
+  )
+  plain.unmount()
+
+  const celdas = render(
+    <Pestanas items={HOME_PERIODS} value="week" onChange={() => {}} ariaLabel="Period" ajuste="celdas" />,
+  )
+  expect(celdas.container.innerHTML).toBe(
+    '<div class="pestanas pestanas--celdas" role="group" aria-label="Period"><div class="pestanas__celdas">' +
+      '<button type="button" class="boton--enlace pestanas__opcion" aria-pressed="false">Today</button>' +
+      '<button type="button" class="boton--enlace pestanas__opcion pestanas__opcion--activa" aria-pressed="true">Week</button>' +
+      '<button type="button" class="boton--enlace pestanas__opcion" aria-pressed="false">Month</button>' +
+      '</div></div>',
+  )
+})
+
+test('with ajuste pastilla the group, its name and the buttons are the same, each label in its pill', async () => {
+  const onChange = vi.fn()
+  render(
+    <Pestanas items={PRODUCTS_SEGMENTS} value="stock" onChange={onChange} ariaLabel="Products view" ajuste="pastilla" />,
+  )
+  const group = screen.getByRole('group', { name: 'Products view' })
+  expect(group.className.split(' ')).toEqual(['pestanas', 'pestanas--pastilla'])
+  expect(screen.getAllByRole('button')).toHaveLength(2)
+  expect(screen.getByRole('button', { name: nameOf(PRODUCTS_SEGMENTS, 'stock') })).toHaveAttribute('aria-pressed', 'true')
+  const catalog = screen.getByRole('button', { name: nameOf(PRODUCTS_SEGMENTS, 'catalog') })
+  expect(catalog).toHaveAttribute('aria-pressed', 'false')
+  expect(catalog).toHaveTextContent('Catalog')
+
+  await userEvent.click(catalog)
+
+  expect(onChange).toHaveBeenCalledWith('catalog')
+})
+
+test('the pill look is opt-in: no other ajuste renders a pill', () => {
+  const { container } = render(
+    <Pestanas items={PRODUCTS_SEGMENTS} value="catalog" onChange={() => {}} ariaLabel="Products view" ajuste="celdas" />,
+  )
+  expect(container.innerHTML).not.toContain('pastilla')
 })
