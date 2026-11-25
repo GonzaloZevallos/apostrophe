@@ -23,7 +23,8 @@ Hechos que ya están en el código, cada uno con su test en esta parte:
    Deposit nunca cubre otra Sale ni una deuda más vieja. El Balance es la suma de lo que
    cada Sale debe al arrancar menos los Payments posteriores. `OwedSale.is_deposit` y
    `OwedSale.opening_owed` son los únicos lugares de `app/payments/` que comparan un monto
-   en el momento con el total de una Sale.
+   en el momento con el total de una Sale para leerla; la validación de `OwedSale` los
+   compara solo para rechazar un monto fuera de regla.
 3. **Las cifras de deuda salen solo del Settlement**: Owing since, Total owed, Sales still
    owing y el Balance. El Owing since de una Sale con Deposit es la fecha de la propia Sale.
 4. **El chequeo de `insert_later` es una segunda suma deliberada.** Se calcula en SQL con
