@@ -1203,7 +1203,9 @@ test('while the full list is pending on a failed debtors read, the list section 
   await waitFor(() => expect(fetch).toHaveBeenCalledWith('/payments/debtors', expect.anything()))
   await act(async () => {})
 
-  expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
+  await waitFor(() =>
+    expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument(),
+  )
   expect(document.querySelector('.lista-clientes')).toBeNull()
   expect(screen.queryByText(EMPTY_CUSTOMERS)).not.toBeInTheDocument()
 })
