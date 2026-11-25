@@ -7660,7 +7660,7 @@ button:has(> .venta-en-curso) {
 }
 
 /* ===== ajustes-inicio ===== */
-/* Settings home list (`SettingsHomeList`): a strip of three shortcuts, then each group's rows in one card.
+/* Settings home list (`SettingsNav`): a strip of three shortcuts, then each group's rows in one card.
  * Tokens only, so light and dark follow the theme. Pressed state, no hover-only behaviour. */
 .ajustes-inicio {
   display: flex;
@@ -7801,6 +7801,16 @@ button:has(> .venta-en-curso) {
 .ajustes-inicio__atajo.ajustes__item:active:not(:disabled):not([aria-disabled='true']),
 .ajustes-inicio__fila.ajustes__item:active:not(:disabled):not([aria-disabled='true']) {
   background-color: var(--papel);
+}
+/* The row of the page being read (`activeKey`): not colour alone, a bar and a heavier label. The
+ * bar is an inset shadow, so the row's box does not change; the `:active` rules above write
+ * background-color only. Tokens only. */
+.ajustes-inicio__fila.ajustes-inicio__fila--actual {
+  box-shadow: inset var(--espacio-xs) 0 0 var(--acento);
+}
+
+.ajustes-inicio__fila--actual .ajustes-inicio__rotulo {
+  font-weight: 600;
 }
 /* ===== end ajustes-inicio ===== */
 

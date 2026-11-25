@@ -45,7 +45,7 @@ Las filas de Settings, sus tres shortcuts y la búsqueda futura salen de un úni
 
 ## La lista de inicio (celular)
 
-El componente `SettingsHomeList` (`web/src/screens/settings/SettingsHomeList.tsx`) dibuja la lista a partir del registro, y de nada más, con el contexto (`ctx`) que recibe como prop obligatoria, sin valor por defecto. No hace ninguna lectura propia: lo usa `SettingsHome`, que le pasa el contexto como valores simples. Ya no figura en `web/scripts/docs/front-exclude.json` (D-62e6dc23).
+El componente `SettingsNav` (`web/src/screens/settings/SettingsNav.tsx`) dibuja la lista a partir del registro, y de nada más, con el contexto (`ctx`) que recibe como prop obligatoria, sin valor por defecto. No hace ninguna lectura propia: lo usa `SettingsHome`, que le pasa el contexto como valores simples. Ya no figura en `web/scripts/docs/front-exclude.json` (D-62e6dc23).
 
 **Shortcuts**
 - Primero, antes de cualquier grupo: una tira de tres celdas iguales, sin título propio. La tira siempre lee el registro completo, sean cuales sean las filas que reciban los grupos.
@@ -93,7 +93,7 @@ Solo por debajo de 900 px. `SettingsHome` (`web/src/screens/settings/SettingsHom
 3. los tres atajos;
 4. los cinco grupos en el orden de `SETTINGS_GROUPS`, cada uno con su encabezado y sus filas visibles.
 
-La pantalla hace las dos lecturas de las que dependen las filas condicionales, `/business` y `/pricing-settings`, y se las pasa a `SettingsHomeList` como contexto: `selectableLanguages` sale de `/business` e `isCustomerTypesOn` del interruptor de Customer types. Cada valor queda sin definir mientras su lectura está pendiente o si falló, así que una fila condicional nunca aparece antes de tiempo. El contenido queda marcado ocupado (`aria-busy`) mientras cualquiera de las dos lecturas está pendiente.
+La pantalla hace las dos lecturas de las que dependen las filas condicionales, `/business` y `/pricing-settings`, y se las pasa a `SettingsNav` como contexto: `selectableLanguages` sale de `/business` e `isCustomerTypesOn` del interruptor de Customer types. Cada valor queda sin definir mientras su lectura está pendiente o si falló, así que una fila condicional nunca aparece antes de tiempo. El contenido queda marcado ocupado (`aria-busy`) mientras cualquiera de las dos lecturas está pendiente.
 
 No hay campo de búsqueda: puede ser una parte posterior. Los estilos de la pantalla usan sus propias raíces de clases, `ajustes-inicio__*` para el marco y el título y `ajustes-inicio-tarjeta__*` para la tarjeta, y solo tokens de diseño.
 
