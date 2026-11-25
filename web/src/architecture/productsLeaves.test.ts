@@ -30,6 +30,18 @@ test('the phone importing the segment, and a cycle among computer files, are acc
   expect(findComputerSegmentImports(files)).toEqual([])
 })
 
+test('an `import type` edge into the dispatcher is no edge, and the same import as a value is found', () => {
+  const dispatcher = { path: 'src/screens/Variedades.tsx', content: "import Phone from './varieties/ProductsPhone'" }
+  const phone = { path: 'src/screens/varieties/ProductsPhone.tsx', content: "import { readSegment } from './productsSegment'" }
+  const segment = { path: 'src/screens/varieties/productsSegment.ts', content: 'export const readSegment = 1' }
+  const body = (content: string) => ({ path: 'src/screens/varieties/ProductsBody.tsx', content })
+  const entry = { path: ENTRY, content: "import Body from './ProductsBody'" }
+  expect(findComputerSegmentImports([entry, body("import type { Variety } from '../Variedades'"), dispatcher, phone, segment])).toEqual([])
+  expect(findComputerSegmentImports([entry, body("import { Variety } from '../Variedades'"), dispatcher, phone, segment])).toEqual([
+    `src/screens/varieties/ProductsPhone.tsx: imports productsSegment, reached from ${ENTRY}; only ProductsPhone reads the segment`,
+  ])
+})
+
 const LEAF = 'src/screens/varieties/ProductsPhoneBodies.tsx'
 const PATTERN = '^src/screens/varieties/ProductsPhoneBodies\\.tsx$'
 

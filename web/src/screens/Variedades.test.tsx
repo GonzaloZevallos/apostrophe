@@ -26,6 +26,7 @@ import {
   pathTo,
 } from '../routes'
 import { NO_PRICE_TODAY, type Variety } from './Variedades'
+import { tapStock } from './varieties/renderVarieties'
 import { EMPTY_DETAIL, EMPTY_TITLE } from '../copy/varieties'
 import { LIMITS, SAMPLES } from '../copy/limits'
 import { chooseTheme } from '../theme'
@@ -189,6 +190,7 @@ describe('the list', () => {
 
   test('the summary line counts what is not ok by word, in stock-status order', async () => {
     renderApp(VARIETIES_PATH)
+    await tapStock()
 
     expect(await screen.findByText('1 no entries · 1 sold out · 1 low')).toBeInTheDocument()
   })
@@ -200,6 +202,8 @@ describe('the list', () => {
         'GET /stock': () => json(200, { ...STOCK, products: [stockRow(4, {}), stockRow(2, {})] }),
       },
     })
+
+    await tapStock()
 
     expect(await screen.findByText('2 products · all ok')).toBeInTheDocument()
   })
@@ -223,14 +227,16 @@ describe('the list', () => {
 
     await screen.findByText('24K Gold')
     expect(screen.getByRole('link', { name: 'Send catalog' })).toHaveAttribute('href', CATALOG)
-    expect(screen.getByRole('link', { name: '+ Stock entry' })).toHaveAttribute('href', STOCK_ENTRY_NEW)
     expect(screen.getByRole('link', { name: 'New product' })).toHaveAttribute('href', VARIETY_NEW)
+    await tapStock()
+    expect(screen.getByRole('link', { name: '+ Stock entry' })).toHaveAttribute('href', STOCK_ENTRY_NEW)
     expect(screen.getByRole('link', { name: /All entries/ })).toHaveAttribute('href', STOCK_PATH)
   })
 
   test('a secondary "Take from stock" opens the withdrawal form with no product chosen', async () => {
     renderApp(VARIETIES_PATH)
 
+    await tapStock()
     await screen.findByText('24K Gold')
     const link = screen.getByRole('link', { name: 'Take from stock' })
     expect(link).toHaveAttribute('href', WITHDRAWAL_NEW)
@@ -460,8 +466,11 @@ describe('the icon and text rule', () => {
     renderApp(VARIETIES_PATH)
     await screen.findByText('24K Gold')
 
-    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas', 'inicio__avatar'] })
-    for (const name of ['Send catalog', '+ Stock entry', 'Take from stock']) {
+    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas', 'inicio__avatar', 'pestanas__opcion'] })
+    expect(screen.getByRole('link', { name: 'Send catalog' }).querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    await tapStock()
+    expectIconAndTextRule(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas', 'inicio__avatar', 'pestanas__opcion'] })
+    for (const name of ['+ Stock entry', 'Take from stock']) {
       const link = screen.getByRole('link', { name })
       expect(link.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
     }
@@ -469,10 +478,11 @@ describe('the icon and text rule', () => {
 
   test('the rule helper rejects the list screen when an action loses its icon', async () => {
     renderApp(VARIETIES_PATH)
+    await tapStock()
     await screen.findByText('24K Gold')
     screen.getByRole('link', { name: 'Take from stock' }).querySelector('svg')?.remove()
 
-    const problems = iconAndTextProblems(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas', 'inicio__avatar'] })
+    const problems = iconAndTextProblems(screen.getByRole('main'), { optionClasses: ['variedad-fila', 'variedades__todas', 'inicio__avatar', 'pestanas__opcion'] })
     expect(problems).toHaveLength(1)
     expect(problems[0]).toContain('Take from stock')
   })
@@ -671,10 +681,17 @@ describe.each([
 
     const main = await screen.findByRole('main')
     await screen.findByText('24K Gold')
+    if (!computer) await tapStock()
     expect(main).toHaveClass('pantalla', 'variedades')
     const body = main.firstElementChild as HTMLElement
     expect(body).toHaveClass('cuerpo')
-    const [titleRow, summary, actions] = Array.from(body.children) as [HTMLElement, HTMLElement, HTMLElement]
+    const children = Array.from(body.children) as HTMLElement[]
+    if (!computer) {
+      // Under the title block: the pill row, then (once the data is in) the Stock body.
+      expect(children[1]).toBe(screen.getByRole('group', { name: 'Products view' }))
+      children.splice(1, 1)
+    }
+    const [titleRow, summary, actions] = children as [HTMLElement, HTMLElement, HTMLElement]
 
     if (computer) {
       expect(titleRow).toHaveClass('cabecera-fila', 'cabecera-fila--envoltura')
@@ -708,15 +725,21 @@ describe.each([
     if (computer) {
       expect(Array.from(actions.children).map((child) => child.tagName)).toEqual(['A', 'A', 'A', 'SPAN'])
     } else {
-      expect(Array.from(actions.children).map((child) => child.tagName)).toEqual(['A', 'A', 'A'])
+      expect(Array.from(actions.children).map((child) => child.tagName)).toEqual(['A', 'A'])
     }
     const [send, entry, withdrawal, fresh] = Array.from(actions.children) as [HTMLElement, HTMLElement, HTMLElement, HTMLElement]
-    expect(send).toHaveAccessibleName('Send catalog')
-    expect(send).toHaveAttribute('href', CATALOG)
-    expect(entry).toHaveAttribute('href', STOCK_ENTRY_NEW)
-    expect(entry).toHaveAccessibleName('+ Stock entry')
-    expect(withdrawal).toHaveAttribute('href', WITHDRAWAL_NEW)
-    expect(withdrawal).toHaveAccessibleName('Take from stock')
+    if (computer) {
+      expect(send).toHaveAccessibleName('Send catalog')
+      expect(send).toHaveAttribute('href', CATALOG)
+    } else {
+      // The Stock body has the stock actions only: no Send catalog.
+      expect(screen.queryByRole('link', { name: 'Send catalog' })).not.toBeInTheDocument()
+    }
+    const [entryLink, withdrawalLink] = computer ? [entry, withdrawal] : [send, entry]
+    expect(entryLink).toHaveAttribute('href', STOCK_ENTRY_NEW)
+    expect(entryLink).toHaveAccessibleName('+ Stock entry')
+    expect(withdrawalLink).toHaveAttribute('href', WITHDRAWAL_NEW)
+    expect(withdrawalLink).toHaveAccessibleName('Take from stock')
     if (computer) {
       expect(fresh).toHaveClass('variedades__nueva')
       expect(within(fresh).getByRole('link', { name: 'New product' })).toHaveAttribute('href', VARIETY_NEW)
@@ -753,6 +776,7 @@ describe.each([
       computer,
       answers: { 'GET /api/products?archived=true': () => json(200, [{ ...VARIETIES[0], archived: true }]) },
     })
+    if (!computer) await tapStock()
 
     const archived = await screen.findByRole('link', { name: /Archived/ })
     expect(archived).toHaveClass('variedades__todas')
@@ -800,7 +824,13 @@ describe.each([
     expect(reason).toHaveAttribute('data-copy', 'help')
     expect(reason).toHaveTextContent('Add a product with a price and its stock')
     expect(button.nextElementSibling).toBe(reason)
-    expect(reason.nextElementSibling).toBe(screen.getByRole('link', { name: '+ Stock entry' }))
+    if (computer) {
+      expect(reason.nextElementSibling).toBe(screen.getByRole('link', { name: '+ Stock entry' }))
+    } else {
+      // The Catalog body holds the Send catalog block alone: no stock action beside it.
+      expect(reason.nextElementSibling).toBeNull()
+      expect(screen.queryByRole('link', { name: '+ Stock entry' })).not.toBeInTheDocument()
+    }
   })
 
   test('the screen has exactly one Products heading and exactly one New product link', async () => {

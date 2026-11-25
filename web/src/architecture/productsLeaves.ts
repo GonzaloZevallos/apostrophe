@@ -12,7 +12,7 @@
 import { posix } from 'node:path'
 import type { Source } from './productsFiles'
 
-const IMPORT = /(?:^[ \t]*(?:import|export)\s+(?:type\s+)?(?:[^'";]*?\sfrom\s+)?|\bimport\s*\(\s*)['"]([^'"]+)['"]/gm
+const IMPORT = /(?:^[ \t]*(?:import|export)\s+(type\s+)?(?:[^'";]*?\sfrom\s+)?|\bimport\s*\(\s*)['"]([^'"]+)['"]/gm
 const SUFFIXES = ['', '.ts', '.tsx', '/index.ts', '/index.tsx']
 const COMPUTER_ENTRY = 'src/screens/varieties/ProductsComputer.tsx'
 const SEGMENT_MODULE = /(?:^|\/)productsSegment$/
@@ -24,9 +24,9 @@ function join(from: string, module: string): string | null {
   return resolved.startsWith('src/') ? resolved : null
 }
 
-/** The modules a file imports, as written. */
+/** The modules a file imports, as written; an `import type` statement is erased at build and is no edge. */
 function importsOf(content: string): string[] {
-  return [...content.matchAll(IMPORT)].map((match) => match[1] ?? '')
+  return [...content.matchAll(IMPORT)].filter((match) => match[1] === undefined).map((match) => match[2] ?? '')
 }
 
 /** The source files `path` imports through relative specifiers (the ones that exist in `files`). */
