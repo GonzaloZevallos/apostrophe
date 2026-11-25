@@ -208,3 +208,27 @@ def test_a_hand_raised_on_the_spot_amount_raises_the_rule(
             ledgers.for_customer(customer_id)
 
     assert str(refused.value) == "an on-the-spot amount never exceeds the sale's total"
+
+
+def test_deleting_a_deposit_sale_deletes_its_deposit_and_the_later_payment_becomes_a_credit(
+    client: TestClient, engine: Engine, money_scale: int
+) -> None:
+    customer_id = _paid_sale(client)
+    _set_stored_amount(engine, 400 * 10**money_scale)
+    paid = client.post(
+        f"/customers/{customer_id}/payments",
+        json={"paid_on": "2026-09-20", "amount": 600, "payment_method_id": 1},
+    )
+    assert paid.status_code == 201, paid.text
+    assert client.get(f"/customers/{customer_id}/account").json()["balance"] == 0
+    [sale_id] = [sale["id"] for sale in client.get("/sales").json()]
+
+    deleted = client.delete(f"/sales/{sale_id}")
+
+    assert deleted.status_code == 200, deleted.text
+    with engine.connect() as connection:
+        left = connection.execute(text("SELECT COUNT(*) FROM payment WHERE sale_id IS NOT NULL"))
+        assert left.scalar_one() == 0
+    account = client.get(f"/customers/{customer_id}/account").json()
+    assert account["balance"] == -600
+    assert account["standing"] == "credit"
