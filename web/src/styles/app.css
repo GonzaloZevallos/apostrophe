@@ -7866,12 +7866,22 @@ button:has(> .venta-en-curso) {
 
 /* ===== ajustes-inicio: search field (`SettingsSearch`) ===== */
 /* A flex row under the title: the field box (magnifier, the input, the clear button), then Cancel
- * while search is open. The two buttons are `Boton`s, so their 44 px target, tap rules and pressed state are its own. The input is 16 px or more so the phone does not zoom in on focus. Tokens only. */
+ * while search is open. The two buttons are `Boton`s: Clear (`.boton-icono`) has its own 44 px target, and
+ * Cancel (`.boton--enlace`, which shrinks to its word) gets one from the rule below. The input is 16 px or
+ * more so the phone does not zoom in on focus. Tokens only. */
 .ajustes-inicio-busqueda__fila {
   display: flex;
   align-items: center;
   gap: var(--espacio-sm);
   margin-block: var(--espacio-md);
+}
+
+.ajustes-inicio-busqueda__fila .boton--enlace {
+  flex: none;
+  min-block-size: var(--alto-tocable);
+  min-inline-size: var(--alto-tocable);
+  padding-inline: var(--espacio-sm);
+  box-shadow: none;
 }
 
 .ajustes-inicio-busqueda__campo {
