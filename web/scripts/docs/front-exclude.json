@@ -31,6 +31,7 @@
   "^src/sales/productList\\.ts$",
   "^src/sales/customerSearch\\.ts$",
   "^src/api/saleSuggestions\\.ts$",
+  "^src/api/search\\.ts$",
   "^src/sales/useNewSaleReads\\.ts$",
   "^src/screens/ventas/NuevaVentaProductos\\.tsx$",
   "^src/screens/ventas/ProductResultsTable\\.tsx$",

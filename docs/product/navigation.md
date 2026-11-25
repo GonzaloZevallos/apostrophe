@@ -341,6 +341,8 @@ A 900 px y más, en `web/src/shell/Shell.tsx`, como la dibujan `InicioCompu` e `
 - **Dos paneles**: Customers y Products muestran la lista a la izquierda y la ficha del Customer o la página del Product elegidos a la derecha. Products abierto sin nada elegido elige el primer Product sin archivar por nombre (varieties.md); eso cuenta como ningún toque. Archived usa los mismos dos paneles y elige el primer Archived product por nombre. Customers no elige nada por su cuenta.
 - **Dos paneles e historial**: en una computadora, elegir una fila del panel izquierdo reemplaza la entrada actual del historial, y lo mismo hace la selección automática del primer Product de Products. Atrás desde cualquiera de las dos pantallas la deja en un paso, nunca uno por fila mirada. En el celular, abrir un Product o un Customer agrega una entrada al historial, y atrás vuelve a la lista.
 
+A la **Global search** se llega desde el encabezado de las pantallas de computadora, con la caja "Search sales, customers or products · Ctrl K" (la construye la parte 2 de GH-1059; hasta entonces `GET /api/search` y `search(q)` en `web/src/api/search.ts` no están conectados a ninguna pantalla). El celular no tiene entrada de búsqueda. Qué busca y qué devuelve lo dice `docs/product/search.md`.
+
 ### Los destinos que estaban en More (celular, GH-651)
 
 El dueño retiró la pantalla More el 2026-11-02 (`docs/design/redesign/registro-unificado.md`). Cada uno de sus cinco destinos tiene su propia entrada, en el lugar que le dan los dibujos aprobados, y abre la pantalla que ya está construida. Las pantallas rediseñadas completas las construyen sus propios issues. Desde la parte 5 de GH-495 el celular tampoco tiene la pestaña More ni la pantalla `/more`.
