@@ -23,6 +23,7 @@ export type Resource =
   | 'pinnedCatalog'
   | 'pricingSettings'
   | 'paymentMethods'
+  | 'search'
 
 const PREFIX: Record<Resource, string> = {
   me: 'me',
@@ -41,6 +42,7 @@ const PREFIX: Record<Resource, string> = {
   pinnedCatalog: 'pinned-catalog',
   pricingSettings: 'pricing-settings',
   paymentMethods: 'payment-methods',
+  search: 'search',
 }
 
 export const keys = {
@@ -141,6 +143,10 @@ export const keys = {
   // `Resource`/`PREFIX` system, and never frozen, since a write on another screen can
   // change it (`staleTime: 0`, refetched on mount and on focus).
   firstRun: () => ['first-run'] as const,
+  // The Global search (`GET /api/search`, `api/search.ts`): a real Resource, staled by the writes
+  // that change what it answers (a sale, a payment, a customer, stock, a variety) through
+  // `CROSS_INVALIDATES`.
+  search: (q: string) => [PREFIX.search, { q }] as const,
 }
 
 // A write on one resource that also stales another, beyond its own prefix (plan,
@@ -148,17 +154,19 @@ export const keys = {
 // business rename touches what `GET /auth/me` already cached; a payment touches the
 // customer's balance and the sale it settled; a sale touches its customer's balance
 // and, having left one owing or not, "Te deben"; a customer rename shows in it too; a
-// stock or varieties write changes what GET /catalog says (ADR-0022).
+// stock or varieties write changes what GET /catalog says (ADR-0022). Sales, payments, customers,
+// stock and varieties writes also stale the Global search, which answers their totals, balances,
+// names and stock. One level only: a withdrawal reasons write reaches `stock`, not `search`.
 const CROSS_INVALIDATES: Partial<Record<Resource, Resource[]>> = {
   expenseCategories: ['expenses'],
   business: ['me'],
-  payments: ['customers', 'sales'],
-  sales: ['customers', 'payments'],
-  customers: ['payments'],
-  stock: ['catalog'],
+  payments: ['customers', 'sales', 'search'],
+  sales: ['customers', 'payments', 'search'],
+  customers: ['payments', 'search'],
+  stock: ['catalog', 'search'],
   // A rename or removal shows in every withdrawal row and detail, which carry the name.
   withdrawalReasons: ['stock'],
-  varieties: ['catalog'],
+  varieties: ['catalog', 'search'],
 }
 
 // The writes that change what Home's panel shows (its Te deben block): a payment. The panel
