@@ -6,7 +6,9 @@ from __future__ import annotations
 
 from datetime import date
 
+import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -131,3 +133,78 @@ def test_a_named_ledger_and_a_debtor_do_not_show_the_phone_in_their_repr() -> No
 
     assert phone not in repr(named)
     assert phone not in repr(debtor)
+
+
+def _paid_sale(client: TestClient, price: int = 1_000) -> int:
+    product = client.post("/api/products", json={"name": "Lavanda"}).json()
+    client.post(
+        f"/api/products/{product['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": price},
+    )
+    customer = client.post(
+        "/customers", json={"name": "Juana", "phone": "11 1000-0000", "phone_country": "AR"}
+    ).json()
+    sale = client.post(
+        "/sales",
+        json={
+            "customer_id": customer["id"],
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "date": "2026-09-14",
+            "lines": [{"product_id": product["id"], "quantity": "1"}],
+        },
+    )
+    assert sale.status_code == 201, sale.text
+    return int(customer["id"])
+
+
+def _set_stored_amount(engine: Engine, stored: int) -> None:
+    with engine.begin() as connection:
+        connection.execute(
+            text("UPDATE payment SET amount = :amount WHERE sale_id IS NOT NULL"),
+            {"amount": stored},
+        )
+
+
+def test_a_hand_lowered_on_the_spot_amount_reads_as_a_deposit(
+    client: TestClient, engine: Engine, money_scale: int
+) -> None:
+    customer_id = _paid_sale(client)
+    _set_stored_amount(engine, 400 * 10**money_scale)
+
+    with Session(engine) as session:
+        ledger = SqlLedgers(session, _business_of(engine, customer_id)).for_customer(customer_id)
+
+    assert ledger is not None
+    [sale] = ledger.sales
+    assert (sale.total, sale.on_the_spot_amount) == (1_000, 400)
+    assert sale.opening_owed == 600
+    assert sale.is_deposit
+
+
+def test_an_on_the_spot_amount_equal_to_the_total_reads_as_paid_in_full(
+    client: TestClient, engine: Engine
+) -> None:
+    customer_id = _paid_sale(client)
+
+    with Session(engine) as session:
+        ledger = SqlLedgers(session, _business_of(engine, customer_id)).for_customer(customer_id)
+
+    assert ledger is not None
+    [sale] = ledger.sales
+    assert sale.on_the_spot_amount == sale.total == 1_000
+    assert sale.opening_owed == 0
+    assert not sale.is_deposit
+
+
+def test_a_hand_raised_on_the_spot_amount_raises_the_rule(
+    client: TestClient, engine: Engine, money_scale: int
+) -> None:
+    customer_id = _paid_sale(client)
+    _set_stored_amount(engine, 1_001 * 10**money_scale)
+
+    with Session(engine) as session:
+        ledgers = SqlLedgers(session, _business_of(engine, customer_id))
+        with pytest.raises(ValueError) as refused:
+            ledgers.for_customer(customer_id)
+
+    assert str(refused.value) == "an on-the-spot amount never exceeds the sale's total"
