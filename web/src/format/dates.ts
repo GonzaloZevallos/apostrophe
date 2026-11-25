@@ -47,11 +47,6 @@ interface LongDateFormatter {
 
 type DateShape = 'long' | 'weekdayDay'
 
-const SHAPE_OPTIONS: Record<DateShape, { weekday: 'long'; day: 'numeric'; month?: 'long' }> = {
-  long: { weekday: 'long', day: 'numeric', month: 'long' },
-  weekdayDay: { weekday: 'long', day: 'numeric' },
-}
-
 const formatters = new Map<string, LongDateFormatter>()
 
 /** The formatter of a language tag and shape, cached per both. An unusable tag (`''`,
@@ -63,7 +58,12 @@ function formatterFor(tag: string, shape: DateShape): LongDateFormatter {
   if (cached !== undefined) return cached
   let formatter: LongDateFormatter
   try {
-    formatter = new Intl.DateTimeFormat(key, { ...SHAPE_OPTIONS[shape], timeZone: 'UTC' })
+    formatter = new Intl.DateTimeFormat(key, {
+      weekday: 'long',
+      day: 'numeric',
+      month: shape === 'long' ? 'long' : undefined,
+      timeZone: 'UTC',
+    })
   } catch (error) {
     if (!(error instanceof RangeError)) throw error
     formatter = formatterFor(ENGLISH, shape)
