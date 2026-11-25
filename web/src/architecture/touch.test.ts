@@ -500,6 +500,37 @@ test('every pressed class opts out of text selection, or says why its text stays
   expect(userSelectViolations(file(APP_CSS))).toEqual([])
 })
 
+/** The `DateRow` rules of the stylesheet: a 44 px row, a 16 px input that is never `pointer-events: none`. */
+export function dateRowViolations(css: string): string[] {
+  const out: string[] = []
+  const px = (body: string, property: string): number | null => {
+    const match = new RegExp(`(?:^|[;\\s])${property}:\\s*(\\d+(?:\\.\\d+)?)px`).exec(body)
+    return match === null ? null : Number(match[1])
+  }
+  const row = bodyOf(css, '.date-row')
+  const input = bodyOf(css, '.date-row__input')
+  const minHeight = /min-height:\s*var\(--alto-tocable\)/.test(row) || (px(row, 'min-height') ?? 0) >= 44
+  if (!minHeight) out.push('.date-row has no min-height of at least 44px')
+  if ((px(input, 'font-size') ?? 0) < 16) out.push('.date-row__input has no font-size of at least 16px')
+  const none = rules(css).filter((rule) => /\.date-row/.test(rule.selector) && /pointer-events:\s*none/.test(rule.body))
+  for (const rule of none) out.push(`${rule.selector} sets pointer-events: none`)
+  return out
+}
+
+test('DateRow is at least 44px tall, its input at least 16px, and nothing in it is pointer-events: none', () => {
+  expect(dateRowViolations(file(APP_CSS))).toEqual([])
+})
+
+test('dateRowViolations names a short row, a small input and pointer-events: none', () => {
+  const bad = '.date-row { min-height: 40px; } .date-row__input { font-size: 14px; pointer-events: none; }'
+  expect(dateRowViolations(bad)).toEqual([
+    '.date-row has no min-height of at least 44px',
+    '.date-row__input has no font-size of at least 16px',
+    '.date-row__input sets pointer-events: none',
+  ])
+  expect(dateRowViolations('.date-row { min-height: 44px; } .date-row__input { font-size: 16px; }')).toEqual([])
+})
+
 test('no bare button:active, a:active or *:active anywhere', () => {
   expect(bareActiveViolations(file(APP_CSS))).toEqual([])
 })
