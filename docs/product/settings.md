@@ -24,7 +24,7 @@
 
 **Settings** es el único lugar que reúne cada configuración de todo el **Business**. Cada configuración vive en su propia pantalla, y sus filas, sus atajos y sus direcciones salen de un solo registro tipado, `web/src/screens/settings/settingsRows.ts`. Ninguna pantalla declara una etiqueta, una segunda línea, un ícono ni una dirección propia (ADR [20261119-settings-rows-live-in-one-registry-read-by-the-list-the-shortcuts-and-the-search](../adr/20261119-settings-rows-live-in-one-registry-read-by-the-list-the-shortcuts-and-the-search.md)). Desde dónde se llega a Settings y el marco de cada pantalla se definen en navigation.md. Lo que hace cada grupo se define en el archivo de su capacidad: pricing-settings.md, payment-methods.md, catalog.md, accounts.md, theme-choice.md, money.md y stored-language.md.
 
-`Settings.tsx` elige la vista según `useViewport()`: en una computadora (900 px o más) muestra `SettingsComputer`, la lista de siempre movida tal cual, con los mismos `GROUPS`, `data-menu`, `ajustes__*` y texto, sin ningún cambio (**Phone first**). En el celular muestra `SettingsHome`, la pantalla de inicio que define esta capacidad.
+`Settings.tsx` elige la vista según `useViewport()`. En una computadora (900 px o más) muestra `SettingsComputer`: la lista de siempre movida tal cual, con los mismos `GROUPS`, `data-menu`, `ajustes__*` y texto, sin ningún cambio y sin búsqueda (**Phone first**). En el celular muestra `SettingsHome`, la pantalla de inicio que define esta capacidad.
 
 ![Settings en el celular](../assets/screens/Configuracion.webp)
 
@@ -46,7 +46,7 @@ Las filas de Settings, sus tres shortcuts y la búsqueda salen de un único regi
 - Los grupos son cinco, en el orden de `SETTINGS_GROUPS`; el título de cada uno sale de `SETTINGS_GROUP_LABEL_KEYS` (`settings:groups.<grupo>`, cada clave escrita literal).
 - `shownRowsByGroup(ctx, rows)` es la función pura que da los grupos en el orden de `SETTINGS_GROUPS`, cada uno con sus filas que `isShown(ctx)` deja pasar, en el orden del registro; un grupo sin ninguna fila a la vista queda afuera.
 - No se agrega, mueve ni redirige ninguna dirección del front.
-- La búsqueda por etiqueta de fila tiene su función pura, `searchSettingsRows`, y su estado en una marca del historial, no en un Sheet (ADR [20261123-settings-search-is-a-history-entry-flag-not-a-sheet](../adr/20261123-settings-search-is-a-history-entry-flag-not-a-sheet.md)). `searchSettingsRows` recibe solo la salida de `shownRowsByGroup(ctx)`, lee las etiquetas solo a través del Copy module y devuelve `[]` con un texto vacío o de solo espacios. `useSettingsSearchEntry` es el único que lee y escribe la marca `settingsSearch` del historial. Desde la parte 2 de GH-844 las usa la pantalla de inicio de Settings del celular, mediante `SettingsSearch`.
+- La búsqueda por etiqueta de fila tiene su función pura, `searchSettingsRows`, y su estado en una marca del historial, no en un Sheet (ADR [20261123-settings-search-is-a-history-entry-flag-not-a-sheet](../adr/20261123-settings-search-is-a-history-entry-flag-not-a-sheet.md)). `searchSettingsRows` recibe solo la salida de `shownRowsByGroup(ctx)`, lee las etiquetas solo a través del Copy module y devuelve `[]` con un texto vacío o de solo espacios. `useSettingsSearchEntry` es el único que lee y escribe la marca `settingsSearch` del historial, y decide si ya está abierta a partir de la ubicación actual del router al momento de la llamada, sin ref. Desde la parte 2 de GH-844 las usa la pantalla de inicio de Settings del celular, mediante `SettingsSearch`, sin cambiarles la firma. Sus entradas en `web/scripts/docs/front-exclude.json` se retiran en #1044 (D-62e6dc23).
 
 ## La lista de inicio (celular)
 
@@ -72,7 +72,7 @@ El componente `SettingsHomeList` (`web/src/screens/settings/SettingsHomeList.tsx
 - Cada fila y cada shortcut mide al menos `--alto-tocable` (44 px) de alto. Al tocarlo responde a la vista (`:active`, con fondo `--papel`), y un toque nunca selecciona texto ni hace zoom (`user-select: none`, `touch-action: manipulation`). No hay nada que dependa solo del hover, y el foco visible es el de las filas de Settings existentes.
 - Estilos bajo la raíz de clases `ajustes-inicio__*` en `styles/app.css`, solo con tokens de diseño, sin ningún valor hex ni `rgb()`, en claro y en oscuro.
 
-**Precedencia.** Ningún dibujo aprobado cubre los shortcuts, los títulos de grupo ni las filas: las elecciones visuales de arriba aplican el diseño escrito de GH-843, y la estructura de un solo nivel del ADR del registro gana sobre los dos niveles de `Configuracion.dc.html`. Las cuatro decisiones de dibujo de GH-843 ganan sobre cualquiera de esas elecciones que contradigan. Al conectar la lista, #927 dejó lo que el dibujo resolvía de otra forma como quedó construido: el ícono de la fila sin recuadro ni tono propio (solo tokens), las celdas de los atajos sin borde, la etiqueta de la fila sin peso 600 y la fila con 44 px como mínimo, sin la altura dibujada de 60 px. Son diferencias de forma que no cambian lo que quien vende lee o hace (**Drawing as guide**).
+**Precedencia.** Ningún dibujo aprobado cubre los shortcuts, los títulos de grupo ni las filas: las elecciones visuales de arriba aplican el diseño escrito de GH-843, y la estructura de un solo nivel del ADR del registro gana sobre los dos niveles de `Configuracion.dc.html`. Las cuatro decisiones de dibujo de GH-843 ganan sobre cualquiera de esas elecciones que contradigan. Al conectar la lista, #927 dejó como quedó construido lo que el dibujo resolvía de otra forma: el ícono de la fila sin recuadro ni tono propio (solo tokens), las celdas de los atajos sin borde, la etiqueta de la fila sin peso 600 y la fila con 44 px como mínimo, sin la altura dibujada de 60 px. Son diferencias de forma que no cambian lo que quien vende lee o hace (**Drawing as guide**).
 
 **Assume nothing.** La lista no fija nada de la forma de trabajar de un Business: cada etiqueta, ícono y dirección sale del registro, y lo que se muestra depende solo de `isShown(ctx)`.
 
@@ -99,51 +99,52 @@ Solo por debajo de 900 px. `SettingsHome` (`web/src/screens/settings/SettingsHom
 4. los tres atajos;
 5. los cinco grupos en el orden de `SETTINGS_GROUPS`, cada uno con su encabezado y sus filas visibles.
 
-Mientras el campo tiene texto, la tarjeta, los atajos y los grupos se ocultan, y en su lugar van la línea de encabezado de la búsqueda y los resultados.
+Mientras la búsqueda está abierta y el campo tiene texto, la tarjeta, los atajos y los grupos se ocultan, y en su lugar van la línea de encabezado de la búsqueda y los resultados. `SettingsHome` le pasa a `SettingsSearch` los grupos a la vista (`shownRowsByGroup(ctx)`), si las dos lecturas ya respondieron o fallaron, y la tarjeta con la lista como contenido normal.
 
-La pantalla hace las dos lecturas de las que dependen las filas condicionales, `/business` y `/pricing-settings`, y se las pasa a `SettingsHomeList` y a la búsqueda como contexto: `selectableLanguages` sale de `/business` e `isCustomerTypesOn` del interruptor de Customer types. Cada valor queda sin definir mientras su lectura está pendiente o si falló, así que una fila condicional nunca aparece antes de tiempo, ni en los grupos ni en los resultados. El contenido queda marcado ocupado (`aria-busy`) mientras cualquiera de las dos lecturas está pendiente.
+La pantalla hace las dos lecturas de las que dependen las filas condicionales, `/business` y `/pricing-settings`, y se las pasa a `SettingsHomeList` y a la búsqueda como contexto: `selectableLanguages` sale de `/business` e `isCustomerTypesOn` del interruptor de Customer types. Cada valor queda sin definir mientras su lectura está pendiente o si falló, así que una fila condicional nunca aparece antes de tiempo, ni en los grupos ni en los resultados. El contenido (`ContentArea`) queda marcado ocupado (`aria-busy`) mientras cualquiera de las dos lecturas está pendiente.
 
-Los estilos de la pantalla usan sus propias raíces de clases, `ajustes-inicio__*` para el marco, el título y la búsqueda, y `ajustes-inicio-tarjeta__*` para la tarjeta, y solo tokens de diseño, en claro y en oscuro.
+Los estilos de la pantalla viven en `styles/app.css` con sus propias raíces de clases: `ajustes-inicio__*` para el marco, el título y las filas, `ajustes-inicio-busqueda__*` para la búsqueda y `ajustes-inicio-tarjeta__*` para la tarjeta. Usan solo tokens de diseño, en claro y en oscuro.
 
 ### Búsqueda (celular)
 
 La **Settings search** vive en `web/src/screens/settings/SettingsSearch.tsx`, que usa `SettingsHome`. Conecta `searchSettingsRows` y `useSettingsSearchEntry` de la parte 1 de GH-844 sin cambiarles la firma. Solo existe en el celular: `SettingsComputer` no tiene búsqueda.
 
 **El campo**
-- Un solo `<input>`, que nunca se vuelve a montar, con `type=search`, `autoComplete=off`, `enterKeyHint=search` y texto de al menos 16 px, así el teléfono no hace zoom al enfocarlo.
-- Su placeholder y su nombre accesible son "Search settings" (`settings:search.placeholder`, `settings:search.label`), y muestra un ícono de lupa.
-- La búsqueda se abre al tocar o al tipear en el campo (`onClick` u `onChange`), nunca solo al recibir el foco.
+- Un solo `<input>`, que nunca se vuelve a montar, con `type=search`, `autoComplete=off`, `enterKeyHint=search` y texto de 17 px. Supera el mínimo de 16 px, así el teléfono no hace zoom al enfocarlo; el dibujo muestra 15 px y gana el mínimo.
+- Su placeholder y su nombre accesible son "Search settings" (`settings:search.placeholder`, `settings:search.label`). Muestra una lupa decorativa en `--tinta2`, sobre `--superficie`, con esquinas `--radio-campo` y al menos `--alto-tocable` de alto.
+- La búsqueda se abre al tocar o al tipear en el campo, nunca solo al recibir el foco.
 
 **Mientras se busca**
-- "Cancel" (`settings:search.cancel`, o la clave compartida de Cancel si existe) cierra la búsqueda.
-- Una × con el nombre "Clear" (`settings:search.clear`) borra solo el texto: la búsqueda sigue abierta y el campo conserva el foco.
+- "Cancel" (la clave compartida `common:cancel`, con un objetivo de al menos `--alto-tocable`) aparece solo con la búsqueda abierta y la cierra.
+- Una × con el nombre "Clear" (`settings:search.clear`) aparece solo mientras hay texto. Borra solo el texto: la búsqueda sigue abierta y el campo conserva el foco.
 - El botón nativo para borrar del campo de búsqueda queda oculto.
-- Con el campo vacío se ven la tarjeta, los atajos y los grupos de siempre. Vaciarlo (con la × o borrando el texto) o tocar Cancel los vuelve a mostrar.
-- La tecla de buscar del teclado del teléfono cierra el teclado y deja los resultados en pantalla. Nunca abre un resultado, ni siquiera cuando hay uno solo, y no cambia la entrada del historial: quien vende siempre elige la configuración.
+- Con la búsqueda abierta y el campo vacío se ven la tarjeta, los atajos y los grupos de siempre. Vaciarlo (con la × o borrando el texto) o tocar Cancel los vuelve a mostrar.
+- La tecla de buscar del teclado del teléfono saca el foco del campo, lo que cierra el teclado, y deja los resultados en pantalla. Nunca abre un resultado, ni siquiera cuando hay uno solo, y no cambia la entrada del historial: quien vende siempre elige la configuración.
 - La barra del celular sigue a la vista.
 
 **Resultados**
-- Cada resultado es un `InAppLink` al `to` de su fila, con `replace: true` y el estado `{enteredFrom: 'settings'}`. Muestra:
+- Van en una tarjeta `--superficie` con esquinas `--radio-panel`.
+- Cada resultado es un `InAppLink` al `to` de su fila, con `replace` y el estado `{enteredFrom: 'settings'}`. Reutiliza la fila de los grupos (`ajustes-inicio__fila`), así que conserva su altura mínima de 44 px, su separador y su estado `:active`. Muestra:
   - el ícono del registro en `--tinta2`, sin recuadro;
   - la etiqueta, y como segunda línea el nombre del grupo, cada una en una línea que termina en puntos suspensivos;
   - un chevron decorativo.
-- Mide al menos 44 px y tiene un estado `:active`. Su nombre accesible es la etiqueta más el nombre del grupo.
+- Su nombre accesible es la etiqueta más el nombre del grupo.
 - Van en el orden del registro y se identifican por `row.key`.
 - Se busca solo por la etiqueta de las filas que `shownRowsByGroup(ctx)` muestra: una fila oculta para el Business nunca aparece. No se buscan segundas líneas, títulos de grupo, Products, Customers ni Sales.
 
 **La línea de encabezado**
-- Es un `<p>` que siempre está, con un `block-size` fijo tomado de un token, así nada se corre cuando se llena. Es el mismo nodo antes y después de llenarse.
-- Es una región viva cortés (`aria-live="polite"`) y arranca vacía.
-- Mientras cualquiera de las dos lecturas está pendiente queda vacía, sin ninguna cifra: las filas que coinciden ya se listan y el contenido está marcado ocupado.
-- Cuando las dos lecturas respondieron o fallaron, muestra la cantidad ("1 result", "N results", `settings:search.results_one` / `settings:search.results_other`) o "Nothing found". "Nothing found" está registrado en `web/src/copy/emptyStates.ts`, sale de ahí y reemplaza la lista.
+- Es un único `<p role="status" aria-live="polite">` que siempre está montado: es el mismo nodo antes y después de llenarse.
+- Con la búsqueda cerrada mide 0 de alto. Abierta, su alto fijo es el token `--espacio-xxl`, así nada se corre cuando se llena. Su texto es de 13 px en `--tinta2`.
+- Arranca vacía. Mientras cualquiera de las dos lecturas está pendiente sigue vacía, sin ninguna cifra: las filas que coinciden ya se listan y el contenido está marcado ocupado.
+- Cuando las dos lecturas respondieron o fallaron, muestra la cantidad ("1 result", "N results"; `settings:search.results_one` / `settings:search.results_other`) o "Nothing found". "Nothing found" está registrado en `web/src/copy/emptyStates.ts` (`settingsSearchNothing`), sale de ahí y reemplaza la lista. Una lectura que falla igual llena la línea, sin ningún aviso de error.
 
 **Historial y foco**
 - Abrir la búsqueda y tipear agregan una sola entrada al historial en total, la marca `settingsSearch` que maneja solo `useSettingsSearchEntry`.
 - Cancel y el gesto de volver del teléfono vuelven a los grupos con la búsqueda cerrada.
-- Abrir un resultado reemplaza la entrada de búsqueda y llega a la pantalla de la fila. Volver, o el "‹" de la pantalla, cae en los grupos con la búsqueda cerrada y el campo vacío: el texto buscado no se recuerda.
+- Abrir un resultado reemplaza la entrada de búsqueda y llega a la pantalla de la fila. Volver, o el "‹" o el "Close" de la pantalla, cae en los grupos con la búsqueda cerrada y el campo vacío: el texto buscado no se recuerda. El texto se vacía en el render, al cerrarse la búsqueda, nunca en un efecto.
 - Recargar sobre una entrada de búsqueda muestra los grupos.
-- Después de Cancel o de volver, el campo pierde el foco. Después el foco vuelve al campo sin reabrir la búsqueda, o al `h1` si el campo no puede tomarlo.
-- No se agrega ninguna dirección, redirección ni ruta del front. Las filas de búsqueda del registro de pantallas usan la ruta y la dirección `/settings`.
+- Todavía no se mueve el foco después de Cancel o de volver, así que puede quedar en el `body`. Que vuelva al campo sin reabrir la búsqueda, o al `h1` si el campo no puede tomarlo, queda para #1044 (decisión 2 del humano en GH-1029).
+- No se agrega ninguna dirección, redirección ni ruta del front. Las filas de captura del estado de búsqueda en el registro de pantallas, con la ruta y la dirección `/settings`, y sus estados para el Mobile check llegan con #1044.
 
 **Assume nothing.** La búsqueda compara con las etiquetas del propio registro, leídas por el Copy module, y no fija ninguna palabra de un tipo de Business.
 
@@ -182,18 +183,28 @@ La **Settings search** vive en `web/src/screens/settings/SettingsSearch.tsx`, qu
 
 ### Texto e idioma
 
-Todo el texto está en inglés, en el **Copy module**, bajo `settings:*`; "Nothing found" está registrado en `web/src/copy/emptyStates.ts`. El gemelo `en-XA` se regenera con cada texto nuevo. No sale ningún texto en español de un dibujo.
+Todo el texto está en inglés, en el **Copy module**: bajo `settings:*`, salvo el "Cancel" de la búsqueda, que reutiliza `common:cancel`, y "Nothing found", registrado en `web/src/copy/emptyStates.ts` con el límite `emptyLine`. El gemelo `en-XA` se regenera con cada texto nuevo. No sale ningún texto en español de un dibujo.
 
 ### Diferencias con el dibujo aceptadas por el dueño
 
-El dibujo es `Configuracion.dc.html` y su gemelo oscuro. Las cuatro diferencias de GH-843 se aceptaron en la decisión 1 del humano de esa tarea; la tercera la reemplaza la decisión de GH-844:
+El dibujo de la pantalla de inicio es `Configuracion.dc.html` y su gemelo oscuro. Las cuatro diferencias de GH-843 se aceptaron en la decisión 1 del humano de esa tarea; la tercera la reemplaza la decisión de GH-844:
 
 1. Hay tres atajos entre la tarjeta y los grupos, y el dibujo no tiene ninguno.
 2. La tarjeta es de solo lectura y no muestra rol. En el dibujo es un link con chevron y dice "Vos sos dueño · 2 personas".
-3. El campo de búsqueda "Search settings" va entre el `h1` y la tarjeta del Business, así que la tarjeta y los atajos bajan la altura del campo, a 320, 375 y 430 px, en claro y en oscuro. El dueño lo aceptó en GH-844 (decisión 1 del humano, "Drawing 1: accept") con una condición: los tres atajos siguen enteros en la primera pantalla a los tres anchos y en los dos temas. Cualquier otro cambio en la disposición de la tarjeta o de los atajos vuelve al dueño. Ningún dibujo aprobado cubre el estado de búsqueda (resultados, línea de encabezado, Cancel y ×).
+3. El campo de búsqueda "Search settings" va entre el `h1` y la tarjeta del Business, así que la tarjeta y los atajos bajan la altura del campo, a 320, 375 y 430 px, en claro y en oscuro. El dueño lo aceptó en GH-844 (decisión 1 del humano, "Drawing 1: accept") con una condición: los tres atajos siguen enteros en la primera pantalla a los tres anchos y en los dos temas. Cualquier otro cambio en la disposición de la tarjeta o de los atajos vuelve al dueño.
 4. Las nueve filas sin encabezados del dibujo se reemplazan por los cinco grupos con encabezado del registro. Varias de esas filas del dibujo no tienen ninguna capacidad detrás.
 
 Además, por **Drawing as guide** y sin cambiar lo que quien vende lee o hace: el título mide 26 px en vez de 28, y la inicial va en el tinte suave del acento con texto en el color del acento, en vez del acento sólido con texto blanco.
+
+El estado de búsqueda con texto está dibujado en `ConfiguracionBuscar.dc.html` y su gemelo oscuro. Lo construido sigue la definición escrita donde difiere, que gana sobre el dibujo:
+- el `h1` se queda, mientras que el dibujo reemplaza el encabezado por el campo;
+- los íconos no tienen recuadro;
+- la cantidad es un `<p>`, no un `h2`, y no lleva el peso 600 del dibujo;
+- no hay línea de ayuda;
+- la barra del celular sigue a la vista;
+- el campo conserva el anillo de foco de siempre, sin el borde de 2 px en `--acento` del dibujo.
+
+Ninguna de estas diferencias cambia lo que quien vende lee o hace.
 
 ## Criterios de éxito de la búsqueda
 
@@ -204,13 +215,13 @@ Además, por **Drawing as guide** y sin cambiar lo que quien vende lee o hace: e
 
 ## Métricas
 
-- Toques desde la pantalla de inicio de Settings hasta la pantalla de cualquier fila: 1, para cada fila del registro, según el recorrido de vitest con la tabla de rutas real (`SettingsHome.test.tsx`, con las dos filas condicionales visibles).
-- Toques desde un Tab root del celular hasta la pantalla de cada atajo: 2 (antes eran 3 para los Payment methods), según `tapBudget.spec.ts` y `paymentMethods.spec.ts`.
-- Atajos enteros en la primera pantalla, sin scroll, a 320, 375 y 430 px, en claro y en oscuro y con el campo de búsqueda: 3 de 3, según el e2e del proyecto de celular y la Design capture de `Configuracion` y `ConfiguracionOscuro`.
-- Objetivos táctiles de la pantalla de inicio de Settings por debajo de 44 px, resultados de búsqueda incluidos: 0, según el Mobile check, sin que crezca ninguna lista de infractores.
+- Toques desde la pantalla de inicio de Settings hasta la pantalla de cualquier fila: 1, para cada fila del registro. Lo mide el recorrido de vitest con la tabla de rutas real (`SettingsHome.test.tsx`, con las dos filas condicionales visibles).
+- Toques desde un Tab root del celular hasta la pantalla de cada atajo: 2 (antes eran 3 para los Payment methods). Lo miden `tapBudget.spec.ts` y `paymentMethods.spec.ts`.
+- Atajos enteros en la primera pantalla, sin scroll, a 320, 375 y 430 px, en claro y en oscuro y con el campo de búsqueda: 3 de 3. Lo miden el e2e del proyecto de celular y la Design capture de `Configuracion` y `ConfiguracionOscuro`.
+- Objetivos táctiles de la pantalla de inicio de Settings por debajo de 44 px: 0. Lo mide el Mobile check, sin que crezca ninguna lista de infractores; el estado de búsqueda entra en el Mobile check con #1044.
 - Cantidades de Users equivocadas o rotas mostradas durante una lectura pendiente o fallida: 0, según los tests de Testing Library.
-- Filas mostradas que la búsqueda encuentra: todas. Para cada fila de `shownRowsByGroup(ctx)`, tipear parte de su etiqueta la lista y un toque abre su pantalla (medida del criterio de los 10 segundos), según los tests de pantalla y de navegación de la búsqueda.
-- Filas ocultas mostradas en los resultados: 0, según los tests de Testing Library.
+- Filas a la vista que la búsqueda encuentra: todas. Para cada fila de `shownRowsByGroup(ctx)`, tipear parte de su etiqueta la lista y un toque abre su pantalla. Es la medida del criterio de los 10 segundos, y la toman los tests de pantalla y de navegación de la búsqueda.
+- Filas ocultas mostradas en los resultados: 0, según los tests de Testing Library (`SettingsHome.test.tsx`).
 - Cantidad o "Nothing found" mostrados mientras `/business` o `/pricing-settings` está pendiente: 0, según el test con la lectura retenida.
-- Entradas del historial que agregan abrir la búsqueda y tipear: 1; entradas muertas que quedan después de Cancel, volver o volver desde un resultado: 0, según `SettingsNavigation.test.tsx`.
-- Cambios en la Settings de computadora: 0, según los tests de Settings existentes contra la vista de computadora y la captura de ConfiguracionCompu antes y después (#994).
+- Entradas del historial que agregan abrir la búsqueda y tipear: 1. Entradas muertas que quedan después de Cancel, volver o volver desde un resultado: 0. Las dos las mide `SettingsNavigation.test.tsx`.
+- Cambios en la Settings de computadora: 0. Los miden los tests de Settings existentes contra la vista de computadora y la captura de ConfiguracionCompu antes y después (#994).
