@@ -63,7 +63,7 @@ const RECEIVED_HELP = "Type what they hand over to see the change. It isn't save
 /** The line detail Sheet: its fixed Done, the Remove line that sits apart from it, and the quantity
  * field's neutral label and refusal (no unit word: `enterGrams` stays with the live New sale). */
 const LINE_DETAIL_TEXT = {
-  lineDetailDone: 'Done',
+  lineDetailDone: COMMON_TEXT.done,
   removeLineButton: 'Remove line',
   lineQuantityLabel: 'Quantity',
   lineQuantityInvalid: 'Enter a quantity above 0, with up to two decimals.',

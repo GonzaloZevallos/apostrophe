@@ -144,7 +144,7 @@ export default function LineDetailSheet({
         />
         {specialRefused && refusalText !== null && <FieldRefusal id={refusalId}>{refusalText}</FieldRefusal>}
       </div>
-      <Boton variant="destructive" icon="tacho" onClick={() => settle(onRemove)}>
+      <Boton variant="critical" icon="tacho" onClick={() => settle(onRemove)}>
         {SALES_TEXT.removeLineButton}
       </Boton>
       <SheetActions>
