@@ -26,6 +26,8 @@ Es el mismo job de "manejar mi negocio desde el celular" que el de cualquier otr
 
 **Cuando** un Customer me debe y estoy por recordárselo, o por decidir si le vuelvo a vender sin que me pague, **quiero** ver en su cuenta hace cuánto está abierta su deuda más vieja, qué Sales todavía me debe y cuánto queda de cada una, y cuánto me compra normalmente, **para** mandarle un recordatorio preciso sin hacer ninguna cuenta y juzgar cuánto confiar en él. (Parte 3 de GH-498: acá lo sirven `age_days`, `still_owing`, `sales_by_month` y `average_sale` de `GET /api/customers/{id}/account`, que leerán las pantallas de partes posteriores. Antes, la cuenta mostraba el Balance y el "Since", pero no cuán vieja era esa deuda, lo que queda de cada Sale ni lo que el Customer suele comprar; en la planilla el vendedor recorría filas por nombre y sumaba a mano.)
 
+**Cuando** un cliente me deja un Deposit en un Order, **quiero** que la Sale muestre su total completo y el Deposit como su propio pago contra esa misma Sale, **para** saber siempre exactamente cuánto me debe ese cliente, y desde cuándo. (Parte 1 de GH-1083, dentro de GH-1063: acá lo sirven el Settlement y la cuenta del Customer, que ya saben leer un Deposit; todavía nada registra uno y ninguna pantalla lo muestra. Antes, el vendedor cargaba el Order como Sale impaga y el Deposit como Payment posterior, y ese Payment saldaba la deuda más vieja del Customer en lugar del Order. Ver ADR-20261125-an-on-the-spot-payment-may-be-partial-only-as-an-orders-deposit-and-settlement-starts-its-sale-at-total-minus-it.)
+
 # Pagos
 
 El dinero que un **Customer** entrega, y lo que cada Customer debe por eso: su **Balance**, su **Owing since** y la cuenta de sus **Sales** y **Payments**. Lo ve solo su **Business** (ADR-0004). Lee las Sales y sus **On-the-spot payments** de sales (ADR-0007), los Customers de customers y los **Payment methods** de payment-methods (ADR-20261111-payment-methods-by-id). **Cash** (#7) cuenta los Payments en sus propias fechas, sea cual sea su medio. Qué Sale salda un Payment se calcula en el momento y nunca se guarda, igual que el **Cost of goods sold** (ADR-0009, ADR-0010), mientras que los precios de una Sale quedan congelados (ADR-0003). Quién debe se muestra como la vista "Owed to you" de Customers, con la que se abre la pantalla, y como el bloque "Owed to you" de Home; no hay una pantalla Owed to you aparte.
@@ -71,6 +73,11 @@ Criterios de éxito:
 21. **Lo que se debe por Sale suma el Balance** (parte 3 de GH-498): los `remaining` de `still_owing` suman exactamente el Balance del Customer cuando es mayor que $0, porque salen del mismo Settlement. Un Customer que no debe nada, o que tiene un Credit, no tiene Sales que se deban ni antigüedad de deuda.
 22. **Lo que compra, igual que a mano** (parte 3 de GH-498): los totales por mes y el **Average sale** del Customer coinciden con una suma a mano de sus Sales en los seis meses: envío incluido, pagadas o no, cada Sale en el mes de su propia fecha, con el redondeo compartido de la mitad hacia arriba que usa Analysis.
 23. **Nunca un promedio inventado** (parte 3 de GH-498): un Customer sin Sales en la ventana muestra 0 en cada mes y ningún `average_sale`, nunca un promedio de $0.
+24. **Lo existente no cambia con el Deposit** (parte 1 de GH-1083): toda Sale cuyo monto en el momento es igual a su total se lee exactamente como antes: el mismo Balance, Owing since, Settlement, Payment state y filas de la cuenta. Es el criterio más importante de esa parte, porque todavía ningún dato tiene un Deposit.
+25. **El Deposit cuenta solo contra su Sale** (parte 1 de GH-1083): una Sale con Deposit arranca debiendo su total menos el Deposit. El Balance es lo que las Sales deben desde el principio menos los Payments posteriores, que saldan primero la deuda más vieja. Un Deposit nunca cubre otra Sale ni una deuda más vieja, y nunca crea un Credit por sí solo.
+26. **Una fila de Deposit clara** (parte 1 de GH-1083): en la cuenta del Customer, la Sale aparece con su total completo y enseguida su propia fila de Deposit, con la fecha de la Sale, el monto, el Payment method y si la Sale sigue debiendo en parte después de ella.
+27. **Un monto inválido se rechaza** (parte 1 de GH-1083): un monto en el momento menor que 0, mayor que el total de la Sale, o mayor que 0 sin medio se rechaza con un mensaje que dice solo la regla, sin cifras, ids ni montos.
+28. **Las Sales de $0 se leen bien** (parte 1 de GH-1083), tanto pagadas en el momento como debiendo.
 
 ## Comportamiento
 
@@ -83,14 +90,26 @@ Criterios de éxito:
 - **Por encima del Balance**: un Payment mayor que el Balance actual del Customer se rechaza, así que registrar nunca crea un **Credit**.
   - El Balance actual cuenta todas las Sales del Customer, sea cual sea la fecha del Payment.
   - A un Customer cuyo Balance es $0 o un Credit no se le puede cargar un Payment.
+  - El chequeo de `insert_later` es una segunda suma deliberada, separada del Settlement: con una Sale con Deposit acepta exactamente lo que queda (el total menos el Deposit) y rechaza una unidad mínima más, en las dos Money scales (ADR-20261125-an-on-the-spot-payment-may-be-partial-only-as-an-orders-deposit-and-settlement-starts-its-sale-at-total-minus-it).
 - **Sin edición**: un Payment no se puede editar, su medio incluido. Uno equivocado se elimina y se vuelve a registrar; el que se vuelve a registrar es un Payment nuevo, con su propio `recorded_at`.
 - **Eliminación**: una eliminación definitiva, con confirmación previa. Solo se puede eliminar así un Payment posterior.
 
 ### Settlement
 
 - **On-the-spot payment**: el Payment registrado junto con una Sale pagada por completo con uno de los Payment methods del Business (sales.md, ADR-0007).
-  - Salda esa Sale y solo esa Sale, por completo. Nunca participa del recorrido de la deuda más vieja primero.
+  - Salda esa Sale y solo esa Sale, por completo, salvo un Deposit (abajo). Nunca participa del recorrido de la deuda más vieja primero.
   - Se elimina junto con su Sale y no se puede eliminar por separado.
+- **Deposit** (parte 1 de GH-1083; Deposit y Order están planificados en GH-1063 y todavía nada registra uno): un On-the-spot payment parcial, que existe solo como el Deposit de un Order (ADR-20261125-an-on-the-spot-payment-may-be-partial-only-as-an-orders-deposit-and-settlement-starts-its-sale-at-total-minus-it).
+  - El dominio lo lee de `OwedSale.on_the_spot_amount` (0 por defecto) y `on_the_spot_method`. `opening_owed` es el total menos ese monto. Un monto igual al total es una Sale pagada en el momento, como siempre.
+  - Un monto menor que 0, mayor que el total, o mayor que 0 sin medio se rechaza en `OwedSale.__post_init__` con un `ValueError` que dice solo la regla, sin dígitos, ids ni montos.
+  - `settle()` recorre toda Sale con `opening_owed > 0` y la arranca en `opening_owed`. El Balance es la suma de `opening_owed` de las Sales recorridas menos los Payments posteriores.
+  - Una Sale con Deposit cuenta como debiendo su total menos el Deposit, menos los Payments posteriores, primero la deuda más vieja. Cubierta por completo está pagada (Paid); con un resto está pagada en parte (Part-paid); su Owing since es la fecha de la propia Sale. `payment_state` lee su `still_owed` en 0..total menos el Deposit.
+  - El Settlement es el único lugar que lo calcula: Owing since, Total owed, Sales still owing, el Balance y el Payment state lo leen de ahí.
+  - Un Deposit nunca cubre otra Sale ni una deuda más vieja, y nunca crea un Credit por sí solo.
+  - Eliminar una Sale con Deposit elimina el Deposit con ella, como cualquier On-the-spot payment; los Payments posteriores que habían cubierto el resto pasan a ser un Credit con la regla de siempre.
+  - Cash y Money in cuentan un Deposit por su propio monto guardado, en la fecha de la Sale, nunca por el total de la Sale.
+  - `last_paid_method` (las New sale suggestions) saltea los Deposits: queda registrado en el ADR y lo aplica una parte posterior.
+  - El adaptador (`sql_ledgers.py`) llena `on_the_spot_amount` con el monto escalado de la fila en el momento guardada, mediante `domain_amount` y sin recortarlo; un monto guardado que rompe la regla lanza la regla.
 - **Payment posterior**: se registra con Record payment. Los Payments posteriores saldan lo que las Sales del Customer dejaron debiendo, primero la deuda más vieja.
   - Las Sales se toman por fecha, después por orden de registro.
   - Los Payments posteriores se aplican por fecha, después por orden de registro.
@@ -154,7 +173,8 @@ La lectura de la que sale la cuenta de la ficha del Customer, armada solo por `a
 
 - **Un libro corrido**: un recorrido simple de las Sales y los Payments posteriores del Customer, con la clave (fecha, `recorded_at`, Sale antes que Payment, id). Con fecha y `recorded_at` iguales, la Sale va primero. No es el orden del Settlement: un Payment de fecha anterior a su Sale va antes que ella. Ver el ADR [20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view](../adr/20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view.md). El orden del Settlement (las Sales y después los Payments, cada uno por fecha y después por orden de registro) no cambia y sigue decidiendo qué Sale salda un Payment.
 - **`recorded_at` se fija una sola vez**: asignarle un Customer a una Sale sin Customer no lo cambia, y un Payment eliminado y vuelto a registrar es un Payment nuevo, con su propio `recorded_at`.
-- **Fila de Sale**: suma su total al saldo corrido, o 0 cuando la Sale se pagó en el momento. Lleva su `number` (el Sale number), `how_paid` (`paid`, `owing` o `none`) y, para una Sale pagada en el momento, su `payment_method` (`{id, name, icon}`).
+- **Fila de Sale**: suma su total al saldo corrido menos un On-the-spot payment completo, o sea 0 cuando la Sale se pagó por completo en el momento y su total completo en cualquier otro caso, una Sale con Deposit incluida. Lleva su `number` (el Sale number), `how_paid` (`paid`, `deposit`, `owing` o `none`) y, para una Sale pagada en el momento, su `payment_method` (`{id, name, icon}`). `how_paid` es `paid` con medio y monto igual al total, `deposit` con medio y monto menor que el total, y si no `owing` o `none`.
+- **Fila de Deposit** (parte 1 de GH-1083; ADR-20261125-an-on-the-spot-payment-may-be-partial-only-as-an-orders-deposit-and-settlement-starts-its-sale-at-total-minus-it, que enmienda el ADR del ledger-walk): un `DepositRow` congelado, `kind` `deposit`, que va justo después de la fila de su Sale (en i+1) y resta el monto del Deposit. Lleva la fecha de la Sale, `running_balance`, `standing`, `sale_id`, `amount`, su medio e `is_partial`, verdadero solo cuando el saldo corrido después de ella es mayor que 0. No tiene `payment_id`, nunca entra en `entries` y no cambia `ledger_key`. En la API es `DepositAccountRowOut`, dentro de la unión de filas.
 - **Fila de Payment**: una por cada Payment posterior, que resta su monto completo, sin repartirlo entre Sales. Lleva su `payment_method` e `is_partial`: verdadero solo cuando el saldo corrido después de él es mayor que 0; falso en exactamente 0 y por debajo. `is_partial` se calcula y nunca se guarda.
 - **Cada fila** lleva el saldo corrido después de ella. El de la fila más nueva es siempre igual a `settle().balance`.
 - **Por debajo de cero**: un saldo corrido puede quedar menor que cero en un punto del libro (por ejemplo, un Payment de fecha anterior a su Sale, hasta que llega la fila de la Sale) o al final (un Credit después de eliminar una Sale). Es solo una cifra corrida, no crea un Credit.
@@ -220,6 +240,7 @@ Cuatro campos que se suman a la respuesta de la cuenta para recordarle la deuda 
     Una Sale pagada en el momento deja el saldo donde estaba. La fila no nombra ningún **Product** ni gramos: el detalle de la Sale los tiene (sales.md).
   - **Un Payment posterior**: una sola fila, titulada "Payment · <medio>", con su monto completo y sin sublínea, cubra una Sale, varias o parte de una. No dice a qué Sales fue: no hay sublíneas "On account of the sale of dd/mm" ni "Credit".
   - **La marca de Payment parcial** (`is_partial`) no se muestra en esta parte.
+  - **Un Deposit** (`how_paid` `deposit` y la fila `kind` `deposit`) todavía no se muestra: ningún dato lo produce y ningún tipo del front lo lee. Cómo se ven su fila y su chip lo deciden partes posteriores de GH-1083 contra sus dibujos.
   - El nombre del medio es siempre el actual, también para un medio archivado, en las filas de Sales y de Payments. Ninguna fila lee un valor cash o transfer.
   - Lo que se debe se lee en ámbar; la cifra del saldo lleva antes la palabra "balance" (entrada `.cuenta-cliente__saldo.monto-deuda` del censo de colores, `web/src/architecture/colorCensus.ts`).
 - **Saldo corrido por debajo de cero**: la fila dice "In your favor $ X" (`creditAmount`) con el tratamiento neutro/azul del crédito (`.monto-credito`), nunca ámbar ni verde, y nunca como una deuda negativa.
@@ -287,6 +308,7 @@ Cuatro campos que se suman a la respuesta de la cuenta para recordarle la deuda 
 - Record payment no tiene un estado de WalkState con la lista de medios abierta (`record-payment/method-selector-open` no se agregó). La lista abierta la cubren los tests del front (`CobroHistory.test.tsx`). El estado `CobroDesdeClientes` elige el medio abriendo el campo y tocando la opción. Los estados de carga, error del servidor, sin conexión y "no longer available" del campo están registrados en WalkState.
 - La cuenta como libro corrido (parte 1 de GH-829) no cambia WalkState ni `screens.json`.
 - Los campos nuevos de la cuenta (parte 3 de GH-498) no cambian WalkState ni `screens.json`: ninguna pantalla los muestra todavía.
+- La lectura del Deposit (parte 1 de GH-1083) no cambia WalkState ni `screens.json`: no toca `web/**`.
 
 ### Restricciones
 
@@ -295,8 +317,10 @@ Cuatro campos que se suman a la respuesta de la cuenta para recordarle la deuda 
 - El medio de un Payment nuevo se controla dentro del mismo `INSERT … SELECT` que lo escribe: si no es un medio ofrecido del Business, no se escribe nada y se responde 404 `payment_method.unavailable`.
 - La API de Payments lleva `payment_method_id` en lugar de `method`; es un quiebre declarado con una línea `Breaking-API:` en el PR (ADR-0066). Agregar `still_owing` y `with_lines` (#899) solo suma un campo y un parámetro opcional, así que no es un quiebre. Agregar `age_days`, `still_owing`, `sales_by_month` y `average_sale` a la cuenta (parte 3 de GH-498) solo suma campos, así que tampoco lo es; el snapshot de OpenAPI se regenera.
 - La cuenta como libro corrido (parte 1 de GH-829) es un quiebre declarado: "Breaking-API: GET /api/customers/{id}/account drops applied_to from payment rows and the credit row kind" (ADR-0066). Su único consumidor, la ficha del Customer, cambia en la misma parte, y el snapshot de OpenAPI se regenera.
+- El valor `deposit` de `SaleRefOut.how_paid` y la fila `DepositAccountRowOut` (parte 1 de GH-1083) se suman al contrato sin que ningún dato los produzca ni ningún tipo del front los lea todavía; el PR lo dice. El snapshot de OpenAPI se regenera con la misma llamada `create_app(...).openapi()` de `tests/test_static_spa.py` (`json.dumps(indent=2, sort_keys=True)` más un salto de línea final), y si el chequeo oasdiff del job de docs reporta ERR, el PR declara `Breaking-API:` (ADR-0066).
 - Los saldos corridos y `is_partial` salen solo de `account_of()`; ningún adaptador, router, esquema ni código del navegador los calcula, y nada los guarda. `applied_to` se quitó solo de las filas de la cuenta; las respuestas de registrar y de vista previa de Record payment lo conservan.
-- El orden de la cuenta y sus reglas de saldo corrido se documentan en un solo lugar, la adenda "Account order and running balance (GH-829)" de ADR-0012; la línea 31 de ADR-0012 apunta a ella y a ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view y no da una clave propia.
+- El orden de la cuenta y sus reglas de saldo corrido se documentan en un solo lugar, la adenda "Account order and running balance (GH-829)" de ADR-0012, que suma la línea de la fila de Deposit apuntando a ADR-20261125-an-on-the-spot-payment-may-be-partial-only-as-an-orders-deposit-and-settlement-starts-its-sale-at-total-minus-it; la línea 31 de ADR-0012 apunta a ella y a ADR-20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view y no da una clave propia.
+- Lo que debe una Sale con Deposit sale solo de `settle()`; ningún adaptador, router ni esquema lo vuelve a calcular. El adaptador solo lee el monto guardado, sin recortarlo, y la regla del monto vive solo en `OwedSale`.
 - Las rutas de Payment se suman al barrido de aislamiento, al test de rutas con acceso restringido y al test de migración de pertenencia.
 - Los códigos de rechazo van en `contract.json` (ADR-0008):
   - por encima del Balance;
@@ -307,7 +331,7 @@ Cuatro campos que se suman a la respuesta de la cuenta para recordarle la deuda 
   - eliminar un On-the-spot payment;
   - Customer inexistente;
   - Payment inexistente.
-- Ningún monto ni nombre en los rechazos, los logs, la consola ni el almacenamiento del navegador (ADR-0005).
+- Ningún monto ni nombre en los rechazos, los logs, la consola ni el almacenamiento del navegador (ADR-0005). El `ValueError` de la regla del Deposit tampoco lleva dígitos, ids ni montos.
 - Todo Balance, Owing since, reparto del Settlement, saldo corrido, marca de Payment parcial, antigüedad, total por mes, Average sale, total y cantidad en pantalla se lee de la API.
 - La antigüedad de cada deuda y lo que queda de cada Sale salen solo de `settle()` y de `app/payments/domain/debt_age.py`. Los tres tramos, la antigüedad de cada deudor y sus líneas `still_owing` (`StillOwingLine(sale_number, sale_date, remaining)`, armadas desde `SettleResult.sales` con `still_owed > 0` en `app/payments/application/view_accounts.py`) se arman con los mismos valores del Settlement, nunca con una segunda consulta ni un segundo recorrido; ningún adaptador, router ni esquema recorre Sales contra Payments, asigna un tramo a una fecha ni reordena las líneas. El esquema (`DebtorsOut.of(debtors, with_lines)`) solo decide si `still_owing` sale como lista o como null. El `age_days` y el `still_owing` de la cuenta (parte 3 de GH-498) siguen la misma regla.
 - Los totales por mes y el Average sale de un Customer salen solo de `app/payments/domain/customer_sales.py`; ningún adaptador, router, esquema ni código del navegador los calcula. La cantidad de meses es una sola constante, `SALES_BY_MONTH_WINDOW` (6), en ese mismo módulo.
@@ -405,6 +429,12 @@ Cuatro campos que se suman a la respuesta de la cuenta para recordarle la deuda 
   - un Customer sin Sales y uno con todas sus Sales más viejas que la ventana dan 0 en cada mes y `average_sale` null.
 - **Redondeo compartido (criterio 22)**: los tests existentes de results pasan sin cambiar sus aserciones con el redondeo importado de `app/shared/`, y ningún otro módulo define un redondeo propio del Average sale.
 - **Aislamiento de la cuenta extendida (criterio 7)**: `tests/test_business_isolation.py` siembra un Customer con meses vacíos y la cuenta de un Customer de otro Business sigue respondiendo 404, sin ninguna cifra de él.
+- **Lo existente no cambia (criterio 24)**: la suite existente de Settlement, cuenta, deudores, Payment state y API pasa sin cambiar ninguna aserción; el snapshot de OpenAPI difiere solo en `deposit` y `DepositAccountRowOut`.
+- **Oráculo del Settlement con Deposit (criterios 25, 28)**: `tests/payments/test_account_ledger_shape.py`, con semillas fijas de `random` y un oráculo que recorre los Payments posteriores de a una unidad contra Sales que arrancan en el total menos el monto, da 0 diferencias en `still_owed`, `still_owing`, `owing_since` y el Balance. Los libros con nombre corren siempre: un Deposit cubierto por completo después; un Payment con fecha anterior a su Sale con Deposit; dos Sales con igual (fecha, `recorded_at`); Sales de $0 pagadas en el momento y debiendo.
+- **Oráculo de la cuenta con Deposit (criterios 25, 26)**: el último `running_balance` es igual a `settle().balance` y a sum(total) − sum(monto) − sum(posteriores), con 0 diferencias; cada `DepositRow` queda en i+1 de su `SaleRow`, con la fecha de la Sale e `is_partial == (running_balance > 0)`.
+- **Regla del monto (criterio 27)**: los tres casos inválidos (menor que 0, mayor que el total, mayor que 0 sin medio) lanzan `ValueError` en el dominio, y ningún mensaje contiene un dígito; en `test_sql_ledgers.py` un monto bajado a mano se lee como Deposit y uno subido a mano lanza la regla.
+- **Chequeo de doble suma (parte 1 de GH-1083)**: en `test_sql_payments_guard.py`, con un monto en el momento bajado a mano, `insert_later` acepta exactamente el resto y rechaza una unidad mínima más, en las Money scales 0 y 2.
+- **Cash y Money in con Deposit (parte 1 de GH-1083)**: un monto en el momento bajado a mano llega a Cash y a Money in como ese monto, nunca como el total de la Sale, con 0 diferencias.
 
 ## Fuera de alcance
 
@@ -431,3 +461,5 @@ Cuatro campos que se suman a la respuesta de la cuenta para recordarle la deuda 
 - Mostrar en pantalla la antigüedad, las Sales que se deben, las compras por mes o el Average sale del Customer, y el texto o el envío de un recordatorio: partes posteriores de GH-498.
 - El Average sale sobre toda la historia del Customer, o una ventana de meses configurable por Business (supuesto conocido, #330).
 - Estas cifras en el Catalog, el Sale bill o cualquier otra lectura.
+- Registrar un Deposit o un Order, y cómo se ven la fila y el chip de un Deposit en pantalla: partes posteriores de GH-1063 y GH-1083, contra sus dibujos.
+- Que `last_paid_method` saltee los Deposits en el código (`method_usage.py`): queda registrado en el ADR para una parte posterior.
