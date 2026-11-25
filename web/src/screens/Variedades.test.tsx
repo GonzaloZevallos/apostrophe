@@ -29,7 +29,7 @@ import { NO_PRICE_TODAY, type Variety } from './Variedades'
 import { SheetRouterProvider } from '../components/useSheetStack'
 import { tapStock } from './varieties/renderVarieties'
 import { toast } from '../components/feedback'
-import { withSegment } from './varieties/productsSegment'
+import { readSegment, withSegment } from './varieties/productsSegment'
 import { flipViewport } from '../test-viewport'
 import { EMPTY_DETAIL, EMPTY_TITLE } from '../copy/varieties'
 import { LIMITS, SAMPLES } from '../copy/limits'
@@ -959,6 +959,18 @@ describe('the Catalog | Stock pills on the phone', () => {
 
     expect(router.state.location.pathname).toBe(VARIETIES_PATH)
     expect(await screen.findByRole('button', { name: 'Stock' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  test('Stock, then a computer width with products loaded, keeps the segment in the entry the redirect leaves', async () => {
+    const { router } = renderApp(VARIETIES_PATH)
+    await screen.findByText('24K Gold')
+    await tapStock()
+
+    flipViewport('computer')
+
+    await waitFor(() => expect(router.state.location.pathname).not.toBe(VARIETIES_PATH))
+    expect(readSegment(router.state.location.state)).toBe('stock')
+    expect(router.state.location.state).toMatchObject({ flashFollows: true })
   })
 
   test('a computer render with first-run held draws Send catalog at once and no pill', async () => {

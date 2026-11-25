@@ -42,6 +42,18 @@ test('an `import type` edge into the dispatcher is no edge, and the same import 
   ])
 })
 
+test('a type-only import of productsSegment from the computer layout passes, and a value import fails', () => {
+  const segment = { path: 'src/screens/varieties/productsSegment.ts', content: 'export type ProductsSegment = string' }
+  const computer = (content: string) => ({ path: ENTRY, content })
+  expect(findComputerSegmentImports([computer("import type { ProductsSegment } from './productsSegment'"), segment])).toEqual([])
+  expect(findComputerSegmentImports([computer("import { type ProductsSegment } from './productsSegment'"), segment])).toEqual([
+    `${ENTRY}: imports productsSegment, reached from ${ENTRY}; only ProductsPhone reads the segment`,
+  ])
+  expect(findComputerSegmentImports([computer("import { readSegment } from './productsSegment'"), segment])).toEqual([
+    `${ENTRY}: imports productsSegment, reached from ${ENTRY}; only ProductsPhone reads the segment`,
+  ])
+})
+
 const LEAF = 'src/screens/varieties/ProductsPhoneBodies.tsx'
 const PATTERN = '^src/screens/varieties/ProductsPhoneBodies\\.tsx$'
 
