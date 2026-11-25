@@ -22,6 +22,7 @@ export const PRODUCTS_FILES = [
   'src/screens/varieties/ProductsPhone.tsx',
   'src/screens/varieties/ProductsPhoneBodies.tsx',
   'src/screens/varieties/productsSegment.ts',
+  'src/screens/varieties/showsData.ts',
   'src/screens/varieties/VarietyRows.tsx',
   'src/screens/varieties/SendCatalog.tsx',
   'src/screens/varieties/StockActions.tsx',

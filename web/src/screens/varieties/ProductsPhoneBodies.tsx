@@ -22,12 +22,8 @@ import ProductsEmpty from './ProductsEmpty'
 import ProductsSummary from './ProductsSummary'
 import SendCatalog from './SendCatalog'
 import StockActions from './StockActions'
+import { showsData } from './showsData'
 import { VarietyRows } from './VarietyRows'
-
-/** True when the summary, the rows and the empty state may draw: the data is in and nothing failed. */
-export function showsData(view: ProductsView): boolean {
-  return view.failure === null && view.ready
-}
 
 /** The notice (or the gone notice), then the failure, then Loading: drawn once, above the body. */
 export function ProductsNotices({ view }: { view: ProductsView }) {

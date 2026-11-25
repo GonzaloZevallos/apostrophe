@@ -10,7 +10,8 @@ import { describe, expect, test } from 'vitest'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import { CATALOG_DISABLED_REASON, EMPTY_TITLE, VARIETIES_TEXT } from '../../copy/varieties'
 import type { ProductsView } from './ProductsBody'
-import { CatalogBody, ProductsNotices, StockBody, showsData } from './ProductsPhoneBodies'
+import { CatalogBody, ProductsNotices, StockBody } from './ProductsPhoneBodies'
+import { showsData } from './showsData'
 
 const ROW = {
   variety: { id: 1, name: '24K Gold', archived: false, current_price: null },
@@ -42,7 +43,7 @@ function renderLeaf(ui: React.ReactNode) {
   )
 }
 
-const HELD = { ready: false, rows: [], summary: null } as const
+const HELD: Partial<ProductsView> = { ready: false, rows: [], summary: null }
 const sendCatalog = () => screen.queryByText(VARIETIES_TEXT.mandarCatalogo)
 const stockEntry = () => screen.queryByRole('link', { name: VARIETIES_TEXT.entradaDeStock })
 
