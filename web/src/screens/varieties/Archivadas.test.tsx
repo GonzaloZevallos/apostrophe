@@ -26,6 +26,8 @@ import VarietiesIndex from './VarietiesIndex'
 import VarietiesLayout from './VarietiesLayout'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
+import { tapStock } from './renderVarieties'
+import { withSegment } from './productsSegment'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
@@ -158,12 +160,14 @@ afterEach(() => vi.unstubAllGlobals())
 describe('Archivadas (N) on Variedades', () => {
   test('shows the count of archived varieties and links to the card', async () => {
     renderAt(VARIETIES)
+    await tapStock()
     const link = await screen.findByRole('link', { name: /Archived \(2\)/ })
     expect(link.getAttribute('href')).toBe(ARCHIVED_VARIETIES)
   })
 
   test('shows nothing when there are none', async () => {
     renderAt(VARIETIES, { 'GET /api/products?archived=true': () => json(200, []) })
+    await tapStock()
     await screen.findByText('All entries')
     await waitFor(() => expect(screen.queryByText(/Archived \(/)).toBeNull())
   })
@@ -362,6 +366,23 @@ describe("an archived variety's page", () => {
     expect(screen.queryByText('You have no archived products')).toBeNull()
     await act(() => router.navigate(-1))
     expect(router.state.location.pathname).toBe(VARIETIES)
+  })
+
+  test('restoring the last archived product from Stock lands on Variedades opened on Catalog', async () => {
+    const user = userEvent.setup()
+    const { router } = renderAt([
+      { pathname: VARIETIES, state: withSegment(null, 'stock') },
+      { pathname: ARCHIVED_VARIETIES, state: inAppState({ pathname: VARIETIES }) },
+    ])
+    await user.click(await screen.findByRole('link', { name: /Alfa Vieja/ }))
+    await user.click(await screen.findByRole('button', { name: 'Restore' }))
+    await screen.findByRole('heading', { name: 'Archived' })
+    await user.click(screen.getByRole('link', { name: /Zeta Vieja/ }))
+    await user.click(await screen.findByRole('button', { name: 'Restore' }))
+
+    await waitFor(() => expect(router.state.location.pathname).toBe(VARIETIES))
+    expect(await screen.findByRole('button', { name: 'Catalog' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Stock' })).toHaveAttribute('aria-pressed', 'false')
   })
 
   test('reached by a typed address (nothing cached), it lands on Archivadas', async () => {
