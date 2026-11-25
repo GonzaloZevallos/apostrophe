@@ -9,9 +9,14 @@
  * dirty group always asks, and only discarding lets it through. `disarm` is handed to the child so a
  * save that navigates (invariant: only right before a navigation after a successful save or
  * logout) can drop the guard first.
+ *
+ * Inside the computer's Settings pane (`SettingsPaneContext`), a group opened from a Settings row
+ * has the list beside it, so it drops "Cerrar"; the title, the main and the guard always stay.
  */
 
+import { useContext } from 'react'
 import { useLocation } from 'react-router'
+import { SettingsPaneContext, isEnteredFromSettings } from './SettingsPaneContext'
 import { SETTINGS, parentOf, screenAtPath } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import type { ReactNode } from 'react'
@@ -48,7 +53,9 @@ export interface SettingsGroupProps {
 export default function SettingsGroup({ title, dirty, leave, className, children }: SettingsGroupProps) {
   const { blocker, disarm } = useLeaveGuard(dirty)
   const viewport = useViewport()
-  const screen = screenAtPath(useLocation().pathname)
+  const inPane = useContext(SettingsPaneContext)
+  const location = useLocation()
+  const screen = screenAtPath(location.pathname)
   const close = useBackOr((screen === undefined ? undefined : parentOf(screen.id, viewport)?.path) ?? SETTINGS_PATH)
 
   return (
@@ -56,7 +63,9 @@ export default function SettingsGroup({ title, dirty, leave, className, children
       <div className="ajustes-grupo__tarjeta">
         <div className="ajustes-grupo__encabezado">
           <span className="ajustes-grupo__titulo">{title}</span>
-          <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={close} />
+          {!(inPane && isEnteredFromSettings(location.state)) && (
+            <Boton variant="icon" action="close" ariaLabel={COMMON_TEXT.close} onClick={close} />
+          )}
         </div>
         <div className="ajustes-grupo__cuerpo">
           {typeof children === 'function' ? children({ disarm }) : children}
