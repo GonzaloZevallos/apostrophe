@@ -26,6 +26,8 @@ Es el mismo job de "manejar mi negocio desde el celular" que el de cualquier otr
 
 **Cuando** un Customer me debe y estoy por recordárselo, o por decidir si le vuelvo a vender sin que me pague, **quiero** ver en su cuenta hace cuánto está abierta su deuda más vieja, qué Sales todavía me debe y cuánto queda de cada una, y cuánto me compra normalmente, **para** mandarle un recordatorio preciso sin hacer ninguna cuenta y juzgar cuánto confiar en él. (Parte 3 de GH-498: acá lo sirven `age_days`, `still_owing`, `sales_by_month` y `average_sale` de `GET /api/customers/{id}/account`, que leerán las pantallas de partes posteriores. Antes, la cuenta mostraba el Balance y el "Since", pero no cuán vieja era esa deuda, lo que queda de cada Sale ni lo que el Customer suele comprar; en la planilla el vendedor recorría filas por nombre y sumaba a mano.)
 
+**Cuando** somos más de uno trabajando en el Business y aparece un Payment en la cuenta de un Customer, **quiero** saber cuál de nosotros lo registró, **para** saber quién recibió la plata y preguntarle a esa persona. (GH-1057; la parte 1 de GH-1106 pone la base: dos lugares en el Payment para guardar quién lo registró, que todavía nada escribe ni muestra. Solo les sirve a los Businesses con varios Users; uno con un solo User no pierde nada. Antes, un Payment guardaba solo su fecha, su monto y su medio, sin Note, así que la app no tenía dónde guardar quién lo registró.)
+
 # Pagos
 
 El dinero que un **Customer** entrega, y lo que cada Customer debe por eso: su **Balance**, su **Owing since** y la cuenta de sus **Sales** y **Payments**. Lo ve solo su **Business** (ADR-0004). Lee las Sales y sus **On-the-spot payments** de sales (ADR-0007), los Customers de customers y los **Payment methods** de payment-methods (ADR-20261111-payment-methods-by-id). **Cash** (#7) cuenta los Payments en sus propias fechas, sea cual sea su medio. Qué Sale salda un Payment se calcula en el momento y nunca se guarda, igual que el **Cost of goods sold** (ADR-0009, ADR-0010), mientras que los precios de una Sale quedan congelados (ADR-0003). Quién debe se muestra como la vista "Owed to you" de Customers, con la que se abre la pantalla, y como el bloque "Owed to you" de Home; no hay una pantalla Owed to you aparte.
@@ -71,12 +73,16 @@ Criterios de éxito:
 21. **Lo que se debe por Sale suma el Balance** (parte 3 de GH-498): los `remaining` de `still_owing` suman exactamente el Balance del Customer cuando es mayor que $0, porque salen del mismo Settlement. Un Customer que no debe nada, o que tiene un Credit, no tiene Sales que se deban ni antigüedad de deuda.
 22. **Lo que compra, igual que a mano** (parte 3 de GH-498): los totales por mes y el **Average sale** del Customer coinciden con una suma a mano de sus Sales en los seis meses: envío incluido, pagadas o no, cada Sale en el mes de su propia fecha, con el redondeo compartido de la mitad hacia arriba que usa Analysis.
 23. **Nunca un promedio inventado** (parte 3 de GH-498): un Customer sin Sales en la ventana muestra 0 en cada mes y ningún `average_sale`, nunca un promedio de $0.
+24. **Un lugar para quién registró un Payment, sin tocar nada de lo que hay** (parte 1 de GH-1106, base de GH-1057):
+    - Después de la actualización cada Payment existente queda exactamente como estaba: mismas filas, fechas, montos, Payment methods, Sales y Customers, ningún Payment perdido ni con una referencia rota.
+    - Un Payment puede guardar después quién lo registró de dos formas: unas iniciales que quedan tal como se guardaron y un vínculo al User mientras ese User exista. Quitar al User borra el vínculo, conserva las iniciales y nunca elimina ni bloquea el Payment.
+    - Nada cambia en pantalla para ningún User. Lo único observable son dos claves nulas por Payment en el **Business export** de un Business existente, y los conteos exportados y borrados de una **Business removal** siguen siendo iguales.
 
 ## Comportamiento
 
 ### Payment
 
-- **Campos**: un Customer del mismo Business, una fecha, un monto en pesos enteros mayor que $0 y un Payment method ofrecido del mismo Business (`payment_method_id`, payment-methods.md). No hay **Note**.
+- **Campos**: un Customer del mismo Business, una fecha, un monto en pesos enteros mayor que $0 y un Payment method ofrecido del mismo Business (`payment_method_id`, payment-methods.md). No hay **Note**. Desde la parte 1 de GH-1106 tiene además dos campos opcionales de quién lo registró, que todavía nada escribe (ver "Quién registró un Payment", abajo).
 - **Medio**: un Payment apunta a su medio por id, nunca por su texto, así que muestra siempre el nombre actual del medio, archivado o no. La columna vieja `payment.method` queda congelada con su valor y ya no se lee ni se escribe (ADR-20261111-payment-methods-by-id). Un medio archivado, eliminado, inexistente o de otro Business se rechaza para un Payment nuevo con el mismo 404 `payment_method.unavailable`.
 - **Fecha**: por defecto es hoy, el día del Business en hora argentina. Se permiten días anteriores; una fecha futura se rechaza.
 - **Customer**: obligatorio. El Customer de otro Business no existe (404).
@@ -85,6 +91,21 @@ Criterios de éxito:
   - A un Customer cuyo Balance es $0 o un Credit no se le puede cargar un Payment.
 - **Sin edición**: un Payment no se puede editar, su medio incluido. Uno equivocado se elimina y se vuelve a registrar; el que se vuelve a registrar es un Payment nuevo, con su propio `recorded_at`.
 - **Eliminación**: una eliminación definitiva, con confirmación previa. Solo se puede eliminar así un Payment posterior.
+
+### Quién registró un Payment (parte 1 de GH-1106, base de GH-1057)
+
+La base para que un Payment guarde quién lo registró. Esta parte solo agrega los dos lugares; cómo se captura y cómo se muestra lo deciden partes posteriores de GH-1057, juzgadas contra el job de arriba. No es un rol ni un permiso (BRIEF, fuera de alcance): es el registro de un hecho, no control de acceso.
+
+- **Dos campos opcionales** en `payment`:
+  - `recorded_by_initials`: unas iniciales de hasta 32 caracteres, que quedan exactamente como se guardaron, aunque el User después cambie o se quite.
+  - `recorded_by_app_user_id`: un vínculo al User que lo registró, mientras ese User exista. Al quitar al User el vínculo pasa a vacío (ON DELETE SET NULL), las iniciales se conservan y el Payment nunca se elimina ni se bloquea.
+- **Sin quién registró**: los Payments registrados antes de este cambio quedan con los dos campos vacíos para siempre, sin completarlos a partir de nada. Ningún registro dice quién los hizo y suponerlo metería un hecho falso en la cuenta de un Customer. "Sin quién registró" es un estado normal que las partes posteriores manejan sin tratarlo como error ni como faltante.
+- **El mismo Business**: el User vinculado tiene que ser del mismo Business que el Payment, porque los Businesses nunca se mezclan. En esta parte el esquema no lo controla (el vínculo es una referencia simple al User, sin clave compuesta) y nada lo escribe; cada parte posterior que lo escriba controla esa regla al escribir, igual que el medio se controla dentro del `INSERT … SELECT` que guarda el Payment.
+- **El momento del registro** sigue siendo el `recorded_at` existente, fijado una sola vez; no se agrega un segundo.
+- **Nada cambia en pantalla ni en la API**: ninguna respuesta de la API ni ninguna pantalla lleva estos campos en esta parte.
+- **Volver atrás la actualización** se rechaza mientras algún Payment tenga cualquiera de los dos campos cargado, para no perder en silencio un hecho registrado; sin ninguno cargado, se hace.
+- **Business export**: cada Payment suma dos claves. `recorded_by_initials` va tal como está guardada; `recorded_by_app_user_id` va como `{id, name}` con el email del User como nombre, la misma forma en que el export ya escribe sus referencias. Un Payment sin quién registró escribe las dos como null. Es el único cambio observable: el Business export es un archivo que solo maneja el Operator, escrito como primer paso de la Business removal.
+- **Business removal**: borra los Payments antes que los Users, así que el vínculo nuevo nunca la frena, y sus conteos exportados siguen siendo iguales a los borrados. El export sigue sin columnas secretas ni de tipo inesperado.
 
 ### Settlement
 
@@ -231,6 +252,7 @@ Cuatro campos que se suman a la respuesta de la cuenta para recordarle la deuda 
   - Después, el toast "Payment deleted", sin datos, y la cuenta y el Balance se refrescan desde la API.
   - Un Payment que ya no existe sigue la regla "That is gone." de accounts.md.
 - `age_days`, `still_owing`, `sales_by_month` y `average_sale` (parte 3 de GH-498) todavía no se muestran: los mostrarán partes posteriores de GH-498, con su propio chequeo contra el dibujo.
+- Quién registró un Payment (parte 1 de GH-1106) todavía no se muestra: lo mostrará una parte posterior de GH-1057, con su propio chequeo contra el dibujo.
 
 ### En pantalla: Record payment (`Payment`)
 
@@ -287,11 +309,14 @@ Cuatro campos que se suman a la respuesta de la cuenta para recordarle la deuda 
 - Record payment no tiene un estado de WalkState con la lista de medios abierta (`record-payment/method-selector-open` no se agregó). La lista abierta la cubren los tests del front (`CobroHistory.test.tsx`). El estado `CobroDesdeClientes` elige el medio abriendo el campo y tocando la opción. Los estados de carga, error del servidor, sin conexión y "no longer available" del campo están registrados en WalkState.
 - La cuenta como libro corrido (parte 1 de GH-829) no cambia WalkState ni `screens.json`.
 - Los campos nuevos de la cuenta (parte 3 de GH-498) no cambian WalkState ni `screens.json`: ninguna pantalla los muestra todavía.
+- Los campos de quién registró un Payment (parte 1 de GH-1106) no cambian WalkState ni `screens.json`: ninguna pantalla los muestra todavía.
 
 ### Restricciones
 
 - `payment` es la tabla de ADR-0007 y lleva `business_id`. El Business sale de la **Session**.
 - `payment.payment_method_id` apunta a `payment_method` con una FK compuesta `(business_id, payment_method_id)` ON DELETE RESTRICT; `payment.method` queda congelada, ahora admite nulo y las filas nuevas la dejan vacía (ADR-20261111-payment-methods-by-id). Solo el adaptador de tablas y las migraciones la nombran, y un test de arquitectura lo controla. La migración solo agregó y llenó la columna nueva, y el comparador M3 lo prueba.
+- `payment.recorded_by_initials` (`String(32)`, nulo) y `payment.recorded_by_app_user_id` (FK simple a `app_user.id` ON DELETE SET NULL, con índice, nulo) se agregan en la migración `0035_payment_recorder` (parte 1 de GH-1106), que reconstruye `payment` como `0033_payment_payment_method_id`: cada nombre por `op.f`, sin argumentos `name=` (CODING_STANDARDS sección 11), las columnas existentes en su orden y las dos nuevas al final, copia por INSERT SELECT con `RebuildLostRows` si los conteos difieren, `PRAGMA foreign_key_check` con `RebuildLeftBrokenReferences` (cuyo mensaje nombra solo la revisión), las FKs apagadas durante el cambio y restauradas en `finally`, y los índices `ix_payment_sale_id`, `ix_payment_payment_method_id_business_id` y el nuevo `ix_payment_recorded_by_app_user_id`. Ninguna tabla apunta a `payment`, por eso borrar y renombrar es seguro. El downgrade se rechaza mientras alguna fila tenga cargada cualquiera de las dos columnas. Hay una sola cabeza de Alembic, y las partes posteriores de GH-1057 toman su `down_revision` de esta revisión.
+- El vínculo de quién registró no lleva clave compuesta, así que el esquema no controla que el User sea del mismo Business: cada parte posterior que lo escriba lo controla al escribir. El `delete_order` de la Business removal pone `payment` antes que `app_user`.
 - El medio de un Payment nuevo se controla dentro del mismo `INSERT … SELECT` que lo escribe: si no es un medio ofrecido del Business, no se escribe nada y se responde 404 `payment_method.unavailable`.
 - La API de Payments lleva `payment_method_id` en lugar de `method`; es un quiebre declarado con una línea `Breaking-API:` en el PR (ADR-0066). Agregar `still_owing` y `with_lines` (#899) solo suma un campo y un parámetro opcional, así que no es un quiebre. Agregar `age_days`, `still_owing`, `sales_by_month` y `average_sale` a la cuenta (parte 3 de GH-498) solo suma campos, así que tampoco lo es; el snapshot de OpenAPI se regenera.
 - La cuenta como libro corrido (parte 1 de GH-829) es un quiebre declarado: "Breaking-API: GET /api/customers/{id}/account drops applied_to from payment rows and the credit row kind" (ADR-0066). Su único consumidor, la ficha del Customer, cambia en la misma parte, y el snapshot de OpenAPI se regenera.
@@ -405,6 +430,10 @@ Cuatro campos que se suman a la respuesta de la cuenta para recordarle la deuda 
   - un Customer sin Sales y uno con todas sus Sales más viejas que la ventana dan 0 en cada mes y `average_sale` null.
 - **Redondeo compartido (criterio 22)**: los tests existentes de results pasan sin cambiar sus aserciones con el redondeo importado de `app/shared/`, y ningún otro módulo define un redondeo propio del Average sale.
 - **Aislamiento de la cuenta extendida (criterio 7)**: `tests/test_business_isolation.py` siembra un Customer con meses vacíos y la cuenta de un Customer de otro Business sigue respondiendo 404, sin ninguna cifra de él.
+- **Actualización sin pérdida (criterio 24)**: `tests/migrations/test_payment_recorder.py` sube a 0034, siembra un Payment posterior y un On-the-spot payment, sube a head y los encuentra idénticos, con las dos columnas nuevas en NULL; las columnas, los índices y las FKs reflejados de antes (nombres y ondelete) quedan sin cambios y ninguna FK apunta a `payment`. 0 filas perdidas, 0 referencias rotas.
+- **Quitar al User (criterio 24)**: con las FKs activas, un Payment con las dos columnas cargadas y un User del mismo Business: al borrar ese `app_user` el id queda en NULL, las iniciales se conservan y el Payment sigue ahí.
+- **Volver atrás (criterio 24)**: el downgrade se rechaza con alguna de las columnas cargada y se hace con ninguna cargada.
+- **Export y removal (criterio 24)**: `tests/business_removal/test_migrated_schema.py` muestra que `delete_order` pone `payment` antes que `app_user`; que un Payment con las columnas cargadas exporta `recorded_by_app_user_id` como `{id, name: <email del User>}` y las iniciales tal como están, y uno sin ninguna exporta las dos como `None`; que los conteos exportados de una removal son iguales a los borrados; y que `secret_columns` y `other_type_columns` siguen vacíos. `test_naming` y `test_business_ownership` siguen en verde.
 
 ## Fuera de alcance
 
@@ -431,3 +460,7 @@ Cuatro campos que se suman a la respuesta de la cuenta para recordarle la deuda 
 - Mostrar en pantalla la antigüedad, las Sales que se deben, las compras por mes o el Average sale del Customer, y el texto o el envío de un recordatorio: partes posteriores de GH-498.
 - El Average sale sobre toda la historia del Customer, o una ventana de meses configurable por Business (supuesto conocido, #330).
 - Estas cifras en el Catalog, el Sale bill o cualquier otra lectura.
+- Capturar quién registró un Payment al registrarlo, mostrarlo en pantalla o en una respuesta de la API: partes posteriores de GH-1057.
+- Completar quién registró los Payments anteriores a la parte 1 de GH-1106, o suponerlo.
+- Un campo de texto libre en un Payment para cubrir quién lo registró.
+- Roles o permisos dentro de un Business: saber quién registró un Payment no es control de acceso (BRIEF).
