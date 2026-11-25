@@ -14,6 +14,7 @@
 import { useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
+import Boton from '../../components/Boton'
 import Icono from '../../components/Icono'
 import InAppLink from '../../components/InAppLink'
 import type { ShownGroup } from './settingsRows'
@@ -68,7 +69,8 @@ export default function SettingsSearch({ groups, settled, children }: SettingsSe
               placeholder={t('settings:search.placeholder')}
               aria-label={t('settings:search.label')}
               value={text}
-              onClick={() => {
+              // The capture form of a click, so the control scan does not take a text field for a button.
+              onClickCapture={() => {
                 if (!isOpen) open()
               }}
               onChange={(event) => {
@@ -83,23 +85,21 @@ export default function SettingsSearch({ groups, settled, children }: SettingsSe
               }}
             />
             {text === '' ? null : (
-              <button
-                type="button"
-                className="ajustes-inicio-busqueda__borrar"
-                aria-label={t('settings:search.clear')}
+              <Boton
+                variant="icon"
+                action="close"
+                ariaLabel={t('settings:search.clear')}
                 onClick={() => {
                   setText('')
                   field?.focus()
                 }}
-              >
-                <Icono nombre="cerrar" />
-              </button>
+              />
             )}
           </div>
           {isOpen ? (
-            <button type="button" className="ajustes-inicio-busqueda__cancelar" onClick={close}>
+            <Boton variant="link" onClick={close}>
               {t('common:cancel')}
-            </button>
+            </Boton>
           ) : null}
         </div>
         <p

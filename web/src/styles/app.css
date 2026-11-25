@@ -7866,7 +7866,7 @@ button:has(> .venta-en-curso) {
 
 /* ===== ajustes-inicio: search field (`SettingsSearch`) ===== */
 /* A flex row under the title: the field box (magnifier, the input, the clear button), then Cancel
- * while search is open. The input is 16 px or more so the phone does not zoom in on focus. Tokens only. */
+ * while search is open. The two buttons are `Boton`s, so their 44 px target, tap rules and pressed state are its own. The input is 16 px or more so the phone does not zoom in on focus. Tokens only. */
 .ajustes-inicio-busqueda__fila {
   display: flex;
   align-items: center;
@@ -7926,35 +7926,6 @@ button:has(> .venta-en-curso) {
 .ajustes-inicio-busqueda__ranura--abierta {
   block-size: var(--espacio-xxl);
   line-height: var(--espacio-xxl);
-}
-
-.ajustes-inicio-busqueda__borrar,
-.ajustes-inicio-busqueda__cancelar {
-  display: flex;
-  flex: none;
-  align-items: center;
-  justify-content: center;
-  min-block-size: var(--alto-tocable);
-  min-inline-size: var(--alto-tocable);
-  padding: 0 var(--espacio-sm);
-  border: 0;
-  background: transparent;
-  color: var(--tinta2);
-  font: inherit;
-  user-select: none;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.ajustes-inicio-busqueda__cancelar {
-  color: var(--acento);
-}
-
-.ajustes-inicio-busqueda__borrar:active,
-.ajustes-inicio-busqueda__cancelar:active {
-  background-color: var(--superficie);
-  border-radius: var(--radio-campo);
-  transition: none;
 }
 
 .ajustes-inicio-busqueda__resultados {
