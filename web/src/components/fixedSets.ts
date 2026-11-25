@@ -24,6 +24,7 @@ import { CUSTOMER_SEGMENT_NAME } from '../copy/readers/customerSegments'
 import { HOME_VIEW_NAME } from '../copy/readers/homeViews'
 import { PAYMENT_METHOD_ICON_KEYS, PAYMENT_METHOD_ICON_NAME } from '../copy/readers/paymentMethodIcons'
 import { PAYMENT_STATE_NAME } from '../copy/readers/paymentStates'
+import { PRODUCTS_SEGMENT_NAME } from '../copy/readers/productsSegments'
 import { SHIPPED_LANGUAGE_TAGS } from '../copy/readers/shippedLanguages'
 import { SALES_TEXT } from '../copy/sales'
 import { languageName, SETTINGS_TEXT } from '../copy/settings'
@@ -54,6 +55,8 @@ const HOME_VIEWS_REASON =
   "Home and Analysis are the two views of the phone's Home tab; the app ships both and no setting adds another."
 const CUSTOMER_SEGMENTS_REASON =
   "Customers' two views, everyone and those who owe, ship with the app and no setting adds another."
+const PRODUCTS_SEGMENTS_REASON =
+  "The phone's Products tab has two views, its catalog and its stock; the app ships both and no setting adds another."
 const PERIODS_REASON = 'fixed view: periods'
 const THEME_REASON = 'fixed set: theme choice'
 const ICONS_REASON = 'fixed set: the neutral icon set ships with the app'
@@ -82,6 +85,12 @@ export const HOME_VIEWS = fixedSet(HOME_VIEWS_REASON, [
 export const CUSTOMER_SEGMENTS = fixedSet(CUSTOMER_SEGMENTS_REASON, [
   { value: 'all', label: CUSTOMER_SEGMENT_NAME.all },
   { value: 'owed', label: CUSTOMER_SEGMENT_NAME.owed },
+])
+
+/** The phone Products tab's Catalog | Stock segments. */
+export const PRODUCTS_SEGMENTS = fixedSet(PRODUCTS_SEGMENTS_REASON, [
+  { value: 'catalog', label: PRODUCTS_SEGMENT_NAME.catalog },
+  { value: 'stock', label: PRODUCTS_SEGMENT_NAME.stock },
 ])
 
 /** Sales' period tabs. */
@@ -206,6 +215,7 @@ export const FIXED_SETS = {
   HOME_PERIODS: PERIODS_REASON,
   HOME_VIEWS: HOME_VIEWS_REASON,
   CUSTOMER_SEGMENTS: CUSTOMER_SEGMENTS_REASON,
+  PRODUCTS_SEGMENTS: PRODUCTS_SEGMENTS_REASON,
   SALES_PERIODS: PERIODS_REASON,
   THEME_CHOICES: THEME_REASON,
   CUSTOMER_TYPE_ICON_SET: ICONS_REASON,

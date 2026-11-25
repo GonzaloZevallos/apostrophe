@@ -37,6 +37,8 @@ class ShapeOf:
 NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
     "account": {
         "owing_since": "string",
+        "age_days": "integer",
+        "average_sale": "integer",
         "rows[sale].sale.payment_method": ShapeOf("sale-detail-gift", "payment_method"),
     },
     "analysis": {
@@ -110,6 +112,7 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "periods.week.withdrawals[].amount": "integer",
         "periods.month.withdrawals[].amount": "integer",
         "today.change_percent": "integer",
+        "today.owed.debtors[].phone": "string",
         "debts.oldest": "string",
         "stock[].sold_out_since": "string",
         "stock[].threshold": "number",

@@ -15,6 +15,15 @@ export function matchesQuery(label: string, query: string): boolean {
   return needle === '' || foldForSearch(label).includes(needle)
 }
 
+/** New sale's one search order: the folded name, then the name as typed, then the id. Compares with
+ * `<` and `>` (the locale ban keeps `localeCompare` out), so the order never depends on a locale. */
+export function byFoldedName<T extends { id: number; name: string }>(a: T, b: T): number {
+  const [x, y] = [foldForSearch(a.name), foldForSearch(b.name)]
+  if (x !== y) return x < y ? -1 : 1
+  if (a.name !== b.name) return a.name < b.name ? -1 : 1
+  return a.id - b.id
+}
+
 const MARK = /^\p{M}$/u
 
 /** Where the trimmed `query` sits in `label`, as `[start, end)` indices into the ORIGINAL label, or

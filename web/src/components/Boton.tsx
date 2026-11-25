@@ -50,6 +50,8 @@ interface BotonCommon {
   ariaControls?: string
   /** For a button whose action is waiting on data: it reads as busy to assistive technology. */
   ariaBusy?: boolean
+  /** For a control that must stay in the tab order and keep its look while it does nothing (a notice whose retry is in flight): never the native `disabled`. */
+  ariaDisabled?: boolean
 }
 
 interface BotonWithText extends BotonCommon {
@@ -103,6 +105,10 @@ export interface BotonIconOnly extends BotonCommon {
   action: IconOnlyAction
   /** The control's name: the exact current word of the action. */
   ariaLabel: string
+  /** `-1` for a control that is a mouse convenience and never a Tab stop (a result row's Add). */
+  tabIndex?: -1
+  /** For a control that must never take the focus from the field beside it (`preventDefault`). */
+  onMouseDown?: (event: MouseEvent<HTMLElement>) => void
   children?: undefined
   icon?: undefined
   textOnly?: undefined
@@ -124,12 +130,15 @@ export default function Boton(props: BotonProps) {
       type={props.type ?? 'button'}
       className={className}
       onClick={props.onClick}
+      onMouseDown={props.variant === 'icon' ? props.onMouseDown : undefined}
+      tabIndex={props.variant === 'icon' ? props.tabIndex : undefined}
       disabled={props.disabled ?? false}
       aria-label={ariaLabel}
       aria-describedby={props.ariaDescribedBy}
       aria-expanded={props.ariaExpanded}
       aria-controls={props.ariaControls}
       aria-busy={props.ariaBusy}
+      aria-disabled={props.ariaDisabled}
     >
       {content}
     </button>

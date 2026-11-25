@@ -15,6 +15,7 @@ import { HOME, VARIETIES } from '../src/routes.js'
 import { watchConsole } from './console.js'
 import { openTakeFromStock } from './helpers/openScreens.js'
 import { settingsEntry } from './helpers/chrome.js'
+import { settingsRow } from './helpers/settingsHome.js'
 import { expectBusinessNameOnPhone, signUpNewBusiness } from './helpers/signup.js'
 import { uniqueTag } from './helpers/unique.js'
 
@@ -42,11 +43,10 @@ test('a seller adds a withdrawal reason, records a withdrawal with it and reads 
   await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill('20000')
   await expectToast(page, 'Entry saved', () => page.getByRole('button', { name: 'Save the entry' }).click())
 
-  // Settings → Business → Withdrawal reasons: add "Gifts".
+  // Settings → Withdrawal reasons (a row of Payments and stock): add "Gifts".
   await page.goto(HOME)
   await settingsEntry(page).click()
-  await page.getByRole('link', { name: 'Business', exact: true }).click()
-  await page.getByRole('link', { name: 'Withdrawal reasons', exact: true }).click()
+  await settingsRow(page, 'Payments and stock', 'Withdrawal reasons').click()
   await expect(page.getByRole('button', { name: 'Add reason' })).toBeVisible()
   await page.getByRole('button', { name: 'Add reason' }).click()
   await page.getByLabel('Name', { exact: true }).fill('Gifts')

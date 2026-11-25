@@ -1,0 +1,115 @@
+/* The computer register's Product results table (NuevaVentaCompu's left column). Tokens only. */
+
+.prt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  min-width: 0;
+}
+
+.prt__search {
+  box-sizing: border-box;
+  width: 100%;
+  padding: var(--espacio-md) var(--espacio-lg);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+}
+
+.prt__grid {
+  width: 100%;
+  border-collapse: collapse;
+  color: var(--tinta);
+}
+
+.prt__head {
+  padding: var(--espacio-sm) var(--espacio-md);
+  border-bottom: 1px solid var(--linea);
+  color: var(--tinta2);
+  font-weight: 500;
+  text-align: left;
+}
+
+.prt__head--stock,
+.prt__cell--stock,
+.prt__head--price,
+.prt__cell--price {
+  text-align: right;
+}
+
+/* The status word after the figure: words carry the status, never colour alone. */
+.prt__word {
+  margin-left: var(--espacio-sm);
+  color: var(--tinta2);
+}
+
+/* The Add column keeps a fixed width: the button inside is the touch target. */
+.prt__cell--add {
+  width: 44px;
+  padding: 0;
+  text-align: center;
+}
+
+.prt__row {
+  cursor: default;
+  border-bottom: 1px solid var(--linea);
+}
+
+.prt__row[aria-selected='true'] {
+  background: var(--acento-suave);
+}
+
+/* The pressed state: a click on a row selects it, so the row answers the press. */
+.prt__row:active {
+  background: var(--linea);
+}
+
+.prt__row[aria-selected='true'] .prt__name {
+  font-weight: 600;
+}
+
+/* Pressed: a row click is a mouse convenience, but a row still shows it was pressed. */
+.prt__row:active,
+.prt__row[aria-selected='true']:active {
+  background: var(--linea);
+}
+
+.prt__cell {
+  padding: var(--espacio-sm) var(--espacio-md);
+}
+
+.prt__cell--name {
+  position: relative;
+}
+
+/* The selected row's shape mark: an edge bar, so the selection never rests on colour alone. */
+.prt__mark {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--espacio-xs);
+  background: var(--acento);
+}
+
+.prt__loading {
+  padding: var(--espacio-lg) var(--espacio-md);
+  color: var(--tinta2);
+}
+
+.prt__state {
+  padding: var(--espacio-lg) var(--espacio-md);
+  color: var(--tinta2);
+  text-align: center;
+}
+
+.prt__state--failed {
+  color: var(--tinta);
+}
+
+.prt__help {
+  margin: 0;
+  color: var(--tinta2);
+}

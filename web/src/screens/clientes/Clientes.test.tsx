@@ -28,9 +28,10 @@ import { SAVED_TOAST } from './ClienteForm'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import CobroRoute from './CobroRoute'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, render, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
+import { keys } from '../../api/keys'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import paymentPreviewFixture from '../../api/fixtures/payment-preview.json'
 import customerFixture from '../../api/fixtures/customer.json'
@@ -90,6 +91,12 @@ function renderClientes() {
     </MoneyFormatProvider>
 </QueryClientProvider>,
   )
+  return queryClient
+}
+
+/** The screen opens on 'Owed to you'; the full list is one tap away on 'All'. */
+async function showAll() {
+  await userEvent.click(await screen.findByRole('radio', { name: 'All' }))
 }
 
 beforeEach(() => {
@@ -206,6 +213,7 @@ test('a result still catching up to a newer keystroke is marked pending, not cur
     }),
   )
   renderClientes()
+  await showAll()
   await waitFor(() => expect(screen.getByText('Mica Solano')).toBeInTheDocument())
 
   await userEvent.type(screen.getByLabelText('Search customer'), 'x')
@@ -213,6 +221,9 @@ test('a result still catching up to a newer keystroke is marked pending, not cur
   await waitFor(() => expect(screen.getByText('Searching…')).toBeInTheDocument())
   const list = screen.getByText('Searching…').closest('.lista-clientes')
   expect(list).toHaveAttribute('aria-busy', 'true')
+  // Only the Searching line: the previous rows and the empty line are not the answer.
+  expect(screen.queryByText('Mica Solano')).not.toBeInTheDocument()
+  expect(screen.queryByText(EMPTY_CUSTOMERS)).not.toBeInTheDocument()
   resolveX?.(jsonResponse(200, []))
 })
 
@@ -232,10 +243,112 @@ test('a server error on the list shows the generic retry, never the empty-list t
   expect(screen.queryByText(EMPTY_CUSTOMERS)).not.toBeInTheDocument()
 })
 
-test('Te deben sits above everyone A–Z, and the header carries no debt figure', async () => {
+test('both counts come from the API: All shows customer_count, Owed to you shows debtor_count', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, []), () => jsonResponse(200, debtorsOf({ customer_count: 38, debtor_count: 6 }))),
+  )
+  renderClientes()
+
+  const all = await screen.findByRole('radio', { name: 'All' })
+  await waitFor(() => expect(all).toHaveTextContent(/^All\s*· 38$/))
+  expect(screen.getByRole('radio', { name: 'Owed to you' })).toHaveTextContent(/^Owed to you\s*· 6$/)
+})
+
+test('the screen opens on Owed to you, and one tap on All switches the view', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [customerFixture, LU_SETTLED]), () => jsonResponse(200, DEBTORS_FIXTURE)),
+  )
+  renderClientes()
+
+  expect(await screen.findByRole('radio', { name: 'Owed to you' })).toBeChecked()
+  expect(screen.getByRole('radio', { name: 'All' })).not.toBeChecked()
+  await showAll()
+  expect(screen.getByRole('radio', { name: 'All' })).toBeChecked()
+  expect(await screen.findByText('Lu')).toBeInTheDocument()
+})
+
+test('while debtors is pending the segments show no digit and no Nobody owes you', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [LU_SETTLED]), () => new Promise<Response>(() => {})))
+  renderClientes()
+
+  const group = await screen.findByRole('radiogroup', { name: 'Customers view' })
+  expect(group).toHaveTextContent('AllOwed to you')
+  expect(group.textContent).not.toMatch(/\d|·/)
+  expect(screen.queryByText(NOBODY_OWES)).not.toBeInTheDocument()
+  expect(screen.queryByText('Lu')).not.toBeInTheDocument()
+})
+
+test('a failed debtors read with the customers answering shows the flat list, with no segments', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [LU_SETTLED]), () => new Response('boom', { status: 500 })),
+  )
+  renderClientes()
+
+  expect(await screen.findByText('Lu')).toBeInTheDocument()
+  expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
+  expect(screen.queryByText(NOBODY_OWES)).not.toBeInTheDocument()
+})
+
+test('figures shown and then a newer failed read drop to the flat list, with none of them', async () => {
+  let failing = false
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      () => jsonResponse(200, [LU_SETTLED]),
+      () => (failing ? new Response('boom', { status: 500 }) : jsonResponse(200, DEBTORS_FIXTURE)),
+    ),
+  )
+  const queryClient = renderClientes()
+  await showAll()
+  expect(await screen.findByText('Lu')).toBeInTheDocument()
+  expect(screen.getByRole('radiogroup', { name: 'Customers view' })).toHaveTextContent(/\d/)
+
+  failing = true
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+
+  await waitFor(() => expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument())
+  expect(screen.getByText('Lu')).toBeInTheDocument()
+  expect(screen.queryByText(NOBODY_OWES)).not.toBeInTheDocument()
+})
+
+test('a failed debtors read that then answers lands on Owed to you, even after All was chosen', async () => {
+  let failing = false
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      () => jsonResponse(200, [customerFixture, LU_SETTLED]),
+      () => (failing ? new Response('boom', { status: 500 }) : jsonResponse(200, DEBTORS_FIXTURE)),
+    ),
+  )
+  const queryClient = renderClientes()
+  await showAll()
+  failing = true
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+  await waitFor(() => expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument())
+
+  failing = false
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+
+  expect(await screen.findByRole('radio', { name: 'Owed to you' })).toBeChecked()
+})
+
+test('clearing a typed query returns to the segment chosen before typing', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [customerFixture, LU_SETTLED]), () => jsonResponse(200, DEBTORS_FIXTURE)),
+  )
+  renderClientes()
+  await showAll()
+  const input = screen.getByLabelText('Search customer')
+
+  await userEvent.type(input, 'lu')
+  await waitFor(() => expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument())
+  await userEvent.clear(input)
+
+  expect(await screen.findByRole('radio', { name: 'All' })).toBeChecked()
+})
+
+test('Owed to you opens first with the total and the debtor rows; All holds the rest, and the header carries no debt figure', async () => {
   // `customer.json` and `debtors.json` (plan, invariants: "used by the front's
   // fetch fakes") drive this: the customer list carries the fixture's own owing
-  // entry plus a settled one, and the section reads straight off `debtors.json`.
+  // entry plus a settled one, and the view reads straight off `debtors.json`.
   vi.mocked(fetch).mockImplementation(
     fetchStub(
       () =>
@@ -248,13 +361,10 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
   )
   renderClientes()
 
-  // Reversed assertion (GH-278): the header no longer carries an "N customers" count line.
-  expect(await screen.findByRole('region', { name: 'Everyone · A–Z' })).toBeInTheDocument()
+  const section = await screen.findByRole('region', { name: 'Owed to you' })
   expect(screen.queryByText(/^\d+ customers?$/)).not.toBeInTheDocument()
   expect(screen.queryByText(/ owe you \$/)).not.toBeInTheDocument()
-  const section = await screen.findByRole('region', { name: 'Owed to you' })
-  const everyone = await screen.findByRole('region', { name: 'Everyone · A–Z' })
-  expect(section.compareDocumentPosition(everyone) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(screen.queryByText(/Everyone/)).not.toBeInTheDocument()
   expect(
     within(section).getByText(`$ ${DEBTORS_FIXTURE.total_owed.toLocaleString('es-AR')}`),
   ).toBeInTheDocument()
@@ -262,7 +372,11 @@ test('Te deben sits above everyone A–Z, and the header carries no debt figure'
     'APAna Pérez$ 15.000owes you since 14/09',
     'Collect',
   ])
-  expect(within(everyone).getByText('Lu')).toBeInTheDocument()
+  expect(screen.queryByText('Lu')).not.toBeInTheDocument()
+
+  await showAll()
+  expect(await screen.findByText('Lu')).toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: 'Owed to you' })).not.toBeInTheDocument()
 })
 
 test("Te deben shows the API's order and total as answered, never a client sort or sum", async () => {
@@ -289,13 +403,13 @@ test("Te deben shows the API's order and total as answered, never a client sort 
 
   const section = await screen.findByRole('region', { name: 'Owed to you' })
   expect(within(section).getByText('$ 99.000')).toBeInTheDocument()
-  expect(within(section).getByText('1 sale owing')).toBeInTheDocument()
+  expect(within(section).queryByText(/sales? owing/)).not.toBeInTheDocument()
   expect(
     within(section).getAllByRole('link', { name: /^Collect from / }).map((link) => link.getAttribute('aria-label')),
   ).toEqual(['Collect from Zoe', 'Collect from Abel'])
 })
 
-test('a customer in credit is only in A–Z, never in Te deben', async () => {
+test('a customer in credit is only in All, never in Owed to you', async () => {
   vi.mocked(fetch).mockImplementation(
     fetchStub(
       () =>
@@ -307,12 +421,13 @@ test('a customer in credit is only in A–Z, never in Te deben', async () => {
   )
   renderClientes()
 
-  const everyone = screen.getByRole('region', { name: 'Everyone · A–Z' })
-  expect(await within(everyone).findByText('Credit $ 2.000')).toBeInTheDocument()
-  expect(within(screen.getByRole('region', { name: 'Owed to you' })).queryByText(/Credit/)).not.toBeInTheDocument()
+  const section = await screen.findByRole('region', { name: 'Owed to you' })
+  expect(within(section).queryByText(/Credit/)).not.toBeInTheDocument()
+  await showAll()
+  expect(await screen.findByText('Credit $ 2.000')).toBeInTheDocument()
 })
 
-test('searching collapses both sections into one flat list that keeps Cobrar, and clearing brings them back', async () => {
+test('searching collapses the segments into one flat list that keeps Collect, and clearing brings them back', async () => {
   vi.mocked(fetch).mockImplementation(
     fetchStub(
       (query) =>
@@ -330,17 +445,17 @@ test('searching collapses both sections into one flat list that keeps Cobrar, an
   await userEvent.type(input, 'ana')
 
   await waitFor(() => expect(screen.queryByRole('region', { name: 'Owed to you' })).not.toBeInTheDocument())
-  expect(screen.queryByRole('region', { name: 'Everyone · A–Z' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
   expect(await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` })).toHaveLength(1)
   expect(screen.getByText('owes you since 14/09')).toBeInTheDocument()
 
   await userEvent.clear(input)
 
   expect(await screen.findByRole('region', { name: 'Owed to you' })).toBeInTheDocument()
-  expect(screen.getByRole('region', { name: 'Everyone · A–Z' })).toBeInTheDocument()
+  expect(screen.getByRole('radiogroup', { name: 'Customers view' })).toBeInTheDocument()
 })
 
-test('"Collect from X" is on every row that owes, in the section and in the list, and never on one that does not', async () => {
+test('"Collect from X" is on every row that owes, in Owed to you and in All, and never on one that does not', async () => {
   vi.mocked(fetch).mockImplementation(
     fetchStub(
       () =>
@@ -354,15 +469,19 @@ test('"Collect from X" is on every row that owes, in the section and in the list
   renderClientes()
 
   await screen.findByRole('region', { name: 'Owed to you' })
-  const links = await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` })
-  expect(links).toHaveLength(2)
-  for (const link of links) {
-    expect(link).toHaveAttribute('href', pathTo(CUSTOMER_PAYMENT, { id: customerFixture.id }))
-  }
+  const owed = await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` })
+  expect(owed).toHaveLength(1)
+  expect(owed[0]).toHaveAttribute('href', pathTo(CUSTOMER_PAYMENT, { id: customerFixture.id }))
+
+  await showAll()
+  await screen.findByText('Lu')
+  const all = screen.getAllByRole('link', { name: `Collect from ${customerFixture.name}` })
+  expect(all).toHaveLength(1)
+  expect(all[0]).toHaveAttribute('href', pathTo(CUSTOMER_PAYMENT, { id: customerFixture.id }))
   expect(screen.queryByRole('link', { name: 'Collect from Lu' })).not.toBeInTheDocument()
 })
 
-test('with nobody owing, a fixed "Nobody owes you" with nothing to tap sits above the full A–Z list', async () => {
+test('with nobody owing, only "Nobody owes you" shows with nothing to tap and no rows; All still lists everyone', async () => {
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [LU_SETTLED])))
   renderClientes()
 
@@ -370,16 +489,18 @@ test('with nobody owing, a fixed "Nobody owes you" with nothing to tap sits abov
   expect(nobody.closest('a, button')).toBeNull()
   const section = screen.getByRole('region', { name: 'Owed to you' })
   expect(within(section).queryByRole('link')).not.toBeInTheDocument()
-  expect(within(section).queryByText(/debiendo/)).not.toBeInTheDocument()
-  const everyone = await screen.findByRole('region', { name: 'Everyone · A–Z' })
-  expect(section.compareDocumentPosition(everyone) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-  expect(within(everyone).getByText('Lu')).toBeInTheDocument()
+  expect(screen.queryByText('Lu')).not.toBeInTheDocument()
+
+  await showAll()
+  expect(await screen.findByText('Lu')).toBeInTheDocument()
+  expect(screen.queryByText(NOBODY_OWES)).not.toBeInTheDocument()
 })
 
 test('a row shows phone_display, never the stored phone, whatever country the number is from', async () => {
   const uy = { ...customerFixture, id: 9, name: 'Uri', balance: 0, owing_since: null, standing: 'settled', phone: '+59899123456', phone_display: '+598 99 123 456' }
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [uy])))
   renderClientes()
+  await showAll()
 
   const row = await screen.findByRole('link', { name: /Uri/ })
   expect(within(row).getByText('+598 99 123 456')).toBeInTheDocument()
@@ -389,6 +510,7 @@ test('a row shows phone_display, never the stored phone, whatever country the nu
 test('a customer with no phone shows no phone element, no dash, no empty label', async () => {
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerNoPhoneFixture])))
   renderClientes()
+  await showAll()
 
   const row = await screen.findByRole('link', { name: new RegExp(customerNoPhoneFixture.name) })
   expect(row.querySelector('.lista-clientes__telefono')).toBeNull()
@@ -406,6 +528,7 @@ test('a customer who owes shows the amber mark; one in credit shows the blue "Cr
     ),
   )
   renderClientes()
+  await showAll()
 
   expect(await screen.findByText('owes you since 14/09')).toBeInTheDocument()
   expect(screen.getByText('Credit $ 2.000')).toBeInTheDocument()
@@ -422,6 +545,7 @@ test('every row has a decorative initials avatar; only the rows that owe nothing
     ),
   )
   renderClientes()
+  await showAll()
 
   const ana = await screen.findByRole('link', { name: /^Ana Pérez/ })
   const lu = screen.getByRole('link', { name: /^Lu Fernández/ })
@@ -613,6 +737,7 @@ test('on a computer, picking two customers replaces the entry each time, and one
   stubViewport('computer')
   vi.mocked(fetch).mockImplementation(fetchTwoCustomers)
   const router = renderTwoPanes([BEFORE, CUSTOMERS])
+  await showAll()
 
   const pick = async (name: RegExp, href: string) => {
     const rows = await screen.findAllByRole('link', { name })
@@ -631,6 +756,7 @@ test('on a phone, picking a customer pushes, so Back returns to the list and not
   stubViewport('phone')
   vi.mocked(fetch).mockImplementation(fetchTwoCustomers)
   const router = renderTwoPanes([BEFORE, CUSTOMERS])
+  await showAll()
 
   const rows = await screen.findAllByRole('link', { name: /Lu Gómez/ })
   await userEvent.click(rows.find((link) => link.getAttribute('href') === LU)!)
@@ -701,10 +827,12 @@ test('the two empty states are the registered strings, mounted and within their 
   vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [])))
   renderClientes()
 
-  const empty = await screen.findByText(EMPTY_CUSTOMERS)
-  expect(empty).toHaveAttribute('data-copy', 'emptyTitle')
   const nobody = await screen.findByText(NOBODY_OWES)
   expect(nobody).toHaveAttribute('data-copy', 'emptyTitle')
+  expectIconAndTextRule(document.body, RULE)
+  await showAll()
+  const empty = await screen.findByText(EMPTY_CUSTOMERS)
+  expect(empty).toHaveAttribute('data-copy', 'emptyTitle')
   expectIconAndTextRule(document.body, RULE)
 })
 
@@ -713,8 +841,9 @@ test('on a computer the list stays on the left beside a customer\'s card, and /c
   vi.mocked(fetch).mockImplementation(fetchTwoCustomers)
 
   const alone = renderTwoPanes([CUSTOMERS])
+  await showAll()
   await screen.findAllByRole('link', { name: /Ana Pérez/ })
-  expect(screen.getAllByRole('region', { name: 'Everyone · A–Z' })).toHaveLength(1)
+  expect(screen.getAllByRole('radiogroup', { name: 'Customers view' })).toHaveLength(1)
   expect(screen.queryByRole('button', { name: 'Record payment' })).not.toBeInTheDocument()
   expect(alone.state.location.pathname).toBe(CUSTOMERS)
 })
@@ -724,9 +853,25 @@ test('on a computer, a customer\'s card has the list beside it, once', async () 
   vi.mocked(fetch).mockImplementation(fetchTwoCustomers)
   renderTwoPanes([ANA])
 
-  expect(await screen.findByRole('region', { name: 'Everyone · A–Z' })).toBeInTheDocument()
+  expect(await screen.findByRole('radiogroup', { name: 'Customers view' })).toBeInTheDocument()
   expect(await screen.findByText('Record payment')).toBeInTheDocument()
-  expect(screen.getAllByRole('region', { name: 'Everyone · A–Z' })).toHaveLength(1)
+  expect(screen.getAllByRole('radiogroup', { name: 'Customers view' })).toHaveLength(1)
+})
+
+test('on a computer, choosing All, opening a card and coming back keeps All selected', async () => {
+  stubViewport('computer')
+  vi.mocked(fetch).mockImplementation(fetchTwoCustomers)
+  const router = renderTwoPanes([CUSTOMERS])
+  await showAll()
+  const rows = await screen.findAllByRole('link', { name: /Ana Pérez/ })
+  await userEvent.click(rows.find((link) => link.getAttribute('href') === ANA)!)
+  await waitFor(() => expect(router.state.location.pathname).toBe(ANA))
+  await screen.findByText('Record payment')
+
+  await act(() => router.navigate(CUSTOMERS))
+
+  expect(await screen.findByRole('radio', { name: 'All' })).toBeChecked()
+  expect(screen.getByRole('radio', { name: 'Owed to you' })).not.toBeChecked()
 })
 
 // GH-288: the card shows the toast `ClienteForm` hands over in history state. The list mounts
@@ -738,7 +883,7 @@ test('on a computer, the toast a new customer lands with shows once, in the card
   renderTwoPanes([{ pathname: ANA, state: toast(SAVED_TOAST) }])
 
   await screen.findByText('Record payment')
-  await screen.findByRole('region', { name: 'Everyone · A–Z' })
+  await screen.findByRole('radiogroup', { name: 'Customers view' })
 
   expect(screen.getAllByText(SAVED_TOAST_TEXT)).toHaveLength(1)
 })
@@ -749,7 +894,7 @@ test('on a phone, a customer\'s card is alone, with no list behind it', async ()
   renderTwoPanes([ANA])
 
   expect(await screen.findByText('Record payment')).toBeInTheDocument()
-  expect(screen.queryByRole('region', { name: 'Everyone · A–Z' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
 })
 
 // After a save the list focuses its control (PM option a): the hand-off the save left is
@@ -799,4 +944,525 @@ test('with no hand-off the list moves nothing and focuses nothing', async () => 
 
   expect(collect).not.toHaveFocus()
   expect(scrollTo).not.toHaveBeenCalled()
+})
+
+const MICA = { id: 1, name: 'Mica Solano', phone: '+5491160337725', phone_display: '+54 9 11 6033-7725', vip: false, balance: 0, owing_since: null, standing: 'settled' }
+
+test('typing hides the segments, the card and the Total owed at once', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [customerFixture, LU_SETTLED]), () => jsonResponse(200, DEBTORS_FIXTURE)),
+  )
+  renderClientes()
+  await screen.findByRole('region', { name: 'Owed to you' })
+
+  await userEvent.type(screen.getByLabelText('Search customer'), 'a')
+
+  expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: 'Owed to you' })).not.toBeInTheDocument()
+  expect(screen.queryByText(`$ ${DEBTORS_FIXTURE.total_owed.toLocaleString('es-AR')}`)).not.toBeInTheDocument()
+  expect(screen.queryByText(NOBODY_OWES)).not.toBeInTheDocument()
+})
+
+test('a debtor in the result keeps the debtor row', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub((query) => jsonResponse(200, query === '' ? [LU_SETTLED] : [customerFixture]), () => jsonResponse(200, DEBTORS_FIXTURE)),
+  )
+  renderClientes()
+  await screen.findByRole('region', { name: 'Owed to you' })
+
+  await userEvent.type(screen.getByLabelText('Search customer'), 'ana')
+
+  expect(await screen.findByRole('link', { name: `Collect from ${customerFixture.name}` })).toBeInTheDocument()
+  expect(screen.getByText('owes you since 14/09')).toBeInTheDocument()
+})
+
+test('the first keystroke never shows the full list as the answer', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      (query) => (query === '' ? jsonResponse(200, [MICA]) : new Promise<Response>(() => {})),
+      () => jsonResponse(200, DEBTORS_FIXTURE),
+    ),
+  )
+  renderClientes()
+  await showAll()
+  expect(await screen.findByText('Mica Solano')).toBeInTheDocument()
+
+  await userEvent.type(screen.getByLabelText('Search customer'), 'x')
+
+  expect(screen.getByText('Searching…')).toBeInTheDocument()
+  expect(screen.queryByText('Mica Solano')).not.toBeInTheDocument()
+})
+
+test('no match shows only the no-match line, and never while the answer is pending', async () => {
+  let answer: ((value: Response) => void) | undefined
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      (query) =>
+        query === 'zz'
+          ? new Promise<Response>((resolve) => {
+              answer = resolve
+            })
+          : jsonResponse(200, [MICA]),
+      () => jsonResponse(200, DEBTORS_FIXTURE),
+    ),
+  )
+  renderClientes()
+  await screen.findByRole('region', { name: 'Owed to you' })
+
+  await userEvent.type(screen.getByLabelText('Search customer'), 'zz')
+  await screen.findByText('Searching…')
+  await waitFor(() => expect(answer).toBeDefined())
+  expect(screen.queryByText(EMPTY_CUSTOMERS)).not.toBeInTheDocument()
+
+  answer?.(jsonResponse(200, []))
+
+  expect(await screen.findByText(EMPTY_CUSTOMERS)).toBeInTheDocument()
+  expect(screen.queryByText('Searching…')).not.toBeInTheDocument()
+  expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: 'Owed to you' })).not.toBeInTheDocument()
+  expect(screen.queryByText(NOBODY_OWES)).not.toBeInTheDocument()
+})
+
+test('a failed search shows the load-failure message, not the no-match line', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      (query) => (query === 'zz' ? new Response('boom', { status: 500 }) : jsonResponse(200, [MICA])),
+      () => jsonResponse(200, DEBTORS_FIXTURE),
+    ),
+  )
+  renderClientes()
+  await screen.findByRole('region', { name: 'Owed to you' })
+
+  await userEvent.type(screen.getByLabelText('Search customer'), 'zz')
+
+  expect(await screen.findByText('Something went wrong. Try again.')).toBeInTheDocument()
+  expect(screen.queryByText(EMPTY_CUSTOMERS)).not.toBeInTheDocument()
+  expect(screen.queryByText('Mica Solano')).not.toBeInTheDocument()
+  expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
+  expect(screen.queryByText(NOBODY_OWES)).not.toBeInTheDocument()
+})
+
+test('a query of only spaces does not collapse the screen', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [MICA]), () => jsonResponse(200, DEBTORS_FIXTURE)),
+  )
+  renderClientes()
+  await screen.findByRole('region', { name: 'Owed to you' })
+
+  await userEvent.type(screen.getByLabelText('Search customer'), '   ')
+
+  expect(screen.getByRole('radiogroup', { name: 'Customers view' })).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Owed to you' })).toBeInTheDocument()
+  expect(screen.queryByText('Searching…')).not.toBeInTheDocument()
+})
+
+test('selecting All, typing and clearing returns to All with the full list, never the old matches', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      (query) => jsonResponse(200, query === 'lu' ? [LU_SETTLED] : [MICA, LU_SETTLED]),
+      () => jsonResponse(200, DEBTORS_FIXTURE),
+    ),
+  )
+  renderClientes()
+  await showAll()
+  await screen.findByText('Mica Solano')
+  const input = screen.getByLabelText('Search customer')
+
+  await userEvent.type(input, 'lu')
+  await waitFor(() => expect(screen.queryByText('Mica Solano')).not.toBeInTheDocument())
+  await userEvent.clear(input)
+
+  expect(await screen.findByRole('radio', { name: 'All' })).toBeChecked()
+  expect(await screen.findByText('Mica Solano')).toBeInTheDocument()
+  expect(screen.getByText('Lu')).toBeInTheDocument()
+})
+
+test('typing on Owed to you and clearing returns to Owed to you', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [MICA]), () => jsonResponse(200, DEBTORS_FIXTURE)),
+  )
+  renderClientes()
+  await screen.findByRole('region', { name: 'Owed to you' })
+  const input = screen.getByLabelText('Search customer')
+
+  await userEvent.type(input, 'mi')
+  expect(screen.queryByRole('region', { name: 'Owed to you' })).not.toBeInTheDocument()
+  await userEvent.clear(input)
+
+  expect(screen.getByRole('radio', { name: 'Owed to you' })).toBeChecked()
+  expect(await screen.findByRole('region', { name: 'Owed to you' })).toBeInTheDocument()
+})
+
+test('a fresh mount opens on Owed to you, whatever the last visit held', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [MICA]), () => jsonResponse(200, DEBTORS_FIXTURE)),
+  )
+  renderClientes()
+  await showAll()
+  expect(screen.getByRole('radio', { name: 'All' })).toBeChecked()
+  cleanup()
+
+  renderClientes()
+
+  expect(await screen.findByRole('radio', { name: 'Owed to you' })).toBeChecked()
+  expect(screen.getByRole('radio', { name: 'All' })).not.toBeChecked()
+})
+
+test('typing a query and clearing it before the debounce never fetches it', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [MICA]), () => jsonResponse(200, DEBTORS_FIXTURE)),
+  )
+  renderClientes()
+  await screen.findByRole('region', { name: 'Owed to you' })
+  const input = screen.getByLabelText('Search customer')
+
+  await userEvent.type(input, 'ni')
+  await userEvent.clear(input)
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 300))
+  })
+
+  expect(fetch).not.toHaveBeenCalledWith('/customers?q=ni', expect.anything())
+  expect(screen.getByRole('region', { name: 'Owed to you' })).toBeInTheDocument()
+})
+
+test('while the full list is pending on a failed debtors read, the list section is not drawn at all', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => new Promise<Response>(() => {}), () => new Response('boom', { status: 500 })),
+  )
+  renderClientes()
+
+  await waitFor(() => expect(fetch).toHaveBeenCalledWith('/payments/debtors', expect.anything()))
+  await act(async () => {})
+
+  expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
+  expect(document.querySelector('.lista-clientes')).toBeNull()
+  expect(screen.queryByText(EMPTY_CUSTOMERS)).not.toBeInTheDocument()
+})
+
+// The debtors notice (`DebtorsSlot`): shown over the flat list when the owed figures did not load.
+const DEBTORS_NOTICE = baselineText('customers.ts:CUSTOMERS_TEXT.debtorsUnavailable')
+
+function requestsTo(path: string): number {
+  return vi.mocked(fetch).mock.calls.filter(([input]) => (typeof input === 'string' ? input : String(input)) === path).length
+}
+
+function customerListRequests(): number {
+  const url = '/customers'
+  return requestsTo(url)
+}
+
+/** A debtors read that fails until `answer` gives it a body. */
+function flakyDebtors(): { fail: () => void; answer: (body: unknown) => void; respond: () => Response } {
+  let body: unknown = null
+  return {
+    fail: () => {
+      body = null
+    },
+    answer: (next) => {
+      body = next
+    },
+    respond: () => (body === null ? new Response('boom', { status: 500 }) : jsonResponse(200, body)),
+  }
+}
+
+test('a failing debtors read shows the notice over the flat list, and no segments, counts, card or Nobody owes you', async () => {
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [customerFixture, LU_SETTLED]), () => new Response('boom', { status: 500 })),
+  )
+  renderClientes()
+
+  const notice = await screen.findByRole('button', { name: DEBTORS_NOTICE })
+  expect(screen.getAllByText(DEBTORS_NOTICE)).toHaveLength(1)
+  expect(within(screen.getByRole('status')).getByRole('button', { name: DEBTORS_NOTICE })).toBe(notice)
+  expect(await screen.findByText('Lu')).toBeInTheDocument()
+  expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
+  expect(screen.queryByText(NOBODY_OWES)).not.toBeInTheDocument()
+  expect(screen.queryByText(/Total owed/)).not.toBeInTheDocument()
+  expect(document.body.textContent).not.toMatch(/·|\$ ?0(?!\d)/)
+})
+
+test('tapping the notice re-reads only the debtors, and on success the segments and counts return on Owed to you', async () => {
+  const debtors = flakyDebtors()
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture, LU_SETTLED]), debtors.respond))
+  renderClientes()
+  await userEvent.click(await screen.findByRole('button', { name: DEBTORS_NOTICE }))
+  await waitFor(() => expect(requestsTo('/payments/debtors')).toBe(2))
+  expect(customerListRequests()).toBe(1)
+
+  debtors.answer(DEBTORS_FIXTURE)
+  await userEvent.click(await screen.findByRole('button', { name: DEBTORS_NOTICE }))
+
+  const owed = await screen.findByRole('radio', { name: /Owed to you/ })
+  expect(owed).toBeChecked()
+  expect(owed).toHaveTextContent(/\d/)
+  expect(requestsTo('/payments/debtors')).toBe(3)
+  expect(customerListRequests()).toBe(1)
+  expect(screen.queryByRole('button', { name: DEBTORS_NOTICE })).not.toBeInTheDocument()
+})
+
+test('while a first-read retry is in flight the list stays, there is no skeleton, the notice is busy and a second tap sends nothing', async () => {
+  let release: ((value: Response) => void) | undefined
+  let calls = 0
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(
+      () => jsonResponse(200, [LU_SETTLED]),
+      () => {
+        calls += 1
+        if (calls === 1) return new Response('boom', { status: 500 })
+        return new Promise<Response>((resolve) => {
+          release = resolve
+        })
+      },
+    ),
+  )
+  renderClientes()
+  const notice = await screen.findByRole('button', { name: DEBTORS_NOTICE })
+
+  await userEvent.click(notice)
+  await waitFor(() => expect(notice).toHaveAttribute('aria-busy', 'true'))
+  expect(notice).toHaveAttribute('aria-disabled', 'true')
+  expect(screen.getByText('Lu')).toBeInTheDocument()
+  expect(document.querySelector('main')).not.toHaveAttribute('aria-busy', 'true')
+  await userEvent.click(notice)
+
+  expect(requestsTo('/payments/debtors')).toBe(2)
+  release?.(jsonResponse(200, DEBTORS_FIXTURE))
+  expect(await screen.findByRole('radio', { name: /Owed to you/ })).toBeChecked()
+})
+
+test('a retry that fails keeps the same button, replaces only its text and can be tapped again', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [LU_SETTLED]), () => new Response('boom', { status: 500 })))
+  renderClientes()
+  const notice = await screen.findByRole('button', { name: DEBTORS_NOTICE })
+  const text = screen.getByText(DEBTORS_NOTICE)
+
+  await userEvent.click(notice)
+  await waitFor(() => expect(screen.getByText(DEBTORS_NOTICE)).not.toBe(text))
+
+  expect(screen.getByRole('button', { name: DEBTORS_NOTICE })).toBe(notice)
+  expect(notice).not.toHaveAttribute('aria-busy')
+  expect(notice).not.toHaveAttribute('aria-disabled')
+  await userEvent.click(notice)
+  await waitFor(() => expect(requestsTo('/payments/debtors')).toBe(3))
+})
+
+test('from the keyboard: focus, Enter, a 500 and focus is still on the same notice', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [LU_SETTLED]), () => new Response('boom', { status: 500 })))
+  renderClientes()
+  const notice = await screen.findByRole('button', { name: DEBTORS_NOTICE })
+  const text = screen.getByText(DEBTORS_NOTICE)
+
+  notice.focus()
+  await userEvent.keyboard('{Enter}')
+  await waitFor(() => expect(screen.getByText(DEBTORS_NOTICE)).not.toBe(text))
+
+  expect(document.activeElement).toBe(notice)
+  expect(requestsTo('/payments/debtors')).toBe(2)
+})
+
+test('a typed query hides the notice, and a success arriving meanwhile leaves the chosen segment alone', async () => {
+  const debtors = flakyDebtors()
+  debtors.answer(DEBTORS_FIXTURE)
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture, LU_SETTLED]), debtors.respond))
+  const queryClient = renderClientes()
+  await showAll()
+  debtors.fail()
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+  await screen.findByRole('button', { name: DEBTORS_NOTICE })
+
+  const input = screen.getByLabelText('Search customer')
+  await userEvent.type(input, 'lu')
+  await waitFor(() => expect(screen.queryByRole('button', { name: DEBTORS_NOTICE })).not.toBeInTheDocument())
+  const before = requestsTo('/payments/debtors')
+  debtors.answer(DEBTORS_FIXTURE)
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+  await waitFor(() => expect(requestsTo('/payments/debtors')).toBeGreaterThan(before))
+  await userEvent.clear(input)
+
+  expect(await screen.findByRole('radio', { name: /All/ })).toBeChecked()
+})
+
+test('a failed refresh after figures were shown drops to the flat list with the notice', async () => {
+  const debtors = flakyDebtors()
+  debtors.answer(DEBTORS_FIXTURE)
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture, LU_SETTLED]), debtors.respond))
+  const queryClient = renderClientes()
+  expect(await screen.findByRole('radio', { name: /Owed to you/ })).toBeChecked()
+
+  debtors.fail()
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+
+  expect(await screen.findByRole('button', { name: DEBTORS_NOTICE })).toBeInTheDocument()
+  expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument()
+  expect(await screen.findByText('Lu')).toBeInTheDocument()
+})
+
+test('with both reads failing only the generic panel shows, and no node holds the notice sentence', async () => {
+  vi.mocked(fetch).mockResolvedValue(new Response('boom', { status: 500 }))
+  renderClientes()
+
+  expect(await screen.findByText('Something went wrong. Try again.')).toBeInTheDocument()
+  expect(screen.queryByText(DEBTORS_NOTICE)).not.toBeInTheDocument()
+})
+
+test('with no customers the notice shows above the list\'s empty state, and Nobody owes you does not', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, []), () => new Response('boom', { status: 500 })))
+  renderClientes()
+
+  const notice = await screen.findByRole('button', { name: DEBTORS_NOTICE })
+  const empty = await screen.findByText(EMPTY_CUSTOMERS)
+  expect(notice.compareDocumentPosition(empty) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(screen.queryByText(NOBODY_OWES)).not.toBeInTheDocument()
+})
+
+test('the notice button is added only once the main area has stopped being busy', async () => {
+  const busyWhenAdded: (string | null)[] = []
+  const watch = new MutationObserver((records) => {
+    for (const record of records) {
+      for (const node of Array.from(record.addedNodes)) {
+        if (node instanceof HTMLButtonElement) busyWhenAdded.push(document.querySelector('main')?.getAttribute('aria-busy') ?? null)
+      }
+    }
+  })
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [LU_SETTLED]), () => new Response('boom', { status: 500 })))
+  renderClientes()
+  const main = document.querySelector('main')
+  if (main === null) throw new Error('no main')
+  watch.observe(main, { childList: true, subtree: true })
+
+  await screen.findByRole('button', { name: DEBTORS_NOTICE })
+  watch.disconnect()
+
+  expect(busyWhenAdded.length).toBeGreaterThan(0)
+  expect(busyWhenAdded.every((busy) => busy !== 'true')).toBe(true)
+})
+
+test('after a save and a failed debtors read focus lands on the notice when the customer row is gone', async () => {
+  let paid = false
+  vi.mocked(fetch).mockImplementation((input) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    if (paid && url === '/payments/debtors') return Promise.resolve(new Response('boom', { status: 500 }))
+    if (paid && url === '/customers') return Promise.resolve(jsonResponse(200, [{ ...customerFixture, balance: 0, owing_since: null, standing: 'settled' }]))
+    return fetchApp(input)
+  })
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  const router = renderApp()
+
+  await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
+  await screen.findByRole('button', { name: 'Save' })
+  paid = true
+  setPaymentReturn(customerFixture.id)
+  await act(() => router.navigate(-1))
+
+  const notice = await screen.findByRole('button', { name: DEBTORS_NOTICE })
+  await waitFor(() => expect(notice).toHaveFocus())
+})
+
+test('after a save and a failed debtors read focus lands on the customer\'s Collect in the flat list', async () => {
+  let paid = false
+  vi.mocked(fetch).mockImplementation((input) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    if (paid && url === '/payments/debtors') return Promise.resolve(new Response('boom', { status: 500 }))
+    return fetchApp(input)
+  })
+  vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined)
+  const router = renderApp()
+
+  await userEvent.click((await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!)
+  await screen.findByRole('button', { name: 'Save' })
+  paid = true
+  setPaymentReturn(customerFixture.id)
+  await act(() => router.navigate(-1))
+
+  await screen.findByRole('button', { name: DEBTORS_NOTICE })
+  const collect = (await screen.findAllByRole('link', { name: `Collect from ${customerFixture.name}` }))[0]!
+  await waitFor(() => expect(collect).toHaveFocus())
+})
+
+// The Owed summary card (`OwedSummary`): Clientes decides once, from `debtorsState` and
+// `customersView`, whether it draws the card, its skeleton or nothing.
+const SUMMARY_NAME = 'Summary of what customers owe'
+const SKELETON = '[aria-hidden="true"] ul'
+
+test('while the debtors read is held, Owed to you shows the card skeleton and no summary region', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture]), () => new Promise<Response>(() => {}) as never))
+  renderClientes()
+
+  await waitFor(() => expect(fetch).toHaveBeenCalledWith('/payments/debtors', expect.anything()))
+  await waitFor(() => expect(document.querySelector(SKELETON)).not.toBeNull())
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+  expect(screen.queryByText(/^\$ /)).not.toBeInTheDocument()
+})
+
+test('released, the card replaces the skeleton and shows the API total_owed', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture]), () => jsonResponse(200, DEBTORS_FIXTURE)))
+  renderClientes()
+
+  const region = await screen.findByRole('region', { name: SUMMARY_NAME })
+  expect(within(region).getByRole('group', { name: 'Total owed' })).toHaveTextContent(
+    `$ ${DEBTORS_FIXTURE.total_owed.toLocaleString('es-AR')}`,
+  )
+  expect(document.querySelector(SKELETON)).toBeNull()
+})
+
+test('with All held while the debtors read is held, there is no skeleton and no summary region', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture]), () => new Promise<Response>(() => {}) as never))
+  renderClientes()
+  await waitFor(() => expect(fetch).toHaveBeenCalledWith('/payments/debtors', expect.anything()))
+  await waitFor(() => expect(document.querySelector(SKELETON)).not.toBeNull())
+
+  await showAll()
+
+  await waitFor(() => expect(document.querySelector(SKELETON)).toBeNull())
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+})
+
+test('a first failed debtors read shows the flat list with no card and no skeleton', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture]), () => new Response('boom', { status: 500 })))
+  renderClientes()
+
+  expect(await screen.findByText(customerFixture.name)).toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+  expect(document.querySelector(SKELETON)).toBeNull()
+})
+
+test('a card on screen and then a failed debtors re-read drops to the flat list with the notice, not a stale card', async () => {
+  let failing = false
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [customerFixture]), () => (failing ? new Response('boom', { status: 500 }) : jsonResponse(200, DEBTORS_FIXTURE))),
+  )
+  const queryClient = renderClientes()
+  await screen.findByRole('region', { name: SUMMARY_NAME })
+
+  failing = true
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.debtors() }))
+
+  expect(await screen.findByRole('button', { name: DEBTORS_NOTICE })).toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+  expect(document.querySelector(SKELETON)).toBeNull()
+  expect(screen.getByText(customerFixture.name)).toBeInTheDocument()
+})
+
+test('All, a typed query and nobody owing draw no card and no skeleton', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [customerFixture, LU_SETTLED]), () => jsonResponse(200, DEBTORS_FIXTURE)))
+  renderClientes()
+  await screen.findByRole('region', { name: SUMMARY_NAME })
+
+  await showAll()
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+  expect(document.querySelector(SKELETON)).toBeNull()
+
+  await userEvent.type(screen.getByLabelText('Search customer'), 'a')
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+  expect(document.querySelector(SKELETON)).toBeNull()
+})
+
+test('nobody owing draws "Nobody owes you" and no card', async () => {
+  vi.mocked(fetch).mockImplementation(fetchStub(() => jsonResponse(200, [LU_SETTLED]), () => jsonResponse(200, NO_DEBTORS)))
+  renderClientes()
+
+  expect(await screen.findByText(NOBODY_OWES)).toBeInTheDocument()
+  expect(screen.queryByRole('region', { name: SUMMARY_NAME })).not.toBeInTheDocument()
+  expect(document.querySelector(SKELETON)).toBeNull()
 })

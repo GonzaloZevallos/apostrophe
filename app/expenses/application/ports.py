@@ -39,7 +39,10 @@ class ExpenseCategories(Protocol):
 class Expenses(Protocol):
     """The expenses of one business: the business is fixed when the store is built, so
     nothing here can reach another business's expenses (docs/adr/0004). `add` and
-    `save` write without committing and return the expense as stored, with its id."""
+    `save` write without committing and return the expense as stored, with its id and its
+    Payment method's current label. They raise `PaymentMethodUnavailable` when the
+    business does not offer the method, inside the statement that writes; `save` still
+    accepts the method the expense already has, even archived since."""
 
     def by_id(self, expense_id: int) -> Expense | None: ...
 

@@ -39,6 +39,7 @@ from app.db import make_engine
 from app.expenses.adapters.babel_defaults import BabelCategoryDefaults
 from app.expenses.adapters.default_categories import ExpenseCategoriesOpening
 from app.expenses.adapters.expenses_ledger import SqlExpensesLedger
+from app.expenses.adapters.method_usage import ExpensesUsingAMethod
 from app.expenses.adapters.router import router as expenses_router
 from app.http_errors import Refused
 from app.migrations.runner import upgrade_to_head
@@ -49,10 +50,12 @@ from app.money_format.adapters.router import router as money_format_router
 from app.onboarding.adapters.first_run_router import router as first_run_router
 from app.onboarding.adapters.opening import OnboardingOpening
 from app.onboarding.adapters.router import router as onboarding_router
+from app.payment_methods.adapters.any_usage import AnyUsage
 from app.payment_methods.adapters.babel_defaults import BabelMethodDefaults
 from app.payment_methods.adapters.opening import PaymentMethodsOpening
 from app.payment_methods.adapters.results_methods import SqlResultsPaymentMethods
 from app.payment_methods.adapters.router import router as payment_methods_router
+from app.payment_methods.application.ports import PaymentMethodUsage
 from app.payments.adapters.method_usage import PaymentsUsingAMethod
 from app.payments.adapters.payments_ledger import SqlPaymentsLedger
 from app.payments.adapters.results_ports import SqlDebtSummary
@@ -73,6 +76,7 @@ from app.pricing_settings.adapters.router import router as pricing_settings_rout
 from app.pricing_settings.adapters.sql_pricing_settings import SqlPricingSettings
 from app.products.adapters.onboarding_facts import SqlProductFacts
 from app.products.adapters.router import router as products_router
+from app.products.application.ports import LatestCostedPurchase
 from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
@@ -83,6 +87,7 @@ from app.shared.money import MoneyNotRepresentable, TooManyDecimals
 from app.static_spa import FrontNavigation, MissingBuiltFront, ShellPage, SpaStatic, api_segments
 from app.stock.adapters.babel_defaults import BabelReasonDefaults
 from app.stock.adapters.draw_costs import SqlDrawCosts
+from app.stock.adapters.latest_costed_purchase import SqlLatestCostedPurchase
 from app.stock.adapters.leaving import SqlStockLeaving
 from app.stock.adapters.line_costs import SqlLineCosts
 from app.stock.adapters.onboarding_facts import SqlStockFacts
@@ -149,6 +154,12 @@ class CompositeOpening:
 
 def _catalog_facts(session: Session, business_id: int, today: date) -> SqlCatalogFacts:
     return SqlCatalogFacts(session, business_id, today, SqlPricingSettings(session, business_id))
+
+
+def _payment_method_usage(session: Session, business_id: int) -> PaymentMethodUsage:
+    return AnyUsage(
+        (PaymentsUsingAMethod(session, business_id), ExpensesUsingAMethod(session, business_id))
+    )
 
 
 async def _without_request_data(request: Request, exc: Exception) -> JSONResponse:
@@ -274,11 +285,11 @@ def create_app(
     # `get_business_opening` already does for `business_opening` — not added here, so
     # this line is the one seam the sales-costs subtask reaches it through.
     app.state.line_costs = SqlLineCosts
-    # Which payment methods have payments, read through the payment methods hexagon's own
-    # `PaymentMethodUsage` port, never `app.payments`
-    # (docs/adr/20261111-payment-methods-by-id): the payments adapter
-    # answers it from `payment.payment_method_id`.
-    app.state.payment_method_usage = PaymentsUsingAMethod
+    # Which payment methods any Payment or Expense points at, read through the payment
+    # methods hexagon's own `PaymentMethodUsage` port, never `app.payments` or
+    # `app.expenses` (the ADR 20261124 on when a payment method is in use): each of
+    # those adapters answers from its own table, and `AnyUsage` joins them.
+    app.state.payment_method_usage = _payment_method_usage
     # The same shape again: sales reads the switches only through its own
     # `PricingSettingsReader` port, never `app.pricing_settings` (docs/adr/0034).
     app.state.pricing_settings = SqlPricingSettings
@@ -306,6 +317,10 @@ def create_app(
     # `current() -> PricingSettings` port and none imports `app.pricing_settings`
     # (docs/adr/0006, docs/adr/0034).
     app.state.varieties_pricing_settings = SqlPricingSettings
+    # A variety's cost comes from stock's Purchases through the products port, so nothing
+    # under `app/products/` imports `app.stock` for it (docs/adr/0006).
+    latest_costed_purchase: Callable[[Session, int], LatestCostedPurchase] = SqlLatestCostedPurchase
+    app.state.products_latest_costed_purchase = latest_costed_purchase
     app.state.customers_pricing_settings = SqlPricingSettings
     app.state.owing_sales = SqlOwingSales
     # How money is shown, read through each hexagon's own `MoneyFormatReader` port (docs/adr/0055).

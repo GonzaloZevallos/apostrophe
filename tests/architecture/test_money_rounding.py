@@ -43,10 +43,13 @@ EXEMPT_FILES: dict[str, str] = {
 # Closed. A function (qualified by its classes) that may hold them, keyed `path::function`.
 EXEMPT_FUNCTIONS: dict[str, str] = {
     "app/results/domain/rounding.py::percent": (
-        "Margin % is a ratio, not money: it keeps its own floor(x + 1/2)"
+        "Margin % is a ratio, not money: it scales by 100 and delegates the rounding"
     ),
-    "app/results/domain/rounding.py::_round_ratio_half_up": (
-        "the private ratio rounding behind percent: a ratio, not money"
+    "app/products/domain/cost_and_margins.py::margin_percent": (
+        "A margin % is a ratio, not money: it scales by 100 and delegates the rounding"
+    ),
+    "app/shared/ratio.py::round_ratio_half_up": (
+        "the one ratio rounding, floor(x + 1/2): a ratio, not money"
     ),
     "app/stock/domain/withdrawal.py::WithdrawalLine.of": (
         "parses a typed quantity into hundredths; no amount is rounded"
@@ -223,7 +226,8 @@ def test_the_exempt_set_is_exactly_the_agreed_one() -> None:
     assert set(EXEMPT_FILES) == {"app/shared/money.py", "app/shared/quantity.py"}
     assert set(EXEMPT_FUNCTIONS) == {
         "app/results/domain/rounding.py::percent",
-        "app/results/domain/rounding.py::_round_ratio_half_up",
+        "app/products/domain/cost_and_margins.py::margin_percent",
+        "app/shared/ratio.py::round_ratio_half_up",
         "app/stock/domain/withdrawal.py::WithdrawalLine.of",
         "app/stock/domain/stock_level.py::_days_left",
         "app/pinned_catalog/domain/bold.py::utf16_length",

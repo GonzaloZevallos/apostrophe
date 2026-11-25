@@ -10,7 +10,7 @@ restores the 0027 snapshot and reflection exactly."""
 from __future__ import annotations
 
 import re
-from datetime import UTC, date, datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -25,7 +25,6 @@ from sqlalchemy.orm import Session
 from app.accounts.adapters.sql_accounts import SqlAccounts
 from app.db import make_engine
 from app.expenses.adapters.sql_expense_categories import SqlExpenseCategories
-from app.expenses.adapters.sql_expenses import SqlExpenses
 from app.migrations.runner import MIGRATIONS_ROOT
 from tests.migrations.comparator import Snapshot, compare, snapshot, upgrade_to
 
@@ -249,14 +248,19 @@ def _round_trip(engine: Engine) -> None:
     with engine.connect() as connection:
         assert connection.execute(text("PRAGMA foreign_key_check")).fetchall() == []
 
+    with engine.connect() as connection:
+        stored = connection.execute(
+            text(
+                "SELECT id, expense_category_id, amount, spent_on FROM expense "
+                "WHERE id IN (10, 11) ORDER BY id"
+            )
+        ).all()
+    assert [tuple(row) for row in stored] == [
+        (10, 10, 1_010, "2026-10-01"),
+        (11, 11, 1_011, "2026-10-02"),
+    ]
     with Session(engine) as session:
-        expenses = SqlExpenses(session, 1)
         categories = SqlExpenseCategories(session, 1)
-        assert [
-            (e.id, e.category_id, e.amount, e.spent_on)
-            for e in (expenses.by_id(10), expenses.by_id(11))
-            if e is not None
-        ] == [(10, 10, 1_010, date(2026, 10, 1)), (11, 11, 1_011, date(2026, 10, 2))]
         assert categories.count_filed_under(10) == 1
         assert categories.count_filed_under(20) == 0
         accounts = SqlAccounts(session)

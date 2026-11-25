@@ -8,6 +8,8 @@
 classDiagram
   class adapters {
   }
+  class any_usage {
+  }
   class application {
   }
   class babel_defaults {
@@ -38,6 +40,7 @@ classDiagram
   }
   class tables {
   }
+  any_usage --> ports
   babel_defaults --> method
   import_port --> method
   import_port --> sql_payment_methods
@@ -144,6 +147,9 @@ classDiagram
 
 ```mermaid
 classDiagram
+  class AnyUsage {
+    in_use_among(method_ids: Sequence~int~) frozenset~int~
+  }
   class BabelMethodDefaults {
     for_language(language: Language) tuple~PaymentMethodName, ...~
   }

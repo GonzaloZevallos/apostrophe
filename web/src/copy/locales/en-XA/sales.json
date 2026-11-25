@@ -1,0 +1,23 @@
+{
+  "card": {
+    "noCustomer": "⟦Ňö çûšťöṁèř·~·~⟧",
+    "item": "⟦{{name}} × {{quantity}}·~⟧",
+    "more_one": "⟦+{{count}} ṁöřè·~·⟧",
+    "more_other": "⟦+{{count}} ṁöřè·~·⟧",
+    "name": "⟦{{customer}}, {{items}}, {{payment}}, ťöťåł {{total}}·~·~·⟧",
+    "payment": {
+      "paid": "⟦Ṗåìđ·~⟧",
+      "unpaid": "⟦Ûňṗåìđ·~·⟧",
+      "partPaid": "⟦Ṗåřť-ṗåìđ · {{amount}} öŵèđ·~·~·~⟧",
+      "unknown": "⟦Ṗåýṁèňť çåň'ť ƀè šĥöŵň·~·~·~·~⟧"
+    }
+  },
+  "section": {
+    "count_one": "⟦{{count}} šåłè·~⟧",
+    "count_other": "⟦{{count}} šåłèš·~·⟧",
+    "label": "⟦Šåłèš šûṁṁåřý·~·~·⟧"
+  },
+  "loading": {
+    "label": "⟦Ŀöåđìňĝ šåłèš·~·~·⟧"
+  }
+}

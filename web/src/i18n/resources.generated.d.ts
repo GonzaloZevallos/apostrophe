@@ -7,7 +7,10 @@ export type Resources = {
   "customerTypes": typeof import('../copy/locales/en/customerTypes.json')
   "emptyStates": typeof import('../copy/locales/en/emptyStates.json')
   "paymentMethods": typeof import('../copy/locales/en/paymentMethods.json')
+  "products": typeof import('../copy/locales/en/products.json')
   "refusals": typeof import('../copy/locales/en/refusals.json')
+  "sales": typeof import('../copy/locales/en/sales.json')
+  "settings": typeof import('../copy/locales/en/settings.json')
   "shell": typeof import('../copy/locales/en/shell.json')
 }
 

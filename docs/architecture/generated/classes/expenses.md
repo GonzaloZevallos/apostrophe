@@ -30,6 +30,8 @@ classDiagram
   }
   class manage_expenses {
   }
+  class method_usage {
+  }
   class month {
   }
   class monthly_view {
@@ -67,6 +69,7 @@ classDiagram
   manage_expenses --> month
   manage_expenses --> monthly_view
   manage_expenses --> ports
+  method_usage --> tables
   month --> category
   monthly_view --> expense
   monthly_view --> month
@@ -129,6 +132,8 @@ classDiagram
     category_id : int
     detail : str
     id : int #124; None
+    payment_method : PaymentMethodId #124; None
+    payment_method_label : PaymentMethodLabel #124; None
     recorded_at : datetime
     spent_on : date
     of(spent_on: date, category_id: int, amount: int, detail: str, today: date, recorded_at: datetime, id: int #124; None) Expense
@@ -170,6 +175,9 @@ classDiagram
     total : int
     of(month: Month, categorized: Sequence~CategorizedExpense~) MonthlyExpenses
   }
+  class PaymentMethodMismatch {
+    code : ClassVar~str~
+  }
   CategorizedExpense --> Expense : expense
   ExpenseCategory --> CategoryName : name
   InvalidAmount --|> ExpenseRuleBroken
@@ -178,6 +186,7 @@ classDiagram
   InvalidExpenseDate --|> ExpenseRuleBroken
   InvalidMonth --|> ExpenseRuleBroken
   MonthlyExpenses --> Month : month
+  PaymentMethodMismatch --|> ExpenseRuleBroken
 ```
 
 ## application
@@ -242,6 +251,7 @@ classDiagram
     amount
     category_id : int
     detail : str
+    payment_method_id : int #124; None
     spent_on : date
   }
   class ExpenseOut {
@@ -249,8 +259,14 @@ classDiagram
     category_id : int
     detail : str
     id : int
+    payment_method : ExpensePaymentMethodOut #124; None
     spent_on : date
     of(expense: Expense) 'ExpenseOut'
+  }
+  class ExpensePaymentMethodOut {
+    icon : str
+    id : int
+    name : str
   }
   class ExpenseRow {
     amount : Mapped~int~
@@ -258,6 +274,7 @@ classDiagram
     detail : Mapped~str~
     expense_category_id : Mapped~int~
     id : Mapped~int~
+    payment_method_id : Mapped~int #124; None~
     recorded_at : Mapped~datetime~
     spent_on : Mapped~date~
   }
@@ -267,6 +284,9 @@ classDiagram
     has_records() bool
     write_category(name: str, transaction: Transaction) int
     write_expense(category_id: int, row: GastoRow, recorded_at: datetime, today: date, transaction: Transaction) None
+  }
+  class ExpensesUsingAMethod {
+    in_use_among(method_ids: Sequence~int~) frozenset~int~
   }
   class MonthlyViewOut {
     categories : list~CategorySubtotalOut~

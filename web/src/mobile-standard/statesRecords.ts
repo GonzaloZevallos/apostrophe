@@ -14,6 +14,7 @@ import {
   EXPENSE_NEW,
   EXPENSES,
   pathTo,
+  SETTINGS,
   SETTINGS_ACCOUNT,
   SETTINGS_PAYMENT_METHODS,
   SETTINGS_PAYMENT_METHODS_ARCHIVED,
@@ -32,7 +33,7 @@ import {
 import { AUTH_TEXT } from '../copy/auth.ts'
 import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { REFUSAL_KEY } from '../i18n/refusalTable.ts'
-import { common, emptyState, refusal } from './copy.ts'
+import { common, emptyState, refusal, settings } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
 import { SETTINGS_TEXT } from '../copy/settings.ts'
@@ -122,6 +123,28 @@ const ARCHIVED_ENTRY = {
 }
 const ARCHIVED_ENTRY_READ = { path: /^\/stock\/entries\/1$/, status: 200, body: ARCHIVED_ENTRY }
 const ARCHIVED_ONLY = /^\?archived=true$/
+
+/** The search typed on Customers to reach Nico Parra, the sample debtor. */
+const SEARCH_NICO = { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nico' }
+
+/**
+ * The Users the pinned fixture's business has: its owner (`scripts/design/mobile_seed.py` accepts the
+ * one invitation and only creates, never accepts, the join link), so the Business card reads "1 user".
+ */
+const SAMPLE_USER_COUNT = 1
+
+/**
+ * The Settings home with `GET /business` failing: the card's count slot stays empty and the page still draws.
+ * It waits for the first row's label, not the page title: the walk takes the first element with the
+ * text, and "Settings" is also the text of one that is never visible.
+ */
+export const CARD_WITHOUT_COUNT_STATE: WalkState = {
+  screen: 'ConfiguracionTarjetaSinConteo',
+  route: SETTINGS,
+  steps: [],
+  visible: settings('settings:rows.businessName.label'),
+  reads: [{ path: /^\/business$/, status: 500 }],
+}
 
 export const RECORDS_STATES: readonly WalkState[] = [
   {
@@ -252,10 +275,48 @@ export const RECORDS_STATES: readonly WalkState[] = [
     ],
   },
   {
+    // The first load held (aria-busy, the segment skeleton, no figure and no empty wording), then the search answered.
     screen: 'ClientesBusqueda',
     route: CUSTOMERS,
-    steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nico' } }],
+    steps: [{ fill: SEARCH_NICO }],
     visible: 'Nico Parra',
+    holds: /^\/(customers|payments\/debtors)$/,
+  },
+  {
+    // The search typed over the list shown, its read held: only "Searching…", released to the answer after the walk's steps.
+    screen: 'customer/search-held',
+    route: CUSTOMERS,
+    steps: [{ fill: SEARCH_NICO }],
+    visible: 'Nico Parra',
+    refetch: { holds: /^\/customers$/, steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Nicol' } }] },
+  },
+  {
+    // A debtor found by search keeps its debtor row (Tincho Aguirre owes in the sample).
+    screen: 'customer/search-answered',
+    route: CUSTOMERS,
+    steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Tincho' } }],
+    visible: 'Tincho Aguirre',
+  },
+  {
+    // A search nobody matches: only the no-match line.
+    screen: 'customer/search-no-match',
+    route: CUSTOMERS,
+    steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Zzzzz' } }],
+    visible: emptyState('emptyStates:customersList'),
+  },
+  {
+    // All chosen, a search typed and answered, then cleared: back on All with the full list (Mica Solano owes nothing).
+    screen: 'customer/search-cleared-to-all',
+    route: CUSTOMERS,
+    steps: [
+      { click: common('common:customerSegmentAll') },
+      { fill: SEARCH_NICO },
+      { wait: 'Nico Parra' },
+      { fill: { label: CUSTOMERS_TEXT.searchCustomer, value: '' } },
+    ],
+    visible: 'Mica Solano',
+    // It ends on the Customers page with the search empty, so its placeholder is the row's own listed offender.
+    offendersAs: 'Clientes',
   },
 
   {
@@ -488,4 +549,11 @@ export const RECORDS_STATES: readonly WalkState[] = [
     steps: [{ click: common('common:changePassword') }],
     visible: AUTH_TEXT.currentPassword,
   },
+  {
+    screen: 'ConfiguracionTarjeta',
+    route: SETTINGS,
+    steps: [],
+    visible: settings('settings:card.users', { count: SAMPLE_USER_COUNT }),
+  },
+  CARD_WITHOUT_COUNT_STATE,
 ]

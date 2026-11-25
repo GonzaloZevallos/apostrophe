@@ -23,6 +23,7 @@ interface Row {
   category_id: number
   amount: number
   detail: string
+  payment_method: null
 }
 
 const CATEGORIES = [
@@ -31,8 +32,8 @@ const CATEGORIES = [
 ]
 
 const SEED: Row[] = [
-  { id: 9, spent_on: '2026-10-01', category_id: 1, amount: 4500, detail: 'Bolsas' },
-  { id: 8, spent_on: '2026-09-28', category_id: 1, amount: 1200, detail: 'Cinta vieja' },
+  { id: 9, spent_on: '2026-10-01', category_id: 1, amount: 4500, detail: 'Bolsas', payment_method: null },
+  { id: 8, spent_on: '2026-09-28', category_id: 1, amount: 1200, detail: 'Cinta vieja', payment_method: null },
 ]
 
 /** A stand-in for the expenses API: the month's view is always computed from `rows`. */
@@ -77,7 +78,7 @@ function store(rows: Row[], overrides?: FetchImpl) {
     }
     if (url === EXPENSES && method === 'POST') {
       const body = JSON.parse(String(init?.body)) as Omit<Row, 'id'>
-      const row = { id: 100 + rows.length, ...body }
+      const row = { id: 100 + rows.length, ...body, payment_method: null }
       rows.push(row)
       return jsonResponse(201, row)
     }
@@ -85,7 +86,7 @@ function store(rows: Row[], overrides?: FetchImpl) {
     if (one !== null && method === 'PUT') {
       const index = rows.findIndex((row) => row.id === Number(one[1]))
       const body = JSON.parse(String(init?.body)) as Omit<Row, 'id'>
-      rows[index] = { id: Number(one[1]), ...body }
+      rows[index] = { id: Number(one[1]), ...body, payment_method: null }
       return jsonResponse(200, rows[index])
     }
     if (one !== null && method === 'DELETE') {
@@ -132,9 +133,9 @@ function totalNumber(): number {
 
 /** October, two expenses in Packaging and one in Otros, so a subtotal is not the total. */
 const MULTI: Row[] = [
-  { id: 1, spent_on: '2026-10-01', category_id: 1, amount: 4500, detail: 'Bolsas' },
-  { id: 2, spent_on: '2026-10-02', category_id: 1, amount: 1500, detail: 'Cinta' },
-  { id: 3, spent_on: '2026-10-02', category_id: 2, amount: 700, detail: 'Varios' },
+  { id: 1, spent_on: '2026-10-01', category_id: 1, amount: 4500, detail: 'Bolsas', payment_method: null },
+  { id: 2, spent_on: '2026-10-02', category_id: 1, amount: 1500, detail: 'Cinta', payment_method: null },
+  { id: 3, spent_on: '2026-10-02', category_id: 2, amount: 700, detail: 'Varios', payment_method: null },
 ]
 
 function expectTotalIsSumOfSubtotals(): void {
@@ -568,9 +569,9 @@ test('if the categories cannot load, the edit overlay still has "Close"', async 
 test('the Latest section lists the newest date first and, on the same date, the higher id first', async () => {
   // Fed in the category order the store answers (Otros, then Packaging), which is not the Latest order.
   const latestRows: Row[] = [
-    { id: 1, spent_on: '2026-10-01', category_id: 2, amount: 4500, detail: 'Bolsas' },
-    { id: 2, spent_on: '2026-10-02', category_id: 2, amount: 1500, detail: 'Cinta' },
-    { id: 3, spent_on: '2026-10-02', category_id: 1, amount: 700, detail: 'Varios' },
+    { id: 1, spent_on: '2026-10-01', category_id: 2, amount: 4500, detail: 'Bolsas', payment_method: null },
+    { id: 2, spent_on: '2026-10-02', category_id: 2, amount: 1500, detail: 'Cinta', payment_method: null },
+    { id: 3, spent_on: '2026-10-02', category_id: 1, amount: 700, detail: 'Varios', payment_method: null },
   ]
   renderExpenses([EXPENSES], store([...latestRows]))
 

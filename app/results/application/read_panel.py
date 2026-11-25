@@ -24,12 +24,18 @@ from app.results.application.ports import (
     StockRow,
     WithdrawalReasons,
 )
-from app.results.domain.arithmetic import average_sale
 from app.results.domain.figures import AmountWithPending, PeriodTotals, ReasonCost, RowCost
 from app.results.domain.period_figures import scan, totals_between
 from app.results.domain.periods import Period, periods
 from app.results.domain.sorting import oldest, sorted_by_name, teaser
-from app.results.domain.today_ordering import BestSeller, LowStock, best_sellers, low_stock
+from app.results.domain.today_ordering import (
+    BestSeller,
+    LowStock,
+    OwedSummary,
+    best_sellers,
+    low_stock,
+    owed_summary,
+)
 from app.results.domain.today_series import (
     LAST_HOUR,
     DaySales,
@@ -40,6 +46,7 @@ from app.results.domain.today_series import (
     money_in,
     so_far,
 )
+from app.shared.average import average_sale
 from app.shared.calendar import local_day
 from app.shared.quantity import Quantity
 
@@ -101,6 +108,7 @@ class TodayFigures:
     low_stock: LowStock[StockRow]
     best_sellers: tuple[BestSeller, ...]
     month_profit: AmountWithPending
+    owed: OwedSummary
 
 
 @dataclass(frozen=True)
@@ -201,6 +209,7 @@ def read_panel(
         low_stock=low_stock(stock_answer.rows),
         best_sellers=best_sellers(stock_answer.draws, the_periods.week.start, today),
         month_profit=month_totals.profit,
+        owed=owed_summary(debts_answer, today),
     )
 
     return Panel(

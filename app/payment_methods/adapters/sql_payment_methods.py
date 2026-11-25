@@ -16,7 +16,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, aliased
 
 from app.payment_methods.adapters.tables import PaymentMethodRow
-from app.payment_methods.domain.errors import NameTaken
+from app.payment_methods.domain.errors import InUse, NameTaken
 from app.payment_methods.domain.method import PaymentMethod, PaymentMethodIcon, PaymentMethodName
 
 
@@ -111,13 +111,21 @@ class SqlPaymentMethods:
 
     def delete(self, method_id: int) -> bool:
         archived = PaymentMethodRow.archived_at.is_not(None)
-        result = self._execute(
-            delete(PaymentMethodRow).where(
-                PaymentMethodRow.business_id == self._business_id,
-                PaymentMethodRow.id == method_id,
-                archived | self._another_offered(method_id),
-            )
+        statement = delete(PaymentMethodRow).where(
+            PaymentMethodRow.business_id == self._business_id,
+            PaymentMethodRow.id == method_id,
+            archived | self._another_offered(method_id),
         )
+        # A record written between the use case's in-use check and this statement is
+        # stopped by the foreign keys (ON DELETE RESTRICT). Only the keys that point at
+        # this row can fail a DELETE, so an integrity error here is always "in use"; the
+        # savepoint keeps the outer transaction usable (docs/adr/20261124-a-payment-
+        # method-is-in-use-when-any-payment-or-expense-points-at-it).
+        try:
+            with self._session.begin_nested():
+                result = self._execute(statement)
+        except IntegrityError:
+            raise InUse() from None
         self._session.expire_all()
         return result.rowcount == 1
 

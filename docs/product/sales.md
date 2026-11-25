@@ -24,7 +24,7 @@
 
 **Cuando** le comparto un Sale bill a un cliente, o más tarde necesito señalar esa venta exacta en nuestro chat, **quiero** que la venta lleve un número corto propio de mi negocio, **para** que los dos nombremos la misma venta sin confusión, y que el número nunca revele cuántas ventas tiene ningún otro negocio. (El **Sale number**; mostrarlo, no buscar por él).
 
-**Cuando** un cliente me paga parte o todo lo que me debe, con cualquiera de los medios que acepta mi negocio, el mismo día o semanas después, **quiero** registrarlo desde el teléfono en pocos toques y ver que su Balance y su "owing since" bajan en el acto, **para** saber siempre quién me debe qué y desde cuándo, y que nada de lo que pagó o todavía debe se pierda ni caiga en la persona equivocada. (Acá lo sirve la marca "owes you" en Sales; definido en `payments.md`).
+**Cuando** un cliente me paga parte o todo lo que me debe, con cualquiera de los medios que acepta mi negocio, el mismo día o semanas después, **quiero** registrarlo desde el teléfono en pocos toques y ver que su Balance y su "owing since" bajan en el acto, **para** saber siempre quién me debe qué y desde cuándo, y que nada de lo que pagó o todavía debe se pierda ni caiga en la persona equivocada. (Acá lo sirve el chip de pago de la tarjeta de Sales; definido en `payments.md` y `payment-state.md`).
 
 **Cuando** doy de alta un cliente (desde Customers, en medio de una venta o con la **Spreadsheet import** única) y no tengo su **Phone number**, **quiero** guardarlo igual con su nombre y agregar el número más adelante si algún día lo consigo, **para** registrar cada venta y cada deuda a nombre de la persona que de verdad debe, sin inventar un número ni dejar a esa persona fuera de la app. (Acá lo sirve "New customer" de Pick a customer; definido en `customers.md`).
 
@@ -38,7 +38,9 @@
 
 **Cuando** entrego un pedido y empiezo a registrarlo en el teléfono, **quiero** tener adelante los Customers a los que les vendí más recientemente, los Products que más se vendieron en los últimos 30 días y el Payment method de mi última venta pagada en el momento, **para** completar la venta en pocos toques en lugar de buscar o desplazarme, y registrarla en menos de un minuto. (Parte 1 de GH-496: acá lo sirve la lectura de las **New sale suggestions**, que solo devuelve ids; la pantalla que las muestra llega en partes posteriores de GH-496. Las sugerencias solo acortan elecciones: nunca fijan ni cambian un precio, un monto ni una cantidad).
 
-**Cuando** reviso mi lista de Sales en el teléfono, **quiero** ver en cada venta si está pagada, pagada en parte o sin pagar, y cuánto se debe todavía de ella, **para** saber a quién reclamarle y cuánto sin abrir cada venta. (Parte 1 de GH-500: sirve al trabajo del Brief "saber quién me debe qué y desde cuándo". Acá lo sirven los campos `payment_state` y `still_owed` de la API de ventas, el **Payment state** de cada venta; la pantalla que los muestra llega en partes posteriores de GH-500. No reemplaza el Balance del cliente ni agrega ningún total nuevo).
+**Cuando** reviso mi lista de Sales en el teléfono, **quiero** ver en cada venta si está pagada, pagada en parte o sin pagar, y cuánto se debe todavía de ella, **para** saber a quién reclamarle y cuánto sin abrir cada venta. (Parte 1 de GH-500: sirve al trabajo del Brief "saber quién me debe qué y desde cuándo". Acá lo sirven los campos `payment_state` y `still_owed` de la API de ventas, el **Payment state** de cada venta; la pantalla que los muestra, la tarjeta de Sales, existe desde la parte 2 de GH-500 (#1020). No reemplaza el Balance del cliente ni agrega ningún total nuevo).
+
+**Cuando** toco Undo en una venta que acabo de guardar, **quiero** ver en el acto si se sacó, si ya no estaba o si no se pudo, **para** confiar en mis cuentas y en mi stock sin abrir Sales para fijarme. (GH-869: acá lo sirven los cuatro resultados del aviso de Undo, en "Sale saved"; esta parte los dibuja y una parte posterior de GH-869 los conecta a Undo).
 
 # Ventas
 
@@ -71,7 +73,9 @@ Antes de la parte 2 de GH-793, la pista de nada para vender desaparecía mientra
 
 Antes de la parte 1 de GH-496, para registrar una venta la vendedora busca al cliente en la lista de Customers, recorre los productos para agregar cada línea y elige el medio de la lista completa cada vez, sea cual sea el de la última venta. La app no tiene ningún atajo de "repetir la última venta" ni de "copiar una venta", y este trabajo no lo agrega. La parte 1 entrega solo la lectura de las New sale suggestions, sin pantalla; New sale todavía no las muestra.
 
-Antes de la parte 1 de GH-500, la lista de Sales solo dice si una venta sigue debiendo ("owes you", las **Sales still owing**): no dice si está pagada en parte ni cuánto queda de ella. Para saberlo, la vendedora abre cada venta o la ficha del cliente, o lo saca del Balance con la regla de la deuda más vieja primero. Supuesto: no hay otro atajo que importe (como anotar el monto en la nota de la venta), y el arreglo sería el mismo. La parte 1 entrega solo los dos campos en la API, sin pantalla: la vendedora no ve nada nuevo hasta una parte posterior de GH-500.
+Antes de la parte 1 de GH-500, la lista de Sales solo dice si una venta sigue debiendo ("owes you", las **Sales still owing**): no dice si está pagada en parte ni cuánto queda de ella. Para saberlo, la vendedora abre cada venta o la ficha del cliente, o lo saca del Balance con la regla de la deuda más vieja primero. Supuesto: no hay otro atajo que importe (como anotar el monto en la nota de la venta), y el arreglo sería el mismo. La parte 1 entrega solo los dos campos en la API, sin pantalla; desde #1020 la tarjeta de Sales los muestra (ver `payment-state.md`).
+
+Antes de GH-869, una venta guardada por error se deshace abriéndola desde Sales y borrándola desde su detalle, con varios toques. El aviso "Sale saved" con su Undo llega con #982, y el dibujo de sus resultados (sacada, ya no estaba, sin conexión, falla) llega con la parte que agrega el tipo `undoResult` del aviso flotante. Nadie ve esos resultados hasta que una parte posterior de GH-869 los conecta a Undo.
 
 Criterios de éxito, registro (API):
 
@@ -165,13 +169,19 @@ Criterios de éxito, New sale suggestions (parte 1 de GH-496; los criterios 51 y
 53. **El medio listo, nunca adivinado.** El medio de la última venta pagada en el momento se preselecciona por id cuando todavía se ofrece. Si está archivado, no se preselecciona nada y nunca se usa uno más viejo.
 54. **Nada cruza de negocio.** Cada sugerencia sale solo del negocio de la vendedora.
 
-Criterios de éxito, Payment state por venta (parte 1 de GH-500; esta parte se juzga en la API, porque la pantalla que lo muestra llega en partes posteriores de GH-500):
+Criterios de éxito, Payment state por venta (parte 1 de GH-500; esta parte se juzga en la API, porque la pantalla que lo muestra, la tarjeta de Sales de `payment-state.md`, llegó después con #1020):
 
 55. **Coincide con el Settlement.** Para toda venta, el `payment_state` y el `still_owed` de la lista y del detalle coinciden con el Settlement, con 0 diferencias, en cada clase de venta: pagada en el momento, pagada después, pagada en parte, sin pagar, de $0, saldada por un Credit y sin cliente.
 56. **La lista no se vuelve más lenta.** `GET /sales` hace la misma cantidad de sentencias con 30 y con 300 ventas (9, fijada en `tests/sales/test_list_cost.py`), con todos los Payment states en los datos. No se agrega ningún umbral de tiempo.
 57. **Una venta rota no rompe nada.** Una venta cuyos hechos de pago no se pueden conciliar (también una con un `still_owed` imposible, negativo o mayor que su total) nunca hace fallar la lista, el detalle, el registro ni la asignación de cliente: esa venta lleva null en los dos campos, y todas las demás quedan como siempre. Nunca se muestra un estado equivocado. Deja un rastro para el Operator, sin datos personales.
 58. **Los negocios nunca se mezclan.** La venta de otro negocio nunca aparece en la lista y nunca cambia ningún `still_owed`.
 59. **Una sola regla.** La lista, el detalle y el Sale bill toman el Payment state de una sola función de dominio, nunca de cálculos separados que puedan divergir, y el Sale bill se lee exactamente igual que antes.
+
+Criterios de éxito, el resultado de Undo (GH-869; esta parte se juzga en el dibujo del aviso, porque la conexión con Undo llega en una parte posterior de GH-869):
+
+60. **Un mensaje que dice qué pasó.** Después de un Undo, la vendedora ve exactamente un mensaje corto que dice qué pasó (sacada, ya no estaba, sin conexión o falla), y se va solo.
+61. **Una falla nunca parece un éxito.** Un Undo que falla o que no tiene conexión siempre muestra su propio elemento de falla o de sin conexión, nunca el aviso de éxito; tampoco el de "ya no estaba".
+62. **Sin avisos apilados.** Un aviso posterior reemplaza al resultado de Undo en el acto: nunca hay dos a la vez ni queda uno viejo.
 
 Criterios de éxito, Sale bill:
 
@@ -268,7 +278,7 @@ Criterios de éxito, Sale number:
   - Desde la parte 1 de GH-500, cada venta trae además su Payment state y lo que todavía se debe de ella (`payment_state`, `still_owed`; ver "Payment state por venta"), calculados con una sola lectura del Settlement para los clientes listados.
   - No muestra el Sale number.
 - **Ver una**: el Sale number, fecha, cliente o ninguno, envío, nota, cómo se pagó, total, su Payment state y lo que todavía se debe de ella (`payment_state`, `still_owed`), y de cada línea el producto, los gramos, el precio por gramo guardado, la Pricing rule (con la copia del nombre del tipo cuando la regla es la de un Customer type), el total de la línea y el Cost of goods sold (monto costeado y gramos pendientes). Trae también el Sale bill (abajo), o ninguno.
-- **Payment state por venta** (parte 1 de GH-500; trabajo habilitante, sin pantalla):
+- **Payment state por venta** (parte 1 de GH-500; trabajo habilitante, sin pantalla; la tarjeta de Sales lo muestra desde #1020, ver `payment-state.md`):
   - **Dónde**: toda venta que responden `GET /sales`, `POST /sales`, `PUT /sales/{id}/customer` y `GET /sales/{id}` lleva dos campos: `payment_state` (`paid`, `unpaid`, `part_paid` o null) y `still_owed` (lo que todavía se debe de esa venta, con la misma forma de dinero que `total`, o null). Se calculan en vivo a partir del Settlement y nunca se guardan; no hay migración.
   - **Nada más cambia en la respuesta**: `GET /sales` sigue siendo una lista, `still_owing` sigue, y no hay parámetro de consulta ni filtro nuevo.
   - **La regla**: la decide solo la función de dominio `payment_state(total, on_the_spot_method, has_customer, still_owed)` en `app/sales/domain/`, que devuelve un `PaymentState`. Ningún router, esquema ni componente del front lo vuelve a derivar de totales o pagos; el esquema solo traduce el enum a su texto. Gana la primera regla que aplica:
@@ -439,8 +449,14 @@ Criterios de éxito, Sale number:
   - Cerrar la hoja solo vuelve al formulario.
 - **"Sale saved"** (`Estados`):
   - Lleva **Undo** y ningún monto ni nombre. Se anuncia como un toast y dura unos pocos segundos fijos.
-  - Undo borra la venta sin confirmación, después muestra "Sale deleted · the grams go back to stock" y vuelve a Sales. Su Sale number queda como hueco, sin ningún aviso agregado.
-  - Si la venta ya no existe, Undo muestra "That is gone. The list is up to date."
+  - Undo borra la venta sin confirmación y vuelve a Sales. Su Sale number queda como hueco, sin ningún aviso agregado.
+  - **El resultado de Undo** es el tipo `undoResult` del aviso flotante (`FlashMessage` `{kind: 'undoResult', result}`), dibujado dentro del área de avisos flotantes de siempre (`.aviso-flotante`), y siempre con un elemento que ya existe, nunca con texto nuevo:
+    - **Sacada** (`deleted`): el aviso de éxito (`AvisoExito`) "Sale deleted · the grams go back to stock" (`common:saleDeletedGramsBack`).
+    - **Ya no estaba** (`gone`): el aviso "That is gone. The list is up to date." (`GONE_NOTICE`, con `Notice` de tipo notice).
+    - **Sin conexión** (`offline`): el aviso sin conexión de Estados (`SinConexion`).
+    - **Falla** (`failed`): el error genérico de Estados (`ErrorGenerico`).
+    - Los cuatro duran 2,5 s (`DEFAULT_TOAST_MS`), como cualquier otro toast, y se van solos. Un aviso posterior reemplaza al resultado en el acto: nunca hay dos a la vez. Una falla o un sin conexión nunca muestran el texto de éxito.
+    - Esta parte solo agrega el dibujo de los cuatro resultados; los conecta a Undo una parte posterior de GH-869. Hasta entonces la vendedora no los ve.
   - Una vez que el aviso se fue, la forma de deshacer es "Delete sale".
   - Nunca contiene el botón Share/Copy; ese vive en el detalle de la venta.
 
@@ -474,9 +490,10 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
   - La pista de nada para vender no se dibuja ni tiene fila propia en el registro de pantallas; sus dos estados recorridos en el chequeo `mobile` llegan con #793. Su lugar guardado tampoco se dibuja: nunca está en pantalla y conserva la disposición aprobada de New sale.
   - El dibujo del paso de cobro del teléfono (`NuevaVentaCobrar`, `NuevaVentaCobrarOscuro`) no se actualizó. Todavía muestra chips "Cómo paga" con Efectivo por defecto, "Queda debiendo" como medio y una línea "10 % pagando en efectivo" sin regla escrita. Rige el campo Selector obligatorio de arriba (decisión 21 del humano).
   - El encabezado "Prices of <type>" del dibujo sugiere un solo juego de precios para toda la venta; la cotización es por línea, y gana esta definición.
+  - El resultado de Undo no se comparó con ningún dibujo: si un dibujo del aviso con el resultado de Undo existe y difiere, lo decide el dueño (Drawing as guide).
   - Ante una diferencia, ganan esta definición y los ADRs (Drawing as guide).
 
-### En pantalla: Sales (`Sales`, `VentasCompu`)
+### En pantalla: Sales (`Sales`)
 
 - **Una Tab root** (navigation.md): la barra con su + en el celular, o la barra lateral y su "+ New sale" en la computadora.
 - **Períodos**: Today · Week · Month · Dates, en hora de Argentina.
@@ -487,20 +504,11 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
   - el total es la suma de los totales de las ventas mostradas, pagadas o no, envío incluido;
   - la cantidad es de ventas, no de líneas;
   - el total nunca se presenta como **Profit** ni como **Cash**.
-- **Cada venta** muestra:
-  - su fecha;
-  - su cliente, o "No customer" en gris;
-  - una insignia VIP, solo mientras VIP customers está encendido;
-  - sus productos y gramos;
-  - su total. Una venta que sigue debiendo, las pagadas en parte incluidas, muestra su total en ámbar con "owes you" debajo, tal como lo responde la API.
-  - No muestra el Sale number.
-  - Todavía no muestra el Payment state ni `still_owed`: la API ya los trae desde la parte 1 de GH-500, y los muestra una parte posterior de GH-500.
-- **La insignia VIP muestra el estado VIP actual del cliente**, no cómo se cotizó la venta.
-  - La insignia de regla de cada línea en el detalle es el registro de cómo se cotizó.
-  - Un cliente que deja de ser VIP pierde la insignia en ventas pasadas, mientras sus líneas siguen diciendo "VIP" o el nombre del tipo que las cotizó. Eso no es volver a cotizar (ADR-0003).
-  - Mientras VIP customers está apagado, ninguna fila muestra la insignia, y las marcas de los clientes quedan guardadas (customers.md).
+- **Cada venta** es una tarjeta (`SaleCard`), una por venta y en todo ancho. `payment-state.md` ("La tarjeta de Sales") es su definición.
+  - Muestra, en este orden: el cliente o "No customer", la primera línea más "+N more", el total, el chip del Payment state y la fecha dd/mm.
+  - No hay marca VIP, ni gramos, ni "owes you", ni Sale number.
 - **Carga**: antes de su primera respuesta, la lista muestra el estado de carga compartido, nunca una pantalla en blanco.
-- **En el teléfono** (`VentasCompu` sin cambios):
+- **En el teléfono**:
   - cada pestaña de período mide al menos 44 px de alto;
   - con el texto normal, las cuatro pestañas comparten una fila en partes iguales; cuando no entran (por ejemplo a 320 px o con el texto al 130 %) pasan a celdas de igual ancho, de a dos, cada una de al menos 44 px de alto; nunca desplazamiento horizontal, nunca una etiqueta acortada;
   - la pestaña elegida se marca con algo más que el color;
@@ -607,6 +615,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
   - Ninguna lista de infractores crece y ninguna tolerancia se agranda.
 - **Nada para vender en la fecha** (parte 1 de GH-727): todavía no se recorre. Los estados "New sale - nothing priced on the date" y "New sale - date change refetching" (con la API retenida) y su paso por el chequeo `mobile` sin infractores nuevos son de #793. La decisión sobre un lugar de alto reservado ya está tomada (parte 2 de GH-793): mientras se vuelven a pedir los productos después de un cambio de fecha que siguió a una pista, una copia oculta guarda su alto; el estado "date change refetching" es el que va a medir con `content-shift` que el formulario no se mueve. Los colectores de texto del chequeo saltean esa copia porque no es visible. Hasta entonces la protegen el corte de la consulta y los tests del front con `fetch` retenido; los estados recorridos que ya existen usan productos con precio, así que no la muestran. Ni la parte 1 ni la parte 2 agregaron ninguna lista de infractores ni hicieron crecer ninguna.
 - **Payment state por venta** (parte 1 de GH-500): no agrega ningún estado recorrido, pantalla, fila del registro ni elemento; las listas de infractores no cambian.
+- **El resultado de Undo** (GH-869): no agrega ningún estado recorrido (`WalkState`) ni fila del registro; `TOAST_ELEMENTS` de `e2eToastRule.test.ts` sigue con sus tres entradas, y las listas de infractores no cambian.
 
 ## Métricas
 
@@ -659,10 +668,13 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
   - cada rechazo de ventas tiene un código en `contract.json`, verificado por `tests/test_refusal_codes.py`.
 - **Guardado en curso (criterio 7)**: un test del front con `POST /sales` retenido (`NuevaVenta.saveLock.test.tsx`) muestra las líneas dentro de `[inert]`; ante el rechazo de sin precio, la línea marcada queda abierta y su campo de producto recibe el foco; un segundo guardado con otro rechazo no vuelve a llevar el foco ahí; un guardado exitoso sigue abriendo la venta.
 - **Undo no deja nada**: después de Undo quedan 0 filas de esa venta en ventas, líneas y pagos, y no está en ninguna lista. (Criterio 9)
+- **El resultado de Undo, cada uno con su elemento (criterios 60, 61)**: 100 % pasando. Tests del front con Testing Library y reloj simulado muestran, para cada uno de los cuatro resultados, su elemento en pantalla al mostrarse y ya no a los 2,5 s: `deleted` con "Sale deleted · the grams go back to stock", `gone` con "That is gone. The list is up to date.", `offline` con el aviso sin conexión y `failed` con el error genérico; `gone`, `offline` y `failed` nunca muestran el texto de éxito. `saleDeletedGramsBack` está en la unión `SuccessToast` de `AvisoExito` y en `SUCCESS_TOASTS`, y los tests de vigencia de textos pasan.
+- **El resultado de Undo, sin avisos apilados (criterio 62)**: el mismo test muestra un aviso nuevo mostrado mientras está un resultado de Undo: el resultado desaparece en el acto y hay un solo aviso a la vista.
+- **El resultado de Undo, uso (criterios 60 y 61; se lee cuando una parte posterior de GH-869 lo conecte a Undo)**: entre los Undo tocados, la proporción que terminó en cada resultado; un Undo que no se aplicó nunca cuenta como sacado.
 - **Sales**: (Criterios 10, 11)
   - el total y la cantidad de cada período son iguales a la suma y al número de las ventas mostradas;
   - la semana va de lunes a domingo;
-  - la marca "owes you" coincide con el Settlement de la API;
+  - el chip del Payment state de cada tarjeta coincide con el `payment_state` y el `still_owed` de la API (ver `payment-state.md`);
   - la lista responde en menos de 300 ms con unos pocos cientos de ventas: lo verifica `tests/sales/test_list_cost.py` con el plan de consulta de las sentencias de la lista (se buscan los índices, no se recorre ninguna tabla) y la cantidad de sentencias con 30 y 300 ventas, nunca por tiempo (docs/adr/0038).
 - **Corregir**: la corrida de punta a punta asigna un cliente a una venta que no tenía (Assign customer desaparece) y borra una venta con su confirmación. (Criterio 11)
 - **Sin desbordes en el teléfono (criterio 12)**: tests del front a 320, 375 y 430 px y con el texto al 130 %, para New sale, Sales y el detalle de la venta, muestran que nada queda recortado ni desborda en horizontal, "Special price", el envío, los campos de Dates y el título "Sale #N" incluidos; las pestañas de Sales cubiertas en una fila y de a dos.
@@ -721,7 +733,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **Sale number, nunca reutilizado (criterio 24)**: borrar una venta del medio deja un hueco; borrar la de número más alto (por Delete sale y por Undo) y registrar otra da el número siguiente, nunca el borrado; un guardado rechazado no consume número; dos guardados simultáneos en un negocio reciben números distintos. Editar la fecha no aplica (no se edita); asignar un cliente después no cambia el número.
 - **Sale number, el mismo en los dos lugares (criterio 25)**: un test del front muestra que el título del detalle y la línea `Sale #N · dd/mm` del Sale bill llevan el mismo número para la misma venta; el título es texto seleccionable, no un botón; mientras carga, el título queda vacío y no aparece ningún `#`, dígito ni "Sale".
 - **Sale number, historial (criterio 27)**: test de la migración: en una base con ventas de dos negocios, cada negocio queda numerado desde 1 por (fecha, momento de registro, id), con un empate de fecha y momento resuelto por id; la migración solo agrega una columna; la siguiente venta nueva de cada negocio sigue al número más alto. Una Spreadsheet import en un negocio vacío numera por fecha y orden de registro.
-- **Design capture**: el detalle de la venta en el teléfono muestra "Sale #N" en el lugar dibujado, en claro y en oscuro (`docs/product/design-capture.md`). En New sale, el campo de producto de la línea se lee como el campo del Selector dibujado en `NuevaVenta` y `NuevaVentaOscuro`. Paid · Owing, con el campo "Payment method" bajo Paid, se lee como lo dibujado en `NuevaVentaCompu` y `NuevaVentaClienteCompu`. Cualquier otra diferencia con el dibujo es un hallazgo aparte. La pista de nada para vender y su lugar guardado no tienen dibujo ni fila en el registro, así que su Design capture se informa como "not compared" hasta #793.
+- **Design capture**: el detalle de la venta en el teléfono muestra "Sale #N" en el lugar dibujado, en claro y en oscuro (`docs/product/design-capture.md`). En New sale, el campo de producto de la línea se lee como el campo del Selector dibujado en `NuevaVenta` y `NuevaVentaOscuro`. Paid · Owing, con el campo "Payment method" bajo Paid, se lee como lo dibujado en `NuevaVentaCompu` y `NuevaVentaClienteCompu`. Cualquier otra diferencia con el dibujo es un hallazgo aparte. La pista de nada para vender y su lugar guardado no tienen dibujo ni fila en el registro, así que su Design capture se informa como "not compared" hasta #793. El resultado de Undo tampoco tiene fila en el registro, y se informa como "not compared".
 
 ## Fuera de alcance
 
@@ -747,7 +759,8 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - Para la pista de nada para vender (parte 1 de GH-727): un link o un botón que arregle el producto o el precio que falta; explicar de a uno los productos sin precio cuando otros tienen; otra redacción para el caso del Special price; cualquier cambio en lo que New sale acepta o bloquea; pulido o tests propios de la computadora; un mensaje de error propio de New sale para la consulta de productos fallida (hoy el campo queda en carga). Pasaron a otras partes por decisión del dueño: la lista `OTHER_RECORDS` de la fila "Other things to record" y `describeNewSale` con la descripción del + (#792); mover la frase "Add a price to a product so you can sell" a la copia de ventas con el cambio de import de la barra lateral y `en.baseline.json`, y los dos estados recorridos del chequeo `mobile` (#793).
 - Para el lugar guardado de la pista (parte 2 de GH-793): el ascenso del formulario cuando un cambio de fecha pasa de un día sin precio a uno con precio y llega la respuesta (es el contenido que cambia, no un salto); el ascenso cuando la consulta del día nuevo falla (el lugar cae con la falla); guardar lugar al abrir la página por primera vez (usa el estado de carga compartido y no hay pista previa cuyo lugar guardar); cualquier texto, rol, anuncio o descripción nuevos; los estados recorridos del chequeo `mobile` (#793).
 - Para las New sale suggestions (parte 1 de GH-496): la pantalla de New sale que las muestra y cualquier otra pantalla que las use (Collect y la ficha del cliente no las usan); nombres, precios, montos o un parámetro de límite en la respuesta; cualquier regla de precio dentro de la lectura; un atajo de "repetir la última venta" o "copiar una venta"; un índice nuevo.
-- Para el Payment state por venta (parte 1 de GH-500): cualquier pantalla, texto, filtro u orden con `payment_state` o `still_owed` (los muestran partes posteriores de GH-500); sacar `still_owing`; que `GET /sales` deje de ser una lista o gane un parámetro de consulta; cualquier cambio de comportamiento o de redacción del Sale bill; guardar el estado o el monto; deduplicar el log de las ventas inconsistentes o alertar por ellas; un umbral de tiempo para la lista; recortar un `still_owed` imposible a un valor válido en lugar de tratarlo como inconsistente.
+- Para el Payment state por venta (parte 1 de GH-500): cualquier pantalla, texto, filtro u orden con `payment_state` o `still_owed` (los muestra la tarjeta de Sales desde #1020, ver `payment-state.md`); sacar `still_owing`; que `GET /sales` deje de ser una lista o gane un parámetro de consulta; cualquier cambio de comportamiento o de redacción del Sale bill; guardar el estado o el monto; deduplicar el log de las ventas inconsistentes o alertar por ellas; un umbral de tiempo para la lista; recortar un `still_owed` imposible a un valor válido en lugar de tratarlo como inconsistente.
+- Para el resultado de Undo (GH-869): conectarlo a Undo y cualquier reintento después de un Undo fallido (una parte posterior de GH-869); un texto nuevo o propio de Undo para la falla o el sin conexión; una duración más larga para los resultados de falla o sin conexión; cambiar "grams" en el texto de éxito, un supuesto existente que reescriben el barrido #330 y la parte units de GH-318; agregar entradas a `TOAST_ELEMENTS` o un `WalkState`.
 
 ## Planeado en GH-318
 

@@ -80,6 +80,18 @@ def seed_varieties(client: TestClient) -> dict[str, int]:
         f"/api/products/{variety['id']}/prices",
         json={"effective_from": "2026-01-01", "list_price": 11_000},
     ).json()
+    # A costed Purchase: the cost the product detail shows is read only inside the business
+    # that recorded it (`test_a_purchase_never_feeds_another_business_s_cost`).
+    purchase = client.post(
+        "/stock/entries",
+        json={
+            "product_id": variety["id"],
+            "origin": "purchase",
+            "quantity": "30",
+            "total_cost": 10_000,
+        },
+    )
+    assert purchase.status_code == 201, purchase.text
     # `product_id` fills the `{product_id}` path parameter of the sweep's routes; `variety_id`
     # is the key the tests below read back.
     return {"variety_id": variety["id"], "product_id": variety["id"], "entry_id": entry["id"]}
@@ -100,6 +112,7 @@ def seed_expenses(client: TestClient) -> dict[str, int]:
     category = client.post("/expense-categories", json={"name": f"{MARKER} category"})
     assert category.status_code == 201, category.text
     category_id = category.json()["id"]
+    method_id = client.get("/api/payment-methods").json()[0]["id"]
     expense = client.post(
         "/expenses",
         json={
@@ -107,6 +120,7 @@ def seed_expenses(client: TestClient) -> dict[str, int]:
             "category_id": category_id,
             "amount": 1_000,
             "detail": f"{MARKER} detail",
+            "payment_method_id": method_id,
         },
     )
     assert expense.status_code == 201, expense.text
@@ -288,8 +302,29 @@ def seed_payments(client: TestClient) -> dict[str, int]:
         json={"paid_on": TODAY.isoformat(), "amount": 1_000, "payment_method_id": method_id},
     )
     assert paid_today.status_code == 201, paid_today.text
+    # A customer whose only Sale is older than the account read's six-month window:
+    # every month 0 and no Average sale, still isolated like the others (GH-498 part 3).
+    empty_month = client.post(
+        "/customers",
+        json={
+            "name": f"{MARKER} empty-month customer",
+            "phone": "11 4444-3334",
+            "phone_country": "AR",
+        },
+    ).json()
+    older_sale = client.post(
+        "/sales",
+        json={
+            "payment": {"kind": "owing"},
+            "customer_id": empty_month["id"],
+            "date": "2026-03-01",
+            "lines": [{"product_id": variety["id"], "quantity": "1"}],
+        },
+    )
+    assert older_sale.status_code == 201, older_sale.text
     return {
         "customer_id": customer_id,
+        "empty_month_customer_id": empty_month["id"],
         "payment_id": payment.json()["payment"]["id"],
         "money_in_method_id": method_id,
     }
@@ -360,12 +395,16 @@ BODIES: dict[tuple[str, str], dict[str, Any]] = {
         "category_id": 1,
         "amount": 500,
         "detail": "another expense",
+        # Static, like `category_id`: it is not the isolation proof of the method (that is
+        # `test_a_body_reference_to_a_missing_or_foreign_payment_method_is_refused_the_same_way`).
+        "payment_method_id": 1,
     },
     ("PUT", "/expenses/{expense_id}"): {
         "spent_on": "2026-10-02",
         "category_id": 1,
         "amount": 999,
         "detail": "edited expense",
+        "payment_method_id": 1,
     },
     ("PATCH", "/business"): {"name": "Renamed by B"},
     # `de` is selectable in this module (the `settings` fixture below), so the body really
@@ -665,6 +704,65 @@ def test_a_body_reference_to_a_missing_or_foreign_variety_is_refused_the_same_wa
         "/sales", json=_sale_body(variety_id=own_variety["id"], customer_id=customer_id)
     )
     assert valid.status_code == 201, valid.text
+
+
+def test_a_body_reference_to_a_missing_or_foreign_payment_method_is_refused_the_same_way(
+    business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
+) -> None:
+    foreign_method = business_a.get("/api/payment-methods").json()[0]["id"]
+    category = next(c for c in business_b.get("/expense-categories").json() if c["name"] == "Other")
+
+    def record(method_id: int) -> Any:
+        return business_b.post(
+            "/expenses",
+            json={
+                "spent_on": "2026-10-02",
+                "category_id": category["id"],
+                "amount": 500,
+                "detail": "B expense",
+                "payment_method_id": method_id,
+            },
+        )
+
+    missing = record(999_999)
+    other_business = record(foreign_method)
+
+    assert missing.status_code == 404, missing.text
+    assert other_business.status_code == 404, other_business.text
+    assert missing.json()["code"] == "payment_method.unavailable"
+    assert missing.content == other_business.content
+
+    own_method = business_b.get("/api/payment-methods").json()[0]["id"]
+    valid = record(own_method)
+    assert valid.status_code == 201, valid.text
+
+
+def test_a_purchase_never_feeds_another_business_s_cost(
+    business_a: TestClient, business_b: TestClient, seeded_b: dict[str, int]
+) -> None:
+    purchase = business_a.post(
+        "/stock/entries",
+        json={
+            "product_id": seeded_b["variety_id"],
+            "origin": "purchase",
+            "quantity": "30",
+            "total_cost": 10_000,
+        },
+    )
+    assert purchase.status_code == 201, purchase.text
+    own = business_b.post("/api/products", json={"name": "B cost variety"}).json()
+    business_b.post(
+        f"/api/products/{own['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 11_000},
+    )
+
+    mine = business_a.get(f"/api/products/{seeded_b['variety_id']}")
+    theirs = business_b.get(f"/api/products/{own['id']}")
+    foreign = business_b.get(f"/api/products/{seeded_b['variety_id']}")
+
+    assert mine.json()["cost"]["amount"] == 333
+    assert theirs.json()["cost"] == {"amount": None, "margins": []}
+    assert foreign.status_code == 404, foreign.text
 
 
 def test_a_withdrawal_naming_a_missing_or_foreign_variety_is_refused_the_same_way(
@@ -1292,6 +1390,52 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         "teaser": [],
     }
     assert b_panel["stock"] == []
+    assert b_panel["today"]["owed"] == {
+        "total_owed": 0,
+        "debtor_count": 0,
+        "sales_owing_count": 0,
+        "debtors": [],
+    }
+
+    # B now has its own debtor with its own phone: A's phone and debtor name still never
+    # reach B's panel, and each Business's today.owed holds its own stored phone.
+    b_variety = business_b.post("/api/products", json={"name": "B panel variety"}).json()
+    business_b.post(
+        f"/api/products/{b_variety['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 10_000},
+    )
+    b_customer = business_b.post(
+        "/customers",
+        json={"name": "B panel customer", "phone": "11 3333-4444", "phone_country": "AR"},
+    ).json()
+    b_owing = business_b.post(
+        "/sales",
+        json={
+            "date": today,
+            "customer_id": b_customer["id"],
+            "payment": {"kind": "owing"},
+            "lines": [{"product_id": b_variety["id"], "quantity": "1"}],
+        },
+    )
+    assert b_owing.status_code == 201, b_owing.text
+    assert b_customer["phone"] is not None
+    assert customer["phone"] is not None
+    assert b_customer["phone"] != customer["phone"]
+
+    b_response = business_b.get("/panel")
+    assert b_response.status_code == 200, b_response.text
+    assert customer["phone"] not in b_response.text
+    assert customer["name"] not in b_response.text
+    [a_row] = business_a.get("/panel").json()["today"]["owed"]["debtors"]
+    [b_row] = b_response.json()["today"]["owed"]["debtors"]
+    assert a_row["phone"] == customer["phone"]
+    assert b_row["phone"] == b_customer["phone"]
+    for client in (business_a, business_b):
+        [teaser] = client.get("/panel").json()["debts"]["teaser"]
+        [debtor] = client.get("/payments/debtors").json()["debtors"]
+        assert "phone" not in teaser
+        assert "phone" not in debtor
+        assert "phone" not in debtor["customer"]
 
 
 def test_another_business_reads_none_of_the_low_or_best_selling_products(
@@ -1718,3 +1862,34 @@ def test_another_business_never_changes_still_owed(
     for read in (listed[0], detail):
         assert (read["payment_state"], read["still_owed"]) == ("unpaid", mine["total"])
     assert business_a.get(f"/sales/{theirs['id']}").status_code == 404
+
+
+def test_each_business_lists_only_its_own_methods_each_in_use_by_its_own_expense(
+    business_a: TestClient, business_b: TestClient
+) -> None:
+    """`in_use` reads each business's own Expenses: a method only an Expense points at
+    is in use for its owner, and neither list names the other's method."""
+    used: dict[str, int] = {}
+    for key, client in (("a", business_a), ("b", business_b)):
+        method = client.post("/api/payment-methods", json={"name": f"Used {key}"})
+        assert method.status_code == 201, method.text
+        used[key] = int(method.json()["id"])
+        category = next(c for c in client.get("/expense-categories").json() if c["name"] == "Other")
+        expense = client.post(
+            "/expenses",
+            json={
+                "spent_on": "2026-10-02",
+                "category_id": category["id"],
+                "amount": 1_000,
+                "detail": "fletes",
+                "payment_method_id": used[key],
+            },
+        )
+        assert expense.status_code == 201, expense.text
+
+    for key, client in (("a", business_a), ("b", business_b)):
+        listed = client.get("/api/payment-methods").json()
+        other = "b" if key == "a" else "a"
+        assert [m["id"] for m in listed if m["in_use"]] == [used[key]]
+        assert used[other] not in [m["id"] for m in listed]
+        assert f"Used {other}" not in [m["name"] for m in listed]

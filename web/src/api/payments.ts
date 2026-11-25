@@ -12,8 +12,8 @@
  */
 
 import { queryOptions } from '@tanstack/react-query'
-import { del, get, post } from './client'
-import { keys } from './keys'
+import { del, get, post } from './client.ts'
+import { keys } from './keys.ts'
 
 /** A payment method of the business, by id (ADR-20261111-payment-methods-by-id). */
 export type PaymentMethod = number
@@ -73,22 +73,17 @@ interface AccountRowBase {
 
 export interface SaleAccountRow extends AccountRowBase {
   kind: 'sale'
+  number: number
   sale: { id: number; total: number; how_paid: HowPaid; payment_method: PaymentMethodLabel | null }
 }
 
 export interface PaymentAccountRow extends AccountRowBase {
   kind: 'payment'
+  is_partial: boolean
   payment: Payment
-  applied_to: AppliedTo
 }
 
-export interface CreditAccountRow extends AccountRowBase {
-  kind: 'credit'
-  payment: Payment
-  amount: number
-}
-
-export type AccountRow = SaleAccountRow | PaymentAccountRow | CreditAccountRow
+export type AccountRow = SaleAccountRow | PaymentAccountRow
 
 export interface Account {
   balance: number

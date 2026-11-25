@@ -6,6 +6,8 @@
  */
 
 import { del, get, patch, post, put } from './client.ts'
+import { keys } from './keys.ts'
+import type { PaymentMethodLabel } from './payments.ts'
 
 export interface ExpenseCategory {
   id: number
@@ -18,6 +20,7 @@ export interface Expense {
   category_id: number
   amount: number
   detail: string
+  payment_method: PaymentMethodLabel | null
 }
 
 export interface CategorySubtotal {
@@ -42,6 +45,11 @@ export interface ExpenseInput {
 
 export function listCategories(): Promise<ExpenseCategory[]> {
   return get<ExpenseCategory[]>('/expense-categories')
+}
+
+/** The Business's Expense categories, in the order the server returns them (by name). */
+export function expenseCategoriesQueryOptions() {
+  return { queryKey: keys.expenseCategories(), queryFn: listCategories }
 }
 
 export function addCategory(name: string): Promise<ExpenseCategory> {

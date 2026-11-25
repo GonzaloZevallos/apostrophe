@@ -9,7 +9,7 @@
  * the console holds nothing.
  */
 
-import { CATALOG, HOME, LOGIN, SETTINGS_PAYMENTS } from '../src/routes.js'
+import { CATALOG, HOME, LOGIN, SETTINGS } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
@@ -18,6 +18,7 @@ import { watchConsole } from './console.js'
 import { expectOnlyTheThemeStored } from './helpers/storage.js'
 import { openGastos } from './helpers/openScreens.js'
 import { settingsEntry } from './helpers/chrome.js'
+import { settingsRow } from './helpers/settingsHome.js'
 import { uniqueTag } from './helpers/unique.js'
 
 const PASSWORD = 'correcthorsebattery'
@@ -47,9 +48,9 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByLabel('Details', { exact: true }).fill('Flete al mercado')
   await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
 
-  // One tap from Inicio's avatar: the list of groups, then a group, then "Close" back.
-  const openGroup = async (name: string): Promise<void> => {
-    await page.getByRole('link', { name, exact: true }).click()
+  // One tap from Inicio's avatar: Settings home, then a row's page in one tap, then "Close" back.
+  const openRow = async (group: string, label: string): Promise<void> => {
+    await settingsRow(page, group, label).click()
   }
   const close = async (): Promise<void> => {
     await page.getByRole('button', { name: 'Close', exact: true }).click()
@@ -61,19 +62,19 @@ test('a seller goes through every Configuración group from the phone, with no c
 
   // Negocio.
   const renamedTo = `${businessName} Renombrado`
-  await openGroup('Business')
+  await openRow('Business', 'Business name')
   await page.getByLabel('Business name', { exact: true }).fill(renamedTo)
   await expectToast(page, 'Saved', () => page.getByRole('button', { name: 'Save' }).click())
   await close()
 
   // Usuarios: a fresh join link.
-  await openGroup('Users')
+  await openRow('Team and app', 'Users and Invitations')
   await page.getByRole('button', { name: 'Invite a partner' }).click()
   await expect(page.locator('.usuarios__link')).not.toHaveText('')
   await close()
 
   // Integraciones: Probarlo, then the link to the catalog screen.
-  await openGroup('Integrations')
+  await openRow('Channels', 'Integrations')
   await page.getByLabel('Bot token', { exact: true }).fill('123456:fake-token-for-e2e')
   await page.getByLabel('Your chat', { exact: true }).fill('111111')
   await expectToast(page, 'Test sent', () => page.getByRole('button', { name: 'Test it' }).click())
@@ -83,14 +84,13 @@ test('a seller goes through every Configuración group from the phone, with no c
   await close()
 
   // Mensaje del catálogo.
-  await openGroup('Catalog message')
+  await openRow('Channels', 'Catalog message')
   await page.getByLabel('Header', { exact: true }).fill('🌿 Catálogo de la semana')
   await page.getByLabel('Footer', { exact: true }).fill('Consultas por privado.')
   await expectToast(page, 'Catalog saved', () => page.getByRole('button', { name: 'Save the message' }).click())
   await close()
 
-  await openGroup('Payments and expenses')
-  await page.getByRole('link', { name: 'Expense categories', exact: true }).click()
+  await openRow('Payments and stock', 'Expense categories')
   await page.getByLabel('New category', { exact: true }).fill('Delivery en bici')
   await page.getByRole('button', { name: '+ Category' }).click()
   await expect(page.getByText('Category saved')).toBeVisible()
@@ -108,13 +108,12 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByRole('button', { name: 'Yes, delete it' }).click()
   await expect(page.getByText('Category deleted')).toBeVisible()
   await expect(page.getByText('Mensajería')).toHaveCount(0)
-  // Categorías de gastos (second row of Cobros y gastos): its Close returns to the group, the group's to the list.
-  await page.getByRole('button', { name: 'Close', exact: true }).click()
-  await expectPath(page, SETTINGS_PAYMENTS)
+  // Expense categories is a row of Settings home: its Close goes back there.
   await close()
+  await expectPath(page, SETTINGS)
 
   // Apariencia: Oscuro applies at once, Claro removes it.
-  await openGroup('Appearance')
+  await openRow('Team and app', 'Theme')
   await page.getByRole('radio', { name: 'Dark' }).click()
   await expect(page.locator('html')).toHaveAttribute('data-tema', 'oscuro')
   await page.getByRole('radio', { name: 'Light' }).click()
@@ -122,7 +121,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await close()
 
   // Tu cuenta: change the password, then log out by tapping "Sign out".
-  await openGroup('Your account')
+  await openRow('Team and app', 'Your account')
   await page.getByRole('button', { name: 'Change password' }).click()
   const sheet = page.locator('.capa')
   await sheet.getByLabel('Current password', { exact: true }).fill(PASSWORD)

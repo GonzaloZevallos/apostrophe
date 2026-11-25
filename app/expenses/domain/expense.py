@@ -2,7 +2,9 @@
 under one expense category.
 
 `Expense.of` is the one constructor recording and editing both go through, so the same
-four rules apply either way. `recorded_at` is not one of those four fields: it is set
+four rules apply either way. Details are optional: blank becomes the empty string.
+An expense may carry one Payment method, by id; whether the business offers it is
+decided where it is persisted, never here. `recorded_at` is not one of those four fields: it is set
 once, from the injected clock, when an expense is first recorded, and an edit carries it
 through unchanged (the caller passes the existing value back in).
 """
@@ -14,6 +16,7 @@ from datetime import date, datetime
 from typing import ClassVar
 
 from app.expenses.domain.category import ExpenseRuleBroken
+from app.shared.payment_method import PaymentMethodId, PaymentMethodLabel
 
 AMOUNT_MAX = 10**12
 DETAIL_MAX_LENGTH = 200
@@ -31,6 +34,12 @@ class InvalidDetail(ExpenseRuleBroken):
     code: ClassVar[str] = "expense.detail_invalid"
 
 
+class PaymentMethodMismatch(ExpenseRuleBroken):
+    """A label with no stored id, or one that names another method. No route maps it."""
+
+    code: ClassVar[str] = "expense.payment_method_mismatch"
+
+
 class ExpenseNotFound(LookupError):
     code: ClassVar[str] = "expense.not_found"
 
@@ -46,6 +55,17 @@ class Expense:
     detail: str
     recorded_at: datetime
     id: int | None = None
+    payment_method: PaymentMethodId | None = None
+    payment_method_label: PaymentMethodLabel | None = None
+
+    def __post_init__(self) -> None:
+        label = self.payment_method_label
+        if label is None:
+            return
+        if self.payment_method is None:
+            raise PaymentMethodMismatch("a payment method label needs the method's id")
+        if label.id != self.payment_method.value:
+            raise PaymentMethodMismatch("the payment method label is of another method")
 
     @classmethod
     def of(
@@ -57,6 +77,8 @@ class Expense:
         today: date,
         recorded_at: datetime,
         id: int | None = None,
+        *,
+        payment_method: PaymentMethodId | None = None,
     ) -> Expense:
         if spent_on > today:
             raise InvalidExpenseDate("an expense is not dated after today")
@@ -65,8 +87,8 @@ class Expense:
         if amount > AMOUNT_MAX:
             raise InvalidAmount(f"an amount is at most {AMOUNT_MAX} pesos")
         trimmed = detail.strip()
-        if not trimmed:
-            raise InvalidDetail("a detail is required")
         if len(trimmed) > DETAIL_MAX_LENGTH:
             raise InvalidDetail(f"a detail has at most {DETAIL_MAX_LENGTH} characters")
-        return cls(spent_on, category_id, amount, trimmed, recorded_at, id)
+        return cls(
+            spent_on, category_id, amount, trimmed, recorded_at, id, payment_method=payment_method
+        )
