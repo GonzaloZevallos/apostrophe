@@ -302,7 +302,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     screen: 'customer/search-no-match',
     route: CUSTOMERS,
     steps: [{ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: 'Zzzzz' } }],
-    visible: emptyState('emptyStates:customersList'),
+    visible: emptyState('emptyStates:customersNoMatch', { name: 'Zzzzz' }),
   },
   {
     // All chosen, a search typed and answered, then cleared: back on All with the full list (Mica Solano owes nothing).

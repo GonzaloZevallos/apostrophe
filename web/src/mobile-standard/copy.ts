@@ -26,9 +26,9 @@ export function settings(key: SettingsKey, args?: Args): string {
 
 type EmptyStatesKey = Extract<CopyKey, `emptyStates:${string}`>
 
-/** The English text of an `emptyStates:` key. */
-export function emptyState(key: EmptyStatesKey): string {
-  return resolveKey(ENGLISH_STATIC, key)
+/** The English text of an `emptyStates:` key, `{{name}}` filled from `args`. */
+export function emptyState(key: EmptyStatesKey, args?: Args): string {
+  return resolveKey(ENGLISH_STATIC, key, args)
 }
 
 /** The English text of a refusal. */

@@ -6,13 +6,26 @@
  */
 
 import { EMPTY_STATE_KEYS } from '../copy/emptyStates.ts'
-import { resolveKey, type Bundle } from '../i18n/resolve.ts'
-
-const wordingsOf = (bundle: Bundle, tag: string): string[] =>
-  Object.values(EMPTY_STATE_KEYS).map((key) => resolveKey(bundle, key, undefined, tag))
+import { placeholdersOf, resolveKey, selectText, type Bundle } from '../i18n/resolve.ts'
 
 /**
- * The ten English wordings for every run, plus the run's own ten when its `tag` is not
+ * What a key forbids: its whole text, or, for a key with a `{{placeholder}}`, the fixed part of
+ * the bundle's own raw template before the first one (a rendered line would carry a query nobody
+ * can know here). A template that opens with a placeholder has no fixed part: it is refused.
+ */
+function forbiddenOf(bundle: Bundle, key: string, tag: string): string {
+  const raw = selectText(bundle, key, undefined, tag)
+  if (placeholdersOf(raw).length === 0) return resolveKey(bundle, key, undefined, tag)
+  const fixed = raw.slice(0, raw.indexOf('{{'))
+  if (fixed === '') throw new Error(`${key}: a placeholder opens the text, so there is no fixed part to forbid`)
+  return fixed
+}
+
+const wordingsOf = (bundle: Bundle, tag: string): string[] =>
+  Object.values(EMPTY_STATE_KEYS).map((key) => forbiddenOf(bundle, key, tag))
+
+/**
+ * The English wordings for every run, plus the run's own when its `tag` is not
  * `en` (a screen that has not switched yet still shows English).
  */
 export function forbiddenWhileLoading(english: Bundle, run: Bundle, tag: string): readonly string[] {
