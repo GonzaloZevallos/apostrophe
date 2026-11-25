@@ -51,7 +51,7 @@ describe('the walked states of the Customers search', () => {
   }
 
   it('ends the no-match state on the customer no-match line, and the cleared state on a customer who owes nothing', () => {
-    expect(state('customer/search-no-match').visible).toBe(emptyState('emptyStates:customersNoMatch', { name: 'Zzzzz' }))
+    expect(state('customer/search-no-match').visible).toBe(emptyState('emptyStates:customersNoMatch', { name: 'Gelato' }))
     expect(state('customer/search-cleared-to-all').visible).toBe('Mica Solano')
     expect(state('customer/search-cleared-to-all').steps).toContainEqual({ click: common('common:customerSegmentAll') })
     expect(state('customer/search-cleared-to-all').steps.at(-1)).toEqual({ fill: { label: CUSTOMERS_TEXT.searchCustomer, value: '' } })
