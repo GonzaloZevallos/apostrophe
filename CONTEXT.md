@@ -530,6 +530,18 @@ _Avoid_: invoice, receipt, statement, ticket
 El idioma en que se escribe la documentación funcional y técnica del producto, `docs/product/` y las definiciones de `CONTEXT.md` incluidas: español rioplatense, con identificadores, nombres de clases, nombres UML, términos del glosario y palabras de pantalla en inglés. No es el Product language, que sigue en inglés, y no cambia nada de lo que muestra la app. En la app: no tiene palabra propia.
 _Avoid_: Product language, locale, idioma de la app, traducción
 
+## Planned in GH-1063 (not yet in the code)
+
+Estos términos no forman parte del glosario actual. El código, los tests y las pantallas conservan los términos actuales hasta que se entregue la parte que registra un Deposit; la definición de On-the-spot payment de arriba no cambia hasta entonces. Cada línea da el término y el ADR que lo decide.
+
+**Deposit**:
+Un On-the-spot payment parcial: un monto mayor que $0 y menor que el total de la Sale, con uno de los Payment methods del Business, que salda solo su propia Sale. Existe solo como el de un Order. El Settlement arranca esa Sale en su total menos el Deposit; la cuenta del Customer la muestra con su total completo seguida de una fila de Deposit. Decidido en docs/adr/20261125-an-on-the-spot-payment-may-be-partial-only-as-an-orders-deposit-and-settlement-starts-its-sale-at-total-minus-it.md.
+_Avoid_: down payment, advance, anticipo
+
+**Order**:
+Un pedido de un Customer que se registra como una Sale y puede llevar un Deposit. Decidido en docs/adr/20261125-an-on-the-spot-payment-may-be-partial-only-as-an-orders-deposit-and-settlement-starts-its-sale-at-total-minus-it.md.
+_Avoid_: reservation, preorder
+
 ## Planned in GH-318 (not yet in the code)
 
 Estos términos no forman parte del glosario actual. El código, los tests y las pantallas conservan los términos actuales hasta que se entregue la parte nombrada en cada línea; solo esa parte pasa su término al glosario propiamente dicho y corrige la definición que reemplaza. Cada línea da el término, el ADR que lo decide y la parte a cargo, nombrada por capacidad.
