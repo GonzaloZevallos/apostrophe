@@ -44,6 +44,8 @@ function renderLeaf(ui: React.ReactNode) {
 }
 
 const HELD: Partial<ProductsView> = { ready: false, rows: [], summary: null }
+/** The reserved summary line: a paragraph holding only a non-breaking space. */
+const isBlankLine = (_: string, element: Element | null) => element?.tagName === 'P' && element.textContent === '\u00a0'
 const sendCatalog = () => screen.queryByText(VARIETIES_TEXT.mandarCatalogo)
 const stockEntry = () => screen.queryByRole('link', { name: VARIETIES_TEXT.entradaDeStock })
 
@@ -117,7 +119,7 @@ describe('StockBody', () => {
   test('held data keeps the actions, a blank reserved line, and no empty wording or digit', () => {
     const { container } = renderLeaf(<StockBody view={viewOf({ ...HELD, archivedCount: 3 })} />)
     expect(stockEntry()).toBeTruthy()
-    expect(container.querySelector('.variedades__resumen')?.textContent).toBe(' ')
+    expect(screen.getByText(isBlankLine)).toBeTruthy()
     expect(screen.queryByText(EMPTY_TITLE)).toBeNull()
     expect(container.textContent).not.toMatch(/\d/)
   })
@@ -129,8 +131,8 @@ describe('StockBody', () => {
   })
 
   test('a failure draws no summary line, no rows and no empty state, and keeps the actions', () => {
-    const { container } = renderLeaf(<StockBody view={viewOf({ failure: 'other', ready: false, rows: [] })} />)
-    expect(container.querySelector('.variedades__resumen')).toBeNull()
+    renderLeaf(<StockBody view={viewOf({ failure: 'other', ready: false, rows: [] })} />)
+    expect(screen.queryByText(isBlankLine)).toBeNull()
     expect(screen.queryByText(EMPTY_TITLE)).toBeNull()
     expect(stockEntry()).toBeTruthy()
   })
