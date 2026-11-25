@@ -328,6 +328,7 @@ export default function Cobro({
             <div onClickCapture={methodOptions.failure === null ? undefined : methodOptions.reload}>
               <Selector
                 {...methodOptions.selector}
+                required
                 label={t('common:paymentMethod')}
                 value={paymentMethodValue(method)}
                 onChange={(next) => {
