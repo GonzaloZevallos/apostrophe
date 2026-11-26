@@ -6968,6 +6968,14 @@ a.ajustes-tema__opcion {
     white-space: nowrap;
   }
 
+  /* Expenses' month total fits the viewport at larger text too (GH-1127, Human Decision 2): where
+   * the fit above is not enough (130 % text from 320 px up) the figure breaks inside itself
+   * rather than push the page sideways. When it fits, nothing breaks and the render is as before. */
+  .gastos__total .cifra-xl {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
   .gastos__categoria .gastos__categoria-cabecera {
     min-width: 0;
   }

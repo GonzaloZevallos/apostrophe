@@ -48,8 +48,8 @@ interface Measure {
   rowScrollWidth: number
   rowClientWidth: number
   rowEm: number
-  blockScrollWidth: number
-  blockClientWidth: number
+  pageScrollWidth: number
+  pageClientWidth: number
   viewportWidth: number
   titleScrollWidth: number
   titleClientWidth: number
@@ -76,7 +76,7 @@ async function measure(page: Page): Promise<Measure> {
     }
     const row = one('.gastos__fila-titulo')
     const title = one('.gastos__titulo')
-    const block = one('.gastos__encabezado')
+    const html = document.documentElement
     return {
       back: rect(one('.flecha-atras--redonda .boton--enlace')),
       title: rect(title),
@@ -85,9 +85,9 @@ async function measure(page: Page): Promise<Measure> {
       rowScrollWidth: row.scrollWidth,
       rowClientWidth: row.clientWidth,
       rowEm: row.clientWidth / parseFloat(getComputedStyle(row).fontSize),
-      blockScrollWidth: block.scrollWidth,
-      blockClientWidth: block.clientWidth,
-      viewportWidth: document.documentElement.clientWidth,
+      pageScrollWidth: html.scrollWidth,
+      pageClientWidth: html.clientWidth,
+      viewportWidth: html.clientWidth,
       titleScrollWidth: title.scrollWidth,
       titleClientWidth: title.clientWidth,
     }
@@ -114,9 +114,7 @@ for (const { width, scale } of CELLS) {
     expect(found.title.right, `${where}: title, then action`).toBeLessThanOrEqual(found.action.left + SUBPIXEL)
     expect(found.month.top, `${where}: the month line is below the row`).toBeGreaterThanOrEqual(Math.max(found.back.bottom, found.action.bottom) - SUBPIXEL)
     expect(found.rowScrollWidth, `${where}: the row does not scroll`).toBeLessThanOrEqual(found.rowClientWidth)
-    // The title block (the row and the month line), not the whole page: below it `MonthBody`, which this
-    // part does not touch, draws the seeded month's 2.000.226.9xx total, wider than a phone at 130 % text.
-    expect(found.blockScrollWidth, `${where}: the title block does not scroll sideways`).toBeLessThanOrEqual(found.blockClientWidth)
+    expect(found.pageScrollWidth, `${where}: the page does not scroll sideways`).toBeLessThanOrEqual(found.pageClientWidth)
     for (const part of [found.back, found.title, found.action, found.month]) {
       expect(part.right, `${where}: inside the viewport`).toBeLessThanOrEqual(found.viewportWidth + SUBPIXEL)
     }
