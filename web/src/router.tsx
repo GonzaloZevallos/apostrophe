@@ -56,6 +56,7 @@ import VarietyNew from './screens/varieties/VarietyNew'
 import EntriesList from './screens/EntriesList'
 import Reset from './screens/Reset'
 import Settings from './screens/settings/Settings'
+import SettingsLayout from './screens/settings/SettingsLayout'
 import AccountGroup from './screens/settings/AccountGroup'
 import AppearanceGroup from './screens/settings/AppearanceGroup'
 import BusinessGroup from './screens/settings/BusinessGroup'
@@ -85,6 +86,7 @@ import {
   ONBOARDING_SCREENS,
   RESET,
   SCREENS,
+  SETTINGS,
   type Screen,
   type ScreenId,
 } from './routes'
@@ -157,6 +159,11 @@ const WITH_VARIETIES_PANES: ReadonlySet<ScreenId> = new Set([
 /** Home and Analysis share `HomeLayout`, which draws their one header. Expenses is never wrapped. */
 const WITH_HOME_SEGMENTS: ReadonlySet<ScreenId> = new Set(['home', 'analysis'])
 
+/** `/settings` and every `/settings/*` screen share `SettingsLayout`, which stands the list beside the open page on a computer. */
+const IN_SETTINGS: ReadonlySet<ScreenId> = new Set(
+  SCREENS.filter((entry) => entry.path === SETTINGS || entry.path.startsWith(`${SETTINGS}/`)).map((entry) => entry.id),
+)
+
 const WITH_CUSTOMER_SEARCH: ReadonlySet<ScreenId> = new Set([
   'customers',
   'customer-new',
@@ -177,11 +184,16 @@ const shellChildren: RouteObject[] = [
       !WITH_CUSTOMER_SEARCH.has(entry.id) &&
       !WITH_VARIETIES_PANES.has(entry.id) &&
       !WITH_HOME_SEGMENTS.has(entry.id) &&
+      !IN_SETTINGS.has(entry.id) &&
       !ONBOARDING_SCREENS.has(entry.id),
   ).map(bind),
   {
     element: <HomeLayout />,
     children: SCREENS.filter((entry) => WITH_HOME_SEGMENTS.has(entry.id)).map(bind),
+  },
+  {
+    element: <SettingsLayout />,
+    children: SCREENS.filter((entry) => IN_SETTINGS.has(entry.id)).map(bind),
   },
   {
     element: <VarietiesLayout />,

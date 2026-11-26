@@ -395,7 +395,7 @@ Una pantalla principal de una pestaña: Home, Sales, Customers, Products y Analy
 _Avoid_: home, main screen, section, More
 
 **Settings**:
-El único lugar que reúne cada configuración de todo el Business; sus filas, sus atajos y su búsqueda salen solo del registro `settingsRows.ts`. En el celular abre con una tarjeta de solo lectura del Business, tres atajos (Prices, Payment methods, Integrations) y cinco grupos con encabezado (Business, Catalog, Payments and stock, Channels, Team and app); en la computadora es una columna lateral con la búsqueda y la lista, con la pantalla elegida al lado y su fila marcada, bajo una sola ruta de layout para todo ancho. La configuración de un solo Product vive en el Product, nunca acá. _In the app_: Settings.
+El único lugar que reúne cada configuración de todo el Business. Sus filas y sus atajos salen solo del registro `settingsRows.ts`. En el celular abre con una tarjeta de solo lectura del Business (inicial, nombre y cantidad de Users) y tres atajos (Prices, Payment methods, Integrations), y sigue con cinco grupos con encabezado: Business, Catalog, Payments and stock, Channels, y Team and app. En la computadora conserva su lista de siempre, y la configuración de un solo Product vive en el Product, nunca acá. _In the app_: Settings.
 _Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group), menu
 
 **Onboarding**:

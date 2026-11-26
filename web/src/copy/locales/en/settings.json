@@ -71,5 +71,6 @@
       "label": "Your account",
       "description": "Change your password or sign out"
     }
-  }
+  },
+  "panePrompt": "Choose a setting"
 }

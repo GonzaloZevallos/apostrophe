@@ -7946,3 +7946,40 @@ button:has(> .venta-en-curso) {
   line-height: 20px;
   color: var(--tinta2);
 }
+
+/* ===== ajustes-capa: the Settings layout route (`SettingsLayout`) ===== */
+/* The wrapper and the panel add no padding, margin or overflow. On the phone they are not boxes
+ * at all, so the page keeps the place it had. On a computer the column stands beside the page; it
+ * is sticky against the document's scroll (`.disposicion` owns the top inset) and scrolls on its
+ * own, and a wheel at its end does not scroll the page. */
+.ajustes-capa,
+.ajustes-capa__panel {
+  display: contents;
+}
+
+@media (min-width: 900px) {
+  .ajustes-capa {
+    display: grid;
+    flex: 1;
+    grid-template-columns: 360px minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .ajustes-capa__columna {
+    position: sticky;
+    top: var(--inset-arriba);
+    box-sizing: border-box;
+    max-height: calc(100dvh - var(--inset-arriba));
+    padding: var(--espacio-xl);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .ajustes-capa__panel {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    min-width: 0;
+  }
+}
+/* ===== end ajustes-capa ===== */
