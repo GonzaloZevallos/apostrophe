@@ -148,9 +148,9 @@ test('a seller records an expense from the Expenses card and Close goes back to 
   await page.getByRole('button', { name: /^Category/ }).click()
   await page.getByRole('button', { name: 'Packaging', exact: true }).click()
   await page.getByLabel('Amount', { exact: true }).fill('3200')
-  await page.getByLabel('Details', { exact: true }).fill('Cajas de cartón')
+  await page.getByLabel('Details (optional)', { exact: true }).fill('Cajas de cartón')
   await expectToast(page, 'Expense saved', async () => {
-    await page.getByRole('button', { name: 'Save the expense' }).click()
+    await page.getByRole('button', { name: /^Save expense/ }).click()
     await expectPath(page, ANALYSIS)
   })
 

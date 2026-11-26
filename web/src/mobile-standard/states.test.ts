@@ -299,3 +299,21 @@ describe('the walked state sales/unknown-payment', () => {
     expect(paymentView('part_paid', 0, money).variant).toBe('unknown')
   })
 })
+
+describe('the walked states of the expense form', () => {
+  const state = (screen: string): WalkState => {
+    const found = STATES.find((candidate) => candidate.screen === screen)
+    if (found === undefined) throw new Error(`${screen} is not walked`)
+    return found
+  }
+
+  it('opens the How you paid list over the form and ends on a method in it', () => {
+    expect(state('expense/method-selector-open').steps).toEqual([{ press: expenses('expenses:form.paymentMethod') }])
+    expect(state('expense/method-selector-open').visible).toBe(common('common:transfer'))
+  })
+
+  it('types a nine-digit amount and ends on the Save label that carries it', () => {
+    expect(state('expense/amount-nine-digits').steps).toEqual([{ fill: { label: common('common:amount'), value: '123456789' } }])
+    expect(state('expense/amount-nine-digits').visible).toBe('Save expense · $ 123.456.789')
+  })
+})

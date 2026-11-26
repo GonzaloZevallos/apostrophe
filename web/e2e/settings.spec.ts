@@ -45,8 +45,8 @@ test('a seller goes through every Configuración group from the phone, with no c
   await page.getByLabel('New category name', { exact: true }).fill('Flete')
   await page.getByRole('button', { name: 'Create category' }).click()
   await page.getByLabel('Amount', { exact: true }).fill('4500')
-  await page.getByLabel('Details', { exact: true }).fill('Flete al mercado')
-  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
+  await page.getByLabel('Details (optional)', { exact: true }).fill('Flete al mercado')
+  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: /^Save expense/ }).click())
 
   // One tap from Inicio's avatar: Settings home, then a row's page in one tap, then "Close" back.
   const openRow = async (group: string, label: string): Promise<void> => {

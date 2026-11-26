@@ -70,8 +70,8 @@ test('a seller opens Análisis from the Home segment, moves back a month and rea
   await page.getByLabel('New category name', { exact: true }).fill('Flete')
   await page.getByRole('button', { name: 'Create category' }).click()
   await page.getByLabel('Amount', { exact: true }).fill('1500')
-  await page.getByLabel('Details', { exact: true }).fill('Flete al mercado')
-  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
+  await page.getByLabel('Details (optional)', { exact: true }).fill('Flete al mercado')
+  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: /^Save expense/ }).click())
 
   // Home's Home | Analysis segment → Análisis.
   await openAnalysis(page)
@@ -344,8 +344,8 @@ test('Análisis cards fit at 320 px and at 246 px with a 60-character name and n
   await page.getByLabel('New category name', { exact: true }).fill(longCategory)
   await page.getByRole('button', { name: 'Create category' }).click()
   await page.getByLabel('Amount', { exact: true }).fill('123456789')
-  await page.getByLabel('Details', { exact: true }).fill('Gasto grande')
-  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
+  await page.getByLabel('Details (optional)', { exact: true }).fill('Gasto grande')
+  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: /^Save expense/ }).click())
 
   for (const width of [320, 246]) {
     await page.setViewportSize({ width, height: 844 })
