@@ -25,8 +25,9 @@ export function chromeOf(screen: Screen, viewport: Viewport): Chrome {
     rail: !(viewport === 'computer' && screen.modalOnComputer === true),
     // The rail and the bar are both in the markup and CSS picks one, so each reads the kind of
     // the viewport it is drawn on; the arrow is drawn on both, so it reads the real viewport.
+    // A card that draws its own back in its title row (`backInTitleRow`) gets none from the shell.
     railNuevaVenta: kindOf(screen, 'computer') === 'root',
     bar: kindOf(screen, 'phone') !== 'form',
-    backArrow: kindOf(screen, viewport) === 'card',
+    backArrow: kindOf(screen, viewport) === 'card' && screen.backInTitleRow !== true,
   }
 }

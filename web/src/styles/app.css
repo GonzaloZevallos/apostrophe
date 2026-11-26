@@ -767,6 +767,24 @@ body {
   touch-action: manipulation;
 }
 
+/* The round look of the same arrow, for a card that draws it in its own title row (ADR
+ * 20261125): the row owns the padding, so the box is the 44 px touch target alone. The press
+ * cue is the global `.boton--enlace:active` --superficie fill. The chevron is hidden until the
+ * row's narrow step shows it in place of the text (the expenses title row's `@container`). */
+.flecha-atras--redonda .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-xs);
+  min-height: var(--alto-tocable);
+  border-radius: var(--radio-pildora);
+  touch-action: manipulation;
+}
+
+.flecha-atras--redonda .boton--enlace > svg {
+  display: none;
+}
+
 .riel-lateral {
   display: none;
   flex-direction: column;
