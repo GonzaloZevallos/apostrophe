@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
-from typing import Literal
+from typing import Literal, assert_never
 
 from pydantic import BaseModel
 
@@ -15,6 +15,7 @@ from app.money_schema import MoneyAmount, MoneyOut
 from app.payments.application.record_payment import CandidateOutcome, RecordedPayment
 from app.payments.application.view_accounts import AccountRead, Debtor, Debtors, StillOwingLine
 from app.payments.domain.account import AccountRow as DomainAccountRow
+from app.payments.domain.account import DepositRow as DomainDepositRow
 from app.payments.domain.account import PaymentRow as DomainPaymentRow
 from app.payments.domain.account import SaleRow as DomainSaleRow
 from app.payments.domain.customer_sales import MonthTotal
@@ -122,7 +123,7 @@ class RecordPaymentOut(BaseModel):
 class SaleRefOut(BaseModel):
     id: int
     total: MoneyOut
-    how_paid: Literal["paid", "owing", "none"]
+    how_paid: Literal["paid", "deposit", "owing", "none"]
     payment_method: PaymentMethodLabelOut | None
 
 
@@ -144,7 +145,24 @@ class PaymentAccountRowOut(BaseModel):
     payment: AccountPaymentRefOut
 
 
-AccountRowOut = SaleAccountRowOut | PaymentAccountRowOut
+class DepositRefOut(BaseModel):
+    """A Deposit is not a Payment: it names its Sale and carries no id of its own."""
+
+    sale_id: int
+    amount: MoneyOut
+    payment_method: PaymentMethodLabelOut
+
+
+class DepositAccountRowOut(BaseModel):
+    kind: Literal["deposit"] = "deposit"
+    date: PaymentDate
+    running_balance: MoneyOut
+    standing: Standing
+    is_partial: bool
+    deposit: DepositRefOut
+
+
+AccountRowOut = SaleAccountRowOut | PaymentAccountRowOut | DepositAccountRowOut
 
 
 def _row_out(row: DomainAccountRow) -> AccountRowOut:
@@ -163,19 +181,32 @@ def _row_out(row: DomainAccountRow) -> AccountRowOut:
                 else PaymentMethodLabelOut.of(row.payment_method),
             ),
         )
-    assert isinstance(row, DomainPaymentRow), "AccountRow is exactly a sale or a payment"
-    return PaymentAccountRowOut(
-        date=row.date,
-        running_balance=Decimal(row.running_balance),
-        standing=row.standing,
-        is_partial=row.is_partial,
-        payment=AccountPaymentRefOut(
-            id=row.payment_id,
-            paid_on=row.paid_on,
-            amount=Decimal(row.amount),
-            payment_method=PaymentMethodLabelOut.of(row.method),
-        ),
-    )
+    if isinstance(row, DomainPaymentRow):
+        return PaymentAccountRowOut(
+            date=row.date,
+            running_balance=Decimal(row.running_balance),
+            standing=row.standing,
+            is_partial=row.is_partial,
+            payment=AccountPaymentRefOut(
+                id=row.payment_id,
+                paid_on=row.paid_on,
+                amount=Decimal(row.amount),
+                payment_method=PaymentMethodLabelOut.of(row.method),
+            ),
+        )
+    if isinstance(row, DomainDepositRow):
+        return DepositAccountRowOut(
+            date=row.date,
+            running_balance=Decimal(row.running_balance),
+            standing=row.standing,
+            is_partial=row.is_partial,
+            deposit=DepositRefOut(
+                sale_id=row.sale_id,
+                amount=Decimal(row.amount),
+                payment_method=PaymentMethodLabelOut.of(row.method),
+            ),
+        )
+    assert_never(row)
 
 
 class MonthTotalOut(BaseModel):

@@ -12,10 +12,17 @@ from __future__ import annotations
 import random
 from datetime import date, datetime, timedelta
 
-from app.payments.domain.account import Account, PaymentRow, SaleRow, account_of, ledger_key
+from app.payments.domain.account import (
+    Account,
+    DepositRow,
+    PaymentRow,
+    SaleRow,
+    account_of,
+    ledger_key,
+)
 from app.payments.domain.settlement import LaterPaymentEntry, Ledger, OwedSale, settle
 from app.shared.payment_method import PaymentMethodLabel
-from tests.payments.builders import owed_sale
+from tests.payments.builders import deposit_sale, owed_sale
 
 AT = datetime(2026, 9, 1, 10, 0)
 CASH = PaymentMethodLabel(1, "Cash", "banknote")
@@ -305,3 +312,69 @@ def test_a_deposit_sale_moves_the_running_balance_by_what_it_owes_at_its_start()
 
     assert [row.running_balance for row in account.rows] == [70, 50]
     assert account.balance == 50
+
+
+def test_a_deposit_sale_reads_as_deposit_and_is_followed_by_its_deposit_row() -> None:
+    sale = deposit_sale(1, date(2026, 9, 1), 100, 30, CASH)
+
+    account = _account([sale], [])
+
+    sale_row, deposit_row = account.rows
+    assert isinstance(sale_row, SaleRow)
+    assert (sale_row.how_paid, sale_row.running_balance, sale_row.total) == ("deposit", 100, 100)
+    assert sale_row.payment_method == CASH
+    assert isinstance(deposit_row, DepositRow)
+    assert deposit_row.kind == "deposit"
+    assert deposit_row.date == sale.date
+    assert (deposit_row.sale_id, deposit_row.amount, deposit_row.method) == (1, 30, CASH)
+    assert (deposit_row.running_balance, deposit_row.standing) == (70, "owes")
+    assert not hasattr(deposit_row, "payment_id")
+
+
+def test_a_deposit_row_is_partial_while_the_balance_after_it_is_above_zero() -> None:
+    one_short = deposit_sale(1, date(2026, 9, 1), 100, 99, CASH)
+    other = deposit_sale(2, date(2026, 9, 2), 100, 1, CASH)
+
+    account = _account([one_short, other], [])
+
+    deposits = [row for row in account.rows if isinstance(row, DepositRow)]
+    assert [(row.running_balance, row.is_partial) for row in deposits] == [(1, True), (100, True)]
+
+
+def test_a_deposit_row_is_not_partial_when_a_credit_stands_after_it() -> None:
+    earlier_payment = LaterPaymentEntry(10, date(2026, 8, 30), AT, 80, TRANSFER)
+    sale = deposit_sale(1, date(2026, 9, 1), 100, 30, CASH)
+
+    account = _account([sale], [earlier_payment])
+
+    assert [(row.kind, row.running_balance, row.standing) for row in account.rows] == [
+        ("payment", -80, "credit"),
+        ("sale", 20, "owes"),
+        ("deposit", -10, "credit"),
+    ]
+    deposit_row = account.rows[2]
+    assert isinstance(deposit_row, DepositRow)
+    assert not deposit_row.is_partial
+
+
+def test_a_deposit_row_is_not_an_entry_of_the_ledger_and_the_walk_still_ties() -> None:
+    sale = deposit_sale(1, date(2026, 9, 1), 100, 30, CASH)
+    later = LaterPaymentEntry(10, date(2026, 9, 5), AT, 70, TRANSFER)
+
+    account = _account([sale], [later])
+
+    assert [(row.kind, row.running_balance, row.standing) for row in account.rows] == [
+        ("sale", 100, "owes"),
+        ("deposit", 70, "owes"),
+        ("payment", 0, "settled"),
+    ]
+
+
+def test_a_zero_total_sale_paid_on_the_spot_still_reads_paid() -> None:
+    sale = owed_sale(1, date(2026, 9, 1), 0, on_the_spot_method=CASH, on_the_spot_amount=0)
+
+    account = _account([sale], [])
+
+    row = account.rows[0]
+    assert isinstance(row, SaleRow)
+    assert (row.how_paid, row.running_balance, len(account.rows)) == ("paid", 0, 1)

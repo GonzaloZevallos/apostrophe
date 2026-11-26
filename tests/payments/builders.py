@@ -33,3 +33,27 @@ def owed_sale(
         on_the_spot_method=on_the_spot_method,
         on_the_spot_amount=on_the_spot_amount,
     )
+
+
+def deposit_sale(
+    id: int,
+    date: date,
+    total: int,
+    amount: int,
+    method: PaymentMethodLabel,
+    *,
+    number: int | None = None,
+    recorded_at: datetime = AT,
+) -> OwedSale:
+    """A Sale with a Deposit: valid by construction, a method and an amount strictly
+    between 0 and its total."""
+    assert 0 < amount < total, "a Deposit is always strictly between 0 and the total"
+    return owed_sale(
+        id,
+        date,
+        total,
+        number=number,
+        recorded_at=recorded_at,
+        on_the_spot_method=method,
+        on_the_spot_amount=amount,
+    )
