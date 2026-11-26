@@ -7,7 +7,9 @@
 // `design` captures are compared separately and one line per screen and side is printed: the
 // AE, or why there is none. Images of different dimensions, a screen missing on one side, a
 // capture on one side only and an unreadable PNG are failures, never AE 0; a capture missing
-// on both sides is reported and is not one. Any failure or any AE above 0 exits 1. No pixel
+// on both sides is reported and is not one. A `no_design` row (its design reason is `NO_DESIGN`) prints
+// `<screen> design: not compared: no design` and is never a failure; its built side is compared as any
+// other. Any failure or any AE above 0 exits 1. No pixel
 // data is printed.
 //
 // With `--box`, a side whose AE is above 0 also prints the bounding box of its differing pixels
@@ -19,6 +21,7 @@ import { readFileSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
+import { NO_DESIGN } from './shot.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const REPO = resolve(HERE, '..', '..')
@@ -115,6 +118,11 @@ function compareSide(screen, side, was, now, load, withBox) {
   const label = `${screen} ${side}`
   const beforePath = was[side] ?? null
   const afterPath = now[side] ?? null
+  // A row kept as a capture of the built screen only (`no_design`) has no design side to compare: never
+  // an AE line, never a failure, whatever the earlier index held for it.
+  if (side === 'design' && now?.reasons?.design === NO_DESIGN) {
+    return { line: `${label}: not compared: no design`, failed: false }
+  }
   // No image to compare. A side that had one before and has none now is a regression and fails,
   // whatever the index says; any other is only not compared. Never an AE line.
   if (beforePath === null && afterPath === null) {

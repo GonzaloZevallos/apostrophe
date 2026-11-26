@@ -5,6 +5,7 @@ import { join, resolve } from 'node:path'
 import { PNG } from 'pngjs'
 import { afterEach, describe, expect, it } from 'vitest'
 import { ae, box, compareIndexes, decode, type IndexEntry } from '../../../scripts/design/ae.mjs'
+import { NO_DESIGN } from '../../../scripts/design/shot.mjs'
 import { sidebarProblems } from '../../../scripts/design/sidebarBox.mjs'
 
 type Image = { width: number; height: number; data: Uint8Array }
@@ -226,6 +227,39 @@ describe('compareIndexes', () => {
       const neither = compareIndexes([], [], new Set(['Inicio']), load)
       expect(neither.failed).toBe(true)
       expect(neither.lines).toEqual(['Inicio: FAIL in neither index'])
+    })
+  })
+
+  describe('a row with no design (no_design)', () => {
+    const marked = (built: string | null) => entry('A', built, null, { design: NO_DESIGN })
+
+    it('prints the design line as not compared: no design, and does not fail while the built side is equal', () => {
+      const result = compareIndexes([marked('a/built')], [marked('a/built')], null, load)
+      expect(result.failed).toBe(false)
+      expect(result.lines).toEqual(['A built: AE 0', 'A design: not compared: no design'])
+    })
+
+    it('says no design whatever the earlier index held for the design side', () => {
+      const result = compareIndexes([entry('A', 'a/built', 'a/design')], [marked('a/built')], null, load)
+      expect(result.failed).toBe(false)
+      expect(result.lines).toContain('A design: not compared: no design')
+    })
+
+    it('still fails a built side that changed', () => {
+      const result = compareIndexes([marked('a/built')], [marked('c/built')], null, load)
+      expect(result.failed).toBe(true)
+      expect(result.lines).toEqual(['A built: AE 4', 'A design: not compared: no design'])
+    })
+
+    it('never prints AE 0 for the design side', () => {
+      const result = compareIndexes([marked('a/built')], [marked('a/built')], null, load)
+      expect(result.lines.filter((line) => line.startsWith('A design'))).toEqual(['A design: not compared: no design'])
+    })
+
+    it('does not fail when the row is un-marked: it prints not compared, with the reason of before', () => {
+      const result = compareIndexes([marked('a/built')], [entry('A', 'a/built', 'a/design')], null, load)
+      expect(result.failed).toBe(false)
+      expect(result.lines).toEqual(['A built: AE 0', `A design: not compared — ${NO_DESIGN}`])
     })
   })
 
