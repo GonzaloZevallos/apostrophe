@@ -209,8 +209,7 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     }
 
     // On a computer the offline notice is no toast (D-69509906): it is in the column, never in
-    // `.aviso-flotante`. Registrar cobro's Save flash is an inline `.aviso-exito`, not a fixed
-    // toast, so it has no inset to read: the form's own button is checked above.
+    // `.aviso-flotante`.
     await page.context().setOffline(true)
     await expect(page.locator('.aviso-sin-conexion')).toBeVisible()
     const notice = await page.locator('.aviso-sin-conexion').evaluate((element) => ({
@@ -220,6 +219,19 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     expect(notice.inColumn, where('offline notice is in the column')).toBe(true)
     expect(notice.position, where('offline notice is in the flow')).not.toBe('fixed')
     await page.context().setOffline(false)
+
+    // A real toast on a computer: the Business group's rename flash sits in `.aviso-flotante`.
+    // (Registrar cobro's Save flash is an inline `.aviso-exito`, so it has no fixed inset to read.)
+    // The computer is the last viewport, so this rename runs once.
+    await page.goto(SETTINGS_BUSINESS)
+    await setInsets(page, true)
+    await page.getByLabel('Business name', { exact: true }).fill(`Flores del Borde ${uniqueTag()}`)
+    await page.getByRole('button', { name: 'Save', exact: true }).click()
+    await expect(page.locator('.aviso-flotante')).toBeVisible()
+    const toast = await box(page, '.aviso-flotante')
+    expect(toast.top, where('toast top')).toBeGreaterThanOrEqual(TOP + TOAST_MARGIN)
+    expect(toast.left, where('toast left')).toBeGreaterThanOrEqual(SIDE + TOAST_MARGIN)
+    expect(toast.right, where('toast right')).toBeLessThanOrEqual(viewport.width - SIDE - TOAST_MARGIN)
   }
 
   expect(consoleMessages).toEqual([])
