@@ -5442,6 +5442,34 @@ a.ajustes-tema__opcion {
   font-size: 20px;
 }
 
+/* A line's name and price are one tappable `Boton` row beside the stepper, with no mark of their own:
+ * reshaped here into a side-by-side, at least 44 px target that keeps the name's ellipsis. */
+.nv-productos__abrir {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.nv-productos__abrir .boton--fila {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  padding: 0;
+  border-bottom: 0;
+}
+
+.nv-productos__precio {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.nv-productos__precio--sin {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+}
+
 .nv-productos__paso-vacio {
   width: var(--alto-tocable);
   height: var(--alto-tocable);

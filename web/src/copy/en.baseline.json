@@ -601,6 +601,8 @@
   {"source":"sales.ts:SALES_TEXT.newSale.itemsTotal","args":[0,"$ 11.000"],"text":"0 items · $ 11.000"},
   {"source":"sales.ts:SALES_TEXT.newSale.itemsTotal","args":[1,"$ 11.000"],"text":"1 item · $ 11.000"},
   {"source":"sales.ts:SALES_TEXT.newSale.itemsTotal","args":[2,"$ 11.000"],"text":"2 items · $ 11.000"},
+  {"source":"sales.ts:SALES_TEXT.newSale.lineNoPrice","args":null,"text":"No price"},
+  {"source":"sales.ts:SALES_TEXT.newSale.lineOpenDetail","args":["Rosa"],"text":"Edit Rosa"},
   {"source":"sales.ts:SALES_TEXT.newSale.listPrices","args":null,"text":"List prices"},
   {"source":"sales.ts:SALES_TEXT.newSale.pricesFor","args":["Regulars"],"text":"Prices for Regulars"},
   {"source":"sales.ts:SALES_TEXT.newSale.productAdd","args":["Rosa"],"text":"Add Rosa"},

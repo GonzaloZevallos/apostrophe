@@ -18,7 +18,27 @@ import { SALE_NEW, SALES } from '../../routes'
 import { stubViewport } from '../../test-viewport'
 import { METHODS_ANSWER } from '../../test-payment-methods'
 import NewSaleSheetHost, { type NewSaleSheetHostProps } from './NewSaleSheetHost'
-import { FORMAT, PRODUCTS, TODAY } from './renderNuevaVentaSheet'
+import type { SaleDraftApi } from '../../sales/useSaleDraft'
+import { FORMAT, OTHER_DAY, PRODUCTS, TODAY } from './renderNuevaVentaSheet'
+
+// The draft the host drives, captured so a test can set the fields the Sheet has no control for yet
+// (the date, Shipping charged and Note) and read them back: the real hook, wrapped, no production hook.
+const captured = vi.hoisted(() => ({ draft: null as SaleDraftApi | null }))
+vi.mock('../../sales/useSaleDraft', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../sales/useSaleDraft')>()
+  return {
+    ...original,
+    useSaleDraft: (args: Parameters<typeof original.useSaleDraft>[0]) => {
+      const draft = original.useSaleDraft(args)
+      captured.draft = draft
+      return draft
+    },
+  }
+})
+const currentDraft = (): SaleDraftApi => {
+  if (captured.draft === null) throw new Error('the host is not mounted')
+  return captured.draft
+}
 
 const ME: Me = { email: 'a@b.c', business_name: 'Shop', today: TODAY, shown_language: 'en', money: FORMAT } as Me
 
@@ -403,6 +423,116 @@ describe('one source of truth', () => {
     await waitFor(() => expect(question()).toBeNull())
     await m.user.click(within(screen.getByRole('group', { name: 'Rosa' })).getByRole('button', { name: 'Remove one Rosa' }))
     await waitFor(() => expect(screen.queryByRole('group', { name: 'Rosa' })).toBeNull())
+    await m.user.click(closeButton())
+    await waitFor(() => expect(path(m)).toBe(SALES))
+    expect(question()).toBeNull()
+  })
+})
+
+describe('the line detail', () => {
+  const detail = () => screen.findByRole('dialog', { name: 'Rosa' })
+  const openRosa = (m: Mounted) => m.user.click(screen.getByRole('button', { name: 'Edit Rosa' }))
+  const inDetail = () => within(screen.getByRole('dialog', { name: 'Rosa' }))
+
+  test('tapping a priced line opens its detail as one Sheet over the form', async () => {
+    const m = mount()
+    await addLine(m)
+    await openRosa(m)
+    expect(await detail()).toBeInTheDocument()
+    expect(sheetDepth(m.router.state.location.state)).toBe(1)
+    expect(path(m)).toBe(SALE_NEW)
+  })
+
+  test('the − and + controls change the quantity and never open the detail', async () => {
+    const m = mount()
+    await addLine(m)
+    await m.user.click(screen.getByRole('button', { name: 'Add one Rosa' }))
+    expect(within(screen.getByRole('group', { name: 'Rosa' })).getByText('2')).toBeInTheDocument()
+    await m.user.click(screen.getByRole('button', { name: 'Remove one Rosa' }))
+    expect(within(screen.getByRole('group', { name: 'Rosa' })).getByText('1')).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Rosa' })).toBeNull()
+    expect(sheetDepth(m.router.state.location.state)).toBe(0)
+  })
+
+  test('a line in the search results opens its detail', async () => {
+    const m = mount()
+    await addLine(m)
+    await m.user.type(screen.getByRole('searchbox', { name: 'Search products' }), 'ros')
+    await openRosa(m)
+    expect(await detail()).toBeInTheDocument()
+  })
+
+  test.each([
+    ['Close', (m: Mounted) => m.user.click(inDetail().getByRole('button', { name: 'Close' }))],
+    ['Escape', (m: Mounted) => m.user.keyboard('{Escape}')],
+    ['system back', (m: Mounted) => act(() => m.router.navigate(-1))],
+  ] as const)('closing the detail by %s keeps every line and never asks', async (_name, exit) => {
+    const m = mount()
+    await addLine(m)
+    await openRosa(m)
+    await detail()
+    await exit(m)
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Rosa' })).toBeNull())
+    expect(question()).toBeNull()
+    expect(path(m)).toBe(SALE_NEW)
+    expect(sheetDepth(m.router.state.location.state)).toBe(0)
+    expect(screen.getByRole('group', { name: 'Rosa' })).toBeInTheDocument()
+  })
+
+  test('Done with a changed quantity updates the line and closes the detail', async () => {
+    const m = mount()
+    await addLine(m)
+    await openRosa(m)
+    const quantity = within(await detail()).getByRole('textbox', { name: 'Quantity' })
+    await m.user.clear(quantity)
+    await m.user.type(quantity, '3')
+    await m.user.click(inDetail().getByRole('button', { name: 'Done' }))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Rosa' })).toBeNull())
+    expect(within(screen.getByRole('group', { name: 'Rosa' })).getByText('3')).toBeInTheDocument()
+    expect(question()).toBeNull()
+  })
+
+  test('Done with nothing changed closes and leaves the line as it was', async () => {
+    const m = mount()
+    await addLine(m)
+    await openRosa(m)
+    await detail()
+    await m.user.click(inDetail().getByRole('button', { name: 'Done' }))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Rosa' })).toBeNull())
+    expect(within(screen.getByRole('group', { name: 'Rosa' })).getByText('1')).toBeInTheDocument()
+  })
+
+  test('Remove line on the last line returns to a clean draft and keeps the customer', async () => {
+    const m = mount()
+    await openChooser(m)
+    await m.user.click(screen.getByRole('button', { name: /Ana/ }))
+    await waitFor(() => expect(within(sheet()).getByText('Ana')).toBeInTheDocument())
+    await addLine(m)
+    act(() => {
+      currentDraft().setDate(OTHER_DAY)
+      currentDraft().setShipping('250')
+      currentDraft().setNote('Leave at the door')
+    })
+    await waitFor(() => expect(currentDraft().state.note).toBe('Leave at the door'))
+    const before = currentDraft().state
+    expect(before.date).toBe(OTHER_DAY)
+    expect(before.shipping).toBe('250')
+    await openRosa(m)
+    await detail()
+    await m.user.click(inDetail().getByRole('button', { name: 'Remove line' }))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Rosa' })).toBeNull())
+    const after = currentDraft().state
+    expect(after.lines).toEqual([])
+    expect(after.customerId).toBe(before.customerId)
+    expect(after.date).toBe(OTHER_DAY)
+    expect(after.shipping).toBe('250')
+    expect(after.note).toBe('Leave at the door')
+    expect(question()).toBeNull()
+    expect(screen.queryByRole('group', { name: 'Rosa' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Collect' })).toBeNull()
+    expect(within(sheet()).getByText('Add a product to collect')).toBeInTheDocument()
+    expect(within(sheet()).getByText('Ana')).toBeInTheDocument()
+    // A clean draft: Close leaves with no question.
     await m.user.click(closeButton())
     await waitFor(() => expect(path(m)).toBe(SALES))
     expect(question()).toBeNull()
