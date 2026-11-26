@@ -478,6 +478,7 @@ test('step 6 adding a category saves at once and passes nothing; only Seguir pas
 
   expect(await screen.findByText('Insumos')).toBeInTheDocument()
   expect(screen.queryByLabelText('New category')).not.toBeInTheDocument()
+  expect(screen.getByText('Adding, renaming or removing a category saves right away.')).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Category' }))
   await user.type(screen.getByLabelText('New category'), 'Luz')
   await user.click(screen.getByRole('button', { name: '+ Category' }))

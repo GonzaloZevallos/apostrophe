@@ -7,6 +7,7 @@
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
+import { keys } from '../../api/keys'
 import App from '../../App'
 import { queryClient } from '../../queryClient'
 import { router } from '../../router'
@@ -78,22 +79,22 @@ test('the Expense categories subtitle lists the names in the order the server re
   serve(() => Promise.resolve(json([{ id: 2, name: 'Zinc' }, { id: 1, name: 'Alquiler' }, { id: 3, name: 'Luz' }])))
   await open()
 
-  expect(await screen.findByRole('link', { name: /^Expense categories\s*Zinc, Alquiler, Luz$/ })).toBeInTheDocument()
+  expect(await screen.findByRole('link', { name: /^Expense categories\s*Zinc, Alquiler, Luz\s*3$/ })).toBeInTheDocument()
 })
 
-test('an empty list shows no subtitle', async () => {
+test('an empty list shows "0" and no subtitle', async () => {
   serve(() => Promise.resolve(json([])))
   await open()
 
-  expect(await screen.findByRole('link', { name: /^Payment methods\s*Cash, Transfer$/ })).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: /^Expense categories$/ })).toBeInTheDocument()
+  expect(await screen.findByRole('link', { name: /^Payment methods\s*Cash, Transfer\s*2$/ })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /^Expense categories\s*0$/ })).toBeInTheDocument()
 })
 
 test('a 500 on the categories shows no subtitle and no error, and the row still opens its screen', async () => {
   serve(() => Promise.resolve(json({ detail: 'boom' }, 500)))
   await open()
 
-  expect(await screen.findByRole('link', { name: /^Payment methods\s*Cash, Transfer$/ })).toBeInTheDocument()
+  expect(await screen.findByRole('link', { name: /^Payment methods\s*Cash, Transfer\s*2$/ })).toBeInTheDocument()
   const row = screen.getByRole('link', { name: /^Expense categories$/ })
   expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   expect(screen.queryByText(/couldn't|try again/i)).not.toBeInTheDocument()
@@ -137,7 +138,7 @@ test('main stops being busy when the categories read answers 500', async () => {
 test('no request names a business', async () => {
   const served = serve(() => Promise.resolve(json([{ id: 1, name: 'Alquiler' }])))
   await open()
-  await screen.findByRole('link', { name: /^Expense categories\s*Alquiler$/ })
+  await screen.findByRole('link', { name: /^Expense categories\s*Alquiler\s*1$/ })
 
   const categoryCalls = served.urls.filter((url) => url.includes('/expense-categories'))
   expect(categoryCalls.length).toBeGreaterThan(0)
@@ -186,4 +187,61 @@ test('the link shows after both reads fail', async () => {
   const main = (await screen.findByRole('heading', { name: 'Payments' })).closest('main') as HTMLElement
   await waitFor(() => expect(main).not.toHaveAttribute('aria-busy'))
   expect(screen.getByRole('link', { name: EXPENSES_LINK })).toBeVisible()
+})
+
+test('both reads answered: each row shows a count equal to the length of the list its subtitle joins', async () => {
+  serve(() => Promise.resolve(json([{ id: 1, name: 'Luz' }, { id: 2, name: 'Gas' }, { id: 3, name: 'Agua' }])))
+  await open()
+
+  const methods = await screen.findByRole('link', { name: /^Payment methods\s*Cash, Transfer\s*2$/ })
+  const categories = screen.getByRole('link', { name: /^Expense categories\s*Luz, Gas, Agua\s*3$/ })
+  expect(within(methods).getByText('2')).toBeInTheDocument()
+  expect(within(categories).getByText('3')).toBeInTheDocument()
+})
+
+test('while both reads are pending no row shows a count, and main is busy', async () => {
+  const held = new Promise<Response>(() => undefined)
+  serve(
+    () => held,
+    () => held,
+  )
+  await open()
+
+  const main = (await screen.findByRole('heading', { name: 'Payments' })).closest('main') as HTMLElement
+  expect(main).toHaveAttribute('aria-busy', 'true')
+  expect(screen.getByRole('link', { name: /^Payment methods$/ })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /^Expense categories$/ })).toBeInTheDocument()
+  expect(within(main).queryByText(/^\d+$/)).not.toBeInTheDocument()
+})
+
+test('a methods read that fails leaves that row with no count and no subtitle, and the categories row intact', async () => {
+  serve(
+    () => Promise.resolve(json([{ id: 1, name: 'Luz' }])),
+    () => Promise.resolve(json({ detail: 'boom' }, 500)),
+  )
+  await open()
+
+  expect(await screen.findByRole('link', { name: /^Expense categories\s*Luz\s*1$/ })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /^Payment methods$/ })).toBeInTheDocument()
+})
+
+test('a categories read that fails leaves that row with no count and no subtitle, and the methods row intact', async () => {
+  serve(() => Promise.resolve(json({ detail: 'boom' }, 500)))
+  await open()
+
+  expect(await screen.findByRole('link', { name: /^Payment methods\s*Cash, Transfer\s*2$/ })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: /^Expense categories$/ })).toBeInTheDocument()
+})
+
+test('a refetch that fails after a good read removes both the count and the subtitle', async () => {
+  let failing = false
+  serve(() => (failing ? Promise.resolve(json({ detail: 'boom' }, 500)) : Promise.resolve(json([{ id: 1, name: 'Luz' }]))))
+  await open()
+  await screen.findByRole('link', { name: /^Expense categories\s*Luz\s*1$/ })
+
+  failing = true
+  await act(() => queryClient.invalidateQueries({ queryKey: keys.expenseCategories() }))
+
+  await waitFor(() => expect(screen.getByRole('link', { name: /^Expense categories$/ })).toBeInTheDocument())
+  expect(screen.queryByText('Luz')).not.toBeInTheDocument()
 })
