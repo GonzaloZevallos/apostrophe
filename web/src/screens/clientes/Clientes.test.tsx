@@ -1194,15 +1194,31 @@ test('typing a query and clearing it before the debounce never fetches it', asyn
   expect(screen.getByRole('region', { name: 'Owed to you' })).toBeInTheDocument()
 })
 
+interface Deferred {
+  promise: Promise<Response>
+  settle: (response: Response) => void
+}
+
+function deferred(): Deferred {
+  let settle: (response: Response) => void = () => undefined
+  const promise = new Promise<Response>((resolve) => {
+    settle = resolve
+  })
+  return { promise, settle }
+}
+
 test('while the full list is pending on a failed debtors read, the list section is not drawn at all', async () => {
-  vi.mocked(fetch).mockImplementation(
-    fetchStub(() => new Promise<Response>(() => {}), () => new Response('boom', { status: 500 })),
-  )
+  const debtors = deferred()
+  vi.mocked(fetch).mockImplementation(fetchStub(() => new Promise<Response>(() => {}), () => debtors.promise))
   renderClientes()
 
-  // Pending: the debtors read has not answered, so the views are still drawn. Nothing awaited
-  // before this line, so a fast host cannot have reached the failed state first.
+  // Pending: the debtors read is held on a promise this test controls, so no host speed can
+  // have reached the failed state before the views are checked.
   expect(screen.getByRole('radiogroup', { name: 'Customers view' })).toBeInTheDocument()
+
+  await act(async () => {
+    debtors.settle(new Response('boom', { status: 500 }))
+  })
   await waitFor(() => expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument())
 
   expect(document.querySelector('.lista-clientes')).toBeNull()
