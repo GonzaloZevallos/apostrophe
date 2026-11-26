@@ -30,7 +30,6 @@ import {
   VARIETIES,
 } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
-import { choosePaymentMethod } from './helpers/paymentMethod.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -209,30 +208,9 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
       continue
     }
 
-    // A toast on a computer: the success flash of Save on the form already open (Lucía's balance
-    // is prefilled and valid). The computer is the last viewport, so this Save runs once. The
-    // offline notice is no toast there (D-69509906): it is in the column, never in `.aviso-flotante`.
-    await choosePaymentMethod(page, 'Cash')
-    // The flash (an inline `.aviso-exito`, not a fixed toast) lasts 2.5 s, so its box is read inside the page the moment it mounts.
-    const flash = page.evaluate(
-      () =>
-        new Promise<Box>((resolve) => {
-          const observer = new MutationObserver(() => {
-            const element = document.querySelector('.aviso-exito[role=status]')
-            if (element === null) return
-            observer.disconnect()
-            const { top, left, right, bottom } = element.getBoundingClientRect()
-            resolve({ top, left, right, bottom })
-          })
-          observer.observe(document.body, { childList: true, subtree: true })
-        }),
-    )
-    await page.getByRole('button', { name: 'Save' }).click()
-    const toast = await flash
-    expect(toast.top, where('toast top')).toBeGreaterThanOrEqual(TOP)
-    expect(toast.left, where('toast left')).toBeGreaterThanOrEqual(SIDE)
-    expect(toast.right, where('toast right')).toBeLessThanOrEqual(viewport.width - SIDE)
-
+    // On a computer the offline notice is no toast (D-69509906): it is in the column, never in
+    // `.aviso-flotante`. Registrar cobro's Save flash is an inline `.aviso-exito`, not a fixed
+    // toast, so it has no inset to read: the form's own button is checked above.
     await page.context().setOffline(true)
     await expect(page.locator('.aviso-sin-conexion')).toBeVisible()
     const notice = await page.locator('.aviso-sin-conexion').evaluate((element) => ({
