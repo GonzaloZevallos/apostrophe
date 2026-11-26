@@ -15,7 +15,6 @@
 
 import { ANALYSIS, CUSTOMER, CUSTOMER_NEW, EXPENSES, EXPENSE_CATEGORIES, SETTINGS_BUSINESS, SETTINGS_USERS, STOCK, STOCK_ENTRY, STOCK_ENTRY_NEW, VARIETIES, VARIETY } from '../src/routes.js'
 import { expectAnyPath, expectPath } from './helpers/url.js'
-import { openStockSegment } from './helpers/stockSegment.js'
 import { expectToast } from './helpers/toast.js'
 import { expect, test, withToastRecorder } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -75,8 +74,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(STOCK)
   await expect(page.getByText('No stock entries')).toBeVisible()
   await page.goto(VARIETIES)
-  await openStockSegment(page)
-  await page.getByRole('link', { name: '+ Stock entry' }).click()
+  await openStockSegment(page); await page.getByRole('link', { name: '+ Stock entry' }).click()
   await expectPath(page, STOCK_ENTRY_NEW)
   await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')
@@ -208,4 +206,5 @@ test('a seller does everything the backend offers today, from the front alone', 
 })
 
 import { pickStockVariety } from './helpers/stockVariety.js'
+import { openStockSegment } from './helpers/stockSegment.js'
 import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'
