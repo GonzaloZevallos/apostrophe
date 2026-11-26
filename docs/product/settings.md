@@ -90,7 +90,7 @@ Métrica: la cumplen los tests de Testing Library de los criterios 1 a 3: orden 
 ## Criterios de éxito de los grupos Expense categories y Payments and expenses (GH-1069)
 
 1. **Un solo "+ Category".** En Settings, el grupo Expense categories muestra la lista y un solo botón "+ Category", y ningún campo "New category" hasta tocarlo. Tocarlo abre el campo con el foco; un agregado guardado lo cierra y devuelve el foco al botón; un campo abierto con texto pregunta "Discard the category?" antes de salir.
-2. **Conteos que nunca mienten.** La fila "Payment methods" muestra la cantidad de medios ofrecidos y la fila "Expense categories" la cantidad de Expense categories del Business, cada una antes del chevron y solo después de que respondió su propia lectura. Sin categorías, "0". Nunca se muestra una cifra equivocada ni durante una lectura pendiente o fallida.
+2. **Conteos que nunca mienten.** La fila "Payment methods" muestra la cantidad de medios ofrecidos y la fila "Expense categories" la cantidad de Expense categories del Business, cada una antes del chevron y solo después de que respondió con éxito su propia lectura. Sin categorías, "0". Nunca se muestra una cifra equivocada ni durante una lectura pendiente o fallida.
 3. **Como el dibujo.** ConfiguracionCategorias, ConfiguracionCategoriasCompu y ConfiguracionCobros no le dejan al dueño nada para leer o hacer distinto del dibujo, en claro y en oscuro (**Drawing as guide**), con las Design captures de evidencia; no es una comparación de píxeles.
 4. **Nada más cambia.** Renombrar y eliminar funcionan como antes, el paso de categorías del Onboarding se comporta igual y no se agrega ningún pedido a la API.
 
@@ -141,24 +141,28 @@ El grupo Payments and expenses (`PaymentsGroup.tsx`, dibujo `ConfiguracionCobros
 
 - "Payment methods" cuenta los Payment methods que el Business ofrece ahora (sin archivar): la misma lista que une su segunda línea.
 - "Expense categories" cuenta las Expense categories del Business. Sin ninguna, muestra "0" y ninguna segunda línea.
-- El conteo es un número solo, sin palabra de unidad: la etiqueta de la fila ya nombra lo que se cuenta. Va en **Tabular figures**, con solo tokens de diseño, en claro y en oscuro.
-- Un conteo se muestra solo cuando respondió su propia lectura. Mientras una lectura está pendiente, o después de que falló, no hay conteo, la misma regla que sigue la segunda línea; el contenido queda `aria-busy` mientras está pendiente, como antes.
-- Los dos conteos salen de las lecturas que `PaymentsGroup.tsx` ya hace: no se agrega ningún pedido a la API.
-- El conteo es parte del texto de la fila, así que el nombre accesible del link sigue empezando por la etiqueta de la fila.
+- Cada fila toma su lista solo cuando su propia lectura respondió con éxito (`isSuccess`), y la segunda línea y el conteo salen de esa misma lista, así que nunca se contradicen. Mientras una lectura está pendiente, o después de que falló (también cuando falla una relectura después de una primera respuesta buena), esa fila no tiene ni conteo ni segunda línea; la otra fila sigue mostrando los suyos. El contenido queda `aria-busy` mientras alguna lectura está pendiente, como antes (`useLoading`). No hay reintento: se cierra el grupo y se vuelve a abrir.
+- El conteo es un número solo, sin palabra de unidad: la etiqueta de la fila ya nombra lo que se cuenta. Es un `span.ajustes__item-cuenta` dentro de `ajustes__item-flecha`, antes del chevron, en **Tabular figures** (`cifra-n`), de 13 px en `--tinta2` (el mismo token y tamaño que la segunda línea construida), solo con tokens de diseño, en claro y en oscuro. El dibujo lo pone en 14 px; la diferencia no cambia lo que quien vende lee o hace (**Drawing as guide**).
+- El conteo no está oculto a la tecnología de asistencia: es parte del texto del link, así que el nombre accesible de la fila empieza por su etiqueta y termina con el conteo.
+- Los dos conteos salen de las lecturas que `PaymentsGroup.tsx` ya hace (`GET /api/payment-methods` y `GET /api/expense-categories`): no se agrega ningún pedido a la API. Después de agregar una Expense category, el editor invalida la misma lectura, así que el conteo está al día al volver al grupo.
 - En el celular el grupo sigue siendo un grupo con "Close" (decisión 21), no la página con "‹ Ajustes" del dibujo: diferencia aceptada por el dueño (abajo).
+
+![Settings → Payments and expenses en el celular](../assets/screens/ConfiguracionCobros.webp)
 
 ### Grupo Expense categories (GH-1069)
 
-En Settings, el grupo Expense categories (dibujos `ConfiguracionCategorias.dc.html` y `ConfiguracionCategoriasCompu.dc.html`) dibuja `ExpenseCategoriesEditor` en el modo plegado que ya usa el paso de categorías del Onboarding (`web/src/screens/onboarding/CategoriesStep.tsx`):
+En Settings, el grupo Expense categories (`ExpenseCategoriesGroup.tsx`, dibujos `ConfiguracionCategorias.dc.html` y `ConfiguracionCategoriasCompu.dc.html`) dibuja `ExpenseCategoriesEditor`, que desde GH-1069 tiene un solo modo, el mismo en Settings y en el paso de categorías del Onboarding (`web/src/screens/onboarding/CategoriesStep.tsx`):
 
-- Muestra la lista de Expense categories y un solo botón "+ Category". El campo "New category" no se ve hasta tocarlo.
-- Tocar "+ Category" abre el campo con el foco en él. Un agregado guardado lo cierra y devuelve el foco al botón.
-- No hay ningún control para plegar el campo sin guardar: un campo vacío nunca bloquea "Close", y uno con texto pregunta "Discard the category?" antes de salir, como en el dibujo.
-- Settings no muestra la línea "Adding, renaming or removing a category saves right away." (`CATEGORIES_SAVE_AT_ONCE`), que no está en sus dibujos; el Onboarding la conserva, porque su dibujo la tiene. Cada agregado, renombre o eliminación ya muestra su resultado al hacerse.
-- Renombrar y eliminar quedan como estaban, solo con ícono, como lo permite la **Icon and text rule**.
-- Un solo modo: si ningún llamador pasa `addCollapsed={false}`, la prop se elimina. Se borra el comentario que decía que Settings mantenía el campo siempre visible "as drawn".
-- Los localizadores de vitest y e2e que encontraban el campo siempre visible pasan a abrirlo con "+ Category" en el mismo cambio; el campo nunca se vuelve a poner, ni visible ni oculto, para satisfacer un localizador (D-69509906).
-- El Mobile check recorre también el estado con el campo de agregar abierto, sin que crezca ninguna lista de infractores, tolerancia ni control.
+- Muestra la lista de Expense categories y un solo botón "+ Category" (el ícono de agregar con `COMMON_TEXT.category`), habilitado. El campo "New category" no se ve hasta tocarlo, y no hay ningún botón desactivado.
+- Tocar "+ Category" abre el campo con el foco en él. Un agregado guardado limpia el nombre, cierra el campo, devuelve el foco al botón y muestra el aviso de guardado. Un agregado rechazado deja el campo abierto con su texto y el error en línea, o el aviso sin conexión.
+- No hay ningún control para plegar el campo sin guardar: un campo vacío nunca bloquea "Close", y uno con texto (o un renombre sin guardar) pregunta "Discard the category?" antes de salir, como en el dibujo.
+- La prop `addCollapsed` ya no existe. La línea "Adding, renaming or removing a category saves right away." (`CATEGORIES_SAVE_AT_ONCE`) es ahora la prop opcional `footnote` del llamador, que se dibuja debajo del control de agregar una vez cargada la lista: el Onboarding la pasa, porque su dibujo la tiene, y Settings no pasa ninguna, porque sus dibujos no la tienen. Cada agregado, renombre o eliminación ya muestra su resultado al hacerse.
+- Renombrar y eliminar quedan como estaban, solo con ícono, como lo permite la **Icon and text rule**, igual que el aviso de una categoría con Expenses que no se puede eliminar.
+- El contenido del grupo va dentro de su propio envoltorio, `.categorias-grupo`, que solo sirve para aplicar `touch-action: manipulation` a sus botones y al "Close" del encabezado del grupo, sin cambiar la disposición y nunca sobre el editor mismo, así que el paso del Onboarding no cambia. Las entradas de `touch-action` de ConfiguracionCategorias, ConfiguracionCategoriaRenombrar y ConfiguracionCategoriaConfirmarBorrado salieron de la lista de infractores: la lista solo se achicó.
+- El Mobile check recorre también el estado `ConfiguracionCategoriaNueva`, con el campo de agregar abierto después de tocar "+ Category", sin que crezca ninguna lista de infractores, tolerancia ni control.
+- Los localizadores de vitest y e2e que encontraban el campo siempre visible tocan primero "+ Category"; el campo nunca se vuelve a poner, ni visible ni oculto, para satisfacer un localizador (D-69509906).
+
+![Settings → Expense categories en el celular](../assets/screens/ConfiguracionCategorias.webp)
 
 ### Volver a Settings
 
@@ -199,7 +203,7 @@ En GH-1069 (decisión 1 del humano, 2026-11-26) el dueño aceptó otras cuatro d
 - Cambios en la Settings de computadora: 0, según los tests de Settings existentes contra la vista de computadora y la captura de ConfiguracionCompu antes y después (#994).
 - Grupo Expense categories de Settings con el campo "New category" visible antes de tocar "+ Category": 0, según los tests de `ExpenseCategoriesGroup` y `ExpenseCategoriesEditor` y el e2e de Settings (GH-1069).
 - Toques desde el grupo Expense categories hasta el campo de agregar abierto y con foco: 1 (GH-1069).
-- Conteos mostrados en las filas de Payments and expenses durante una lectura pendiente o fallida, o distintos del largo de su lista: 0, según los tests de Testing Library de `PaymentsGroup` (GH-1069).
+- Conteos mostrados en las filas de Payments and expenses durante una lectura pendiente o fallida (una relectura fallida incluida), o distintos del largo de su lista: 0, según `PaymentsGroup.test.tsx` (GH-1069).
 - Pedidos a la API agregados por `PaymentsGroup`: 0 (GH-1069).
-- Infracciones del Mobile check en el estado con el campo de agregar abierto: 0, sin ampliar ninguna lista de infractores, tolerancia ni control (GH-1069).
+- Infracciones del Mobile check en el estado `ConfiguracionCategoriaNueva`: 0, sin ampliar ninguna lista de infractores, tolerancia ni control; la lista de `touch-action` solo se achicó (GH-1069).
 - Design captures adjuntas de ConfiguracionCategorias, ConfiguracionCategoriasCompu y ConfiguracionCobros, en celular de 375 px y computadora, claro y oscuro: todas (GH-1069).
