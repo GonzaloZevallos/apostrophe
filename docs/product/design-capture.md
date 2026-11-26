@@ -164,7 +164,7 @@ Criterios de éxito, la captura de teléfono (GH-491) (numerados aparte; Métric
 ### Qué es una captura
 
 - Las fuentes están fijadas y el design capture nunca toca la red; `--strict` convierte una falla de fuente o de pantalla en un exit no cero, después de que corrió cada pantalla y se escribió `index.json` (ADR-0042).
-- Cada pantalla escribe su hoja compuesta y sus capturas crudas de diseño y construida; un antes/después compara las capturas crudas por AE exacto, nunca la hoja (ADR-0042).
+- Cada pantalla escribe su hoja compuesta y sus capturas crudas de diseño y construida; un antes/después compara las capturas crudas por AE exacto, nunca la hoja (ADR-0042). Esto vale para toda fila salvo las marcadas `no_design` (abajo): no toda fila nombra un dibujo que existe en `pantallas/`, y una fila sin dibujo no escribe hoja ni captura de diseño.
 - La `section` de una fila recorta sólo el lado de diseño; el lado construido se captura entero, como se alcanza la pantalla.
 - Una captura es evidencia de revisión, juzgada a ojo en el PR. Nunca es un paso del Gate y no se agrega ningún chequeo automático nuevo para ella.
 - **El resultado de una captura no depende de la carga de la máquina.** Ningún invariante de plan ni regla de evidencia pide una máquina ociosa; una captura tomada en la máquina de desarrollo compartida y cargada es evidencia válida tal como está.
@@ -174,6 +174,14 @@ Criterios de éxito, la captura de teléfono (GH-491) (numerados aparte; Métric
   - ningún control está entre estados, como deshabilitado u ocupado mientras corre una relectura.
 - Un elemento se captura en el estado en que queda en reposo. Para el producto abierto de VariedadesCompu, el switch "Low stock warning" se captura habilitado, encendido o apagado según el umbral guardado de la muestra, nunca gris porque la captura cayó mientras se releía el stock.
 - **Cómo se saca una captura** es lo del ADR-0052: un método para cada fila y los dos lados, que muestra la vista del vendedor en el viewport de registro de la fila sin que la captura mueva, estire ni corte nada. El mecanismo está en la sección siguiente.
+
+### Filas sin dibujo (`no_design`)
+
+- **Qué significa.** Una fila con `no_design: true` se guarda sólo como captura de la pantalla construida: no existe un dibujo con el que compararla, y el registro lo dice en vez de inventar uno. Hoy ninguna fila usa la marca.
+- **Qué excluye.** Una fila `no_design` no tiene lado diseño: no lleva `design`, `section` ni `design_viewport` (el registro rechaza cualquier combinación, y rechaza un `no_design` que no sea `true`), y no se chequea que exista un archivo en `pantallas/` ni que su gemela oscura dibuje lo mismo. Todo lo demás de la fila (`route`, `steps`, `tema`, `viewport`, cuenta) se chequea como en cualquier fila.
+- **Cómo se reporta.** `comparisons.mjs` nunca captura el lado diseño de esa fila ni compone su hoja: su entrada de `index.json` lleva `file: null`, `design: null`, la nota `sin diseño` y `reasons.design` igual a `shot: no design (design)` (`NO_DESIGN`, `shot.mjs`); `capture` es `captured` cuando existe su PNG construido. El resumen dice `not compared: no design: N rows` (con `--only` o sin él; una fila que además no tiene route sólo se cuenta en `not compared: no built screen`). `ae.mjs` imprime `<fila> design: not compared: no design` y no falla por ese lado; el lado construido se compara como siempre. Nunca es un pase, ni AE 0, ni una imagen de diseño.
+- **`--strict`.** La fila falla sólo por su lado construido, con `--only` y sin él. Con `--built-only` la marca no cambia nada: la salida es la de siempre.
+- **Un solo lector.** `designOf` (`scripts/design/screens.mjs`) es el único lugar que lee `design ?? screen`: devuelve `null` para una fila `no_design` y el dibujo de la fila para las demás. Ningún otro módulo calcula por su cuenta el dibujo de una fila.
 
 ### Cómo se saca una captura
 
