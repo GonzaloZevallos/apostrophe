@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest'
 import vectors from './money.vectors.json'
 import type { MoneyFormat } from './money'
-import { formatMoneyInput, moneyInputMode, parseGrams, parseMoneyInput, parseSignedGrams, readMoneyInput } from './parse'
+import { formatMoneyInput, moneyInputMode, parseGrams, parseMoneyInput, parseSignedGrams, readMoneyInput, toMinorUnits } from './parse'
 
 const ZERO: MoneyFormat = { symbol: '$', decimals: 0 }
 const TWO: MoneyFormat = { symbol: 'US$', decimals: 2 }
@@ -178,5 +178,49 @@ describe('readMoneyInput after a deletion', () => {
 
   test('typed or pasted text keeps the cents rule', () => {
     expect(readMoneyInput('$ 20.00')).toBe(20)
+  })
+})
+
+describe('toMinorUnits', () => {
+  /** The money value `parseMoneyInput` returns for `whole,fraction` at 2 decimals. */
+  function typed(whole: number, fraction: string): number {
+    const parsed = parseMoneyInput(`${whole},${fraction}`, { symbol: '$', decimals: 2 })
+    if (!parsed.ok) throw new Error(`not an amount: ${whole},${fraction}`)
+    return parsed.value
+  }
+
+  test('every w,ff from 0,00 to 99,99 at 2 decimals gives w*100+ff', () => {
+    for (let whole = 0; whole <= 99; whole += 1) {
+      for (let fraction = 0; fraction <= 99; fraction += 1) {
+        const ff = String(fraction).padStart(2, '0')
+        expect(toMinorUnits(Number(`${whole}.${ff}`), 2)).toBe(whole * 100 + fraction)
+      }
+    }
+  })
+
+  test('whole parts sampled up to 1e9 with fractions 00, 01, 05, 50 and 99 are exact', () => {
+    for (let whole = 1; whole <= 1e9; whole = whole * 3 + 7) {
+      for (const ff of ['00', '01', '05', '50', '99']) {
+        expect(toMinorUnits(typed(whole, ff), 2)).toBe(whole * 100 + Number(ff))
+      }
+    }
+  })
+
+  test('whole parts within 1000 of unitCost\'s cap are exact for every fraction that sweeps it', () => {
+    const cap = Math.floor((Number.MAX_SAFE_INTEGER - 100) / 200)
+    const middle = Math.floor(cap / 100)
+    for (let whole = middle - 1000; whole <= middle + 1000; whole += 1) {
+      for (const ff of ['00', '01', '05', '49', '50', '99']) {
+        expect(toMinorUnits(typed(whole, ff), 2)).toBe(whole * 100 + Number(ff))
+      }
+    }
+  })
+
+  test('0.1 + 0.2 at 2 decimals is 30', () => {
+    expect(toMinorUnits(0.1 + 0.2, 2)).toBe(30)
+  })
+
+  test('8 at 0 decimals is 8', () => {
+    expect(toMinorUnits(8, 0)).toBe(8)
   })
 })
