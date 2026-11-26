@@ -103,6 +103,8 @@ for (const size of SIZES) {
       await swipe(client, { x: width / 2, y: 130 }, { x: width / 2, y: 8 })
       expect(Math.abs((await scrollY(page)) - before)).toBeLessThanOrEqual(2)
 
+      // A person lifts the finger before the next touch: a tap right on the swipe's heels makes no click.
+      await page.waitForTimeout(700)
       await page.getByRole('button', { name: 'No, keep it', exact: true }).tap()
       await expect(page.getByRole('alertdialog')).toHaveCount(0)
       expect(Math.abs((await scrollY(page)) - before)).toBeLessThanOrEqual(2)
@@ -126,7 +128,9 @@ for (const size of SIZES) {
       await page.getByRole('dialog', { name: 'Line 1 product options' }).getByRole('button', { name: 'Sir Jack' }).tap()
       await page.getByLabel('Line 1 grams', { exact: true }).fill('5')
       const close = page.getByRole('button', { name: 'Close', exact: true })
-      const closeBefore = await close.boundingBox()
+      // Found by its label attribute: once the question is open the app is hidden from the accessibility tree.
+      const closeBox = page.locator('[aria-label="Close"]')
+      const closeBefore = await closeBox.boundingBox()
       await close.tap()
       await expect(page.getByRole('alertdialog', { name: 'Discard the sale?' })).toBeVisible()
       await expect(page.locator('.confirm-layer .confirmacion')).toHaveCount(1)
@@ -142,7 +146,7 @@ for (const size of SIZES) {
         }
       })
       expect(wrapper).toEqual({ children: 0, scrimIsLayer: true, hitsWrapper: false })
-      expect(await close.boundingBox()).toEqual(closeBefore)
+      expect(await closeBox.boundingBox()).toEqual(closeBefore)
 
       await expectAnswersReachable(page, ['No, keep entering', 'Yes, discard it'])
       await page.getByRole('button', { name: 'No, keep entering', exact: true }).tap()

@@ -4896,6 +4896,7 @@ a.ajustes-tema__opcion {
   }
 
   .confirm-layer[data-open] {
+    box-sizing: border-box;
     position: fixed;
     top: var(--vv-top, 0px);
     height: var(--vv-alto, 100dvh);
