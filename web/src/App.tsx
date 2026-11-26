@@ -8,6 +8,7 @@
 
 import { QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router'
+import ConfirmLayer from './components/ConfirmLayer'
 import { SheetRouterProvider } from './components/useSheetStack'
 import { queryClient } from './queryClient'
 import { router } from './router'
@@ -16,7 +17,9 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <SheetRouterProvider router={router}>
-        <RouterProvider router={router} />
+        <ConfirmLayer>
+          <RouterProvider router={router} />
+        </ConfirmLayer>
       </SheetRouterProvider>
     </QueryClientProvider>
   )
