@@ -24,6 +24,7 @@ Cada capacidad tiene su página en [docs/product/](product/):
 - [Dinero](product/money.md)
 - [Mobile check](product/mobile-check.md)
 - [Navigation](product/navigation.md)
+- [Offline notice](product/offline-notice.md)
 - [Onboarding](product/onboarding.md)
 - [Pagos](product/payments.md)
 - [Payment methods](product/payment-methods.md)
