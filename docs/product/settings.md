@@ -140,7 +140,7 @@ Las dos páginas siguen sus dibujos aprobados, en el celular y en la computadora
 
 - **Business** (ConfiguracionNegocio, ConfiguracionNegocioCompu): solo el campo del nombre del Business y su guardado. Ya no lleva las filas link "Currency and decimals" ni "Withdrawal reasons"; las dos pantallas se abren desde sus filas `currency` (grupo Business) y `withdrawalReasons` (grupo Payments and stock), cuyas rutas ya tienen a Settings como padre. El control de idioma, que se muestra solo con 2 o más Selectable languages (ninguno antes de #317), no cambia.
 - **Prices** (ConfiguracionPrecios, ConfiguracionPreciosCompu): solo los dos interruptores, sus líneas de ayuda, la línea de las Sales pasadas y Save. Ya no lleva la fila link "Customer types ›"; la lista se abre desde la fila `customerTypes`, que se muestra con la misma condición que tenía el link (Customer types guardado como activado). Con Customer types desactivado, Prices no muestra ningún link y la fila sigue oculta, igual que antes. El detalle de Prices está en pricing-settings.md.
-- El texto que le indica un camino a quien vende nombra la fila de Settings: el estado vacío del Selector de motivos (`emptyStates:selectorNoReasons`) dice "Add them in Settings → Withdrawal reasons.".
+- El texto que le indica un camino a quien vende nombra la fila de Settings: el estado vacío del Selector de motivos (`emptyStates:selectorNoReasons`) dice "No reasons yet. Add them in Settings → Withdrawal reasons.".
 - Ningún localizador e2e ni de vitest usa los links quitados, y ninguno vuelve, ni visible ni oculto (D-69509906).
 
 ### Volver a Settings
@@ -149,7 +149,7 @@ Las dos páginas siguen sus dibujos aprobados, en el celular y en la computadora
   - una pantalla de tipo tarjeta (Payment methods, por ejemplo) muestra "‹ Settings";
   - una pantalla de tipo formulario (Prices, Integrations, el nombre del Business, Users, Account y otras) muestra "Close", que vuelve por el historial y cae en el mismo lugar.
 - `ENTRY_PARENTS` en `web/src/routes.ts` hace que Payment methods y Expense categories nombren a Settings como su origen cuando se abren con `enteredFrom: 'settings'`. Solo un link con ese estado lo activa, así que las etiquetas de vuelta de la computadora no cambian.
-- Customer types (`settings-customer-types`) tiene a Settings como padre en `web/src/routes.ts` desde GH-1068 (antes era Prices). "‹ Settings" y Close sin historial caen en Settings, se llegue desde la fila o tipeando la dirección. La dirección `/settings/prices/customer-types` se conserva tal cual y no redirige, así que un marcador guardado la sigue abriendo.
+- Customer types (`settings-customer-types`) tiene a Settings como padre en `web/src/routes.ts` y en `scripts/design/screens.json` desde GH-1068 (antes era Prices), y ya no tiene entrada en `ENTRY_PARENTS`. "‹ Settings" y Close sin historial caen en Settings, se llegue desde la fila o tipeando la dirección. La dirección `/settings/prices/customer-types` se conserva tal cual y no redirige, así que un marcador guardado la sigue abriendo.
 
 ### Texto e idioma
 
@@ -175,5 +175,5 @@ Además, por **Drawing as guide** y sin cambiar lo que quien vende lee o hace: e
 - Cantidades de Users equivocadas o rotas mostradas durante una lectura pendiente o fallida: 0, según los tests de Testing Library.
 - Cambios en la Settings de computadora: 0, según los tests de Settings existentes contra la vista de computadora y la captura de ConfiguracionCompu antes y después (#994).
 - Filas link que repiten otra fila del registro en las páginas Business y Prices: 0 (antes 3), según los tests de BusinessGroup y PricingGroup (GH-1068).
-- Toques desde un Tab root hasta la lista de Customer types: 2 (antes 3, pasando por Prices), y "‹ Settings" o Close desde ella cae en Settings en el 100 % de los casos, se llegue desde la fila o por la dirección, según el test de rutas (padre `settings`) y `customerTypes.spec.ts` (GH-1068).
+- Toques desde un Tab root hasta la lista de Customer types con el interruptor ya activado: 2 (antes 3, pasando por Prices); en un Business nuevo, 4 hasta la lista y 7 para crear un tipo, sin contar encender el interruptor ni guardarlo (decisión 1 del humano en GH-1068). "‹ Settings" o Close desde la lista cae en Settings en el 100 % de los casos, se llegue desde la fila o por la dirección, según el test de rutas (padre `settings`), `SettingsNavigation.test.tsx` y `customerTypes.spec.ts` (GH-1068).
 - Caminos nombrados en el Copy module o en `docs/product/` que pasan por "Settings → Business →" hacia Currency and decimals o Withdrawal reasons, o por "Settings → Prices → Customer types": 0 (GH-1068).
