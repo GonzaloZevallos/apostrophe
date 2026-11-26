@@ -88,6 +88,9 @@
                 },
                 {
                   "$ref": "#/components/schemas/PaymentAccountRowOut"
+                },
+                {
+                  "$ref": "#/components/schemas/DepositAccountRowOut"
                 }
               ]
             },
@@ -1547,6 +1550,87 @@
           "returned"
         ],
         "title": "DeleteSaleOut",
+        "type": "object"
+      },
+      "DepositAccountRowOut": {
+        "properties": {
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "deposit": {
+            "$ref": "#/components/schemas/DepositRefOut"
+          },
+          "is_partial": {
+            "title": "Is Partial",
+            "type": "boolean"
+          },
+          "kind": {
+            "const": "deposit",
+            "default": "deposit",
+            "title": "Kind",
+            "type": "string"
+          },
+          "running_balance": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Running Balance"
+          },
+          "standing": {
+            "enum": [
+              "owes",
+              "credit",
+              "settled"
+            ],
+            "title": "Standing",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "running_balance",
+          "standing",
+          "is_partial",
+          "deposit"
+        ],
+        "title": "DepositAccountRowOut",
+        "type": "object"
+      },
+      "DepositRefOut": {
+        "description": "A Deposit is not a Payment: it names its Sale and carries no id of its own.",
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Amount"
+          },
+          "payment_method": {
+            "$ref": "#/components/schemas/PaymentMethodLabelOut"
+          },
+          "sale_id": {
+            "title": "Sale Id",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sale_id",
+          "amount",
+          "payment_method"
+        ],
+        "title": "DepositRefOut",
         "type": "object"
       },
       "EntryIn": {
@@ -5140,6 +5224,7 @@
           "how_paid": {
             "enum": [
               "paid",
+              "deposit",
               "owing",
               "none"
             ],

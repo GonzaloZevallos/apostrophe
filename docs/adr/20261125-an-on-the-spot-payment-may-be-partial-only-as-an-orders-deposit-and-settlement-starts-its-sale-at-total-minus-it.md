@@ -1,7 +1,7 @@
 ---
 status: accepted
 date: 2026-11-25
-summary: "un On-the-spot payment parcial existe solo como el Deposit de un Order y el Settlement arranca esa Sale en su total menos el Deposit; la cuenta mostrará la Sale con su total completo seguida de una fila de Deposit (GH-1094, todavía no está en el código)"
+summary: "un On-the-spot payment parcial existe solo como el Deposit de un Order y el Settlement arranca esa Sale en su total menos el Deposit; la cuenta muestra la Sale con su total completo seguida de una fila de Deposit (GH-1094, ya está en el código)"
 ---
 
 # An on-the-spot payment may be partial only as an Order's Deposit, and Settlement starts its Sale at total minus it
@@ -36,13 +36,14 @@ Hechos que ya están en el código, cada uno con su test en esta parte:
 6. **Cash y Money in cuentan un Deposit por su propio monto guardado**, en la fecha de la
    Sale, nunca por el total de la Sale.
 
-## Decidido acá, a construir en GH-1094 (todavía no está en el código)
+## Decidido acá (la fila de Deposit de la cuenta, GH-1094, ya está en el código)
 
 - La cuenta muestra la Sale con su total completo y enseguida una fila de Deposit que resta
   su monto, con la fecha de la Sale. Enmienda el punto 2 de
   `20261120-the-customer-account-is-a-ledger-walk-not-a-settlement-view.md` (ahí una Sale
-  suma "0 si se pagó en el momento"). Hasta que GH-1094 lo entregue, `account_of` solo suma
-  `opening_owed`, de modo que su fila más nueva sigue igual a `settle().balance`.
+  suma "0 si se pagó en el momento"). GH-1094 lo entregó: `account_of` suma el total de una Sale
+  con Deposit y la fila de Deposit resta el monto, de modo que su fila más nueva sigue igual
+  a `settle().balance`.
 - `is_partial` de esa fila es un dato de posición del libro, como en una fila de Payment:
   dice si el saldo corrido después de ella sigue por encima de 0.
 - `payment_state` lee el `still_owed` de una Sale con Deposit en 0..total-monto: 0 es Paid,
