@@ -1804,21 +1804,6 @@ a.ajustes-tema__opcion {
   background: var(--tinta);
 }
 
-.gastos__pie {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--espacio-md);
-}
-
-.gastos__pie .pie {
-  padding: 0;
-  color: var(--tinta2);
-  text-align: left;
-  font-size: 13px;
-  line-height: 1.5;
-}
-
 .fila-gasto {
   display: flex;
   align-items: center;
@@ -1970,8 +1955,7 @@ a.ajustes-tema__opcion {
     grid-template-columns: minmax(320px, 420px) minmax(320px, 420px);
     grid-template-areas:
       'cabecera cabecera'
-      'resumen ultimos'
-      'pie ultimos';
+      'resumen ultimos';
     align-content: start;
     column-gap: 28px;
   }
@@ -1991,10 +1975,6 @@ a.ajustes-tema__opcion {
 
   .gastos__ultimos {
     grid-area: ultimos;
-  }
-
-  .gastos__pie {
-    grid-area: pie;
   }
 }
 
@@ -6970,15 +6950,9 @@ a.ajustes-tema__opcion {
 }
 
 /* Tap targets on Varieties and Expenses (GH-319): "New variety", the Expenses "Add expense" and
- * month arrows, and "Categories" are each at least 44 x 44 on the phone. The computer keeps
- * its sizes (the Expenses rules at 900 px and up set their own). */
+ * month arrows are each at least 44 x 44 on the phone. The computer keeps its sizes (the
+ * Expenses rules at 900 px and up set their own). */
 @media (max-width: 899.98px) {
-  .gastos__pie .boton--enlace {
-    display: inline-flex;
-    align-items: center;
-    min-height: var(--alto-tocable);
-  }
-
   .gastos__cargar {
     width: var(--alto-tocable);
     height: var(--alto-tocable);

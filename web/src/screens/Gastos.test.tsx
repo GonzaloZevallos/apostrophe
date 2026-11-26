@@ -13,7 +13,6 @@ import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
 import { SIN_CONEXION_MENSAJE } from '../copy/common'
 import { EXPENSES, EXPENSE_CATEGORIES } from '../routes'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
-import { FLOWER_NOTICE } from './Gastos'
 import { CATEGORY_GONE } from './expenses/ExpenseForm'
 import { type FetchImpl, ME, categoryField, chooseCategory, jsonResponse, renderExpenses } from './expenses/renderExpenses'
 
@@ -151,7 +150,15 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-test('shows the month, its total, each category with its subtotal, the expenses and the flower line', async () => {
+function expectNoFooter() {
+  expect(screen.queryByText(/purchases don't go here/)).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: 'Categories' })).not.toBeInTheDocument()
+  expect(
+    screen.queryAllByRole('link').filter((link) => link.getAttribute('href') === EXPENSE_CATEGORIES),
+  ).toHaveLength(0)
+}
+
+test('shows the month, its total, each category with its subtotal and the expenses', async () => {
   renderExpenses([EXPENSES], store([...SEED]))
 
   expect(await screen.findByText('October 2026')).toBeInTheDocument()
@@ -161,16 +168,16 @@ test('shows the month, its total, each category with its subtotal, the expenses 
   expect(screen.getByText('Bolsas')).toBeInTheDocument()
   // The September expense is not in October's view.
   expect(screen.queryByText('Cinta vieja')).not.toBeInTheDocument()
-  expect(screen.getByText(FLOWER_NOTICE)).toBeInTheDocument()
+  expectNoFooter()
 })
 
-test('an empty month shows $ 0, no categories, the flower line and the record action', async () => {
+test('an empty month shows $ 0, no categories, no footer and the record action', async () => {
   renderExpenses([EXPENSES], store([]))
 
   expect(await screen.findByText('$ 0', { selector: '.cifra-xl' })).toBeInTheDocument()
   expect(screen.queryByText('By category')).not.toBeInTheDocument()
   expect(screen.queryByText('Packaging')).not.toBeInTheDocument()
-  expect(screen.getByText(FLOWER_NOTICE)).toBeInTheDocument()
+  expectNoFooter()
   expect(screen.getByRole('link', { name: 'Add expense' })).toBeInTheDocument()
 })
 
@@ -474,12 +481,11 @@ test('creating a category inside the expense form keeps what was typed and selec
   expect(screen.getByLabelText('Details')).toHaveValue('Sustrato nuevo')
 })
 
-test('links to the expense categories, now a Configuración group, from its foot', async () => {
+test('Expenses has no link to the expense categories', async () => {
   renderExpenses([EXPENSES], store([...SEED]))
 
-  const categories = await screen.findByRole('link', { name: 'Categories' })
-  expect(categories).toHaveAttribute('href', EXPENSE_CATEGORIES)
-  expect(EXPENSE_CATEGORIES).toBe(EXPENSE_CATEGORIES)
+  expect(await screen.findByText('$ 4.500', { selector: '.cifra-xl' })).toBeInTheDocument()
+  expectNoFooter()
 })
 
 test('subtotals and the total stay equal to the sum shown after create, edit and delete', async () => {

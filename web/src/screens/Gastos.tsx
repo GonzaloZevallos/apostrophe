@@ -19,7 +19,6 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useOutletContext, useSearchParams } from 'react-router'
 import InAppLink from '../components/InAppLink'
 import AnswerButton from '../components/AnswerButton'
-import BotonLink from '../components/BotonLink'
 import { ApiError, NetworkError } from '../api/client'
 import { type Expense, deleteExpense, monthlyView } from '../api/expenses'
 import { invalidateResource, keys } from '../api/keys'
@@ -35,14 +34,13 @@ import Icono from '../components/Icono'
 import SinConexion from '../components/SinConexion'
 import Loading from '../components/Loading'
 import { useFlash } from '../flash/useFlash'
-import { EXPENSE_CATEGORIES, EXPENSE_NEW } from '../routes'
+import { EXPENSE_NEW } from '../routes'
 import ExpenseEditSheet from './expenses/ExpenseEditSheet'
 import MonthBody from './expenses/MonthBody'
-import { FLOWER_NOTICE, EXPENSES_TEXT } from '../copy/expenses'
+import { EXPENSES_TEXT } from '../copy/expenses'
 import { COMMON_TEXT } from '../copy/common'
 import ContentArea from '../components/ContentArea'
 
-export { FLOWER_NOTICE }
 export const NO_DISCARD_TITLE = COMMON_TEXT.noKeep
 export const YES_DELETE_TITLE = COMMON_TEXT.yesDelete
 
@@ -194,13 +192,6 @@ function GastosScreen() {
         {view.data !== undefined && (
           <MonthBody view={view.data} today={me.today} onEdit={setEditTarget} />
         )}
-
-        <div className="gastos__pie">
-          <span className="pie">{FLOWER_NOTICE}</span>
-          <BotonLink to={EXPENSE_CATEGORIES} variant="link">
-            {EXPENSES_TEXT.categories}
-          </BotonLink>
-        </div>
       </div>
 
       {editTarget !== null && (
