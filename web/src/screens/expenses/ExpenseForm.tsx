@@ -12,7 +12,7 @@
  * expense (Gastos): a new expense can neither be deleted nor be already gone.
  */
 
-import { type FormEvent, useEffect, useId, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLoading } from '../../components/useLoading'
@@ -173,6 +173,16 @@ export default function ExpenseForm({
     failure: methodOptions.failure,
     methodGone,
   })
+
+  // The Selector calls `onOpenChange` again whenever its identity changes, so this one is stable and
+  // reads the hook's latest failure and `reload` through a ref: a tap on a failed field reads once.
+  const methodListRef = useRef({ failed: methodOptions.failure !== null, reload: methodOptions.reload })
+  useEffect(() => {
+    methodListRef.current = { failed: methodOptions.failure !== null, reload: methodOptions.reload }
+  })
+  const onMethodListOpenChange = useCallback((open: boolean) => {
+    if (open && methodListRef.current.failed) methodListRef.current.reload()
+  }, [])
 
   const detailTrimmed = form.detail.trim()
   const canSubmit = form.category_id !== '' && !sending && methodGone === null
@@ -398,9 +408,7 @@ export default function ExpenseForm({
               setMethodGone(null)
               setForm((previous) => ({ ...previous, payment_method_id: paymentMethodOf(next) }))
             }}
-            onOpenChange={(open) => {
-              if (open && methodOptions.failure !== null) methodOptions.reload()
-            }}
+            onOpenChange={onMethodListOpenChange}
             describedBy={methodGone === null ? undefined : methodErrorId}
           />
           {methodGone !== null && <FieldRefusal id={methodErrorId}>{t('common:paymentMethodUnavailable')}</FieldRefusal>}
