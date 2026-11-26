@@ -4,6 +4,7 @@ export function assertSelectedAccounts(
   kinds: Readonly<Record<string, 'open' | 'ended'>>,
 ): void;
 export function assertAccountKinds(accounts: Readonly<Record<string, unknown>>, kinds: unknown): void;
+export function designOf(s: Readonly<Record<string, unknown>>): string | null;
 export function sectionOccurrences(html: string, label: string): number;
 export function assertSelectedNeeds(
   selected: ReadonlyArray<Readonly<Record<string, unknown>>>,

@@ -51,12 +51,23 @@ export function assertScreens(screens, pantallas = PANTALLAS) {
     }
     if ('steps' in s) assertSteps(s)
     if ('needs' in s) assertNeeds(s, all, seen)
-    if ('design' in s || 'section' in s) assertDesign(s, pantallas)
-    if (isDarkTwin(s.screen)) assertTwinDrawing(s, pantallas)
+    if ('no_design' in s) assertNoDesign(s)
+    if (!('no_design' in s) && ('design' in s || 'section' in s)) assertDesign(s, pantallas)
+    if (isDarkTwin(s.screen) && !('no_design' in s)) assertTwinDrawing(s, pantallas)
     if ('account' in s) assertAccount(s)
     if (reachesListo(s) && !('account' in s)) {
       throw new Error(`${s.screen}: an entry that reaches ${LISTO} must name an account of its own`)
     }
+  }
+}
+
+// `no_design: true` marks a row kept as a capture of the built screen only: no drawing exists for
+// it, so it names none and is never compared against one.
+/** @param {Readonly<Record<string, unknown>>} s */
+function assertNoDesign(s) {
+  if (s.no_design !== true) throw new Error(`${s.screen}: no_design must be true`)
+  for (const key of ['design', 'section', 'design_viewport']) {
+    if (key in s) throw new Error(`${s.screen}: no_design cannot be used with ${key}`)
   }
 }
 
@@ -245,11 +256,22 @@ function assertAccount(s) {
 const LISTO = 'OnboardingListo'
 const DEFAULT_ACCOUNT = 'La Huerta'
 
-// The one definition of "this entry reaches Listo": the design it is compared against,
-// which is its own screen name unless `design` says otherwise.
+// The drawing a row is compared against: `design`, else its own screen name; null for a
+// `no_design` row, which has none. The only reader of `design ?? screen`: every other module
+// asks here (the validators below read the raw field only to check its type).
+/**
+ * @param {Readonly<Record<string, unknown>>} s
+ * @returns {string | null}
+ */
+export function designOf(s) {
+  if (s.no_design === true) return null
+  return /** @type {string} */ (s.design ?? s.screen)
+}
+
+// The one definition of "this entry reaches Listo": the design it is compared against.
 /** @param {Readonly<Record<string, unknown>>} s */
 function reachesListo(s) {
-  return (s.design ?? s.screen) === LISTO
+  return designOf(s) === LISTO
 }
 
 // The kinds are `account_kinds` of screens.json, the one list; a test ties it to the kinds
