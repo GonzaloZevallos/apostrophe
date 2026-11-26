@@ -18,7 +18,9 @@
 
 **Cuando** quiero revisar lo que vendí hoy, esta semana o este mes, **quiero** ver las ventas de ese período con su total y su cantidad, **para** saber cómo viene la cosa entre pedido y pedido y encontrar una venta puntual para corregirla.
 
-**Cuando** reviso entre pedidos lo que vendí hoy, esta semana o este mes, **quiero** cambiar de período y abrir una venta en el teléfono sin tocar mal y sin una pantalla en blanco mientras carga, **para** encontrar la venta a corregir y asignarle su cliente o borrarla en pocos toques. (Afina la historia anterior y el criterio 11 para el teléfono; corregir una venta sigue siendo exactamente esas dos cosas).
+**Cuando** reviso entre pedidos lo que vendí hoy, esta semana o este mes, **quiero** cambiar de período y abrir una venta en el teléfono sin tocar mal y sin una pantalla en blanco mientras carga, **para** encontrar la venta a corregir y asignarle su cliente o anularla (Void) en pocos toques. (Afina la historia anterior y el criterio 11 para el teléfono; corregir una venta sigue siendo exactamente esas dos cosas).
+
+**Cuando** veo que una Sale registrada está mal o nunca pasó (el Customer equivocado, cargada dos veces, el comprador se echó atrás), **quiero** anularla desde el detalle de la venta en un solo paso claro y deliberado, **para** que mis totales, el Stock y lo que me debe cada Customer vuelvan a estar bien. (Parte 2 de GH-1055: lo sirve el botón visible "Void" del detalle de la venta con su confirmación "Yes, void". Si unos Payments ya habían saldado la venta, anularla puede dejarle un **Credit** al Customer; es el comportamiento de siempre y no cambia).
 
 **Cuando** registré una venta, o un cliente me pregunta después qué se llevó o cuánto me debe, **quiero** mandarle en un toque el **Sale bill** de esa venta en texto plano y corto (sus líneas, el envío, el total, cómo pagó, lo que todavía debe de esa venta y su **Balance** de ahora), **para** contestarle en nuestro chat sin volver a tipear ni sacar cuentas, y que el cliente vea los mismos números que veo yo. (La historia dice "el chat" y no nombra ningún canal, por **Assume nothing**).
 
@@ -77,9 +79,11 @@ Antes de la parte 1 de GH-496, para registrar una venta la vendedora busca al cl
 
 Antes de la parte 1 de GH-500, la lista de Sales solo dice si una venta sigue debiendo ("owes you", las **Sales still owing**): no dice si está pagada en parte ni cuánto queda de ella. Para saberlo, la vendedora abre cada venta o la ficha del cliente, o lo saca del Balance con la regla de la deuda más vieja primero. Supuesto: no hay otro atajo que importe (como anotar el monto en la nota de la venta), y el arreglo sería el mismo. La parte 1 entrega solo los dos campos en la API, sin pantalla; desde #1020 la tarjeta de Sales los muestra (ver `payment-state.md`).
 
-Antes de GH-869, una venta guardada por error se deshace abriéndola desde Sales y borrándola desde su detalle, con varios toques. El aviso "Sale saved" con su Undo llega con #982, y el dibujo de sus resultados (sacada, ya no estaba, sin conexión, falla) llega con la parte que agrega el tipo `undoResult` del aviso flotante. Nadie ve esos resultados hasta que una parte posterior de GH-869 los conecta a Undo.
+Antes de GH-869, una venta guardada por error se deshace abriéndola desde Sales y anulándola desde su detalle, con varios toques. El aviso "Sale saved" con su Undo llega con #982, y el dibujo de sus resultados (sacada, ya no estaba, sin conexión, falla) llega con la parte que agrega el tipo `undoResult` del aviso flotante. Nadie ve esos resultados hasta que una parte posterior de GH-869 los conecta a Undo.
 
 Antes de la parte 3 de GH-1083, la regla del último medio de las New sale suggestions tomaba la venta más nueva con cualquier On-the-spot payment, sin mirar si el pago cubría la venta. Hoy da lo mismo, porque nada registra un pago parcial en el momento. Cuando GH-1063 agregue los Deposits, uno cobrado por transferencia haría arrancar la próxima venta en Transfer, y la vendedora lo tendría que notar y corregir cada vez: un error chico, callado y repetido que va contra la venta en menos de un minuto.
+
+Antes de la parte 2 de GH-1055, el detalle de la venta se anulaba con un tacho solo de ícono, con el nombre accesible "Delete sale", dentro de la fila de acciones junto al Sale bill y Assign customer, y se confirmaba con "Yes, delete it". En el teléfono, un ícono solo es ambiguo. La fila inferior nueva deja además el lugar para "Edit sale" (#561). No hay registro de ventas borradas por accidente, y esta definición no afirma ninguna.
 
 Criterios de éxito, registro (API):
 
@@ -119,7 +123,7 @@ Criterios de éxito, en pantalla:
 8. **Un pedido es una venta en pantalla**: un formulario, un total y el Shipping charged una vez.
 9. **Deshacer en un toque**: una venta guardada por error se deshace en un toque desde el aviso "Sale saved", y no queda nada de ella: ni líneas, ni **On-the-spot payment**, y no aparece en ninguna lista. Su Sale number no se vuelve a usar.
 10. **Un vistazo entre pedidos**: pasar entre Today, Week (de lunes a domingo) y Month, o elegir Dates, responde lo bastante rápido como para mirarlo en medio de un chat.
-11. **Encontrar y corregir**: cualquier venta del período se puede encontrar y abrir. En su detalle, a una venta sin cliente se le puede dar uno (una vez, nunca cambiarlo), y una venta equivocada se puede borrar. Corregir una venta es exactamente esas dos cosas.
+11. **Encontrar y corregir**: cualquier venta del período se puede encontrar y abrir. En su detalle, a una venta sin cliente se le puede dar uno (una vez, nunca cambiarlo), y una venta equivocada se puede anular con "Void". Corregir una venta es exactamente esas dos cosas.
 
 Criterios de éxito, en el teléfono:
 
@@ -128,6 +132,12 @@ Criterios de éxito, en el teléfono:
 14. **Nunca en blanco**: nada de estas pantallas que espera al servidor muestra una pantalla en blanco; la venta se sigue registrando en menos de 60 s (criterio 1).
 15. **El pedido nunca se pierde por accidente**: el gesto de volver del sistema pregunta "Discard the sale?" exactamente con la misma condición que "Close".
 16. **Nada más cambia**: la cotización, la vista previa, el flujo, los textos y los diseños de computadora se comportan como se define acá; los tests existentes de ventas y de navegación pasan sin editarlos para acomodarlos al diseño del teléfono.
+
+Criterios de éxito, Void en el detalle de la venta (parte 2 de GH-1055):
+
+66. **Una palabra, no un ícono.** En el teléfono, la vendedora encuentra en el detalle de la venta un botón visible "Void" sin tener que leer un ícono. Ocupa toda la fila inferior y mide al menos 44 px de alto.
+67. **Nunca de un toque.** Anular siempre pasa por la confirmación, que conserva la pregunta de siempre (fecha, monto, gramos), "This can't be undone" y "No, keep it". "Yes, void" y "No, keep it" miden cada uno al menos 44 px de alto.
+68. **Nada más cambia.** El borrado, su resultado y su aviso quedan como estaban; las demás pantallas conservan "Yes, delete it"; en `web/` no queda ningún localizador ni texto "Delete sale", visible u oculto (D-69509906), y no se agrega ningún infractor.
 
 Criterios de éxito, producto de una línea (Selector, parte 4 de GH-581):
 
@@ -337,7 +347,7 @@ Criterios de éxito, Sale number:
   - Es cerrado: no tiene campo para la nota, el nombre o el id del cliente, ningún id de venta o de línea, la marca VIP, el Customer type ni su nombre, una Pricing rule que no sea bulk o gift, costo, margen, medio de pago ni link. El Sale number no es un id: es el número propio del negocio. El negocio sale solo de la sesión.
   - Cuando no se puede calcular (también cuando los hechos de pago son inconsistentes, un `still_owed` imposible incluido), el detalle responde sin Sale bill y el resto del detalle no se ve afectado; el error nombra la regla incumplida y ninguna venta, cliente ni monto.
   - No se guarda ni se loguea nada de él.
-- **Borrar**:
+- **Borrar** (en pantalla, "Void" desde el detalle de la venta, o Undo desde "Sale saved"; es el mismo borrado):
   - Un borrado definitivo, líneas y On-the-spot payment incluidos; no queda nada para listar ni restaurar. Su Sale number queda como hueco y nunca se vuelve a usar.
   - Sus gramos vuelven al stock y caen de nuevo en los Lots por fecha (ADR-0009). La respuesta dice los gramos devueltos por producto.
   - Los pagos posteriores que la habían saldado pasan a la siguiente deuda más vieja del cliente, o quedan como **Credit** (`payments.md`).
@@ -461,7 +471,7 @@ Criterios de éxito, Sale number:
   - Cerrar la hoja solo vuelve al formulario.
 - **"Sale saved"** (`Estados`):
   - Lleva **Undo** y ningún monto ni nombre. Se anuncia como un toast y dura unos pocos segundos fijos.
-  - Undo borra la venta sin confirmación y vuelve a Sales. Su Sale number queda como hueco, sin ningún aviso agregado.
+  - Undo borra la venta sin confirmación y vuelve a Sales. Su Sale number queda como hueco, sin ningún aviso agregado. Undo es una acción aparte de Void y no se renombra.
   - **El resultado de Undo** es el tipo `undoResult` del aviso flotante (`FlashMessage` `{kind: 'undoResult', result}`), dibujado dentro del área de avisos flotantes de siempre (`.aviso-flotante`), y siempre con un elemento que ya existe, nunca con texto nuevo:
     - **Sacada** (`deleted`): el aviso de éxito (`AvisoExito`) "Sale deleted · the grams go back to stock" (`common:saleDeletedGramsBack`).
     - **Ya no estaba** (`gone`): el aviso "That is gone. The list is up to date." (`GONE_NOTICE`, con `Notice` de tipo notice).
@@ -469,7 +479,7 @@ Criterios de éxito, Sale number:
     - **Falla** (`failed`): el error genérico de Estados (`ErrorGenerico`).
     - Los cuatro duran 2,5 s (`DEFAULT_TOAST_MS`), como cualquier otro toast, y se van solos. Un aviso posterior reemplaza al resultado en el acto: nunca hay dos a la vez. Una falla o un sin conexión nunca muestran el texto de éxito.
     - Esta parte solo agrega el dibujo de los cuatro resultados; los conecta a Undo una parte posterior de GH-869. Hasta entonces la vendedora no los ve.
-  - Una vez que el aviso se fue, la forma de deshacer es "Void".
+  - Una vez que el aviso se fue, la forma de deshacer es "Void", en el detalle de la venta.
   - Nunca contiene el botón Share/Copy; ese vive en el detalle de la venta.
 
 #### New sale en el teléfono
@@ -528,7 +538,9 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
 
 ### En pantalla: Sale #N (`VentaDetalle`, el detalle de la venta)
 
-- **Un detalle** (navigation.md): la barra con su + en el celular, o la barra lateral en la computadora, y "‹ Sales".
+![VentaDetalle](../assets/screens/VentaDetalle.webp)
+
+- **Un detalle** (navigation.md): la barra con su + en el celular, o la barra lateral en la computadora, y "‹ Sales". El detalle no dibuja ningún control de volver propio: su camino de vuelta es la flecha del marco.
 - **Título**: "Sale #N", del Copy module, en el encabezado del detalle, con "‹ Sales" como camino de vuelta. Sin ceros a la izquierda, sin prefijo y sin separador de miles: la primera venta se lee "Sale #1". Es texto plano que se puede seleccionar y copiar: no es un botón ni una insignia, y el color no lleva su significado. Igual en claro y en oscuro. En la computadora va en el mismo lugar, sin pulido dedicado (Phone first). La palabra "Venta" del dibujo cede ante el Product language (Drawing as guide).
 - **Carga**: mientras carga la venta, muestra el estado de carga compartido (accounts.md, `Estados`), nunca una página en blanco. El título queda vacío: nunca un número de relleno ni "Sale #0".
 - **Muestra**:
@@ -540,6 +552,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
   - un nombre de Customer type largo se corta con puntos suspensivos dentro de la insignia, igual que en New sale, y el nombre completo sigue siendo su texto y su nombre accesible;
   - cuando no entra a lo ancho (por ejemplo a 246 px), la fila pasa a una segunda línea y la insignia baja sola debajo, en lugar de ensanchar la pantalla: el detalle nunca se desplaza en horizontal, y el precio por gramo y el total quedan cada uno entero en una línea, nunca partidos.
 - **Las insignias de regla registradas** ("VIP", "bulk", y el nombre del Customer type tal como estaba al guardar) muestran siempre lo que se registró, diga lo que diga hoy las Pricing settings, y aunque el tipo se haya renombrado o eliminado. Son historia (ADR-0003).
+- **La fila de acciones** (`.venta-detalle__acciones`): el botón del Sale bill y, cuando corresponde, Assign customer. Desde la parte 2 de GH-055 ya no tiene el tacho.
 - **Compartir el Sale bill** (Share / Copy): ver "Sale bill" abajo.
 - **Assign customer**:
   - Se muestra solo cuando la venta no tiene cliente, y abre Pick a customer sin "No customer".
@@ -547,15 +560,21 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
   - Si sale bien, el aviso "Customer assigned".
   - Si alguien asignó uno antes, "This sale already has a customer." y el detalle se actualiza.
   - Después de asignar, el detalle se vuelve a leer del servidor, para que el Sale bill traiga el Balance del cliente recién asignado; nada arma el detalle a mano en el front. El Sale number no cambia, y las líneas conservan su precio y su regla.
-- **Void**: botón de texto visible "Void" en la fila inferior `.venta-detalle__botones` (grilla de una columna por botón; "Edit sale" (#561) entrará como primer hijo), con el texto en `--negativo`.
-  - Se muestra en toda venta.
-  - En el teléfono, el control y los botones de su confirmación miden al menos 44 px de alto.
-  - Se confirma con `Before deleting`, que nombra la fecha, el monto y el total de gramos de sus líneas que vuelven al stock, regalos incluidos. Por ejemplo: "Delete the $ 11.000 sale from 02/10? 4 g go back to stock." Los botones son "No, keep it / Yes, void".
-  - Después, el aviso "Sale deleted" y de vuelta a Sales.
+- **Void** (parte 2 de GH-1055): la anulación confirmada y definitiva de una venta registrada, desde su detalle. Es el mismo borrado que hace Undo (ver "Borrar" en Comportamiento).
+  - **El botón**: un `Boton` de la variante `secondary` (la superficie suave que ya existe, sin variante ni estilo nuevo), con el ícono `tacho` y el texto visible "Void" (`sales:detail.void`). La palabra lleva el significado; el ícono acompaña.
+  - **La fila inferior**: va solo en `.venta-detalle__botones`, después de la fila de acciones y dentro del cuerpo del detalle. La fila es una grilla con `grid-auto-flow: column` y `grid-auto-columns: 1fr`, una columna por botón: hoy "Void" es su único hijo y ocupa toda la fila; "Edit sale" (#561) va a entrar como primer hijo, y entonces quedan dos columnas iguales con Void segundo.
+  - **El color**: el texto, y con él el ícono, va en `--negativo`, puesto por una regla limitada a `.venta-detalle__botones`; sin hex sueltos y nunca un botón rojo relleno.
+  - **Toque**: mide al menos 44 px de alto (`--alto-tocable`). `touch-action: manipulation` y `user-select: none` van solo sobre el botón de esa fila y sobre los botones de su confirmación (`.venta-detalle > .confirmacion button`); `Boton` y `ConfirmDialog` no cambian para el resto de la app.
+  - **Dónde se muestra**: en toda venta cargada, sin ninguna condición: saldada, sin cliente, o con su cliente o un producto archivados. Mientras carga y cuando la venta no se encuentra, no hay botón.
+  - **La confirmación** (`Before deleting`, el `ConfirmDialog` de siempre sobre el detalle): nombra la fecha, el monto y el total de gramos de sus líneas que vuelven al stock, regalos incluidos. Por ejemplo: "Delete the $ 11.000 sale from 02/10? 4 g go back to stock." Debajo, "This can't be undone". Los botones son "No, keep it / Yes, void" (`sales:detail.yesVoid`), en el orden y con el énfasis de siempre: "Yes, void" conserva su aspecto destructivo y "No, keep it" no se destaca más. En el teléfono, los dos miden al menos 44 px de alto.
+  - **Salir sin anular**: "No, keep it", el "Close" del diálogo y el gesto de volver del sistema son la misma acción: cierran el diálogo sin borrar nada y dejan a la vendedora en el mismo detalle.
+  - **Después**: el aviso "Sale deleted" y de vuelta a Sales, como antes. El botón dice "Void" y el resultado dice "deleted": es un seguimiento conocido, fuera de esta parte.
+  - **Dos toques**: Void y después "Yes, void"; anular nunca es un solo toque. No hay Undo después de anular: la venta se vuelve a registrar desde New sale, y "This can't be undone" lo avisa.
   - El texto nunca menciona deuda ni Credit; la cuenta del cliente muestra el efecto después (`payments.md`).
+  - **Dibujo**: `VentaDetalle.dc.html` dibuja "Anular" en la fila inferior junto a "Editar venta", solo texto y con un borde; el botón construido lleva el ícono `tacho` y la superficie `secondary` de `Boton`, como aceptó el dueño (decisión 1 de la parte 2 de GH-1055). `Estados.dc.html` (el tacho solo de ícono y "Sí, borrala" en `Antes de borrar`) y `VentaDetalleCompu.dc.html` ("Borrar venta") quedan desactualizados en esto; una Design capture que muestre esa diferencia no es un hallazgo.
 - **Una venta que ya no existe** sigue accounts.md:
   - abrirla muestra "That is gone." con "Back to Sales", sin ningún número;
-  - asignar, borrar o deshacer muestra "That is gone. The list is up to date."
+  - asignar, anular o deshacer muestra "That is gone. The list is up to date."
 - No van nombres, notas ni montos a la consola ni al almacenamiento del navegador, y ningún id de negocio aparece en una URL.
 
 ### Sale bill (en el detalle de la venta)
@@ -591,7 +610,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 **Sin formato propio**: ninguna palabra fija, separador ni formato del Sale bill lleva `*`, `_` ni comilla invertida. El texto que tipeó la vendedora (el nombre del negocio y los de los productos) sale exactamente como se tipeó, esos caracteres incluidos: nunca se escapa, se recorta ni se reemplaza, para que el cliente lea el mismo nombre que ve la vendedora. Cómo lo muestra una app de chat es asunto del chat; escapar para una app fijaría un canal (Assume nothing).
 
 **El botón** (en el detalle, nunca dentro del aviso "Sale saved"):
-- **Dónde**: el primer elemento de la fila de acciones del detalle, antes de Assign customer y de borrar la venta, como parte del contenido de la pantalla.
+- **Dónde**: el primer elemento de la fila de acciones del detalle, antes de Assign customer, como parte del contenido de la pantalla. Void no está en esa fila: va solo en la fila inferior.
 - **Etiqueta**: Share donde el teléfono puede compartir; si no, Copy. Lleva su ícono decorativo (compartir o copiar) y la palabra sola como nombre accesible.
 - **Share**: si sale bien no muestra nada (que se cierre la hoja es la confirmación); si se cancela no muestra nada; si falla muestra "Couldn't share. Tap Copy and paste it into the chat." con el ícono de atención debajo del botón, y la etiqueta pasa a Copy.
 - **Copy**: si sale bien muestra el aviso "Bill copied", en el mismo lugar de avisos de la pantalla que usa "Customer assigned"; si falla muestra "Couldn't copy. Select the text below and copy it by hand." con el ícono de atención debajo del botón, y justo debajo el Sale bill en un bloque seleccionable, con nombre accesible "Sale bill".
@@ -617,6 +636,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - El cambio al Selector borró de `autocomplete.json` las siete entradas `combobox:Line # product` que quedaron obsoletas (DescartarVenta, ElegirCliente, NuevaVenta, NuevaVentaCliente, NuevaVentaConLinea, NuevaVentaConLineaYPago y NuevoClienteEnVenta), y no agregó ningún infractor.
 - Desde la parte 5 de GH-581 recorre también la lista de medios abierta en el estado `new-sale/method-selector-open` (`statesSales.ts`). Los estados `new-sale/*` que eligen un medio, como `NuevaVentaConLineaYPago`, lo hacen con Paid, después el campo y después la opción. Desde la parte 24 de GH-318 recorre además los estados del campo del medio cargando, con error del servidor, sin conexión y con un medio "no longer available".
 - El cambio del medio al Selector borró de `touch-action.json` las 21 entradas `radio:Cash`, `radio:Transfer` y `radio:Owing`: tres por cada estado DescartarVenta, ElegirCliente, NuevaVenta, NuevaVentaCliente, NuevaVentaConLinea, NuevaVentaConLineaYPago y NuevoClienteEnVenta. También borró cualquier otra entrada que dejó obsoleta y no agregó ningún infractor. Las celdas nuevas `radio:Paid` y `radio:Owing` pasan gracias al agregado de CSS de `SegmentedChoice`.
+- **Void** (parte 2 de GH-1055): el estado `VentaBorrar` (`statesSales.ts`) toca "Void" y muestra "Yes, void"; `EstadosGoneAviso` (`statesGettingIn.ts`) toca "Void" y después "Yes, void"; la fila `EstadosConfirmar` del registro (`scripts/design/screens.json`) llega a la confirmación tocando "Void". Los textos del recorrido salen de las claves del Copy module. El cambio borró de `touch-action.json` todas las entradas que quedaron sin objeto o que ahora pasan: `button:Delete sale` en `VentaDetalle`, `VentaBorrar`, `VentaAsignarCliente` y `EstadosConfirmar`, y `button:No, keep it` y `button:Yes, delete it` en `VentaBorrar` y `EstadosConfirmar`. No agregó ningún infractor; las demás entradas de `VentaAsignarCliente` (la hoja de Pick a customer) quedan, porque el CSS limitado no la alcanza.
 - La insignia con el nombre de un Customer type se comprueba en un navegador con su propia corrida (`web/e2e/typeBadge.spec.ts`): un cliente en un tipo de nombre de 40 caracteres y una venta cotizada por él, en la vista previa de New sale y en el detalle, a 320 y a 246 px, sin desplazamiento horizontal, sin nombre que desborde y sin cifra partida. El fixture de muestra fijado no cambia, y el chequeo `mobile` del detalle a 246x437 no gana ningún infractor.
 - **Una Expense desde New sale** (parte 4 de GH-725): dos estados recorridos (`web/src/mobile-standard/states*.ts`), los dos sobre el negocio de muestra del recorrido:
   - **La franja**: New sale, el primer Product del Selector de la línea 1 y después "Expense" bajo "Other things to record". Se captura la franja ya asentada, con su total. Filas del registro: VentaEnCurso y VentaEnCursoOscuro.
@@ -690,7 +710,8 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
   - la semana va de lunes a domingo;
   - el chip del Payment state de cada tarjeta coincide con el `payment_state` y el `still_owed` de la API (ver `payment-state.md`);
   - la lista responde en menos de 300 ms con unos pocos cientos de ventas: lo verifica `tests/sales/test_list_cost.py` con el plan de consulta de las sentencias de la lista (se buscan los índices, no se recorre ninguna tabla) y la cantidad de sentencias con 30 y 300 ventas, nunca por tiempo (docs/adr/0038).
-- **Corregir**: la corrida de punta a punta asigna un cliente a una venta que no tenía (Assign customer desaparece) y borra una venta con su confirmación. (Criterio 11)
+- **Corregir**: la corrida de punta a punta asigna un cliente a una venta que no tenía (Assign customer desaparece) y anula una venta con "Void" y su confirmación "Yes, void" (`web/e2e/sales.spec.ts`, `web/e2e/payments.spec.ts`, `web/e2e/ventasTelefono.spec.ts`). (Criterio 11)
+- **Void, en el detalle (criterios 66, 67, 68)**: 100 % pasando. Tests del front (`VentaDetalle.test.tsx`, fetch simulado) muestran "Void" en una venta saldada, en una sin cliente y en una que debe; tocarlo abre la confirmación con la pregunta de siempre, "This can't be undone", "No, keep it" y "Yes, void"; confirmar hace el mismo DELETE, vuelve a Sales y muestra el aviso de siempre; "No, keep it" cierra el diálogo y la venta queda. En el teléfono, `web/e2e/ventasPhone.spec.ts` mide al menos 44 px de alto en "Void", "Yes, void" y "No, keep it". Una búsqueda de `'Delete sale'` y de `SALES_TEXT.deleteSale` en `web/` no encuentra nada, y `touch-action.json` solo se achicó.
 - **Sin desbordes en el teléfono (criterio 12)**: tests del front a 320, 375 y 430 px y con el texto al 130 %, para New sale, Sales y el detalle de la venta, muestran que nada queda recortado ni desborda en horizontal, "Special price", el envío, los campos de Dates y el título "Sale #N" incluidos; las pestañas de Sales cubiertas en una fila y de a dos.
 - **Guardar a mano (criterio 12)**: en esos anchos, el total del pie y "Save sale" se ven al cargar; el encabezado se queda mientras el cuerpo se desplaza; con un teclado simulado el pie sigue visible; Paid · Owing, el campo "Payment method" y la ayuda de Owing (con margen lateral) se desplazan enteros por encima del pie.
 - **Objetivos y campos (criterio 13)**: todo elemento interactivo de las tres pantallas, botones de diálogo incluidos, mide al menos 44 px de alto; todo campo tiene un tamaño de letra calculado de al menos 16 px; los gramos llevan `inputmode="decimal"`, los pesos `"numeric"`, y los campos de una línea `enterkeyhint`.
@@ -749,13 +770,13 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **Sale number, nunca reutilizado (criterio 24)**: borrar una venta del medio deja un hueco; borrar la de número más alto (por Void y por Undo) y registrar otra da el número siguiente, nunca el borrado; un guardado rechazado no consume número; dos guardados simultáneos en un negocio reciben números distintos. Editar la fecha no aplica (no se edita); asignar un cliente después no cambia el número.
 - **Sale number, el mismo en los dos lugares (criterio 25)**: un test del front muestra que el título del detalle y la línea `Sale #N · dd/mm` del Sale bill llevan el mismo número para la misma venta; el título es texto seleccionable, no un botón; mientras carga, el título queda vacío y no aparece ningún `#`, dígito ni "Sale".
 - **Sale number, historial (criterio 27)**: test de la migración: en una base con ventas de dos negocios, cada negocio queda numerado desde 1 por (fecha, momento de registro, id), con un empate de fecha y momento resuelto por id; la migración solo agrega una columna; la siguiente venta nueva de cada negocio sigue al número más alto. Una Spreadsheet import en un negocio vacío numera por fecha y orden de registro.
-- **Design capture**: el detalle de la venta en el teléfono muestra "Sale #N" en el lugar dibujado, en claro y en oscuro (`docs/product/design-capture.md`). En New sale, el campo de producto de la línea se lee como el campo del Selector dibujado en `NuevaVenta` y `NuevaVentaOscuro`. Paid · Owing, con el campo "Payment method" bajo Paid, se lee como lo dibujado en `NuevaVentaCompu` y `NuevaVentaClienteCompu`. Cualquier otra diferencia con el dibujo es un hallazgo aparte. La pista de nada para vender y su lugar guardado no tienen dibujo ni fila en el registro, así que su Design capture se informa como "not compared" hasta #793. El resultado de Undo tampoco tiene fila en el registro, y se informa como "not compared".
+- **Design capture**: el detalle de la venta en el teléfono muestra "Sale #N" en el lugar dibujado, en claro y en oscuro (`docs/product/design-capture.md`), y la fila inferior con "Void" donde `VentaDetalle.dc.html` dibuja "Anular". `EstadosConfirmar` llega a la confirmación tocando "Void" y muestra "No, keep it / Yes, void"; su diferencia con `Estados.dc.html` está aceptada por el dueño y no es un hallazgo. En New sale, el campo de producto de la línea se lee como el campo del Selector dibujado en `NuevaVenta` y `NuevaVentaOscuro`. Paid · Owing, con el campo "Payment method" bajo Paid, se lee como lo dibujado en `NuevaVentaCompu` y `NuevaVentaClienteCompu`. Cualquier otra diferencia con el dibujo es un hallazgo aparte. La pista de nada para vender y su lugar guardado no tienen dibujo ni fila en el registro, así que su Design capture se informa como "not compared" hasta #793. El resultado de Undo tampoco tiene fila en el registro, y se informa como "not compared".
 
 ## Fuera de alcance
 
 - Pagos posteriores y parciales, Balances, **Owing since** y Credit: `payments.md`.
 - Rechazar una venta por falta de stock: nunca (ADR-0009).
-- Editar una venta: se borra y se registra de nuevo. Eso incluye cambiar el medio de un On-the-spot payment.
+- Editar una venta: se anula y se registra de nuevo. Eso incluye cambiar el medio de un On-the-spot payment. ("Edit sale" es de #561, que va a entrar como primer hijo de la fila inferior del detalle).
 - Pasar una venta de un cliente a otro o sacarle el cliente.
 - Borradores o guardado automático de una venta; conservar la venta en curso después de una recarga.
 - Profit y Cash en Sales: la capacidad de resultados.
@@ -769,6 +790,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - Para los precios por Customer type: una pantalla para fijarlos o gestionarlos fuera del campo "VIP price" de una Price entry (la parte de la pantalla de precios por tipo); un aviso cuando un List price baja hasta un Customer-type price; volver a cotizar líneas registradas.
 - Para el Sale bill: un año en la fecha; un paso de vista previa; un estado de "ya compartido"; un recibo de pago; el nombre del medio de pago; elegir un canal o enviar desde la app; una factura; escapar o reescribir los nombres que tipeó la vendedora para el formato de alguna app de chat; hacer configurable la unidad (#318); cualquier otro idioma (#317).
 - Para el Sale number: buscar o filtrar ventas por número; mostrarlo en Sales, en la historia del cliente, en Home o en Analysis; el resto del rediseño del detalle de la venta (#530) y la línea "por Telegram" del dibujo (un hallazgo aparte, y un canal choca con Assume nothing); el `sale.id` global que ya lleva el camino del detalle (`/sales/{sale_id}`), un hallazgo aparte con su propio issue.
+- Para Void (parte 2 de GH-1055): cambiar el texto del resultado y del aviso después de anular ("Sale deleted", y el resultado `deleted` de Undo que lo comparte), un seguimiento conocido porque el botón dice "Void" y el resultado "deleted"; pasar a "void" las confirmaciones de otras pantallas, que conservan "Yes, delete it" (`COMMON_TEXT.yesDelete`); renombrar Undo; una variante nueva de `Boton` o un cambio global de `Boton` o `ConfirmDialog`; mostrar u ocultar Void según el estado de la venta; mencionar deuda o Credit en la confirmación; volver a dibujar `Estados.dc.html` o `VentaDetalleCompu.dc.html`.
 - Para el producto de una línea: crear un producto desde la línea (se crea en la pestaña Products); cambiar el texto de "elegir un producto", el nombre accesible, el mensaje de conjunto vacío o el rechazo; abrir la lista sola al agregar una línea; saltar solo a los gramos después de elegir; dibujar la lista abierta en `pantallas/`.
 - Para el medio de pago: gestionar la lista (vive en payment-methods.md); informes por medio (Cash separado por medio, totales por medio); recordar el último medio o proponer uno por defecto en pantalla (la lectura que lo va a sostener existe desde la parte 1 de GH-496; la preselección en New sale y el cambio del criterio 34 son de una parte posterior de GH-496); el ícono del medio dentro del Selector; cambiar el estado Paid · Owing más allá de cómo está construido; dibujar la lista abierta en `pantallas/`; un descuento por medio de pago como el "10 % pagando en efectivo" del dibujo del paso de cobro, que no tiene regla escrita.
 - Para una Expense desde New sale (parte 4 de GH-725): cambiar las filas `*Compu` del registro, el diseño de computadora o `NuevaVentaCompu`; rediseñar el toast o cualquier comportamiento de la parte 3; recorrer el estado sin monto de la franja; un conteo de toques por cada Tab root dentro del recorrido.
