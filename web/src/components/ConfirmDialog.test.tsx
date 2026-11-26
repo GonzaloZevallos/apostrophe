@@ -1,7 +1,9 @@
 import { render as renderBare, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { expect, test, vi } from 'vitest'
+import { afterEach, describe, expect, test, vi } from 'vitest'
+import { flipViewport, stubViewport } from '../test-viewport'
 import ConfirmDialog from './ConfirmDialog'
+import ConfirmLayer from './ConfirmLayer'
 import type { ReactElement, ReactNode } from 'react'
 import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 
@@ -38,4 +40,136 @@ test('shows the title and detail, and confirms or cancels through its callbacks'
 
   await user.click(screen.getByRole('button', { name: 'Yes, delete it' }))
   expect(onConfirm).toHaveBeenCalledOnce()
+})
+
+function Opener({ answers }: { answers?: { onConfirm: () => void; onCancel: () => void } }) {
+  return (
+    <ConfirmDialog
+      title="Delete the sale?"
+      detail="It cannot be undone"
+      confirmText="Yes, delete it"
+      cancelText="No, keep it"
+      onConfirm={answers?.onConfirm ?? (() => undefined)}
+      onCancel={answers?.onCancel ?? (() => undefined)}
+    />
+  )
+}
+
+const locked = () => document.documentElement.classList.contains('html--confirmando')
+
+describe('ConfirmDialog under ConfirmLayer', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    document.documentElement.className = ''
+  })
+
+  test('on the phone it is drawn in the layer, its texts in the text block, and unmounting releases all', () => {
+    stubViewport('phone')
+    const { unmount } = render(
+      <ConfirmLayer>
+        <section aria-label="Screen">
+          <Opener />
+        </section>
+      </ConfirmLayer>,
+    )
+    const layer = document.querySelector('.confirm-layer')
+    const dialog = screen.getByRole('alertdialog', { name: 'Delete the sale?' })
+    expect(layer).toContainElement(dialog)
+    const texts = dialog.querySelector('.confirmacion__texto')
+    expect(texts).toContainElement(screen.getByText('Delete the sale?'))
+    expect(texts).toContainElement(screen.getByText('It cannot be undone'))
+    expect(texts).not.toContainElement(screen.getByRole('button', { name: 'No, keep it' }))
+    expect(layer).toHaveAttribute('data-open')
+    expect(layer).not.toHaveAttribute('inert')
+    expect(screen.getByRole('region', { name: 'Screen', hidden: true }).parentElement).toHaveAttribute('inert')
+    expect(locked()).toBe(true)
+
+    unmount()
+    expect(locked()).toBe(false)
+  })
+
+  test('the answers still answer from the layer', async () => {
+    stubViewport('phone')
+    const onConfirm = vi.fn()
+    const onCancel = vi.fn()
+    render(
+      <ConfirmLayer>
+        <Opener answers={{ onConfirm, onCancel }} />
+      </ConfirmLayer>,
+    )
+    await userEvent.setup().click(screen.getByRole('button', { name: 'Yes, delete it' }))
+    expect(onConfirm).toHaveBeenCalledOnce()
+    expect(onCancel).not.toHaveBeenCalled()
+  })
+
+  test('removing the dialog releases the lock while the layer stays', () => {
+    stubViewport('phone')
+    function Toggle({ shown }: { shown: boolean }) {
+      return <ConfirmLayer>{shown ? <Opener /> : <p>Nothing asked</p>}</ConfirmLayer>
+    }
+    const { rerender } = render(<Toggle shown />)
+    expect(locked()).toBe(true)
+    rerender(<Toggle shown={false} />)
+    expect(locked()).toBe(false)
+    expect(document.querySelector('.confirm-layer')).not.toHaveAttribute('data-open')
+    expect(screen.getByText('Nothing asked').parentElement).not.toHaveAttribute('inert')
+  })
+
+  test('on the computer it renders in place with no lock and no inert', () => {
+    stubViewport('computer')
+    render(
+      <ConfirmLayer>
+        <section aria-label="Screen">
+          <Opener />
+        </section>
+      </ConfirmLayer>,
+    )
+    const dialog = screen.getByRole('alertdialog')
+    expect(screen.getByRole('region', { name: 'Screen', hidden: true })).toContainElement(dialog)
+    expect(document.querySelector('.confirm-layer')).not.toContainElement(dialog)
+    expect(locked()).toBe(false)
+    expect(screen.getByRole('region', { name: 'Screen', hidden: true }).parentElement).not.toHaveAttribute('inert')
+  })
+
+  test('on the phone with no provider it renders in place with no lock', () => {
+    stubViewport('phone')
+    render(
+      <section aria-label="Screen">
+        <Opener />
+      </section>,
+    )
+    expect(screen.getByRole('region', { name: 'Screen', hidden: true })).toContainElement(screen.getByRole('alertdialog'))
+    expect(locked()).toBe(false)
+  })
+
+  test('crossing 900 px with it open keeps it open, registered on the phone and not on the computer', () => {
+    stubViewport('phone')
+    render(
+      <ConfirmLayer>
+        <section aria-label="Screen">
+          <Opener />
+        </section>
+      </ConfirmLayer>,
+    )
+    expect(locked()).toBe(true)
+
+    flipViewport('computer')
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: 'Screen', hidden: true })).toContainElement(screen.getByRole('alertdialog'))
+    expect(locked()).toBe(false)
+    expect(screen.getByRole('region', { name: 'Screen', hidden: true }).parentElement).not.toHaveAttribute('inert')
+
+    flipViewport('phone')
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument()
+    expect(document.querySelector('.confirm-layer')).toContainElement(screen.getByRole('alertdialog'))
+    expect(locked()).toBe(true)
+  })
+
+  test('App mounts the layer around the router', async () => {
+    stubViewport('phone')
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 401 })))
+    const { default: App } = await import('../App')
+    render(<App />)
+    expect(document.querySelector('.confirm-layer')).not.toBeNull()
+  })
 })

@@ -371,6 +371,12 @@ body {
   gap: var(--espacio-sm);
 }
 
+.confirmacion__texto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
 .confirmacion__titulo {
   font-size: 17px;
   font-weight: 600;
@@ -4874,6 +4880,71 @@ a.ajustes-tema__opcion {
   .confirmacion__acciones .boton {
     height: auto;
     min-height: var(--alto-tocable);
+    touch-action: manipulation;
+  }
+}
+
+/* `ConfirmLayer` (ADR 20261126): on the phone every `ConfirmDialog` is drawn in one layer pinned to
+ * the visible viewport, above the bar (5), the sheets (20) and the sheet toast (30). Both answers
+ * stay inside it; only the text scrolls. The layer is the only owner of `html--confirmando`. */
+.confirm-app {
+  display: contents;
+}
+
+@media (max-width: 899.98px) {
+  .confirm-layer:not([data-open]) {
+    display: none;
+  }
+
+  .confirm-layer[data-open] {
+    box-sizing: border-box;
+    position: fixed;
+    top: var(--vv-top, 0px);
+    height: var(--vv-alto, 100dvh);
+    left: 0;
+    right: 0;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: calc(var(--margen-pantalla) + var(--inset-arriba))
+      calc(var(--margen-pantalla) + var(--inset-derecha))
+      calc(var(--margen-pantalla) + var(--inset-abajo))
+      calc(var(--margen-pantalla) + var(--inset-izquierda));
+    overscroll-behavior: contain;
+  }
+
+  /* The scrim is drawn behind the dialog, not as the layer's own background: the phone check reads
+   * the colours of an element's ancestors, and a translucent colour-mix up there makes every
+   * text inside unprovable. */
+  .confirm-layer[data-open]::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: color-mix(in srgb, var(--tinta) 40%, transparent);
+  }
+
+  .confirm-layer > .confirmacion {
+    max-height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .confirmacion__texto {
+    overflow: auto;
+    touch-action: pan-y;
+    overscroll-behavior: contain;
+    min-height: 0;
+  }
+
+  .confirmacion__acciones {
+    flex-shrink: 0;
+  }
+
+  html.html--confirmando {
+    overflow: hidden;
   }
 }
 /* ===== end primitivas-telefono ===== */

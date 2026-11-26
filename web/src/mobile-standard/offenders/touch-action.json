@@ -60,42 +60,6 @@
     "issue": 46
   },
   {
-    "screen": "CobroBorrar",
-    "rule": "touch-action",
-    "target": "button:Delete payment",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "touch-action",
-    "target": "button:No, keep it",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
-      "246x437"
-    ]
-  },
-  {
-    "screen": "CobroBorrar",
-    "rule": "touch-action",
-    "target": "button:Yes, delete it",
-    "issue": 46,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932",
-      "246x437"
-    ]
-  },
-  {
     "screen": "ConfiguracionApariencia",
     "rule": "touch-action",
     "target": "button:Close",
@@ -486,42 +450,6 @@
     "issue": 60
   },
   {
-    "screen": "DescartarVenta",
-    "rule": "touch-action",
-    "target": "button:Add another product",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "touch-action",
-    "target": "button:Close",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "touch-action",
-    "target": "button:Pick a customer",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "touch-action",
-    "target": "button:Save sale",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "touch-action",
-    "target": "button:No, keep entering",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "touch-action",
-    "target": "button:Yes, discard it",
-    "issue": 78
-  },
-  {
     "screen": "ElegirCliente",
     "rule": "touch-action",
     "target": "button:Add another product",
@@ -616,24 +544,6 @@
     "rule": "touch-action",
     "target": "button:Delete@#/# · Variedad sin ventasPurch",
     "issue": 47
-  },
-  {
-    "screen": "EstadosConfirmar",
-    "rule": "touch-action",
-    "target": "button:Delete sale",
-    "issue": 49
-  },
-  {
-    "screen": "EstadosConfirmar",
-    "rule": "touch-action",
-    "target": "button:No, keep it",
-    "issue": 49
-  },
-  {
-    "screen": "EstadosConfirmar",
-    "rule": "touch-action",
-    "target": "button:Yes, delete it",
-    "issue": 49
   },
   {
     "screen": "EstadosGoneAviso",
@@ -1548,54 +1458,6 @@
     "issue": 49
   },
   {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Archive product",
-    "issue": 47
-  },
-  {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Delete this price",
-    "issue": 47
-  },
-  {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Edit warning",
-    "issue": 47
-  },
-  {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Edit catalog",
-    "issue": 47
-  },
-  {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Edit name",
-    "issue": 47
-  },
-  {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:No, keep it",
-    "issue": 47
-  },
-  {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Yes, delete it",
-    "issue": 47
-  },
-  {
-    "screen": "PrecioConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "switch:Warn when running low",
-    "issue": 47
-  },
-  {
     "screen": "Reset",
     "rule": "touch-action",
     "target": "button:Save and sign in",
@@ -1962,24 +1824,6 @@
     ]
   },
   {
-    "screen": "VentaBorrar",
-    "rule": "touch-action",
-    "target": "button:Delete sale",
-    "issue": 78
-  },
-  {
-    "screen": "VentaBorrar",
-    "rule": "touch-action",
-    "target": "button:No, keep it",
-    "issue": 78
-  },
-  {
-    "screen": "VentaBorrar",
-    "rule": "touch-action",
-    "target": "button:Yes, delete it",
-    "issue": 78
-  },
-  {
     "screen": "VentaDetalle",
     "rule": "touch-action",
     "target": "button:Delete sale",
@@ -2049,138 +1893,6 @@
     "screen": "ConfiguracionMediosPagoArchivadosVacio",
     "rule": "touch-action",
     "target": "button:Close",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-action",
-    "target": "button:Add method",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-action",
-    "target": "button:Archive",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-action",
-    "target": "button:Archive Cash",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-action",
-    "target": "button:Delete Transfer",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-action",
-    "target": "button:Edit Cash",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-action",
-    "target": "button:Edit Transfer",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-action",
-    "target": "button:Keep it",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-action",
-    "target": "button:Move Cash down",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-action",
-    "target": "button:Move Cash up",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-action",
-    "target": "button:Move Transfer down",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-action",
-    "target": "button:Move Transfer up",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Add method",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Archive Cash",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Delete",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Delete Transfer",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Edit Cash",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Edit Transfer",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Keep it",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Move Cash down",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Move Cash up",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Move Transfer down",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-action",
-    "target": "button:Move Transfer up",
     "issue": 60
   },
   {
