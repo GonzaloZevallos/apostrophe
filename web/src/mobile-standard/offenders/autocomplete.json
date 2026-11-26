@@ -18,36 +18,6 @@
     "issue": 47
   },
   {
-    "screen": "DescartarVenta",
-    "rule": "autocomplete",
-    "target": "textbox:Date",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "autocomplete",
-    "target": "textbox:Shipping",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "autocomplete",
-    "target": "textbox:Line # grams",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "autocomplete",
-    "target": "textbox:Note",
-    "issue": 78
-  },
-  {
-    "screen": "DescartarVenta",
-    "rule": "autocomplete",
-    "target": "textbox:Line # special price",
-    "issue": 78
-  },
-  {
     "screen": "ElegirCliente",
     "rule": "autocomplete",
     "target": "textbox:Search",

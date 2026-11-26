@@ -4880,6 +4880,7 @@ a.ajustes-tema__opcion {
   .confirmacion__acciones .boton {
     height: auto;
     min-height: var(--alto-tocable);
+    touch-action: manipulation;
   }
 }
 

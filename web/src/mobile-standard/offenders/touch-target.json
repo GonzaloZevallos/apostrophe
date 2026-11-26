@@ -1,53 +1,5 @@
 [
   {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-target",
-    "target": "button:Move Cash down",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-target",
-    "target": "button:Move Cash up",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-target",
-    "target": "button:Move Transfer down",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarArchivar",
-    "rule": "touch-target",
-    "target": "button:Move Transfer up",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "button:Move Cash down",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "button:Move Cash up",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "button:Move Transfer down",
-    "issue": 60
-  },
-  {
-    "screen": "ConfiguracionMediosPagoConfirmarBorrado",
-    "rule": "touch-target",
-    "target": "button:Move Transfer up",
-    "issue": 60
-  },
-  {
     "screen": "ConfiguracionMediosPagoEditar",
     "rule": "touch-target",
     "target": "button:Move Cash down",
