@@ -1134,6 +1134,7 @@ body {
 
 .ajustes__item-flecha {
   display: flex;
+  align-items: center;
   color: var(--tinta2);
 }
 
@@ -7381,6 +7382,23 @@ a.ajustes-tema__opcion {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Settings → Payments and expenses: the count before the chevron (`ConfiguracionCobros.dc.html`),
+ * a bare number in the row's secondary colour, inside the chevron's box and tabular through `cifra-n`. */
+.ajustes__item-cuenta {
+  margin-inline-end: var(--espacio-sm);
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+/* Settings → Expense categories: every button of the group (its add and submit, the rows' Rename
+ * and Delete, the delete confirmation) and the group's own Close in the header above it take no
+ * tap delay. Scoped to this wrapper, never to the editor, so the Onboarding step's listed
+ * touch-action offenders do not move. */
+.categorias-grupo button,
+.ajustes-grupo:has(.categorias-grupo) .ajustes-grupo__encabezado button {
+  touch-action: manipulation;
 }
 
 /* Settings → Payments and expenses, restyled (`ConfiguracionCobros.dc.html` and its dark twin):

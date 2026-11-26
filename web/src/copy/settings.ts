@@ -32,7 +32,7 @@ export const FOOTER_TOO_LONG_MESSAGE = 'The footer is too long'
 /** The line under a fresh invitation link: one sentence, a help line (<= 80). `date` is `dd/mm`. */
 export const inviteExpiry = (date: string): string => `A one-time link, it expires on ${date}`
 
-/** The line under the Onboarding's collapsed "Category" action (a help line, <= 80): true because
+/** The line the Onboarding's step passes as the editor's footnote, under the "Category" action (a help line, <= 80): true because
  * adding, renaming and removing each save at once, through the owner's own routes. */
 export const CATEGORIES_SAVE_AT_ONCE = 'Adding, renaming or removing a category saves right away.'
 

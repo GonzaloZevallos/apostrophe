@@ -25,7 +25,9 @@ export default function ExpenseCategoriesGroup() {
   const [dirty, setDirty] = useState(false)
   return (
     <SettingsGroup title={COMMON_TEXT.expenseCategories} dirty={dirty} leave={LEAVE}>
-      <ExpenseCategoriesEditor onDirtyChange={setDirty} />
+      <div className="categorias-grupo">
+        <ExpenseCategoriesEditor onDirtyChange={setDirty} />
+      </div>
     </SettingsGroup>
   )
 }

@@ -91,6 +91,7 @@ test('a seller goes through every Configuración group from the phone, with no c
   await close()
 
   await openRow('Payments and stock', 'Expense categories')
+  await page.getByRole('button', { name: 'Category', exact: true }).click()
   await page.getByLabel('New category', { exact: true }).fill('Delivery en bici')
   await page.getByRole('button', { name: '+ Category' }).click()
   await expect(page.getByText('Category saved')).toBeVisible()
