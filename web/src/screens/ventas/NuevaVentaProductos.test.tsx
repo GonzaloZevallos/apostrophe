@@ -146,7 +146,7 @@ function Harness({ initialCustomer = null, format = { symbol: '$', decimals: 0 }
       {second ? <SecondObserver date={draft.state.date} /> : null}
       <output aria-label="totals">{JSON.stringify(draft.state.lines)}</output>
       <ContentArea as="main" aria-label="list under test">
-        <NuevaVentaProductos {...reads} customerTypeId={customer} draft={draft} pricing={pricing} />
+        <NuevaVentaProductos {...reads} customerTypeId={customer} draft={draft} pricing={pricing} onOpenLine={() => undefined} />
       </ContentArea>
     </MoneyFormatProvider>
   )
