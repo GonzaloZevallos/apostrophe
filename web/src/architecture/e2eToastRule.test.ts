@@ -465,7 +465,7 @@ export const KEPT: readonly string[] = [
   `payments.spec.ts:77 — ${ONE_MATCH}`,
   `settings.spec.ts:96 — ${CATEGORY_TOAST}`,
   `settings.spec.ts:109 — ${CATEGORY_TOAST}`,
-  `toastRecorder.spec.ts:164 — ${NO_TIMER}`,
+  `toastRecorder.spec.ts:165 — ${NO_TIMER}`,
 ]
 
 /**
