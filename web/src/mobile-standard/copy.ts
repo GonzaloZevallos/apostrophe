@@ -17,6 +17,13 @@ export function common(key: CommonKey, args?: Args): string {
   return resolveKey(ENGLISH_STATIC, key, args)
 }
 
+type ExpensesKey = Extract<CopyKey, `expenses:${string}`>
+
+/** The English text of an `expenses:` key, `{{name}}` filled from `args`. */
+export function expenses(key: ExpensesKey, args?: Args): string {
+  return resolveKey(ENGLISH_STATIC, key, args)
+}
+
 type SettingsKey = Extract<CopyKey, `settings:${string}`>
 
 /** The English text of a `settings:` key; `count` picks the plural form, `{{name}}` is filled from `args`. */

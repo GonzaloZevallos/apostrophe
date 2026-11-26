@@ -1,7 +1,7 @@
 /** Sales and collections (`sales.md`, `payments.md`): the forms, sheets and dialogs the walk visits. Nothing here reaches the backend: a save is answered by its stub. */
 
 import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
-import { common, emptyState } from './copy.ts'
+import { common, emptyState, expenses } from './copy.ts'
 import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
@@ -289,7 +289,7 @@ export const SALES_STATES: readonly WalkState[] = [
     route: SALE_NEW,
     steps: [
       { click: SALES_TEXT.expense },
-      { fill: { label: EXPENSES_TEXT.details, value: 'Cinta' } },
+      { fill: { label: expenses('expenses:form.detailsOptional'), value: 'Cinta' } },
       { activate: common('common:close') },
     ],
     visible: EXPENSES_TEXT.discardTheExpense,
@@ -320,8 +320,9 @@ export const SALES_STATES: readonly WalkState[] = [
   },
   {
     // The same sale, an Expense saved and the way back: New sale with the toast and line 1 still there.
-    // The required fields of the expense form (`ExpenseForm`): Category (`common:category`, a Selector), Amount
-    // (`common:amount`) and Details (`EXPENSES_TEXT.details`); Date starts at today. Save is `EXPENSES_TEXT.saveTheExpense`.
+    // The required fields of the expense form (`ExpenseForm`): Category (`common:category`, a Selector) and Amount
+    // (`common:amount`); Details is optional (`expenses:form.detailsOptional`) and Date starts at today. Save carries
+    // the amount (`expenses:form.saveWithAmount`).
     screen: 'sale/expense-returned',
     route: SALE_NEW,
     steps: [
@@ -329,8 +330,8 @@ export const SALES_STATES: readonly WalkState[] = [
       { click: EXPENSES_TEXT.pickACategory },
       { press: 'Packaging' },
       { fill: { label: common('common:amount'), value: '1500' } },
-      { fill: { label: EXPENSES_TEXT.details, value: 'Cinta' } },
-      { click: EXPENSES_TEXT.saveTheExpense },
+      { fill: { label: expenses('expenses:form.detailsOptional'), value: 'Cinta' } },
+      { click: expenses('expenses:form.saveWithAmount', { amount: '$ 1.500' }) },
       // Line 1's total is on New sale again: the sale is intact.
       { wait: SALE_IN_PROGRESS_LINE.total },
     ],
