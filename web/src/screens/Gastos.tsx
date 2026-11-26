@@ -164,7 +164,9 @@ function GastosScreen() {
     <ContentArea as="main" className="pantalla">
       <div className="cuerpo gastos">
         {/* Stopgap until `ExpensesTitleRow` draws the phone's one title row: the shell no longer
-            draws this card's back (`backInTitleRow`), so the card draws it here (ADR 20261125). */}
+            draws this card's back (`backInTitleRow`), so the card draws it here (ADR 20261125). Delete this
+            line and the `BackArrow` and `useViewport` imports when `ExpensesTitleRow` replaces the
+            phone branch: without it `backCards` and `SettingsAvatar` find no back; with both, two. */}
         {viewport === 'phone' && <BackArrow id="expenses" look="round" />}
         <div className="gastos__cabecera">
           <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.expenses}</span>
