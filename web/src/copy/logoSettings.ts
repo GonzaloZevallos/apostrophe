@@ -6,6 +6,7 @@
 
 import type { KeyedCopy } from './limits.ts'
 
+export const LANGUAGE: 'es' | 'en' = 'en'
 export const NAMESPACE = 'settings'
 
 export const LIMITED_COPY: readonly KeyedCopy[] = [

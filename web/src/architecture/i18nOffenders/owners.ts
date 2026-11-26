@@ -25,11 +25,15 @@ export const COPY_OWNER: Record<string, Owner> = {
   'dates.ts': 353,
   'emptyStates.ts': 'none',
   'common.ts': 'none',
+  'logoRefusals.ts': 'none',
+  'logoSettings.ts': 'none',
 }
 
 /** Why a file has no owner: it needs no part to move its words. */
 export const NO_OWNER_REASON: Record<string, string> = {
   'emptyStates.ts': 'it exports only keys',
+  'logoRefusals.ts': 'it exports only keys',
+  'logoSettings.ts': 'it exports only keys',
   'common.ts': 'its @deprecated texts object and its two messages are held equal to their keys by common.deprecated.test.ts',
 }
 

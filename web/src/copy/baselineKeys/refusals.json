@@ -413,10 +413,10 @@
   "refusals.ts:REFUSAL_BY_CODE[\"money_format.rescale_check_failed\"]": {
     "key": "refusals:moneyRescaleCheckFailed"
   },
-  "logoRefusals.ts:LOGO_REFUSAL_TEXT.too_big": {
+  "settings.ts:LOGO_REFUSAL_TEXT.too_big": {
     "key": "refusals:logoTooBig"
   },
-  "logoRefusals.ts:LOGO_REFUSAL_TEXT.wrong_type": {
+  "settings.ts:LOGO_REFUSAL_TEXT.wrong_type": {
     "key": "refusals:logoWrongType"
   }
 }

@@ -16,6 +16,15 @@ export const PASSWORD_CHANGED_SUCCESS = 'Password changed · we signed out your 
 export const BUSINESS_NAME_INVALID_MESSAGE = 'Give the business a name, without extra spaces'
 export const GENERIC_REFUSAL_MESSAGE = 'Check the details and try again.'
 
+/** The exports below that are moved to keys: the English baseline records them under their keys. */
+export const MOVED_TO_KEYS = ['LOGO_REFUSAL_TEXT'] as const
+
+/** @deprecated read `refusals:logoTooBig` and `refusals:logoWrongType` */
+export const LOGO_REFUSAL_TEXT = {
+  too_big: 'Use an image of 1 MB or less.',
+  wrong_type: 'Use a PNG or JPEG.',
+} as const
+
 /** Under an amount field the API refused with `money.too_many_decimals`: what to do, by the
  * decimals the business shows its money with. It names no currency, and the amount typed is
  * never repeated. */
