@@ -1,0 +1,8 @@
+{
+  "previewStillOwe": "After this payment they still owe <amount>{{amount}}</amount>. The oldest debt is paid first.",
+  "previewSettled": "They will owe nothing after this payment.",
+  "previewLoading": "Working out what they will still owe…",
+  "previewFailed": "Couldn't work out what they will still owe.",
+  "savePayment": "Save payment · {{amount}}",
+  "savePaymentNoAmount": "Save payment"
+}

@@ -234,6 +234,20 @@ body {
   gap: var(--espacio-xs);
 }
 
+/* Record payment's preview line (`CobroPreviewLine`): two lines of body text high in every state, so
+ * the sheet does not move when the figure arrives. */
+.cobro__vista-previa {
+  margin: 0;
+  line-height: 1.5;
+  min-height: 3em;
+}
+
+.cobro__vista-previa:has(> .aviso-ambar__icono) {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espacio-xs);
+}
+
 /* The customer form's focus state (`NuevaVentaCliente.dc.html`): a heavy inset ring on
  * the focused field. Only `CustomerFields` carries the class; the outline stays (made
  * transparent, so forced-colors still draws it) and is never removed. */
