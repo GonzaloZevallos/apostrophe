@@ -31,5 +31,7 @@
   "withdrawalGramsTooPrecise": "⟦Ĝřåṁš åłłöŵ ûṗ ťö ťŵö đèçìṁåłš·~·~·~·~·~·⟧",
   "withdrawalNoteTooLong": "⟦Ťĥè ňöťè åłłöŵš ûṗ ťö 200 çĥåřåçťèřš·~·~·~·~·~·~·⟧",
   "withdrawalVarietyNotFound": "⟦Å ṗřöđûçť ìš ĝöňè: ṗìçķ åňöťĥèř·~·~·~·~·~·⟧",
-  "withdrawalReasonNotFound": "⟦Ťĥåť řèåšöň ìš ĝöňè. Ṗìçķ åňöťĥèř.·~·~·~·~·~·~⟧"
+  "withdrawalReasonNotFound": "⟦Ťĥåť řèåšöň ìš ĝöňè. Ṗìçķ åňöťĥèř.·~·~·~·~·~·~⟧",
+  "logoTooBig": "⟦Ûšè åň ìṁåĝè öḟ 1 Ṁß öř łèšš.·~·~·~·~·~·⟧",
+  "logoWrongType": "⟦Ûšè å ṖŇĜ öř ĴṖÈĜ.·~·~·~·⟧"
 }

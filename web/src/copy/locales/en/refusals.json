@@ -31,5 +31,7 @@
   "withdrawalGramsTooPrecise": "Grams allow up to two decimals",
   "withdrawalNoteTooLong": "The note allows up to 200 characters",
   "withdrawalVarietyNotFound": "A product is gone: pick another",
-  "withdrawalReasonNotFound": "That reason is gone. Pick another."
+  "withdrawalReasonNotFound": "That reason is gone. Pick another.",
+  "logoTooBig": "Use an image of 1 MB or less.",
+  "logoWrongType": "Use a PNG or JPEG."
 }

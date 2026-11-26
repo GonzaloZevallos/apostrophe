@@ -45,5 +45,7 @@
   "^src/screens/settings/settingsSearch\\.ts$",
   "^src/screens/settings/useSettingsSearchEntry\\.ts$",
   "^src/screens/varieties/productsSegment\\.ts$",
-  "^src/components/DateRow\\.tsx$"
+  "^src/components/DateRow\\.tsx$",
+  "^src/api/businessLogo\\.ts$",
+  "^src/settings/logoRefusal\\.ts$"
 ]

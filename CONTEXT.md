@@ -21,6 +21,11 @@ Un link que deja entrar a una persona, una sola vez, en un plazo de siete días:
 _In the app_: Invitation
 _Avoid_: signup link, referral, code
 
+**Business logo**:
+La imagen propia de un Business, como mucho una, PNG o JPEG de hasta 1 MB; nunca es la Yerba mark, que es del producto. Se sube, se cambia y se quita desde Settings, y la ven los Users de ese Business y nadie más. Si no hay, o no carga, se muestra el avatar con las iniciales.
+_In the app_: Logo
+_Avoid_: brand, avatar, icon, Yerba mark
+
 ## Catalog y precios
 
 **Product**:

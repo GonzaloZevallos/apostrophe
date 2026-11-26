@@ -38,20 +38,12 @@ interface ErrorBody {
  * finding: a renamed sentinel would otherwise silently fall through unnoticed). */
 export const UNKNOWN_CODE = 'unknown'
 
-async function send<T>(method: string, path: string, body?: unknown): Promise<T> {
+/** Calls `fetch` for every path here: a thrown `fetch` is a `NetworkError`, a response
+ * that is not ok an `ApiError` built from its JSON `code`/`count`/`field`. */
+async function request(path: string, init: RequestInit): Promise<Response> {
   let response: Response
   try {
-    response = await fetch(path, {
-      method,
-      credentials: 'include',
-      // Always JSON: the server serves the app shell on a few paths it shares with the
-      // API only to a request that accepts text/html (docs/adr/0024).
-      headers:
-        body === undefined
-          ? { Accept: 'application/json' }
-          : { Accept: 'application/json', 'Content-Type': 'application/json' },
-      body: body === undefined ? undefined : JSON.stringify(body),
-    })
+    response = await fetch(path, init)
   } catch {
     throw new NetworkError()
   }
@@ -63,8 +55,46 @@ async function send<T>(method: string, path: string, body?: unknown): Promise<T>
       ...(typeof parsed.field === 'string' ? { field: parsed.field } : {}),
     })
   }
+  return response
+}
+
+async function send<T>(method: string, path: string, body?: unknown): Promise<T> {
+  const response = await request(path, {
+    method,
+    credentials: 'include',
+    // Always JSON: the server serves the app shell on a few paths it shares with the
+    // API only to a request that accepts text/html (docs/adr/0024).
+    headers:
+      body === undefined
+        ? { Accept: 'application/json' }
+        : { Accept: 'application/json', 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
   if (response.status === 204) return undefined as T
   return (await response.json()) as T
+}
+
+/** A binary read: the answer is an image, never JSON. `no-store` so a re-read after a
+ * change never shows the old bytes. `text/html` is never accepted (docs/adr/0024). */
+export async function getBlob(path: string): Promise<Blob> {
+  const response = await request(path, {
+    method: 'GET',
+    credentials: 'include',
+    cache: 'no-store',
+    headers: { Accept: 'image/png, image/jpeg, application/json' },
+  })
+  return response.blob()
+}
+
+/** A raw upload: `body` goes to `fetch` as it is, never stringified, with the caller's
+ * `Content-Type`. */
+export async function putBody(path: string, body: Blob, contentType: string): Promise<void> {
+  await request(path, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: { Accept: 'application/json', 'Content-Type': contentType },
+    body,
+  })
 }
 
 export function get<T>(path: string): Promise<T> {
