@@ -485,6 +485,11 @@ def test_a_query_with_no_digits_and_no_name_overlap_matches_no_one() -> None:
     assert not _alvaro().matches("-")
 
 
+def test_a_query_of_combining_marks_only_matches_no_one() -> None:
+    assert not _alvaro().matches("́")
+    assert not _sin_numero().matches("́")
+
+
 def test_a_query_matches_when_its_characters_appear_in_a_name_with_a_dash() -> None:
     dashed = Customer(
         name=CustomerName.of("Jo-Jo"), phone=PhoneNumber.of("11 1111-1111", PhoneCountry.AR)

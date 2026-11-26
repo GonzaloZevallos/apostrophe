@@ -22,9 +22,9 @@ def view_payment(view: SaleView, still_owed: int | None) -> SalePayment | None:
     when its payment facts cannot be reconciled. `still_owed` is what settlement lists
     for it, `None` when it does not."""
     sale = view.sale
-    method = None if sale.payment is None else sale.payment.method
+    on_the_spot_amount = 0 if sale.payment is None else sale.payment.amount
     try:
-        return sale_payment(sale.total, method, view.customer is not None, still_owed)
+        return sale_payment(sale.total, on_the_spot_amount, view.customer is not None, still_owed)
     except SaleBillInconsistent:
         return None
 

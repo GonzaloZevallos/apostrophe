@@ -1200,12 +1200,11 @@ test('while the full list is pending on a failed debtors read, the list section 
   )
   renderClientes()
 
-  await waitFor(() => expect(fetch).toHaveBeenCalledWith('/payments/debtors', expect.anything()))
-  await act(async () => {})
+  // Pending: the debtors read has not answered, so the views are still drawn. Nothing awaited
+  // before this line, so a fast host cannot have reached the failed state first.
+  expect(screen.getByRole('radiogroup', { name: 'Customers view' })).toBeInTheDocument()
+  await waitFor(() => expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument())
 
-  await waitFor(() =>
-    expect(screen.queryByRole('radiogroup', { name: 'Customers view' })).not.toBeInTheDocument(),
-  )
   expect(document.querySelector('.lista-clientes')).toBeNull()
   expect(screen.queryByText(EMPTY_CUSTOMERS)).not.toBeInTheDocument()
 })

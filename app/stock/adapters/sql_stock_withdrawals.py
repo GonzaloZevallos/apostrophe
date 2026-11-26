@@ -21,6 +21,7 @@ from app.stock.adapters.tables import (
 )
 from app.stock.application.ports import WithdrawalMovement
 from app.stock.domain.lot_order import WithdrawalLineDraw
+from app.stock.domain.movement_order import WITHDRAWAL_RANK, MovementKey
 from app.stock.domain.withdrawal import Withdrawal, WithdrawalLine
 
 
@@ -153,8 +154,9 @@ class SqlStockWithdrawals:
         ]
         return sorted(
             movements,
-            key=lambda m: (m.withdrawn_on, m.recorded_at, m.withdrawal_id),
-            reverse=True,
+            key=lambda m: MovementKey(
+                m.withdrawn_on, m.recorded_at, WITHDRAWAL_RANK, m.withdrawal_id
+            ).newest_first(),
         )
 
     def _header(self, withdrawal_id: int) -> StockWithdrawalRow | None:

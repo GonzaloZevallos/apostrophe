@@ -151,9 +151,11 @@ classDiagram
   class OwedSale {
     date : date
     id : int
+    is_deposit : bool
     number : int
+    on_the_spot_amount : int
     on_the_spot_method : PaymentMethodLabel #124; None
-    paid_on_the_spot : bool
+    opening_owed : int
     recorded_at : datetime
     total : int
   }

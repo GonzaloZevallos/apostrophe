@@ -25,6 +25,9 @@ import {
   SETTINGS_PRICES,
   SETTINGS_USERS,
   SETTINGS_WITHDRAWAL_REASONS,
+  parentOf,
+  screenAtPath,
+  screenOf,
 } from '../../routes'
 
 /** The groups, in the order they show. */
@@ -159,6 +162,41 @@ export function shortcutTarget(s: Shortcut, rows: readonly SettingsRow[] = SETTI
   const found = rows.find((candidate) => candidate.key === s.row)
   if (found === undefined) throw new Error(`no settings row ${s.row}`)
   return found.to
+}
+
+/** The row that owns `to` among `rows`: the first `SHARED_TO` key present for a shared `to`, else the first row with it. */
+function rowOwning(to: string, rows: readonly SettingsRow[]): SettingsRow | undefined {
+  const sharedKeys = SHARED_TO[to]
+  if (sharedKeys !== undefined) {
+    for (const key of sharedKeys) {
+      const found = rows.find((candidate) => candidate.key === key && candidate.to === to)
+      if (found !== undefined) return found
+    }
+  }
+  return rows.find((candidate) => candidate.to === to)
+}
+
+/**
+ * The row to mark for `pathname`: walks the computer parent chain from the screen at `pathname`
+ * and stops at the first screen that is some row's `to`. That row's key when `isShown(ctx)`,
+ * otherwise `undefined`, and the walk does not go on. Never matches by path prefix or by label.
+ * It runs during a render, so a repeated screen in the chain ends the walk instead of throwing.
+ */
+export function activeSettingsRow(
+  pathname: string,
+  ctx: SettingsRowContext,
+  rows: readonly SettingsRow[] = SETTINGS_ROWS,
+): SettingsRowKey | undefined {
+  const seen = new Set<string>()
+  let screen = screenAtPath(pathname)
+  while (screen !== undefined && !seen.has(screen.id)) {
+    seen.add(screen.id)
+    const owner = rowOwning(screen.path, rows)
+    if (owner !== undefined) return owner.isShown(ctx) ? owner.key : undefined
+    const parent = parentOf(screen.id, 'computer')
+    screen = parent === undefined ? undefined : screenOf(parent.id)
+  }
+  return undefined
 }
 
 export interface NonRowRoute {
