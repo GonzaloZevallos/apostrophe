@@ -4466,7 +4466,10 @@ a.ajustes-tema__opcion {
   min-width: 0;
 }
 
+/* `.boton-icono` is content-box with `border: 0`, so the border is drawn inside the 44 px target:
+ * border-box keeps the box at 44 x 44. */
 .boton-icono--contorno {
+  box-sizing: border-box;
   border: 1px solid var(--linea);
 }
 

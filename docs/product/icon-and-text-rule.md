@@ -37,7 +37,7 @@ Criterios de éxito:
    - `ACTION_LINKS_LEFT` sigue siendo exactamente el "Add expense" de Expenses, y `ENTRY_CLASSES` no crece.
    - Un infractor real que se encuentre en el árbol se arregla, nunca se exime.
    - Nada de lo que ve el vendedor cambia.
-8. **Dos círculos nunca iguales** (GH-1182): en el bloque de título de Products del celular, la acción de agregar es el botón redondo neutro (la píldora con palabra no entra a 246 px); ningún botón redondo verde queda junto al avatar verde de Settings, en ninguno de los dos temas, y el nombre accesible sigue siendo "New product".
+8. **Dos círculos nunca iguales** (GH-1182): en el bloque de título de Products del celular, la acción de agregar es el botón redondo neutro (la píldora con palabra no entra: 49,8 px de menos a 246 px y 20,8 px a 320 px con el texto al 130 %); ningún botón redondo verde queda junto al avatar verde de Settings, en ninguno de los dos temas, y el nombre accesible sigue siendo "New product".
 
 ## Comportamiento
 
