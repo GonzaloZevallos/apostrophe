@@ -15,6 +15,10 @@
 - Afina el job de Settings de navigation.md ("cada configuración de todo el negocio en un solo lugar"); no es un job nuevo de producto. Su protagonista es quien vende, en el celular, en un momento poco frecuente y deliberado.
 - Lo sirve la lista de inicio de Settings del celular (GH-843), construida como componente en #999 y conectada por #927 (parte 3 de GH-843) dentro de la pantalla de inicio de Settings del celular.
 
+**Cuando** entro a Settings para cambiar cómo funciona mi negocio, **quiero** encontrar cada configuración en un solo lugar, la lista de Settings, y que cada camino que me nombran la app o los docs coincida con lo que toco, **para** llegar rápido y no preguntarme si dos links llevan a dos cosas distintas.
+
+- Afina el job de Settings de navigation.md; no es un job nuevo de producto (GH-1068, pasada de detalle 1/2). Antes, Currency and decimals y Withdrawal reasons también se abrían desde la página Business, y Customer types desde Prices; el texto nombraba caminos que pasaban por esas páginas.
+
 # Settings
 
 **Settings** es el único lugar que reúne cada configuración de todo el **Business**. Cada configuración vive en su propia pantalla, y sus filas, sus atajos y sus direcciones salen de un solo registro tipado, `web/src/screens/settings/settingsRows.ts`. Ninguna pantalla declara una etiqueta, una segunda línea, un ícono ni una dirección propia (ADR [20261119-settings-rows-live-in-one-registry-read-by-the-list-the-shortcuts-and-the-search](../adr/20261119-settings-rows-live-in-one-registry-read-by-the-list-the-shortcuts-and-the-search.md)). Desde dónde se llega a Settings y el marco de cada pantalla se definen en navigation.md. Lo que hace cada grupo se define en el archivo de su capacidad: pricing-settings.md, payment-methods.md, catalog.md, accounts.md, theme-choice.md, money.md y stored-language.md.
@@ -31,6 +35,12 @@
 4. **Se sabe en qué negocio se está.** El nombre del Business se ve sin tocar nada. Mientras la lectura no llegó, o si falló, no se muestra ninguna cantidad de Users, ni equivocada ni rota: el lugar queda vacío.
 5. **La computadora no cambia.** El marcado, los localizadores (`data-menu`, `ajustes__*`) y el texto de Settings en la computadora quedan byte por byte iguales, en `SettingsComputer`. Los tests de Settings de siempre corren contra la vista de computadora; la captura de ConfiguracionCompu antes y después llega con #994.
 
+### Criterios de éxito de un solo camino (GH-1068)
+
+1. **Las páginas de grupo, como el dibujo.** La página Business muestra solo el campo del nombre del Business y su guardado. La página Prices muestra solo los dos interruptores, sus líneas de ayuda, la línea de las Sales pasadas y Save, en el celular y en la computadora (ConfiguracionNegocio, ConfiguracionNegocioCompu, ConfiguracionPrecios, ConfiguracionPreciosCompu).
+2. **Cada pantalla, desde su propia fila.** Currency and decimals, Withdrawal reasons y Customer types se siguen abriendo desde su propia fila de Settings. "‹ Settings" y Close devuelven a Settings, nunca a una página que no se abrió.
+3. **El camino nombrado es el que se toca.** Ningún texto de la app ni ningún doc de producto nombra "Settings → Business → Currency and decimals", "Settings → Business → Withdrawal reasons" ni "Settings → Prices → Customer types".
+
 ## Un solo registro
 
 Las filas de Settings, sus tres shortcuts y la búsqueda futura salen de un único registro tipado, `web/src/screens/settings/settingsRows.ts` (ADR [20261119-settings-rows-live-in-one-registry-read-by-the-list-the-shortcuts-and-the-search](../adr/20261119-settings-rows-live-in-one-registry-read-by-the-list-the-shortcuts-and-the-search.md)):
@@ -42,6 +52,7 @@ Las filas de Settings, sus tres shortcuts y la búsqueda futura salen de un úni
 - `shownRowsByGroup(ctx, rows)` es la función pura que da los grupos en el orden de `SETTINGS_GROUPS`, cada uno con sus filas que `isShown(ctx)` deja pasar, en el orden del registro; un grupo sin ninguna fila a la vista queda afuera.
 - No se agrega, mueve ni redirige ninguna dirección del front.
 - La búsqueda por etiqueta de fila tiene su función pura, `searchSettingsRows`, y su estado en una marca del historial, no en un Sheet (ADR [20261123-settings-search-is-a-history-entry-flag-not-a-sheet](../adr/20261123-settings-search-is-a-history-entry-flag-not-a-sheet.md)); ninguna pantalla las usa todavía.
+- **Un solo camino a cada pantalla (GH-1068).** La pantalla de una fila se abre solo desde esa fila (o desde su atajo). La página de un grupo no repite como link otra fila del registro: la página Business no lleva links a Currency and decimals ni a Withdrawal reasons, y la página Prices no lleva link a Customer types. Así no queda ninguna pantalla inalcanzable, porque cada una tiene su fila: `currency` (grupo Business), `withdrawalReasons` (grupo Payments and stock) y `customerTypes` (con la misma condición de antes, Customer types guardado como activado).
 
 ## La lista de inicio (celular)
 
@@ -123,12 +134,22 @@ No hay campo de búsqueda: puede ser una parte posterior. Los estilos de la pant
 - Cada fila y cada atajo es un `InAppLink` a la dirección de su fila, con el estado `{enteredFrom: 'settings'}`.
 - Cada fila y cada atajo mide al menos 44 px y tiene un estado `:active`.
 
+### Las páginas Business y Prices (GH-1068)
+
+Las dos páginas siguen sus dibujos aprobados, en el celular y en la computadora (la lista lateral de la computadora lee el mismo registro):
+
+- **Business** (ConfiguracionNegocio, ConfiguracionNegocioCompu): solo el campo del nombre del Business y su guardado. Ya no lleva las filas link "Currency and decimals" ni "Withdrawal reasons"; las dos pantallas se abren desde sus filas `currency` (grupo Business) y `withdrawalReasons` (grupo Payments and stock), cuyas rutas ya tienen a Settings como padre. El control de idioma, que se muestra solo con 2 o más Selectable languages (ninguno antes de #317), no cambia.
+- **Prices** (ConfiguracionPrecios, ConfiguracionPreciosCompu): solo los dos interruptores, sus líneas de ayuda, la línea de las Sales pasadas y Save. Ya no lleva la fila link "Customer types ›"; la lista se abre desde la fila `customerTypes`, que se muestra con la misma condición que tenía el link (Customer types guardado como activado). Con Customer types desactivado, Prices no muestra ningún link y la fila sigue oculta, igual que antes. El detalle de Prices está en pricing-settings.md.
+- El texto que le indica un camino a quien vende nombra la fila de Settings: el estado vacío del Selector de motivos (`emptyStates:selectorNoReasons`) dice "Add them in Settings → Withdrawal reasons.".
+- Ningún localizador e2e ni de vitest usa los links quitados, y ninguno vuelve, ni visible ni oculto (D-69509906).
+
 ### Volver a Settings
 
 - Cada pantalla que se abre desde una fila o un atajo vuelve a la pantalla de inicio de Settings. El control depende del tipo de pantalla en el celular:
   - una pantalla de tipo tarjeta (Payment methods, por ejemplo) muestra "‹ Settings";
   - una pantalla de tipo formulario (Prices, Integrations, el nombre del Business, Users, Account y otras) muestra "Close", que vuelve por el historial y cae en el mismo lugar.
-- `ENTRY_PARENTS` en `web/src/routes.ts` hace que Payment methods, Customer types y Expense categories nombren a Settings como su origen cuando se abren con `enteredFrom: 'settings'`. Solo un link con ese estado lo activa, así que las etiquetas de vuelta de la computadora no cambian, y ninguna dirección ni ningún padre del registro de pantallas cambia.
+- `ENTRY_PARENTS` en `web/src/routes.ts` hace que Payment methods y Expense categories nombren a Settings como su origen cuando se abren con `enteredFrom: 'settings'`. Solo un link con ese estado lo activa, así que las etiquetas de vuelta de la computadora no cambian.
+- Customer types (`settings-customer-types`) tiene a Settings como padre en `web/src/routes.ts` desde GH-1068 (antes era Prices). "‹ Settings" y Close sin historial caen en Settings, se llegue desde la fila o tipeando la dirección. La dirección `/settings/prices/customer-types` se conserva tal cual y no redirige, así que un marcador guardado la sigue abriendo.
 
 ### Texto e idioma
 
@@ -153,3 +174,6 @@ Además, por **Drawing as guide** y sin cambiar lo que quien vende lee o hace: e
 - Objetivos táctiles de la pantalla de inicio de Settings por debajo de 44 px: 0, según el Mobile check, sin que crezca ninguna lista de infractores.
 - Cantidades de Users equivocadas o rotas mostradas durante una lectura pendiente o fallida: 0, según los tests de Testing Library.
 - Cambios en la Settings de computadora: 0, según los tests de Settings existentes contra la vista de computadora y la captura de ConfiguracionCompu antes y después (#994).
+- Filas link que repiten otra fila del registro en las páginas Business y Prices: 0 (antes 3), según los tests de BusinessGroup y PricingGroup (GH-1068).
+- Toques desde un Tab root hasta la lista de Customer types: 2 (antes 3, pasando por Prices), y "‹ Settings" o Close desde ella cae en Settings en el 100 % de los casos, se llegue desde la fila o por la dirección, según el test de rutas (padre `settings`) y `customerTypes.spec.ts` (GH-1068).
+- Caminos nombrados en el Copy module o en `docs/product/` que pasan por "Settings → Business →" hacia Currency and decimals o Withdrawal reasons, o por "Settings → Prices → Customer types": 0 (GH-1068).
