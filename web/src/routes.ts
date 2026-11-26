@@ -366,7 +366,7 @@ export const SCREENS = [
     path: SETTINGS_CUSTOMER_TYPES,
     declaredKind: 'form',
     titleKey: 'customerTypes:title',
-    parent: 'settings-prices',
+    parent: 'settings',
   }),
   screen({
     id: 'settings-payments',
@@ -524,13 +524,12 @@ export function parentOf(id: ScreenId, viewport: Viewport): ParentRef | undefine
 /**
  * The screens whose back arrow names where the seller came from when that is not their registry
  * parent: the phone Settings home sets `enteredFrom: 'settings'` on every row and shortcut, so
- * Payment methods, Customer types and Expense categories, opened from it, return to Settings.
+ * Payment methods and Expense categories, opened from it, return to Settings.
  * Only a link carrying that state triggers it, so the computer's back labels do not change. It
  * holds on both viewports, so it takes no viewport.
  */
 export const ENTRY_PARENTS = {
   'settings-payment-methods': 'settings',
-  'settings-customer-types': 'settings',
   'settings-expense-categories': 'settings',
 } as const satisfies Partial<Record<ScreenId, ScreenId>>
 

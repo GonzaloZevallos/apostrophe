@@ -1,6 +1,6 @@
 /**
  * Withdrawal reasons end to end, from a phone (GH-318 M2): a seller adds a reason in
- * Settings → Business → Withdrawal reasons, "Take from stock" offers it last with nothing
+ * Settings → Withdrawal reasons, "Take from stock" offers it last with nothing
  * preselected, she records a withdrawal with it, and Inicio's Semana shows that reason's
  * cost line. Through the built front alone, against the real backend.
  *
