@@ -18,20 +18,26 @@ import { SettingsPaneContext } from './SettingsPaneContext'
 import { activeSettingsRow } from './settingsRows'
 import { useSettingsRowContext } from './useSettingsRowContext'
 
-export default function SettingsLayout() {
-  const me = useOutletContext<Me>()
-  const isComputer = useViewport() === 'computer'
+/** The list, in its own component so the two reads it needs happen only where it is on screen. */
+function SettingsColumn() {
   const { ctx } = useSettingsRowContext()
   const { pathname } = useLocation()
 
   return (
+    <aside className="ajustes-capa__columna">
+      <SettingsNav ctx={ctx} activeKey={activeSettingsRow(pathname, ctx)} />
+    </aside>
+  )
+}
+
+export default function SettingsLayout() {
+  const me = useOutletContext<Me>()
+  const isComputer = useViewport() === 'computer'
+
+  return (
     <SettingsPaneContext value={isComputer}>
       <div className="ajustes-capa">
-        {isComputer ? (
-          <aside className="ajustes-capa__columna">
-            <SettingsNav ctx={ctx} activeKey={activeSettingsRow(pathname, ctx)} />
-          </aside>
-        ) : null}
+        {isComputer ? <SettingsColumn /> : null}
         <div key="panel" className="ajustes-capa__panel">
           <Outlet context={me} />
         </div>

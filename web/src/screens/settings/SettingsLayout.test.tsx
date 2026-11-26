@@ -153,15 +153,13 @@ test('Customer types with its toggle off renders its page and marks nothing', as
 test('Prices → Customer types keeps Close, and Close returns to Prices, marked', async () => {
   await open(SETTINGS)
   await userEvent.click(await screen.findByRole('link', { name: nameOf(PRICES_ROW) }))
-  const inPage = await within(await screen.findByRole('main')).findByRole('link', { name: /Customer types/ })
-  await userEvent.click(inPage)
+  await userEvent.click(await waitFor(() => within(screen.getByRole('main')).getByRole('link', { name: /Customer types/ })))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(SETTINGS_CUSTOMER_TYPES))
   await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
 
   await waitFor(() => expect(router.state.location.pathname).toBe(SETTINGS_PRICES))
-  await waitFor(() => expect(marked()).toHaveLength(1))
-  expect(marked()[0]).toHaveTextContent('Prices')
+  await waitFor(() => expect(marked().map((link) => link.textContent)).toEqual([nameOf(PRICES_ROW)]))
 })
 
 test('Expenses → Expense categories keeps Close, and Close returns to Expenses', async () => {
