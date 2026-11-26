@@ -7044,8 +7044,19 @@ a.ajustes-tema__opcion {
    * `gastos__encabezado`): Analysis reuses the month pill and its arrows (part 2). */
   .gastos__cabecera .gastos__mes-boton,
   .gastos__encabezado .gastos__mes-boton {
+    flex: none;
     width: var(--alto-tocable);
     height: var(--alto-tocable);
+  }
+}
+
+/* The narrowest phone (320 px at 130 % text is 246 CSS px): the month line has 198 px, so with
+ * the arrows kept at 44 the month name ("September", the longest word) needs the pill's gap and
+ * padding closed to 4 px; the arrows never shrink below the touch target. */
+@media (max-width: 280px) {
+  .gastos__encabezado > .gastos__mes {
+    gap: var(--espacio-xs);
+    padding-inline: var(--espacio-xs);
   }
 }
 
