@@ -1756,6 +1756,90 @@ a.ajustes-tema__opcion {
   font-weight: 600;
 }
 
+/* Expenses' phone title row (ADR 20261125, `ExpensesTitleRow`): the round back, the title and
+ * Add expense on one line that never wraps, with the month line as its own line below. The title
+ * is the one fixed thing: never wrapped, shrunk, clipped or ellipsised. The row is the size
+ * container, so its two steps follow the room the row itself has, in its own `em`, which grows
+ * with the text size: below 24em the labelled pill is the 44 x 44 round icon (its `aria-label`
+ * keeps the name), below 19em the back is the round chevron (its text is clipped, never removed,
+ * so the accessible name stays). Only the two thresholds may move; their number and order may not. */
+.gastos__encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+.gastos__encabezado > .gastos__mes {
+  flex: none;
+}
+
+.gastos__fila-titulo {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--espacio-sm);
+  container-type: inline-size;
+  container-name: fila-titulo-gastos;
+}
+
+.gastos__fila-titulo > .flecha-atras--redonda {
+  flex: 0 0 auto;
+}
+
+.gastos__fila-titulo > .gastos__titulo {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.gastos__fila-titulo > .gastos__cargar {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  width: auto;
+  height: var(--alto-tocable);
+  padding: 0 18px;
+  background: var(--boton);
+  color: var(--boton-texto);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.gastos__fila-titulo > .gastos__cargar .gastos__cargar-texto {
+  display: inline;
+}
+
+@container fila-titulo-gastos (max-width: 24em) {
+  .gastos__fila-titulo > .gastos__cargar {
+    width: var(--alto-tocable);
+    padding: 0;
+    background: var(--superficie);
+    color: var(--tinta);
+  }
+
+  .gastos__fila-titulo > .gastos__cargar .gastos__cargar-texto {
+    display: none;
+  }
+}
+
+@container fila-titulo-gastos (max-width: 19em) {
+  .flecha-atras--redonda .boton--enlace {
+    width: var(--alto-tocable);
+    padding: 0;
+    box-shadow: inset 0 0 0 1px var(--linea);
+  }
+
+  .flecha-atras--redonda .flecha-atras__texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .flecha-atras--redonda .boton--enlace > svg {
+    display: block;
+  }
+}
+
 .gastos__resumen,
 .gastos__ultimos {
   display: flex;

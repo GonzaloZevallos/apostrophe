@@ -34,11 +34,11 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGeneri
 import Icono from '../components/Icono'
 import SinConexion from '../components/SinConexion'
 import Loading from '../components/Loading'
-import BackArrow from '../shell/BackArrow'
 import { useViewport } from '../shell/useViewport'
 import { useFlash } from '../flash/useFlash'
 import { EXPENSE_CATEGORIES, EXPENSE_NEW } from '../routes'
 import ExpenseEditSheet from './expenses/ExpenseEditSheet'
+import ExpensesTitleRow from './expenses/ExpensesTitleRow'
 import MonthBody from './expenses/MonthBody'
 import { FLOWER_NOTICE, EXPENSES_TEXT } from '../copy/expenses'
 import { COMMON_TEXT } from '../copy/common'
@@ -160,40 +160,31 @@ function GastosScreen() {
     return found?.name ?? ''
   }
 
+  const monthLine = (
+    <div className="gastos__mes">
+      <button type="button" className="gastos__mes-boton" aria-label={COMMON_TEXT.previousMonth} onClick={() => moveMonth(-1)}>
+        <Icono nombre="atras" />
+      </button>
+      <span className="gastos__mes-etiqueta">{formatMonthLong(month)}</span>
+      <button type="button" className="gastos__mes-boton" aria-label={COMMON_TEXT.nextMonth} onClick={() => moveMonth(1)}>
+        <Icono nombre="chevron" />
+      </button>
+    </div>
+  )
+
   return (
     <ContentArea as="main" className="pantalla">
       <div className="cuerpo gastos">
-        {/* Stopgap until `ExpensesTitleRow` draws the phone's one title row: the shell no longer
-            draws this card's back (`backInTitleRow`), so the card draws it here (ADR 20261125). Delete this
-            line and the `BackArrow` and `useViewport` imports when `ExpensesTitleRow` replaces the
-            phone branch: without it `backCards` and `SettingsAvatar` find no back; with both, two. */}
-        {viewport === 'phone' && <BackArrow id="expenses" look="round" />}
-        <div className="gastos__cabecera">
-          <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.expenses}</span>
-          <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label={COMMON_TEXT.addExpense}>
-            <Icono nombre="agregar" />
-            <span className="gastos__cargar-texto">{COMMON_TEXT.addExpense}</span>
-          </InAppLink>
-          <div className="gastos__mes">
-            <button
-              type="button"
-              className="gastos__mes-boton"
-              aria-label={COMMON_TEXT.previousMonth}
-              onClick={() => moveMonth(-1)}
-            >
-              <Icono nombre="atras" />
-            </button>
-            <span className="gastos__mes-etiqueta">{formatMonthLong(month)}</span>
-            <button
-              type="button"
-              className="gastos__mes-boton"
-              aria-label={COMMON_TEXT.nextMonth}
-              onClick={() => moveMonth(1)}
-            >
-              <Icono nombre="chevron" />
-            </button>
+        {viewport === 'phone' ? <ExpensesTitleRow month={monthLine} /> : (
+          <div className="gastos__cabecera">
+            <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.expenses}</span>
+            <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label={COMMON_TEXT.addExpense}>
+              <Icono nombre="agregar" />
+              <span className="gastos__cargar-texto">{COMMON_TEXT.addExpense}</span>
+            </InAppLink>
+            {monthLine}
           </div>
-        </div>
+        )}
 
         {view.isPending && <Loading />}
         {view.isError && view.error instanceof NetworkError && <SinConexion />}
