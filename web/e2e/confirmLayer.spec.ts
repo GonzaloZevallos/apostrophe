@@ -13,7 +13,7 @@ import { newCell, SIZES, THEMES, viewportOf } from './mobile/cells.js'
 import { guardWrites } from './mobile/network.js'
 import { settle } from './mobile/walk.js'
 import { parseFacts } from '../src/mobile-standard/registry.ts'
-import { SALE } from '../src/routes.ts'
+import { SALE, SALE_NEW } from '../src/routes.ts'
 
 const TOUCH = 44
 /** Page scroll the case needs before the confirmation opens; the viewport is lowered to get it. */
@@ -28,6 +28,20 @@ async function reachedAtCentre(page: Page, name: string): Promise<{ reached: boo
     const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)
     return { reached: hit !== null && button.contains(hit), height: box.height }
   })
+}
+
+/** Each answer is what a tap at its centre reaches, at least 44 px tall, and inside the visible viewport. */
+async function expectAnswersReachable(page: Page, names: string[]): Promise<void> {
+  for (const name of names) {
+    const answer = await reachedAtCentre(page, name)
+    expect(answer.reached, `${name} is what a tap at its centre reaches`).toBe(true)
+    expect(answer.height, `${name} is at least ${TOUCH} px tall`).toBeGreaterThanOrEqual(TOUCH - 0.5)
+    const inside = await page.getByRole('button', { name, exact: true }).evaluate((button) => {
+      const box = button.getBoundingClientRect()
+      return box.top >= 0 && box.bottom <= window.innerHeight && box.left >= 0 && box.right <= window.innerWidth
+    })
+    expect(inside, `${name} is inside the visible viewport`).toBe(true)
+  }
 }
 
 /** A real touch swipe (start, moves, end) through the DevTools protocol, from `from` to `to`. */
@@ -80,16 +94,7 @@ for (const size of SIZES) {
       await expect(page.getByRole('alertdialog')).toBeVisible()
       await expect(page.locator('.confirm-layer .confirmacion')).toHaveCount(1)
 
-      for (const name of ['No, keep it', 'Yes, delete it']) {
-        const answer = await reachedAtCentre(page, name)
-        expect(answer.reached, `${name} is what a tap at its centre reaches`).toBe(true)
-        expect(answer.height, `${name} is at least ${TOUCH} px tall`).toBeGreaterThanOrEqual(TOUCH - 0.5)
-        const inside = await page.getByRole('button', { name, exact: true }).evaluate((button) => {
-          const box = button.getBoundingClientRect()
-          return box.top >= 0 && box.bottom <= window.innerHeight && box.left >= 0 && box.right <= window.innerWidth
-        })
-        expect(inside, `${name} is inside the visible viewport`).toBe(true)
-      }
+      await expectAnswersReachable(page, ['No, keep it', 'Yes, delete it'])
 
       // A swipe on the scrim, above the dialog, moves nothing behind it.
       const client = await context.newCDPSession(page)
@@ -101,6 +106,48 @@ for (const size of SIZES) {
       await page.getByRole('button', { name: 'No, keep it', exact: true }).tap()
       await expect(page.getByRole('alertdialog')).toHaveCount(0)
       expect(Math.abs((await scrollY(page)) - before)).toBeLessThanOrEqual(2)
+      await context.close()
+    })
+  }
+}
+
+// New sale's leave question still sits in its own `.nueva-venta__aviso` wrapper (#1158 removes it): the
+// dialog is drawn in the layer, and the wrapper, left empty, takes no tap and moves nothing.
+for (const size of SIZES) {
+  for (const theme of THEMES) {
+    test(`New sale's leave question answers from the layer at ${size}, ${theme}`, async ({ browser }) => {
+      const context = await newCell(browser, size, theme, MOBILE_STATE_FILE)
+      await guardWrites(context)
+      const page = await context.newPage()
+      await page.goto(SALE_NEW)
+      await settle(page)
+
+      await page.getByRole('button', { name: /^Line 1 product/ }).tap()
+      await page.getByRole('dialog', { name: 'Line 1 product options' }).getByRole('button', { name: 'Sir Jack' }).tap()
+      await page.getByLabel('Line 1 grams', { exact: true }).fill('5')
+      const close = page.getByRole('button', { name: 'Close', exact: true })
+      const closeBefore = await close.boundingBox()
+      await close.tap()
+      await expect(page.getByRole('alertdialog', { name: 'Discard the sale?' })).toBeVisible()
+      await expect(page.locator('.confirm-layer .confirmacion')).toHaveCount(1)
+
+      // The wrapper holds nothing, takes no tap, and the form behind did not move.
+      const wrapper = await page.evaluate(() => {
+        const aviso = document.querySelector('.nueva-venta__aviso')
+        const scrim = document.elementFromPoint(window.innerWidth / 2, 8)
+        return {
+          children: aviso?.childElementCount ?? -1,
+          scrimIsLayer: scrim?.classList.contains('confirm-layer') ?? false,
+          hitsWrapper: aviso !== null && scrim !== null && aviso.contains(scrim),
+        }
+      })
+      expect(wrapper).toEqual({ children: 0, scrimIsLayer: true, hitsWrapper: false })
+      expect(await close.boundingBox()).toEqual(closeBefore)
+
+      await expectAnswersReachable(page, ['No, keep entering', 'Yes, discard it'])
+      await page.getByRole('button', { name: 'No, keep entering', exact: true }).tap()
+      await expect(page.getByRole('alertdialog')).toHaveCount(0)
+      await expect(page.getByLabel('Line 1 grams', { exact: true })).toHaveValue('5')
       await context.close()
     })
   }
