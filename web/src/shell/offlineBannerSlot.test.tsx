@@ -170,8 +170,8 @@ test('when the Shell unmounts on a 401, Root draws the notice in its place', asy
     await client.refetchQueries()
   })
 
-  expect(screen.queryByText('pantalla sales')).not.toBeInTheDocument()
-  expect(banners()).toHaveLength(1)
+  await waitFor(() => expect(screen.queryByText('pantalla sales')).not.toBeInTheDocument())
+  await waitFor(() => expect(banners()).toHaveLength(1))
   expect(banners()[0]?.closest('.columna-principal')).toBeNull()
   expect(banners()[0]?.classList.contains('aviso-sin-conexion--pagina')).toBe(true)
 })

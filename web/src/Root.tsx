@@ -25,12 +25,16 @@ function RouterSync() {
   return null
 }
 
+/** A computer's notice where no Shell holds the slot: a row at the top of the page. Only a computer
+ * reads the claim, so on the phone a Shell mounting or leaving re-renders nothing here. */
+function PageBanner() {
+  const claimed = useOfflineBannerSlotClaimed()
+  return claimed ? null : <OfflineBanner variant="pagina" />
+}
+
 /** The phone's notice floats; a computer's is drawn by the Shell, or, with no Shell, here as a row. */
 function RootBanner() {
-  const viewport = useViewport()
-  const claimed = useOfflineBannerSlotClaimed()
-  if (viewport === 'phone') return <OfflineBanner variant="flotante" />
-  return claimed ? null : <OfflineBanner variant="pagina" />
+  return useViewport() === 'phone' ? <OfflineBanner variant="flotante" /> : <PageBanner />
 }
 
 export default function Root() {
