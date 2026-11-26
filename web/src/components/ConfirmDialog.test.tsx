@@ -67,9 +67,9 @@ describe('ConfirmDialog under ConfirmLayer', () => {
     stubViewport('phone')
     const { unmount } = render(
       <ConfirmLayer>
-        <main>
+        <section aria-label="Screen">
           <Opener />
-        </main>
+        </section>
       </ConfirmLayer>,
     )
     const layer = document.querySelector('.confirm-layer')
@@ -81,7 +81,7 @@ describe('ConfirmDialog under ConfirmLayer', () => {
     expect(texts).not.toContainElement(screen.getByRole('button', { name: 'No, keep it' }))
     expect(layer).toHaveAttribute('data-open')
     expect(layer).not.toHaveAttribute('inert')
-    expect(screen.getByRole('main', { hidden: true }).parentElement).toHaveAttribute('inert')
+    expect(screen.getByRole('region', { name: 'Screen', hidden: true }).parentElement).toHaveAttribute('inert')
     expect(locked()).toBe(true)
 
     unmount()
@@ -119,26 +119,26 @@ describe('ConfirmDialog under ConfirmLayer', () => {
     stubViewport('computer')
     render(
       <ConfirmLayer>
-        <main>
+        <section aria-label="Screen">
           <Opener />
-        </main>
+        </section>
       </ConfirmLayer>,
     )
     const dialog = screen.getByRole('alertdialog')
-    expect(screen.getByRole('main')).toContainElement(dialog)
+    expect(screen.getByRole('region', { name: 'Screen', hidden: true })).toContainElement(dialog)
     expect(document.querySelector('.confirm-layer')).not.toContainElement(dialog)
     expect(locked()).toBe(false)
-    expect(screen.getByRole('main').parentElement).not.toHaveAttribute('inert')
+    expect(screen.getByRole('region', { name: 'Screen', hidden: true }).parentElement).not.toHaveAttribute('inert')
   })
 
   test('on the phone with no provider it renders in place with no lock', () => {
     stubViewport('phone')
     render(
-      <main>
+      <section aria-label="Screen">
         <Opener />
-      </main>,
+      </section>,
     )
-    expect(screen.getByRole('main')).toContainElement(screen.getByRole('alertdialog'))
+    expect(screen.getByRole('region', { name: 'Screen', hidden: true })).toContainElement(screen.getByRole('alertdialog'))
     expect(locked()).toBe(false)
   })
 
@@ -146,18 +146,18 @@ describe('ConfirmDialog under ConfirmLayer', () => {
     stubViewport('phone')
     render(
       <ConfirmLayer>
-        <main>
+        <section aria-label="Screen">
           <Opener />
-        </main>
+        </section>
       </ConfirmLayer>,
     )
     expect(locked()).toBe(true)
 
     flipViewport('computer')
     expect(screen.getByRole('alertdialog')).toBeInTheDocument()
-    expect(screen.getByRole('main')).toContainElement(screen.getByRole('alertdialog'))
+    expect(screen.getByRole('region', { name: 'Screen', hidden: true })).toContainElement(screen.getByRole('alertdialog'))
     expect(locked()).toBe(false)
-    expect(screen.getByRole('main').parentElement).not.toHaveAttribute('inert')
+    expect(screen.getByRole('region', { name: 'Screen', hidden: true }).parentElement).not.toHaveAttribute('inert')
 
     flipViewport('phone')
     expect(screen.getByRole('alertdialog')).toBeInTheDocument()
