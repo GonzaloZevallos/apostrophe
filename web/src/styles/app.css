@@ -4450,8 +4450,10 @@ a.ajustes-tema__opcion {
 /* The Products phone title block (`ProductsPhone`): a plain div that scrolls with the screen, one
  * nowrap row. The heading takes what is left; the 44 px "New product" button and the avatar keep
  * their size. 12 px between the targets leaves 8 px between the button and the avatar's 44 px
- * box, whose -4 px margins eat 4 px of the gap. The button is `.boton-icono` (44 x 44, round) filled
- * with --boton-texto on --boton; its own class sets no colour. */
+ * box, whose -4 px margins eat 4 px of the gap. The button is `.boton-icono` (44 x 44, round) with
+ * the `.boton-icono--contorno` border: --superficie, --tinta and --linea, the neutral round "+" of
+ * Clientes.dc.html, never green (green is the avatar's). The same look at every phone width: the
+ * labelled pill does not fit the row at 246 px, so nothing here switches by width. */
 .productos-cabecera {
   display: flex;
   flex-wrap: nowrap;
@@ -4464,9 +4466,8 @@ a.ajustes-tema__opcion {
   min-width: 0;
 }
 
-.boton-icono--lleno {
-  background: var(--boton);
-  color: var(--boton-texto);
+.boton-icono--contorno {
+  border: 1px solid var(--linea);
 }
 
 .productos-cabecera__nueva {

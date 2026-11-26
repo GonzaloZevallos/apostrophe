@@ -14,8 +14,8 @@
  * - **Icon only** (`variant="icon"`): an obvious action from the closed `ACTION_ICON`
  *   map (`botonVisual.tsx`: delete, search, close, edit, share, add), with a required `ariaLabel`
  *   (the exact current word, never a new one) and a 44 px target (`.boton-icono`; `add` is the
- *   round `.boton-icono` filled with `--boton` (`.boton-icono--lleno`), only the phone Products title row's
- *   "New product").
+ *   round `.boton-icono` with a `--linea` border (`.boton-icono--contorno`), the neutral look of the
+ *   phone Products title row's "New product"; never green).
  * - `row`: a full-width, left-aligned, stacked-content button for a tappable list row,
  *   reset only through its own `boton--fila` class.
  *
