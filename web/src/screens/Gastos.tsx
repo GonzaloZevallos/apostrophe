@@ -34,6 +34,8 @@ import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../components/ErrorGeneri
 import Icono from '../components/Icono'
 import SinConexion from '../components/SinConexion'
 import Loading from '../components/Loading'
+import BackArrow from '../shell/BackArrow'
+import { useViewport } from '../shell/useViewport'
 import { useFlash } from '../flash/useFlash'
 import { EXPENSE_CATEGORIES, EXPENSE_NEW } from '../routes'
 import ExpenseEditSheet from './expenses/ExpenseEditSheet'
@@ -126,6 +128,7 @@ export default function Gastos() {
 }
 
 function GastosScreen() {
+  const viewport = useViewport()
   const me = useOutletContext<Me>()
   const flash = useFlash()
   const queryClient = useQueryClient()
@@ -160,6 +163,9 @@ function GastosScreen() {
   return (
     <ContentArea as="main" className="pantalla">
       <div className="cuerpo gastos">
+        {/* Stopgap until `ExpensesTitleRow` draws the phone's one title row: the shell no longer
+            draws this card's back (`backInTitleRow`), so the card draws it here (ADR 20261125). */}
+        {viewport === 'phone' && <BackArrow id="expenses" look="round" />}
         <div className="gastos__cabecera">
           <span className="encabezado__titulo gastos__titulo">{COMMON_TEXT.expenses}</span>
           <InAppLink to={EXPENSE_NEW} className="gastos__cargar" aria-label={COMMON_TEXT.addExpense}>
