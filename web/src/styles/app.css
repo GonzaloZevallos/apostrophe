@@ -5666,15 +5666,30 @@ a.ajustes-tema__opcion {
   color: var(--tinta);
 }
 
+/* The input is painted invisible by its text fill, not by `opacity: 0`, as `.fecha-fila__input` is: its
+ * `color` and `background` stay real tokens, so the contrast check reads a readable value in claro and
+ * oscuro, and it stays a visible, 44 px-tall control to assistive technology. */
 .date-row__input {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   margin: 0;
-  opacity: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  -webkit-text-fill-color: transparent;
   cursor: inherit;
   font-size: 16px;
+}
+
+.date-row__input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
 }
 
 /* pressed */

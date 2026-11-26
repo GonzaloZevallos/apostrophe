@@ -167,7 +167,8 @@ export const RECORDS_STATES: readonly WalkState[] = [
     // The How you paid list open over the Expense form: the form is inert beneath it. The business's default methods are Cash and Transfer.
     screen: 'expense/method-selector-open',
     route: EXPENSE_NEW,
-    steps: [{ press: expenses('expenses:form.paymentMethod') }],
+    // The button's name is the label then the value shown, which on a new expense is the empty wording.
+    steps: [{ press: `${expenses('expenses:form.paymentMethod')} ${expenses('expenses:form.paymentMethodNone')}` }],
     visible: common('common:transfer'),
   },
   {

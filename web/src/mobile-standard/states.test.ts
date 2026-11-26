@@ -308,7 +308,10 @@ describe('the walked states of the expense form', () => {
   }
 
   it('opens the How you paid list over the form and ends on a method in it', () => {
-    expect(state('expense/method-selector-open').steps).toEqual([{ press: expenses('expenses:form.paymentMethod') }])
+    expect(state('expense/method-selector-open').steps).toEqual([
+      // The button is named by the label then the value shown (the empty wording on a new expense), never the label alone.
+      { press: `${expenses('expenses:form.paymentMethod')} ${expenses('expenses:form.paymentMethodNone')}` },
+    ])
     expect(state('expense/method-selector-open').visible).toBe(common('common:transfer'))
   })
 
