@@ -5,8 +5,8 @@
  * `OLD_SHAPES` is empty and stays empty: every action in the Onboarding and the Precios group is
  * drawn through `Boton`, `BotonLink` or `StepSubmit` (GH-164). No file may be added to it.
  *
- * `ACTION_LINKS_LEFT` lists the only link that still draws an action itself, by identity (its
- * file and its `to=`), so a second one in the same file is a new entry and fails.
+ * `ACTION_LINKS_LEFT` lists the links that still draw an action themselves, by identity (their
+ * file and `to=`), so a second one in the same file is a new entry and fails.
  */
 
 import { expect, test } from 'vitest'
@@ -30,12 +30,17 @@ const files = Object.entries(modules).map(([path, content]) => ({ path, content 
 const OLD_SHAPES: Record<string, { buttons: number; classes: number }> = {}
 
 /**
- * The links that hold an icon and a word outside `BotonLink`. It only shrinks: no entry may be
- * added. "Cargar gasto" is a 40 px icon-only round control on the phone, a shape the closed
- * icon-only map does not have and `BotonLink` cannot draw; the design and product issue about
- * that shape is what empties this list.
+ * The links that hold an icon and a word outside `BotonLink`. It only shrinks: an entry is added
+ * only when this guard reports it. Both are the one "Add expense" link: the computer's header
+ * (`Gastos.tsx`) and the phone's title row (`ExpensesTitleRow.tsx`, shared with the Sheet's
+ * background). It is a round icon-only control below 24em, a shape the closed icon-only map does
+ * not have and `BotonLink` cannot draw; the design and product issue about that shape is what
+ * empties this list.
  */
-const ACTION_LINKS_LEFT = ['/src/screens/Gastos.tsx to={EXPENSE_NEW}', '/src/screens/expenses/ExpensesTitleRow.tsx to={EXPENSE_NEW}']
+const ACTION_LINKS_LEFT = [
+  '/src/screens/Gastos.tsx to={EXPENSE_NEW}',
+  '/src/screens/expenses/ExpensesTitleRow.tsx to={EXPENSE_NEW}',
+]
 
 function perFile(lines: string[]): Record<string, number> {
   const counts: Record<string, number> = {}

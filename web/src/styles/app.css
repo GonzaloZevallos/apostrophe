@@ -7040,8 +7040,10 @@ a.ajustes-tema__opcion {
     height: var(--alto-tocable);
   }
 
-  /* Scoped to Expenses' header: Analysis reuses the month pill and its arrows (part 2). */
-  .gastos__cabecera .gastos__mes-boton {
+  /* Scoped to Expenses' header (the computer's `gastos__cabecera` and the phone's title block
+   * `gastos__encabezado`): Analysis reuses the month pill and its arrows (part 2). */
+  .gastos__cabecera .gastos__mes-boton,
+  .gastos__encabezado .gastos__mes-boton {
     width: var(--alto-tocable);
     height: var(--alto-tocable);
   }
