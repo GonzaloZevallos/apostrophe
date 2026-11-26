@@ -8,6 +8,10 @@ Cómo cada pantalla rotula sus opciones, acciones y avisos: qué controles son s
 
 Esto afina el job de navegación (docs/product/navigation.md) y el job "feels like a phone app" (docs/product/accounts.md); no es un job nuevo y no agrega ninguna capacidad. Su protagonista es el vendedor, en un uso del celular ocupado y con una sola mano; las pantallas de configuración (Settings, Integrations, el Catalog) siguen la misma regla y no se diseñan aparte. La computadora es el mismo job en una pantalla más grande. Antes de esto, la app tenía 13 íconos y las pantallas se leían como paredes de palabras: encontrar una opción o una acción llevaba leer en vez de mirar.
 
+**Cuando** estoy en Products en el celular y necesito agregar algo nuevo que vendo, **quiero** ver la acción de agregar de inmediato y no confundirla nunca con mi avatar de Settings, **para** abrir New product de un toque sin abrir Settings por error.
+
+Este es el job del bloque de título de Products del celular (varieties.md, GH-1182), no un job nuevo; acá lo sirven la forma de la única excepción con nombre de la fila de título y la regla del verde en los encabezados del celular. Antes, el botón redondo verde de agregar quedaba junto al avatar verde y los dos se leían como dos círculos iguales.
+
 **Cuando** un cambio agrega o edita un enlace y el Gate lo revisa, **quiero** que el guardia deje pasar solo los enlaces que esta regla permite que lleven un chevron, y que marque todo otro enlace que lleve un ícono, **para poder** confiar en un Gate en verde y no dejar nunca que una acción llegue al vendedor con pinta de enlace.
 
 - Su protagonista es el mantenedor, o el revisor que actúa por él, como en los jobs de mantenedor de docs/product/gate.md y docs/product/design-capture.md. El vendedor se ve afectado solo de forma indirecta.
@@ -33,6 +37,7 @@ Criterios de éxito:
    - `ACTION_LINKS_LEFT` sigue siendo exactamente el "Add expense" de Expenses, y `ENTRY_CLASSES` no crece.
    - Un infractor real que se encuentre en el árbol se arregla, nunca se exime.
    - Nada de lo que ve el vendedor cambia.
+8. **Dos círculos nunca iguales** (GH-1182): en el bloque de título de Products del celular, la acción de agregar es la píldora con palabra cuando entra en la fila, y si no el botón redondo neutro; ningún botón redondo verde queda junto al avatar verde de Settings, en ninguno de los dos temas, y el nombre accesible sigue siendo "New product".
 
 ## Comportamiento
 
@@ -50,9 +55,12 @@ Las dos listas son cerradas. Agregar a cualquiera de las dos cambia este archivo
     - Una pantalla muestra exactamente un back, el que le da su marco (el del shell); una pantalla nunca dibuja un segundo por su cuenta.
     - Back nunca es "‹" solo ni una palabra genérica como "Back": su texto visible y su nombre accesible nombran los dos al padre.
   - La "i" de More info es el único control solo ícono fuera de esta lista, definido por su propio término más abajo.
-- **La única excepción con nombre: agregar ("New product") en la fila de título de Products del celular** (GH-903, decisión del dueño D-8ecb8c1d).
-  - La palabra no cabe en esa fila a 320 y 246 px (la fila con la palabra necesita unos 317 px y hay 272 y 198), así que la acción es un botón redondo solo con el ícono `agregar`: objetivo de 44×44 px, relleno con --boton y --boton-texto (`.boton-icono--lleno`), nombre accesible "New product" (la clave existente `common:newVariety`). En el código es `action="add"` de `IconOnlyAction`, que solo usa ese botón.
-  - Regla del dueño, general: cuando una acción con palabra no cabe en una fila de título del celular, pasa a ser un botón redondo solo ícono con nombre accesible; nunca se achica el título, se acorta la palabra ni se envuelve la fila.
+- **La única excepción con nombre: agregar ("New product") en la fila de título de Products del celular** (GH-903 y GH-1182; D-8ecb8c1d y las decisiones del dueño del 2026-11-24 y del 2026-11-26, Q34).
+  - Se muestra con su palabra, como la píldora dibujada en Productos.dc.html / ProductosOscuro.dc.html (el ícono `agregar` y la palabra "Product", verde), cuando entra en la fila con "Products" y el avatar de Settings a 320 y 246 px, en claro y oscuro, con objetivos de 44 px, separaciones de 8 px, sin envolver ni desplazarse de costado. La palabra visible es "Product" y el nombre accesible sigue siendo "New product" (la clave existente `common:newVariety`), que contiene la palabra visible.
+  - Si no entra, la acción es un botón redondo solo con el ícono `agregar`, el neutro dibujado en Clientes.dc.html: superficie con borde e ícono en tinta, en los dos temas, nunca verde; objetivo de 44×44 px y nombre accesible "New product".
+  - La medición se hace una sola vez y la forma que da sale igual en todo ancho de celular; nunca cambia en vivo según el ancho. El PR de GH-1182 registra cuál salió. La medición de GH-903 (con la palabra "New product" la fila necesitaba unos 317 px y había 272 y 198) había llevado a un botón redondo verde (`.boton-icono--lleno`), que GH-1182 retira.
+  - Regla del dueño, general (D-8ecb8c1d): cuando una acción con palabra no cabe en una fila de título del celular, pasa a ser un botón redondo solo ícono con nombre accesible; nunca se achica el título, se acorta la palabra ni se envuelve la fila.
+  - Regla del dueño del 2026-11-26 (Q34), general: en un encabezado del celular, el verde es solo del avatar de Settings y de la píldora con palabra "+ <cosa>"; un botón redondo solo ícono junto al avatar es el neutro, así dos botones redondos nunca se ven iguales. Rige para todo encabezado nuevo; un encabezado existente con el mismo choque se corrige en su propio issue.
   - Fuera de esa fila (la computadora incluida), "New product" conserva su palabra.
 - **Solo texto**:
   - enlaces (`enlace`), como "Edit header and footer" y "See all";
@@ -61,7 +69,7 @@ Las dos listas son cerradas. Agregar a cualquiera de las dos cambia este archivo
   - las elecciones entre opciones, que no son acciones: las pestañas de período (Today · Week · Month · Dates), Cash · Transfer · Owing, Promotion · Own use, el origen de un Stock entry, Light · Dark, "All: $ X";
   - Undo dentro de "Sale saved".
 - **Ícono + texto**: todo lo demás, p. ej. el "+ New sale" de la barra lateral, "+ Stock entry", "Take from stock", "Send catalog", Collect (el nombre accesible sigue siendo "Collect from <name>"), Publish, Test it, Find my chat, Archive, Restore, "Invite a partner", "Change password", "Sign out", Copy y el Share principal. Una acción nueva que no encaja en ninguna de las dos listas es ícono + texto. El ícono junto a una palabra es decorativo y se oculta para la tecnología asistiva, así que el nombre accesible sigue siendo la palabra.
-  - **El "+" de los docs es el ícono**: en el "+ New sale" de la barra lateral, "+ Add expense", "+ Stock entry", "+ Entry" y cualquier otra etiqueta escrita con un "+" al principio, el "+" representa al ícono `agregar`. En pantalla lo dibuja el ícono y el texto visible es solo la palabra, nunca un "+" literal junto al ícono. El nombre accesible no cambia.
+  - **El "+" de los docs es el ícono**: en el "+ New sale" de la barra lateral, "+ Add expense", "+ Stock entry", "+ Entry", la píldora "+ Product" y cualquier otra etiqueta escrita con un "+" al principio, el "+" representa al ícono `agregar`. En pantalla lo dibuja el ícono y el texto visible es solo la palabra, nunca un "+" literal junto al ícono. El nombre accesible no cambia.
 - **Una acción nunca parece un enlace**: solo un enlace (`enlace`) se dibuja como tal (subrayado, con el estilo de enlace). Una acción, en cualquier forma, incluida una que abre otra pantalla como "New sale" o "New sale to <name>", se dibuja como la acción que es.
 - **Tappable notice**: un aviso que el vendedor toca para abrir aquello a lo que apunta. No es una fila de acción ni un control de ninguna de las dos listas cerradas, y no las cambia.
   - Conserva su tarjeta exactamente como fue diseñada: su superficie, sus esquinas redondeadas y su propio padding, sin espaciado de fila ni divisor de fila.
@@ -134,9 +142,9 @@ Sin telemetría; sale de los tests y del chequeo de diseño.
 - **Se encuentra de un vistazo (criterio 1)**: un test de front sobre cada pantalla de `scripts/design/screens.json`: cada fila de opción, fila de acción y acción fuera de las listas cerradas tiene un ícono y su texto; cada control solo ícono tiene su nombre accesible actual exacto y un objetivo de 44 px; el ícono junto a una palabra está oculto para la tecnología asistiva; ningún menú repite un ícono; todo formulario y toda hoja se cierra con el mismo "Close" solo ícono. 0 excepciones.
 - **Ícono y palabra sin duplicar**: ninguna etiqueta visible lleva un "+" literal junto a un ícono `agregar`, y cada control así conserva su nombre accesible. 0 excepciones.
 - **Un solo back por pantalla**: cada tarjeta y cada detalle de `scripts/design/screens.json` muestra exactamente un control de back, que dice "‹ <parent>" con el padre fijo que nombra docs/product/navigation.md, y su nombre accesible nombra a ese padre; ninguno dice "‹" solo ni "Back". 0 excepciones.
-- **La excepción de la fila de título**: los tests del front de Products a ancho de celular encuentran "New product" por rol y nombre accesible en el bloque de título, con un objetivo de 44×44 px; la medición a 320 y 246 px, claro y oscuro, está en docs/evidence/GH-548-design-capture.md. Ningún otro control usa `action="add"`.
+- **La excepción de la fila de título (criterio 8)**: los tests del front de Products a ancho de celular encuentran "New product" por rol y nombre accesible en el bloque de título, con un objetivo de al menos 44×44 px; con la píldora, su texto visible es "Product" sin un "+" literal; con el botón redondo, no lleva el relleno verde `boton-icono--lleno`. La medición de GH-903 a 320 y 246 px, claro y oscuro, está en docs/evidence/GH-548-design-capture.md; la de GH-1182, con la forma elegida y las Design captures claras y oscuras a 320, 375 y 430 px, en su PR. Ningún otro control usa la forma de esta excepción.
 - **Las acciones no son enlaces**: ninguna acción se dibuja con el estilo de enlace; se comprueba a ojo en el chequeo de diseño.
-- **Una regla (criterio 2)**: este archivo y el README enuncian las mismas listas y límites, el Tappable notice incluido; `componentes.ts` e `Icono.tsx` nombran el mismo conjunto; cada nombre de `NombreIcono` agregado por esta regla lo usa una pantalla. 0 nombres nuevos sin usar, 0 discrepancias.
+- **Una regla (criterio 2)**: este archivo y el README enuncian las mismas listas y límites, el Tappable notice y la regla del verde en los encabezados del celular incluidos; `componentes.ts` e `Icono.tsx` nombran el mismo conjunto; cada nombre de `NombreIcono` agregado por esta regla lo usa una pantalla. 0 nombres nuevos sin usar, 0 discrepancias.
 - **Corto por defecto (criterio 3)**:
   - las líneas de ayuda y los avisos ≤ 80 caracteres, los títulos de estado vacío ≤ 40 con una línea ≤ 80, afirmado sobre el copy fijo; los rechazos de más de 80 se listan para revisión;
   - More info se abre cerrada, alterna `aria-expanded`, nunca dispara la confirmación de salir y no guarda ninguna consecuencia ni solución;
@@ -155,7 +163,9 @@ Sin telemetría; sale de los tests y del chequeo de diseño.
 ## Fuera de alcance
 
 - Una interfaz solo de íconos; back como solo ícono; la acción principal de una pantalla como solo ícono, salvo la única excepción con nombre de la fila de título de Products del celular (ver arriba) y lo que la regla del dueño sobre las filas de título del celular decida en adelante.
-- Achicar el título, acortar la palabra o envolver una fila de título del celular para que entre una acción con palabra.
+- Achicar el título, acortar la palabra, bajar las separaciones o el objetivo, o envolver una fila de título del celular para que entre una acción con palabra.
+- Cambiar en vivo, según el ancho del celular, entre la píldora y el botón redondo de la fila de título.
+- Revisar o cambiar ahora otros encabezados del celular con el mismo choque de círculos verdes: cada uno va en su propio issue.
 - Agregar, quitar, renombrar o reordenar cualquier acción u opción; cambiar una ruta, una confirmación o el texto de un toast.
 - Íconos en las filas de registro.
 - Un ícono opcional en los avisos; íconos que ninguna pantalla usa.
