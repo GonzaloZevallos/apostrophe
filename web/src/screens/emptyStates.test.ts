@@ -2,10 +2,15 @@ import { describe, expect, test } from 'vitest'
 import { EMPTY_STATE_KEYS } from '../copy/emptyStates'
 import enEmptyStates from '../copy/locales/en/emptyStates.json'
 
-/** The English wordings the keys resolve to in the committed `en` bundle, in key order. */
+/**
+ * The English wordings the keys have in the committed `en` bundle, in key order. A key with a
+ * `{{placeholder}}` is the fixed part before the first one: a screen that fills the placeholder
+ * itself (a template literal) still holds that part as a literal.
+ */
 const WORDINGS: readonly string[] = Object.values(EMPTY_STATE_KEYS).map((key) => {
   const name = key.slice('emptyStates:'.length) as keyof typeof enEmptyStates
-  return enEmptyStates[name]
+  const raw: string = enEmptyStates[name]
+  return raw.includes('{{') ? raw.slice(0, raw.indexOf('{{')) : raw
 })
 const NOBODY_OWES = enEmptyStates.nobodyOwes
 
@@ -37,7 +42,7 @@ export function literalCopies(
 
 describe('the empty-state wordings', () => {
   test('are all listed, non-empty and distinct', () => {
-    expect(WORDINGS).toHaveLength(13)
+    expect(WORDINGS).toHaveLength(14)
     expect(new Set(WORDINGS).size).toBe(WORDINGS.length)
     for (const wording of WORDINGS) expect(wording).not.toBe('')
   })
@@ -56,6 +61,11 @@ describe('the empty-state wordings', () => {
     expect(literalCopies(WORDINGS, files)).toEqual([
       { path: '/src/screens/A.tsx', wording: NOBODY_OWES },
     ])
+  })
+
+  test('the guard rejects a screen that writes the placeholder key\'s line around its own query', () => {
+    const files = { '/src/screens/A.tsx': 'const line = `No customer matches «${query}».`' }
+    expect(literalCopies(WORDINGS, files)).toEqual([{ path: '/src/screens/A.tsx', wording: 'No customer matches «' }])
   })
 
   test('a wording added to the list is enforced', () => {

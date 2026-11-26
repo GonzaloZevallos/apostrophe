@@ -14,6 +14,7 @@ import {
   choiceOfValue,
   collectableChoice,
   howTheyPayView,
+  howYouPaidView,
   OWING_VALUE,
   paymentMethodOf,
   paymentMethodValue,
@@ -45,7 +46,7 @@ function Field() {
       <button type="button" onClick={reload}>
         Retry
       </button>
-      <Selector {...selector} label="Payment method" value={value} onChange={setValue} />
+      <Selector {...selector} required label="Payment method" value={value} onChange={setValue} />
     </>
   )
 }
@@ -182,3 +183,87 @@ test('howTheyPayView keeps the method the server refused as the selected entry',
   expect(shown.selected).toEqual({ value: '4', label: 'Cash' })
   expect(shown.options.map((option) => option.label)).toEqual(['Wallet app', 'Owes it'])
 })
+
+const CASH = { value: '4', label: 'Cash' }
+const WALLET = { value: '9', label: 'Wallet app' }
+const STORED = { id: 4, name: 'Cash' }
+const GONE_WALLET = { id: 9, name: 'Wallet app' }
+
+type ListState = 'pending' | 'failed' | 'offered' | 'not offered'
+const LISTS: Record<
+  ListState,
+  { offeredIds: readonly number[] | null; methodOptions: readonly { value: string; label: string }[]; loading: boolean; failure: 'server' | null }
+> = {
+  pending: { offeredIds: null, methodOptions: [], loading: true, failure: null },
+  failed: { offeredIds: null, methodOptions: [], loading: false, failure: 'server' },
+  offered: { offeredIds: [4, 9], methodOptions: [CASH, WALLET], loading: false, failure: null },
+  'not offered': { offeredIds: [9], methodOptions: [WALLET], loading: false, failure: null },
+}
+
+type Row = [
+  stored: typeof STORED | null,
+  gone: typeof STORED | null,
+  list: ListState,
+  value: string | null,
+  options: { value: string; label: string }[],
+  loading: boolean,
+  shownValue: string | null,
+  selected: { value: string; label: string } | undefined,
+]
+
+const ROWS: Row[] = [
+  // A stored method, nothing refused: pending and failed add it, whatever the value.
+  [STORED, null, 'pending', '4', [CASH], false, '4', undefined],
+  [STORED, null, 'pending', null, [CASH], false, null, undefined],
+  [STORED, null, 'pending', '9', [CASH], false, '9', undefined],
+  [STORED, null, 'failed', '4', [CASH], false, '4', undefined],
+  [STORED, null, 'failed', null, [CASH], false, null, undefined],
+  [STORED, null, 'failed', '9', [CASH], false, '9', undefined],
+  // Loaded and offered: the real options, never marked.
+  [STORED, null, 'offered', '4', [CASH, WALLET], false, '4', undefined],
+  [STORED, null, 'offered', null, [CASH, WALLET], false, null, undefined],
+  [STORED, null, 'offered', '9', [CASH, WALLET], false, '9', undefined],
+  // Loaded and not offered: marked only while the value is still the stored id.
+  [STORED, null, 'not offered', '4', [WALLET], false, '4', CASH],
+  [STORED, null, 'not offered', null, [WALLET], false, null, undefined],
+  [STORED, null, 'not offered', '9', [WALLET], false, '9', undefined],
+  // The stored method is the refused one: it is never an option, the hook's loading passes through.
+  [STORED, STORED, 'pending', '4', [], true, '4', CASH],
+  [STORED, STORED, 'pending', null, [], true, '4', CASH],
+  [STORED, STORED, 'failed', '4', [], false, '4', CASH],
+  [STORED, STORED, 'offered', '4', [WALLET], false, '4', CASH],
+  [STORED, STORED, 'offered', '9', [WALLET], false, '4', CASH],
+  [STORED, STORED, 'not offered', '4', [WALLET], false, '4', CASH],
+  [STORED, STORED, 'not offered', null, [WALLET], false, '4', CASH],
+  // Another method is the refused one: the stored one stays an option while the list is not read.
+  [STORED, GONE_WALLET, 'pending', '4', [CASH], false, '9', WALLET],
+  [STORED, GONE_WALLET, 'pending', null, [CASH], false, '9', WALLET],
+  [STORED, GONE_WALLET, 'failed', '4', [CASH], false, '9', WALLET],
+  [STORED, GONE_WALLET, 'offered', '4', [CASH], false, '9', WALLET],
+  [STORED, GONE_WALLET, 'offered', '9', [CASH], false, '9', WALLET],
+  [STORED, GONE_WALLET, 'not offered', '4', [], false, '9', WALLET],
+  [STORED, GONE_WALLET, 'not offered', null, [], false, '9', WALLET],
+  // No stored method: the hook's loading passes through and nothing is added or derived.
+  [null, null, 'pending', null, [], true, null, undefined],
+  [null, null, 'pending', '9', [], true, '9', undefined],
+  [null, null, 'failed', null, [], false, null, undefined],
+  [null, null, 'offered', null, [CASH, WALLET], false, null, undefined],
+  [null, null, 'offered', '9', [CASH, WALLET], false, '9', undefined],
+  [null, null, 'not offered', '4', [WALLET], false, '4', undefined],
+  [null, GONE_WALLET, 'pending', null, [], true, '9', WALLET],
+  [null, GONE_WALLET, 'failed', '9', [], false, '9', WALLET],
+  [null, GONE_WALLET, 'offered', null, [CASH], false, '9', WALLET],
+  [null, STORED, 'offered', '4', [WALLET], false, '4', CASH],
+]
+
+test.each(ROWS)(
+  'howYouPaidView stored=%j gone=%j list=%s value=%j',
+  (storedMethod, methodGone, list, value, options, loading, shownValue, selected) => {
+    const shown = howYouPaidView({ storedMethod, methodGone, value, ...LISTS[list] })
+    expect(shown.options).toEqual(options)
+    expect(shown.loading).toBe(loading)
+    expect(shown.value).toBe(shownValue)
+    expect(shown.selected).toEqual(selected)
+    if (methodGone !== null) expect(shown.options.map((option) => option.value)).not.toContain(String(methodGone.id))
+  },
+)

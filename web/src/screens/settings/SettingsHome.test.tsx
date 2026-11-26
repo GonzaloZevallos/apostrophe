@@ -163,6 +163,19 @@ describe('the Business card', () => {
   })
 })
 
+describe('the page structure', () => {
+  test('the frame holds the title, the card and the list in that order, with no row marked', async () => {
+    await open({ business: users(2), pricing: { is_bulk_pricing: false, is_vip_customers: false } })
+    const view = await card()
+    const title = screen.getByRole('heading', { level: 1 })
+    const list = screen.getByRole('link', { name: testT(SHORTCUTS[0].labelKey) }).closest('div')
+    if (list === null) throw new Error('no list around the shortcuts')
+
+    expect(Array.from((title.parentElement ?? view).children)).toEqual([title, view, list])
+    expect(within(screen.getByRole('main')).queryByRole('link', { current: 'page' })).not.toBeInTheDocument()
+  })
+})
+
 describe('the first paint while both reads are held', () => {
   test('lists the 11 unconditional rows under their headings, the three shortcuts and no conditional row', async () => {
     await open({ business: 'held', pricing: 'held' })

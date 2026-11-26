@@ -40,6 +40,8 @@ classDiagram
   }
   class ports {
   }
+  class recorder {
+  }
   class reset_link {
   }
   class reset_password {

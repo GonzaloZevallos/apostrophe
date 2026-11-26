@@ -16,10 +16,10 @@ import { saleWith } from './saleWith'
 
 const UNKNOWN = "Payment can't be shown"
 
-function renderChip(sale: Pick<Sale, 'payment_state' | 'still_owed'>, decimals = 0) {
+function renderChip(sale: Pick<Sale, 'payment_state' | 'still_owed'>, decimals = 0, method?: string | null) {
   return render(
     <MoneyFormatProvider format={{ symbol: '$', decimals }}>
-      <SalePaymentChip state={sale.payment_state} stillOwed={sale.still_owed} />
+      <SalePaymentChip state={sale.payment_state} stillOwed={sale.still_owed} method={method} />
     </MoneyFormatProvider>,
   )
 }
@@ -89,6 +89,47 @@ describe('an unusable state or amount', () => {
   test('an unknown state value reads the unknown line', () => {
     renderChip({ payment_state: 'refunded' as unknown as Sale['payment_state'], still_owed: 100 })
     expect(chipOf(UNKNOWN)).toHaveClass('payment-chip--unknown')
+  })
+})
+
+describe('the method of payment', () => {
+  test('paid with a method reads one span "Paid · Cash" in the paid class', () => {
+    const { container } = renderChip(saleWith('paid'), 0, 'Cash')
+    const chip = chipOf('Paid · Cash')
+    expect(chip).toHaveClass('payment-chip--paid')
+    expect(chip.className).toBe('payment-chip rotulo payment-chip--paid')
+    expect(container.querySelectorAll('span')).toHaveLength(1)
+  })
+
+  test('paid without a method reads "Paid"', () => {
+    renderChip(saleWith('paid'))
+    expect(chipOf('Paid')).toHaveClass('payment-chip--paid')
+    expect(screen.queryByText(/·/)).not.toBeInTheDocument()
+  })
+
+  test('paid with a 60-character method name reads it whole in one span', () => {
+    const name = 'M'.repeat(60)
+    const { container } = renderChip(saleWith('paid'), 0, name)
+    expect(chipOf(`Paid · ${name}`)).toHaveClass('payment-chip--paid')
+    expect(container.querySelectorAll('span')).toHaveLength(1)
+  })
+
+  test('part_paid ignores a method', () => {
+    renderChip(saleWith('part_paid'), 0, 'Cash')
+    expect(chipOf(/Part-paid/).textContent).toBe('Part-paid · $ 4.000 owed')
+    expect(screen.queryByText(/Cash/)).not.toBeInTheDocument()
+  })
+
+  test('unpaid ignores a method', () => {
+    renderChip(saleWith('unpaid'), 0, 'Cash')
+    expect(chipOf('Unpaid')).toHaveClass('payment-chip--unpaid')
+    expect(screen.queryByText(/Cash/)).not.toBeInTheDocument()
+  })
+
+  test('an unknown state ignores a method', () => {
+    renderChip(saleWith(null), 0, 'Cash')
+    expect(chipOf(UNKNOWN)).toHaveClass('payment-chip--unknown')
+    expect(screen.queryByText(/Cash/)).not.toBeInTheDocument()
   })
 })
 

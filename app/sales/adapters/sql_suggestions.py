@@ -1,13 +1,15 @@
 """`NewSaleSuggestions` for one business (docs/adr/0004): every statement filters
 `business_id` on every table it touches, joined ones included, and a payment joins its
-method on the composite `(business_id, payment_method_id)` key. Facts only: nothing here
-decides what a suggestion is worth, that is the use case's."""
+method on the composite `(business_id, payment_method_id)` key. The last paid method comes
+only from a Sale paid in full on the spot. Facts only: nothing here decides what a
+suggestion is worth, that is the use case's."""
 
 from datetime import date
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.db import money_scale_factor, scaled
 from app.payment_methods.adapters.tables import PaymentMethodRow
 from app.payments.adapters.tables import ON_THE_SPOT, PaymentRow
 from app.products.adapters.tables import ProductRow
@@ -72,19 +74,39 @@ class SqlNewSaleSuggestions:
         return list(self._session.scalars(statement))
 
     def last_paid_method(self) -> LastPaidMethod | None:
+        # Only a Sale paid in full on the spot counts: a Deposit (the partial on-the-spot
+        # payment GH-1063 adds) never sets the suggestion. Cost: linear in the Business's
+        # sale lines (one grouped scan of `sale_line` over `business_id`), once per
+        # suggestions read, plus the cached constant money-format lookup. Assumes one
+        # on-the-spot payment per Sale (`Sale.payment`), so one row is compared to the total.
+        factor = money_scale_factor(self._session, self._business_id)
+        line_totals = (
+            select(
+                SaleLineRow.sale_id, func.sum(scaled(SaleLineRow.line_total, factor)).label("total")
+            )
+            .where(SaleLineRow.business_id == self._business_id)
+            .group_by(SaleLineRow.sale_id)
+            .subquery()
+        )
         statement = (
             select(PaymentRow.payment_method_id, PaymentMethodRow.archived_at)
             .join(
                 SaleRow,
                 (SaleRow.id == PaymentRow.sale_id) & (SaleRow.business_id == self._business_id),
             )
+            .outerjoin(line_totals, line_totals.c.sale_id == SaleRow.id)
             .join(
                 PaymentMethodRow,
                 (PaymentMethodRow.business_id == PaymentRow.business_id)
                 & (PaymentMethodRow.id == PaymentRow.payment_method_id)
                 & (PaymentMethodRow.business_id == self._business_id),
             )
-            .where(PaymentRow.business_id == self._business_id, ON_THE_SPOT)
+            .where(
+                PaymentRow.business_id == self._business_id,
+                ON_THE_SPOT,
+                scaled(PaymentRow.amount, factor)
+                == func.coalesce(line_totals.c.total, 0) + scaled(SaleRow.shipping_charged, factor),
+            )
             .order_by(SaleRow.number.desc())
             .limit(1)
         )

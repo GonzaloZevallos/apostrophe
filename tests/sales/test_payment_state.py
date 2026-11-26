@@ -17,9 +17,8 @@ from app.sales.domain.sale_bill import (
     payment_state,
     sale_payment,
 )
-from app.shared.payment_method import PaymentMethodId
 
-CASH = PaymentMethodId(1)
+TOTAL = 10_000
 
 
 def test_the_wire_strings_of_the_three_states() -> None:
@@ -27,41 +26,41 @@ def test_the_wire_strings_of_the_three_states() -> None:
 
 
 @pytest.mark.parametrize(
-    ("total", "method", "has_customer", "owed", "state"),
+    ("total", "amount", "has_customer", "owed", "state"),
     [
-        pytest.param(0, None, False, None, PaymentState.PAID, id="zero-total-no-customer"),
-        pytest.param(0, None, True, 5_000, PaymentState.PAID, id="zero-total-first-rule-wins"),
-        pytest.param(0, None, True, -1, PaymentState.PAID, id="zero-total-out-of-range"),
-        pytest.param(0, CASH, True, 9, PaymentState.PAID, id="zero-total-before-on-the-spot"),
-        pytest.param(10_000, CASH, False, None, PaymentState.PAID, id="on-the-spot"),
-        pytest.param(10_000, CASH, True, None, PaymentState.PAID, id="on-the-spot-customer"),
-        pytest.param(10_000, None, True, 0, PaymentState.PAID, id="paid-later"),
-        pytest.param(10_000, None, True, 10_000, PaymentState.UNPAID, id="unpaid"),
-        pytest.param(10_000, None, True, 6_000, PaymentState.PART_PAID, id="part-paid"),
-        pytest.param(10_000, None, True, 1, PaymentState.PART_PAID, id="part-paid-one-left"),
-        pytest.param(10_000, None, True, 9_999, PaymentState.PART_PAID, id="part-paid-one-paid"),
+        pytest.param(0, 0, False, None, PaymentState.PAID, id="zero-total-no-customer"),
+        pytest.param(0, 0, True, 5_000, PaymentState.PAID, id="zero-total-first-rule-wins"),
+        pytest.param(0, 0, True, -1, PaymentState.PAID, id="zero-total-out-of-range"),
+        pytest.param(0, 0, True, 9, PaymentState.PAID, id="zero-total-before-on-the-spot"),
+        pytest.param(10_000, 10_000, False, None, PaymentState.PAID, id="on-the-spot"),
+        pytest.param(10_000, 10_000, True, None, PaymentState.PAID, id="on-the-spot-customer"),
+        pytest.param(10_000, 0, True, 0, PaymentState.PAID, id="paid-later"),
+        pytest.param(10_000, 0, True, 10_000, PaymentState.UNPAID, id="unpaid"),
+        pytest.param(10_000, 0, True, 6_000, PaymentState.PART_PAID, id="part-paid"),
+        pytest.param(10_000, 0, True, 1, PaymentState.PART_PAID, id="part-paid-one-left"),
+        pytest.param(10_000, 0, True, 9_999, PaymentState.PART_PAID, id="part-paid-one-paid"),
     ],
 )
 def test_the_state_table(
     total: int,
-    method: PaymentMethodId | None,
+    amount: int,
     has_customer: bool,
     owed: int | None,
     state: PaymentState,
 ) -> None:
-    assert payment_state(total, method, has_customer, owed) is state
+    assert payment_state(total, amount, has_customer, owed) is state
 
 
 def test_a_sale_settled_by_a_credit_reads_zero_owed_and_is_paid() -> None:
-    assert payment_state(10_000, None, True, 0) is PaymentState.PAID
+    assert payment_state(10_000, 0, True, 0) is PaymentState.PAID
 
 
 @pytest.mark.parametrize(
-    ("total", "method", "has_customer", "owed", "message"),
+    ("total", "amount", "has_customer", "owed", "message"),
     [
         pytest.param(
             10_000,
-            CASH,
+            10_000,
             True,
             0,
             "a sale paid on the spot is never reported as owed",
@@ -69,7 +68,7 @@ def test_a_sale_settled_by_a_credit_reads_zero_owed_and_is_paid() -> None:
         ),
         pytest.param(
             10_000,
-            CASH,
+            10_000,
             True,
             50,
             "a sale paid on the spot is never reported as owed",
@@ -77,7 +76,7 @@ def test_a_sale_settled_by_a_credit_reads_zero_owed_and_is_paid() -> None:
         ),
         pytest.param(
             10_000,
-            None,
+            0,
             False,
             None,
             "a sale with no customer is paid on the spot or is a gift",
@@ -85,7 +84,7 @@ def test_a_sale_settled_by_a_credit_reads_zero_owed_and_is_paid() -> None:
         ),
         pytest.param(
             10_000,
-            None,
+            0,
             True,
             None,
             "a customer's sale is missing from settlement",
@@ -93,7 +92,7 @@ def test_a_sale_settled_by_a_credit_reads_zero_owed_and_is_paid() -> None:
         ),
         pytest.param(
             10_000,
-            None,
+            0,
             True,
             -1,
             "a sale's amount owed lies outside zero and its total",
@@ -101,7 +100,7 @@ def test_a_sale_settled_by_a_credit_reads_zero_owed_and_is_paid() -> None:
         ),
         pytest.param(
             10_000,
-            None,
+            0,
             True,
             10_001,
             "a sale's amount owed lies outside zero and its total",
@@ -111,35 +110,33 @@ def test_a_sale_settled_by_a_credit_reads_zero_owed_and_is_paid() -> None:
 )
 def test_each_inconsistent_case_raises_its_own_fixed_message(
     total: int,
-    method: PaymentMethodId | None,
+    amount: int,
     has_customer: bool,
     owed: int | None,
     message: str,
 ) -> None:
     with pytest.raises(SaleBillInconsistent) as raised:
-        payment_state(total, method, has_customer, owed)
+        payment_state(total, amount, has_customer, owed)
 
     assert str(raised.value) == message
 
 
 def test_sale_payment_carries_zero_when_paid_whatever_settlement_did_not_list() -> None:
-    assert sale_payment(10_000, CASH, False, None) == SalePayment(PaymentState.PAID, 0, 10_000)
-    assert sale_payment(0, None, False, None) == SalePayment(PaymentState.PAID, 0, 0)
-    assert sale_payment(10_000, None, True, 0) == SalePayment(PaymentState.PAID, 0, 10_000)
+    assert sale_payment(10_000, 10_000, False, None) == SalePayment(PaymentState.PAID, 0, 10_000)
+    assert sale_payment(0, 0, False, None) == SalePayment(PaymentState.PAID, 0, 0)
+    assert sale_payment(10_000, 0, True, 0) == SalePayment(PaymentState.PAID, 0, 10_000)
 
 
 def test_sale_payment_carries_settlements_amount_when_owed() -> None:
-    assert sale_payment(10_000, None, True, 10_000) == SalePayment(
-        PaymentState.UNPAID, 10_000, 10_000
-    )
-    assert sale_payment(10_000, None, True, 6_000) == SalePayment(
+    assert sale_payment(10_000, 0, True, 10_000) == SalePayment(PaymentState.UNPAID, 10_000, 10_000)
+    assert sale_payment(10_000, 0, True, 6_000) == SalePayment(
         PaymentState.PART_PAID, 6_000, 10_000
     )
 
 
 def test_sale_payment_raises_what_payment_state_raises() -> None:
     with pytest.raises(SaleBillInconsistent):
-        sale_payment(10_000, None, True, 10_001)
+        sale_payment(10_000, 0, True, 10_001)
 
 
 @pytest.mark.parametrize(
@@ -171,6 +168,119 @@ def test_the_bill_payment_of_each_state() -> None:
 
 
 def test_bill_payment_keeps_none_for_a_zero_total_and_refuses_an_out_of_range_amount() -> None:
-    assert bill_payment(0, None, True, 5_000) == BillPayment("none", None)
+    assert bill_payment(0, 0, True, 5_000) == BillPayment("none", None)
     with pytest.raises(SaleBillInconsistent):
-        bill_payment(10_000, None, True, 10_001)
+        bill_payment(10_000, 0, True, 10_001)
+
+
+def test_a_deposit_later_paid_off_is_paid() -> None:
+    assert payment_state(TOTAL, 4_000, True, 0) is PaymentState.PAID
+    assert sale_payment(TOTAL, 4_000, True, 0) == SalePayment(PaymentState.PAID, 0, TOTAL)
+
+
+def test_a_deposit_partly_covered_is_part_paid_with_the_remainder() -> None:
+    assert payment_state(TOTAL, 4_000, True, 2_500) is PaymentState.PART_PAID
+    assert sale_payment(TOTAL, 4_000, True, 2_500) == SalePayment(
+        PaymentState.PART_PAID, 2_500, TOTAL
+    )
+    assert sale_payment(TOTAL, 4_000, True, 6_000) == SalePayment(
+        PaymentState.PART_PAID, 6_000, TOTAL
+    )
+
+
+@pytest.mark.parametrize(
+    ("amount", "has_customer", "owed", "message"),
+    [
+        pytest.param(
+            4_000,
+            True,
+            6_001,
+            "a deposit sale's amount owed lies outside zero and what its deposit leaves",
+            id="owed-above-what-the-deposit-leaves",
+        ),
+        pytest.param(
+            4_000,
+            True,
+            -1,
+            "a deposit sale's amount owed lies outside zero and what its deposit leaves",
+            id="owed-negative",
+        ),
+        pytest.param(
+            4_000, False, None, "a deposit sale has a customer", id="deposit-without-customer"
+        ),
+        pytest.param(
+            4_000,
+            False,
+            3_000,
+            "a deposit sale has a customer",
+            id="deposit-without-customer-listed",
+        ),
+        pytest.param(
+            4_000,
+            True,
+            None,
+            "a customer's sale is missing from settlement",
+            id="deposit-missing-from-settlement",
+        ),
+        pytest.param(
+            TOTAL + 1,
+            True,
+            None,
+            "a sale's amount paid on the spot lies outside zero and its total",
+            id="amount-above-the-total",
+        ),
+        pytest.param(
+            -1,
+            True,
+            5_000,
+            "a sale's amount paid on the spot lies outside zero and its total",
+            id="negative-amount",
+        ),
+    ],
+)
+def test_the_deposit_and_amount_contradictions_raise_their_fixed_message(
+    amount: int, has_customer: bool, owed: int | None, message: str
+) -> None:
+    with pytest.raises(SaleBillInconsistent) as raised:
+        payment_state(TOTAL, amount, has_customer, owed)
+    assert str(raised.value) == message
+
+    with pytest.raises(SaleBillInconsistent):
+        sale_payment(TOTAL, amount, has_customer, owed)
+    with pytest.raises(SaleBillInconsistent):
+        bill_payment(TOTAL, amount, has_customer, owed)
+
+
+def test_a_zero_total_with_an_amount_raises_in_both_entry_points() -> None:
+    with pytest.raises(SaleBillInconsistent):
+        payment_state(0, 1, True, None)
+    with pytest.raises(SaleBillInconsistent):
+        bill_payment(0, 1, True, None)
+
+
+def test_bill_payment_of_a_zero_total_with_no_amount_is_none() -> None:
+    assert bill_payment(0, 0, False, None) == BillPayment("none", None)
+
+
+@pytest.mark.parametrize(
+    ("total", "amount", "has_customer", "owed"),
+    [
+        (10_000, 10_000, True, 0),
+        (10_000, 0, False, None),
+        (10_000, 0, True, None),
+        (10_000, 0, True, -1),
+        (10_000, 0, True, 10_001),
+        (10_000, 4_000, False, None),
+        (10_000, 4_000, True, None),
+        (10_000, 4_000, True, 6_001),
+        (10_000, 10_001, True, None),
+        (10_000, -1, True, None),
+        (0, 1, True, None),
+    ],
+)
+def test_no_inconsistent_message_holds_a_digit(
+    total: int, amount: int, has_customer: bool, owed: int | None
+) -> None:
+    with pytest.raises(SaleBillInconsistent) as raised:
+        payment_state(total, amount, has_customer, owed)
+    assert not any(char.isdigit() for char in str(raised.value))

@@ -128,6 +128,11 @@ body {
   color: var(--tinta2);
 }
 
+/* The Customers no-match line carries what was typed: a long query wraps, it is never cut. */
+.campo__rotulo--consulta {
+  overflow-wrap: anywhere;
+}
+
 /* The Customer's number on the card and the card behind: whole, on one line, never cut. */
 .campo__valor-telefono {
   white-space: nowrap;
@@ -5611,6 +5616,52 @@ a.ajustes-tema__opcion {
 }
 /* ===== end Owed summary ===== */
 
+/* `DateRow`: one row of at least 44 px, the label and the day. The native date input is transparent and
+ * covers the whole row, so the tap lands on it (never `pointer-events: none`); 16 px keeps the phone from
+ * zooming on focus. The row's pressed cue is its fill alone. */
+.date-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  box-sizing: border-box;
+  padding: 0 var(--espacio-lg);
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+  color: var(--tinta);
+  font-size: 16px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.date-row:active {
+  background: var(--linea);
+  transition: none;
+}
+
+.date-row__label {
+  color: var(--tinta2);
+}
+
+.date-row__value {
+  color: var(--tinta);
+}
+
+.date-row__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+  font-size: 16px;
+}
+
 /* pressed */
 /* The pressed state (GH-77, GH-102): of every control a finger can tap, from tokens only.
  * Two cues, neither colour alone: the control shrinks a little (`transform`), and its
@@ -7728,7 +7779,7 @@ button:has(> .venta-en-curso) {
 }
 
 /* ===== ajustes-inicio ===== */
-/* Settings home list (`SettingsHomeList`): a strip of three shortcuts, then each group's rows in one card.
+/* Settings home list (`SettingsNav`): a strip of three shortcuts, then each group's rows in one card.
  * Tokens only, so light and dark follow the theme. Pressed state, no hover-only behaviour. */
 .ajustes-inicio {
   display: flex;
@@ -7869,6 +7920,16 @@ button:has(> .venta-en-curso) {
 .ajustes-inicio__atajo.ajustes__item:active:not(:disabled):not([aria-disabled='true']),
 .ajustes-inicio__fila.ajustes__item:active:not(:disabled):not([aria-disabled='true']) {
   background-color: var(--papel);
+}
+/* The row of the page being read (`activeKey`): not colour alone, a bar and a heavier label. The
+ * bar is an inset shadow, so the row's box does not change; the `:active` rules above write
+ * background-color only. Tokens only. */
+.ajustes-inicio__fila.ajustes-inicio__fila--actual {
+  box-shadow: inset var(--espacio-xs) 0 0 var(--acento);
+}
+
+.ajustes-inicio__fila--actual .ajustes-inicio__rotulo {
+  font-weight: 600;
 }
 /* ===== end ajustes-inicio ===== */
 

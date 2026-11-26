@@ -20,6 +20,7 @@ import {
   SETTINGS_WITHDRAWAL_REASONS,
 } from '../../routes'
 import {
+  activeSettingsRow,
   NON_ROW_ROUTES,
   SETTINGS_GROUP_LABEL_KEYS,
   SETTINGS_GROUPS,
@@ -335,6 +336,61 @@ describe('shownRowsByGroup', () => {
     expect(shownRowsByGroup(ON_TWO).map((entry) => entry.labelKey)).toEqual(
       SETTINGS_GROUPS.map((group) => SETTINGS_GROUP_LABEL_KEYS[group]),
     )
+  })
+})
+
+describe('activeSettingsRow', () => {
+  const BOTH_ON: SettingsRowContext = { selectableLanguages: ['en', 'es'], isCustomerTypesOn: true }
+  const ONE_LANGUAGE: SettingsRowContext = { selectableLanguages: ['en'], isCustomerTypesOn: true }
+
+  test('the business address is Business name, never Language, even with two languages', () => {
+    expect(activeSettingsRow(SETTINGS_BUSINESS, BOTH_ON)).toBe('businessName')
+    expect(activeSettingsRow(SETTINGS_BUSINESS, ONE_LANGUAGE)).toBe('businessName')
+  })
+
+  test('Payment methods and its archived sub-screen mark Payment methods', () => {
+    expect(activeSettingsRow(SETTINGS_PAYMENT_METHODS, BOTH_ON)).toBe('paymentMethods')
+    expect(activeSettingsRow(SETTINGS_PAYMENT_METHODS_ARCHIVED, BOTH_ON)).toBe('paymentMethods')
+  })
+
+  test('Expense categories marks itself', () => {
+    expect(activeSettingsRow(EXPENSE_CATEGORIES, BOTH_ON)).toBe('expenseCategories')
+  })
+
+  test('Customer types marks itself when on and nothing when off or unknown, never Prices', () => {
+    expect(activeSettingsRow(SETTINGS_CUSTOMER_TYPES, BOTH_ON)).toBe('customerTypes')
+    expect(activeSettingsRow(SETTINGS_CUSTOMER_TYPES, { ...BOTH_ON, isCustomerTypesOn: false })).toBeUndefined()
+    expect(activeSettingsRow(SETTINGS_CUSTOMER_TYPES, NO_CONTEXT)).toBeUndefined()
+  })
+
+  test('the Payments page and bare Settings mark nothing', () => {
+    expect(activeSettingsRow(SETTINGS_PAYMENTS, BOTH_ON)).toBeUndefined()
+    expect(activeSettingsRow(SETTINGS, BOTH_ON)).toBeUndefined()
+  })
+
+  test('a trailing slash does not change the answer', () => {
+    expect(activeSettingsRow(`${SETTINGS_PAYMENT_METHODS}/`, BOTH_ON)).toBe('paymentMethods')
+  })
+
+  test('an unknown address marks nothing, and so does a prefix of a row address', () => {
+    expect(activeSettingsRow('/nowhere/at/all', BOTH_ON)).toBeUndefined()
+    expect(activeSettingsRow(`${SETTINGS}/payments/methods/unknown`, BOTH_ON)).toBeUndefined()
+  })
+
+  test('a list holding only Language marks it with two languages and nothing otherwise', () => {
+    const onlyLanguage = SETTINGS_ROWS.filter((candidate) => candidate.key === 'language')
+    expect(activeSettingsRow(SETTINGS_BUSINESS, BOTH_ON, onlyLanguage)).toBe('language')
+    expect(activeSettingsRow(SETTINGS_BUSINESS, ONE_LANGUAGE, onlyLanguage)).toBeUndefined()
+  })
+
+  test('the nearest row wins over a row further up, and a hidden nearest row does not hand over', () => {
+    const rows = SETTINGS_ROWS.filter((candidate) => ['paymentMethods', 'expenseCategories'].includes(candidate.key))
+    const hiddenNearest: readonly SettingsRow[] = [
+      ...rows,
+      { ...row('users'), to: SETTINGS_PAYMENT_METHODS_ARCHIVED, isShown: () => false },
+    ]
+    expect(activeSettingsRow(SETTINGS_PAYMENT_METHODS_ARCHIVED, BOTH_ON, rows)).toBe('paymentMethods')
+    expect(activeSettingsRow(SETTINGS_PAYMENT_METHODS_ARCHIVED, BOTH_ON, hiddenNearest)).toBeUndefined()
   })
 })
 

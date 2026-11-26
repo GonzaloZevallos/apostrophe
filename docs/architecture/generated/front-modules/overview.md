@@ -80,9 +80,11 @@ src_router_tsx-->src_routes_ts
 src_router_tsx-->src_screens
 src_router_tsx-->src_shell
 src_sales-->src_api
+src_sales-->src_clipboard_ts
 src_sales-->src_copy
 src_sales-->src_format
 src_sales-->src_screens
+src_sales-->src_share_ts
 src_screens-->src_api
 src_screens-->src_clipboard_ts
 src_screens-->src_components

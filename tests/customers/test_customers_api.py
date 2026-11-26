@@ -279,6 +279,26 @@ def test_an_empty_query_lists_every_customer(client: TestClient) -> None:
     assert len(client.get("/customers").json()) == 1
 
 
+def test_a_query_that_folds_to_empty_lists_no_customer_but_a_blank_one_lists_all(
+    client: TestClient, other_client: TestClient
+) -> None:
+    _register(client, "Zoe Mena", "11 2345-6789")
+    _register(client, "Álvaro Mena", None)
+    _register(client, "Beto Mena", "11 9876-5432")
+    _register(other_client, "Mena Ajeno", "11 5555-0000")
+
+    for params in ({}, {"q": ""}, {"q": "   "}):
+        listed = client.get("/customers", params=params)
+        assert [c["name"] for c in listed.json()] == ["Álvaro Mena", "Beto Mena", "Zoe Mena"]
+
+    assert client.get("/customers", params={"q": "́"}).json() == []
+    assert [c["name"] for c in client.get("/customers", params={"q": "mena"}).json()] == [
+        "Álvaro Mena",
+        "Beto Mena",
+        "Zoe Mena",
+    ]
+
+
 def test_editing_a_customer_keeps_fields_left_out_of_the_body(
     client: TestClient, engine: Engine
 ) -> None:
