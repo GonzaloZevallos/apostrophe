@@ -9,10 +9,11 @@
 
 import { useEffect } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router'
-import SinConexion from './components/SinConexion'
 import { setCurrentPath, setNavigate } from './queryClient'
 import ScrollSync from './shell/ScrollSync'
-import { useOnline } from './useOnline'
+import { OfflineBanner, OfflineBannerSlotProvider } from './shell/offlineBannerSlot'
+import { useOfflineBannerSlotClaimed } from './shell/useOfflineBannerSlot'
+import { useViewport } from './shell/useViewport'
 
 function RouterSync() {
   const location = useLocation()
@@ -24,23 +25,21 @@ function RouterSync() {
   return null
 }
 
-function OfflineBanner() {
-  const online = useOnline()
-  if (online) return null
-  return (
-    <div className="aviso-flotante">
-      <SinConexion />
-    </div>
-  )
+/** The phone's notice floats; a computer's is drawn by the Shell, or, with no Shell, here as a row. */
+function RootBanner() {
+  const viewport = useViewport()
+  const claimed = useOfflineBannerSlotClaimed()
+  if (viewport === 'phone') return <OfflineBanner variant="flotante" />
+  return claimed ? null : <OfflineBanner variant="pagina" />
 }
 
 export default function Root() {
   return (
-    <>
+    <OfflineBannerSlotProvider>
       <RouterSync />
       <ScrollSync />
-      <OfflineBanner />
+      <RootBanner />
       <Outlet />
-    </>
+    </OfflineBannerSlotProvider>
   )
 }

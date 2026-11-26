@@ -45,6 +45,8 @@ import BrandMark from '../components/BrandMark'
 import BotonLink from '../components/BotonLink'
 import { NUEVA_VENTA_ESCRITORIO_CLASS } from '../components/botonVisual'
 import BackArrow from './BackArrow'
+import { OfflineBanner } from './offlineBannerSlot'
+import { useClaimOfflineBannerSlot } from './useOfflineBannerSlot'
 import { NO_PRICE_HINT } from '../copy/sales'
 import { describeNewSale } from '../copy/readers/newSaleDescription'
 import { OTHER_RECORDS } from '../sales/otherRecords'
@@ -219,6 +221,7 @@ export default function Shell() {
   const leaf = useLeafScreen()
   const barPlace = placeOf(leaf.id, 'phone').bar
   const railPlace = placeOf(leaf.id, 'computer').rail
+  useClaimOfflineBannerSlot()
   const viewport = useViewport()
   const chrome = chromeOf(leaf, viewport)
   const backParent = useBackParentStore()
@@ -286,6 +289,7 @@ export default function Shell() {
         </nav>
       )}
       <div className={chrome.bar ? 'columna-principal' : 'columna-principal columna-principal--sin-bar'}>
+          {viewport === 'computer' && <OfflineBanner />}
           {chrome.backArrow && <BackArrow id={leaf.id} />}
           <Outlet context={me} />
           {chrome.bar && (

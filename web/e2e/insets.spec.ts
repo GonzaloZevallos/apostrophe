@@ -30,6 +30,7 @@ import {
   VARIETIES,
 } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
+import { choosePaymentMethod } from './helpers/paymentMethod.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { watchConsole } from './console.js'
 import { fillSaleLine } from './helpers/sale.js'
@@ -195,15 +196,51 @@ test('every screen, bar, sheet and toast keeps clear of the notch and the home b
     })
     expectInside(where('cobro form button'), await box(page, 'button:has-text("Save")'), viewport)
 
-    // A toast: the offline notice is the one that needs no timing.
+    if (!viewport.wide) {
+      // A toast on the phone: the offline notice floats there and needs no timing.
+      await page.context().setOffline(true)
+      await expect(page.locator('.aviso-flotante')).toBeVisible()
+      const toast = await box(page, '.aviso-flotante')
+      // Below 900 px the toast moved from the top to sit above the bar and the pinned action.
+      expect(toast.bottom, where('toast bottom')).toBeLessThanOrEqual(viewport.height - BOTTOM - TOAST_MARGIN)
+      expect(toast.left, where('toast left')).toBeGreaterThanOrEqual(SIDE + TOAST_MARGIN)
+      expect(toast.right, where('toast right')).toBeLessThanOrEqual(viewport.width - SIDE - TOAST_MARGIN)
+      await page.context().setOffline(false)
+      continue
+    }
+
+    // A toast on a computer: the success flash of Save on the form already open (Lucía's balance
+    // is prefilled and valid). The computer is the last viewport, so this Save runs once. The
+    // offline notice is no toast there (D-69509906): it is in the column, never in `.aviso-flotante`.
+    await choosePaymentMethod(page, 'Cash')
+    // The flash (an inline `.aviso-exito`, not a fixed toast) lasts 2.5 s, so its box is read inside the page the moment it mounts.
+    const flash = page.evaluate(
+      () =>
+        new Promise<Box>((resolve) => {
+          const observer = new MutationObserver(() => {
+            const element = document.querySelector('.aviso-exito[role=status]')
+            if (element === null) return
+            observer.disconnect()
+            const { top, left, right, bottom } = element.getBoundingClientRect()
+            resolve({ top, left, right, bottom })
+          })
+          observer.observe(document.body, { childList: true, subtree: true })
+        }),
+    )
+    await page.getByRole('button', { name: 'Save' }).click()
+    const toast = await flash
+    expect(toast.top, where('toast top')).toBeGreaterThanOrEqual(TOP)
+    expect(toast.left, where('toast left')).toBeGreaterThanOrEqual(SIDE)
+    expect(toast.right, where('toast right')).toBeLessThanOrEqual(viewport.width - SIDE)
+
     await page.context().setOffline(true)
-    await expect(page.locator('.aviso-flotante')).toBeVisible()
-    const toast = await box(page, '.aviso-flotante')
-    // Below 900 px the toast moved from the top to sit above the bar and the pinned action.
-    if (viewport.wide) expect(toast.top, where('toast top')).toBeGreaterThanOrEqual(TOP + TOAST_MARGIN)
-    else expect(toast.bottom, where('toast bottom')).toBeLessThanOrEqual(viewport.height - BOTTOM - TOAST_MARGIN)
-    expect(toast.left, where('toast left')).toBeGreaterThanOrEqual(SIDE + TOAST_MARGIN)
-    expect(toast.right, where('toast right')).toBeLessThanOrEqual(viewport.width - SIDE - TOAST_MARGIN)
+    await expect(page.locator('.aviso-sin-conexion')).toBeVisible()
+    const notice = await page.locator('.aviso-sin-conexion').evaluate((element) => ({
+      inColumn: element.closest('.columna-principal') !== null,
+      position: getComputedStyle(element).position,
+    }))
+    expect(notice.inColumn, where('offline notice is in the column')).toBe(true)
+    expect(notice.position, where('offline notice is in the flow')).not.toBe('fixed')
     await page.context().setOffline(false)
   }
 

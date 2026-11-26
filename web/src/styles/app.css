@@ -557,6 +557,23 @@ body {
   pointer-events: none;
 }
 
+/* The offline notice in the page's flow (`offlineBannerSlot.tsx`): on a computer the first child
+ * of the Shell's content column, column-wide; `.disposicion` already applies the insets there. */
+.aviso-sin-conexion {
+  padding: var(--espacio-lg) var(--margen-pantalla) 0;
+}
+
+/* With no Shell the row owns the insets itself. */
+.aviso-sin-conexion--pagina {
+  padding: calc(var(--inset-arriba) + var(--espacio-lg)) calc(var(--inset-derecha) + var(--margen-pantalla)) 0
+    calc(var(--inset-izquierda) + var(--margen-pantalla));
+}
+
+/* The phone's notice keeps floating exactly as before: no padding of its own. */
+.aviso-flotante .aviso-sin-conexion {
+  padding: 0;
+}
+
 .cuerpo {
   flex: 1;
   padding: var(--espacio-lg) var(--margen-pantalla);
