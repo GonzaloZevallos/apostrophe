@@ -957,5 +957,7 @@
   {"source":"varieties.ts:VARIETIES_TEXT.vigenteHoy","args":null,"text":"In force today"},
   {"source":"varieties.ts:VARIETIES_TEXT.yaCargasteUnPrecio","args":null,"text":"You already entered a price with that date"},
   {"source":"varieties.ts:VARIETIES_TEXT.yaExisteUnaVariedad","args":null,"text":"A product with that name already exists"},
-  {"source":"varieties.ts:VARIETY_NAME_HELP","args":null,"text":"Up to 60 characters · cannot repeat another product's name"}
+  {"source":"varieties.ts:VARIETY_NAME_HELP","args":null,"text":"Up to 60 characters · cannot repeat another product's name"},
+  {"source":"logoRefusal.ts:LOGO_REFUSAL_TEXT.too_big","args":null,"text":"Use an image of 1 MB or less."},
+  {"source":"logoRefusal.ts:LOGO_REFUSAL_TEXT.wrong_type","args":null,"text":"Use a PNG or JPEG."}
 ]
