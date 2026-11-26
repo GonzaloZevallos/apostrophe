@@ -15,6 +15,11 @@
 - Afina el job de Settings de navigation.md ("cada configuración de todo el negocio en un solo lugar"); no es un job nuevo de producto. Su protagonista es quien vende, en el celular, en un momento poco frecuente y deliberado.
 - Lo sirve la lista de inicio de Settings del celular (GH-843), construida como componente en #999 y conectada por #927 (parte 3 de GH-843) dentro de la pantalla de inicio de Settings del celular.
 
+**Cuando** abro Settings en el celular para ver cómo está configurado mi negocio, **quiero** que cada fila me diga cuántos **Payment method**s y cuántas **Expense category**s tengo, y que la lista de Expense categories muestre solo lo que ya configuré hasta que elija agregar una, **para poder** revisar mi configuración de un vistazo y agregar una Expense category en un toque cuando la necesito.
+
+- Pasada de detalle de Settings contra los dibujos aprobados (GH-1069, parte 2 de 2). Lo sirven el grupo Expense categories con un solo botón "+ Category" y los conteos de las filas de Payments and expenses.
+- Antes: quien vendía pasaba por un campo "New category" vacío y siempre abierto, con un "+ Category" desactivado debajo, y para saber cuántos medios o categorías tenía abría cada grupo. No se pierde plata: el costo es desorden y toques de más.
+
 # Settings
 
 **Settings** es el único lugar que reúne cada configuración de todo el **Business**. Cada configuración vive en su propia pantalla, y sus filas, sus atajos y sus direcciones salen de un solo registro tipado, `web/src/screens/settings/settingsRows.ts`. Ninguna pantalla declara una etiqueta, una segunda línea, un ícono ni una dirección propia (ADR [20261119-settings-rows-live-in-one-registry-read-by-the-list-the-shortcuts-and-the-search](../adr/20261119-settings-rows-live-in-one-registry-read-by-the-list-the-shortcuts-and-the-search.md)). Desde dónde se llega a Settings y el marco de cada pantalla se definen en navigation.md. Lo que hace cada grupo se define en el archivo de su capacidad: pricing-settings.md, payment-methods.md, catalog.md, accounts.md, theme-choice.md, money.md y stored-language.md.
@@ -82,6 +87,13 @@ El componente `SettingsNav` (`web/src/screens/settings/SettingsNav.tsx`) dibuja 
 
 Métrica: la cumplen los tests de Testing Library de los criterios 1 a 3: orden de títulos y tira, conteos de filas por contexto, nombres y destinos de los shortcuts, `enteredFrom: 'settings'` en cada link y grupo vacío sin título. Los cubren `SettingsHomeList.test.tsx` y `settingsRows.test.ts`. La medida del job para quien vende (llegar a la pantalla correcta sin buscar) la toman `SettingsHome.test.tsx` y `tapBudget.spec.ts`.
 
+## Criterios de éxito de los grupos Expense categories y Payments and expenses (GH-1069)
+
+1. **Un solo "+ Category".** En Settings, el grupo Expense categories muestra la lista y un solo botón "+ Category", y ningún campo "New category" hasta tocarlo. Tocarlo abre el campo con el foco; un agregado guardado lo cierra y devuelve el foco al botón; un campo abierto con texto pregunta "Discard the category?" antes de salir.
+2. **Conteos que nunca mienten.** La fila "Payment methods" muestra la cantidad de medios ofrecidos y la fila "Expense categories" la cantidad de Expense categories del Business, cada una antes del chevron y solo después de que respondió su propia lectura. Sin categorías, "0". Nunca se muestra una cifra equivocada ni durante una lectura pendiente o fallida.
+3. **Como el dibujo.** ConfiguracionCategorias, ConfiguracionCategoriasCompu y ConfiguracionCobros no le dejan al dueño nada para leer o hacer distinto del dibujo, en claro y en oscuro (**Drawing as guide**), con las Design captures de evidencia; no es una comparación de píxeles.
+4. **Nada más cambia.** Renombrar y eliminar funcionan como antes, el paso de categorías del Onboarding se comporta igual y no se agrega ningún pedido a la API.
+
 ## Comportamiento
 
 ### Pantalla de inicio de Settings (celular)
@@ -123,6 +135,31 @@ No hay campo de búsqueda: puede ser una parte posterior. Los estilos de la pant
 - Cada fila y cada atajo es un `InAppLink` a la dirección de su fila, con el estado `{enteredFrom: 'settings'}`.
 - Cada fila y cada atajo mide al menos 44 px y tiene un estado `:active`.
 
+### Grupo Payments and expenses: conteos (GH-1069)
+
+El grupo Payments and expenses (`PaymentsGroup.tsx`, dibujo `ConfiguracionCobros.dc.html`) tiene dos filas, "Payment methods" y "Expense categories". Cada una muestra un conteo a su derecha, antes del chevron, como en el dibujo ("3", "5"):
+
+- "Payment methods" cuenta los Payment methods que el Business ofrece ahora (sin archivar): la misma lista que une su segunda línea.
+- "Expense categories" cuenta las Expense categories del Business. Sin ninguna, muestra "0" y ninguna segunda línea.
+- El conteo es un número solo, sin palabra de unidad: la etiqueta de la fila ya nombra lo que se cuenta. Va en **Tabular figures**, con solo tokens de diseño, en claro y en oscuro.
+- Un conteo se muestra solo cuando respondió su propia lectura. Mientras una lectura está pendiente, o después de que falló, no hay conteo, la misma regla que sigue la segunda línea; el contenido queda `aria-busy` mientras está pendiente, como antes.
+- Los dos conteos salen de las lecturas que `PaymentsGroup.tsx` ya hace: no se agrega ningún pedido a la API.
+- El conteo es parte del texto de la fila, así que el nombre accesible del link sigue empezando por la etiqueta de la fila.
+- En el celular el grupo sigue siendo un grupo con "Close" (decisión 21), no la página con "‹ Ajustes" del dibujo: diferencia aceptada por el dueño (abajo).
+
+### Grupo Expense categories (GH-1069)
+
+En Settings, el grupo Expense categories (dibujos `ConfiguracionCategorias.dc.html` y `ConfiguracionCategoriasCompu.dc.html`) dibuja `ExpenseCategoriesEditor` en el modo plegado que ya usa el paso de categorías del Onboarding (`web/src/screens/onboarding/CategoriesStep.tsx`):
+
+- Muestra la lista de Expense categories y un solo botón "+ Category". El campo "New category" no se ve hasta tocarlo.
+- Tocar "+ Category" abre el campo con el foco en él. Un agregado guardado lo cierra y devuelve el foco al botón.
+- No hay ningún control para plegar el campo sin guardar: un campo vacío nunca bloquea "Close", y uno con texto pregunta "Discard the category?" antes de salir, como en el dibujo.
+- Settings no muestra la línea "Adding, renaming or removing a category saves right away." (`CATEGORIES_SAVE_AT_ONCE`), que no está en sus dibujos; el Onboarding la conserva, porque su dibujo la tiene. Cada agregado, renombre o eliminación ya muestra su resultado al hacerse.
+- Renombrar y eliminar quedan como estaban, solo con ícono, como lo permite la **Icon and text rule**.
+- Un solo modo: si ningún llamador pasa `addCollapsed={false}`, la prop se elimina. Se borra el comentario que decía que Settings mantenía el campo siempre visible "as drawn".
+- Los localizadores de vitest y e2e que encontraban el campo siempre visible pasan a abrirlo con "+ Category" en el mismo cambio; el campo nunca se vuelve a poner, ni visible ni oculto, para satisfacer un localizador (D-69509906).
+- El Mobile check recorre también el estado con el campo de agregar abierto, sin que crezca ninguna lista de infractores, tolerancia ni control.
+
 ### Volver a Settings
 
 - Cada pantalla que se abre desde una fila o un atajo vuelve a la pantalla de inicio de Settings. El control depende del tipo de pantalla en el celular:
@@ -145,6 +182,13 @@ El dibujo es `Configuracion.dc.html` y su gemelo oscuro. Las cuatro diferencias 
 
 Además, por **Drawing as guide** y sin cambiar lo que quien vende lee o hace: el título mide 26 px en vez de 28, y la inicial va en el tinte suave del acento con texto en el color del acento, en vez del acento sólido con texto blanco.
 
+En GH-1069 (decisión 1 del humano, 2026-11-26) el dueño aceptó otras cuatro diferencias, que quedan como están construidas:
+
+1. Integrations (`ConfiguracionIntegraciones.dc.html`) conserva "Find my chat" (**Own chat lookup**) y su **More info** "i" junto a "Your chat".
+2. Integrations conserva "Enter the token first" debajo del "Find my chat" desactivado, el motivo visible de que esté desactivado.
+3. Integrations conserva el link "Go to the catalog" al pie, la única entrada a la pantalla del Catalog además de la línea "Out of date" de Home (#848).
+4. En el celular, Payments and expenses (`ConfiguracionCobros.dc.html`) se abre como un grupo con "Close" (decisión 21), no como la página con "‹ Ajustes" del dibujo.
+
 ## Métricas
 
 - Toques desde la pantalla de inicio de Settings hasta la pantalla de cualquier fila: 1, para cada fila del registro, según el recorrido de vitest con la tabla de rutas real (`SettingsHome.test.tsx`, con las dos filas condicionales visibles).
@@ -153,3 +197,9 @@ Además, por **Drawing as guide** y sin cambiar lo que quien vende lee o hace: e
 - Objetivos táctiles de la pantalla de inicio de Settings por debajo de 44 px: 0, según el Mobile check, sin que crezca ninguna lista de infractores.
 - Cantidades de Users equivocadas o rotas mostradas durante una lectura pendiente o fallida: 0, según los tests de Testing Library.
 - Cambios en la Settings de computadora: 0, según los tests de Settings existentes contra la vista de computadora y la captura de ConfiguracionCompu antes y después (#994).
+- Grupo Expense categories de Settings con el campo "New category" visible antes de tocar "+ Category": 0, según los tests de `ExpenseCategoriesGroup` y `ExpenseCategoriesEditor` y el e2e de Settings (GH-1069).
+- Toques desde el grupo Expense categories hasta el campo de agregar abierto y con foco: 1 (GH-1069).
+- Conteos mostrados en las filas de Payments and expenses durante una lectura pendiente o fallida, o distintos del largo de su lista: 0, según los tests de Testing Library de `PaymentsGroup` (GH-1069).
+- Pedidos a la API agregados por `PaymentsGroup`: 0 (GH-1069).
+- Infracciones del Mobile check en el estado con el campo de agregar abierto: 0, sin ampliar ninguna lista de infractores, tolerancia ni control (GH-1069).
+- Design captures adjuntas de ConfiguracionCategorias, ConfiguracionCategoriasCompu y ConfiguracionCobros, en celular de 375 px y computadora, claro y oscuro: todas (GH-1069).
