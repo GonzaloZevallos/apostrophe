@@ -2,12 +2,18 @@
 
 import { baselineArgs, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './payments.ts'
-import type { LimitedCopy } from './limits.ts'
+import type { KeyedCopy, LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
+export const NAMESPACE = 'payments'
 
-export const LIMITED_COPY: readonly LimitedCopy[] = []
-export const LONG_REFUSALS: readonly string[] = []
+export const LIMITED_COPY: readonly (LimitedCopy | KeyedCopy)[] = [
+  { kind: 'help', key: 'payments:previewSettled' },
+  { kind: 'help', key: 'payments:previewLoading' },
+  { kind: 'notice', key: 'payments:previewFailed' },
+]
+/** The still-owe sentence carries the amount and the rule about the oldest debt: over 80 by design. */
+export const LONG_REFUSALS: readonly string[] = ['payments:previewStillOwe']
 
 
 const { money: M, date: D } = FIXTURE

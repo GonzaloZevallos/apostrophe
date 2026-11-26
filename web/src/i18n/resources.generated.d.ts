@@ -7,6 +7,7 @@ export type Resources = {
   "customerTypes": typeof import('../copy/locales/en/customerTypes.json')
   "emptyStates": typeof import('../copy/locales/en/emptyStates.json')
   "paymentMethods": typeof import('../copy/locales/en/paymentMethods.json')
+  "payments": typeof import('../copy/locales/en/payments.json')
   "products": typeof import('../copy/locales/en/products.json')
   "refusals": typeof import('../copy/locales/en/refusals.json')
   "sales": typeof import('../copy/locales/en/sales.json')
