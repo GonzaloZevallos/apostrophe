@@ -246,7 +246,6 @@ body {
   display: flex;
   align-items: flex-start;
   gap: var(--espacio-xs);
-  color: var(--deuda);
 }
 
 /* The customer form's focus state (`NuevaVentaCliente.dc.html`): a heavy inset ring on
