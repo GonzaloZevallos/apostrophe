@@ -7,8 +7,8 @@
 
 import type { PaymentMethod } from '../api/payments'
 import { isIsoDate, maxSaleDate } from '../format/dates'
-import type { MoneyFormat } from '../format/money'
-import { parseGrams, parseMoneyInput } from '../format/parse'
+import { formatQuantity, type MoneyFormat } from '../format/money'
+import { formatMoneyInput, parseGrams, parseMoneyInput } from '../format/parse'
 import { LINE_STEP_HUNDREDTHS, toHundredths, type PaymentChoice, type SaleLineInput } from './pricing'
 
 export type DraftChoice = { kind: 'unset' } | PaymentChoice
@@ -122,6 +122,49 @@ export function lineEditOf(
   }
   const edit = { quantityHundredths, gift: buffer.gift, specialPrice } as LineEdit
   return { ok: true, edit }
+}
+
+/** What the line detail holds as typed. Only `lineBufferOf` seeds it and only `lineBufferWith`
+ * changes it, so Gift and a Special price text never hold together. */
+export interface LineBuffer {
+  quantityText: string
+  gift: boolean
+  specialText: string
+}
+
+/** One change to the buffer: a typed quantity, a typed Special price, or the Gift control. */
+export type LineBufferChange = { quantityText: string } | { specialText: string } | { gift: boolean }
+
+/** The buffer a line starts from: the quantity as the row shows it, the Special price as the amount
+ * field prefills it (blank when there is none). */
+export function lineBufferOf(line: DraftLine, format: MoneyFormat): LineBuffer {
+  return {
+    quantityText: formatQuantity(line.quantityHundredths),
+    gift: line.gift,
+    specialText: line.specialPrice === null ? '' : formatMoneyInput(line.specialPrice, format),
+  }
+}
+
+/** The one way the buffer changes: Gift on empties the Special price text, a non-blank Special
+ * price text turns Gift off, and a quantity edit leaves both as they are. */
+export function lineBufferWith(buffer: LineBuffer, change: LineBufferChange): LineBuffer {
+  if ('quantityText' in change) return { ...buffer, quantityText: change.quantityText }
+  if ('gift' in change) return { ...buffer, gift: change.gift, specialText: change.gift ? '' : buffer.specialText }
+  const gift = change.specialText.trim() === '' ? buffer.gift : false
+  return { ...buffer, gift, specialText: change.specialText }
+}
+
+/** Whether the buffer differs from the line: a refusal counts as changed, otherwise the parsed
+ * quantity, Gift and Special price are compared with the line's own. */
+export function lineEditChanged(line: DraftLine, buffer: LineBuffer, format: MoneyFormat): boolean {
+  const result = lineEditOf(buffer, format)
+  if (!result.ok) return true
+  const { edit } = result
+  return (
+    edit.quantityHundredths !== line.quantityHundredths ||
+    edit.gift !== line.gift ||
+    edit.specialPrice !== line.specialPrice
+  )
 }
 
 /** What counts as the sale's payment: the seller's own pick as it is, and for unset the proposal

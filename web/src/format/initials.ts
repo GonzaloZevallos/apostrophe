@@ -14,6 +14,7 @@ function firstGraphemes(word: string, count: number): string[] {
  * A name's initials by the drawing's rule, counted in graphemes: two or more words give the first
  * character of each of the first two ("La Huerta" → "LH"); one word gives its first two ("Zeta" → "ZE");
  * a one-character name gives that character. A letter is upper-cased; any other character is shown as is.
+ * Each grapheme is cut to its first 16 code points, so a Zalgo-style cluster stays short.
  */
 export function initialsOf(name: string): string {
   const words = name.split(/\s+/).filter((word) => word !== '')
@@ -23,5 +24,5 @@ export function initialsOf(name: string): string {
     second === undefined
       ? firstGraphemes(first, 2)
       : firstGraphemes(first, 1).concat(firstGraphemes(second, 1))
-  return kept.map((grapheme) => grapheme.toUpperCase()).join('')
+  return kept.map((grapheme) => Array.from(grapheme.toUpperCase()).slice(0, 16).join('')).join('')
 }

@@ -29,6 +29,7 @@ export function saleWith(state: Sale['payment_state'], overrides: Partial<Sale> 
     still_owing: state === 'unpaid' || state === 'part_paid',
     payment_state: state,
     still_owed: state === null ? null : STILL_OWED[state],
+    payment_method: state === 'paid' ? { id: 1, name: 'Cash', icon: 'banknote' } : null,
   }
   return { ...base, ...overrides }
 }

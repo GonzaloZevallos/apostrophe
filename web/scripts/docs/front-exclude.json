@@ -31,6 +31,7 @@
   "^src/sales/productList\\.ts$",
   "^src/sales/customerSearch\\.ts$",
   "^src/api/saleSuggestions\\.ts$",
+  "^src/api/search\\.ts$",
   "^src/sales/useNewSaleReads\\.ts$",
   "^src/screens/ventas/NuevaVentaProductos\\.tsx$",
   "^src/screens/ventas/ProductResultsTable\\.tsx$",
@@ -39,8 +40,10 @@
   "^src/sales/newSaleView\\.ts$",
   "^src/screens/ventas/CollectSheet\\.tsx$",
   "^src/screens/ventas/NuevaVentaSheet\\.tsx$",
+  "^src/screens/ventas/LineDetailSheet\\.tsx$",
   "^src/screens/ventas/renderNuevaVentaSheet\\.tsx$",
   "^src/screens/settings/settingsSearch\\.ts$",
   "^src/screens/settings/useSettingsSearchEntry\\.ts$",
-  "^src/screens/varieties/productsSegment\\.ts$"
+  "^src/screens/varieties/productsSegment\\.ts$",
+  "^src/components/DateRow\\.tsx$"
 ]

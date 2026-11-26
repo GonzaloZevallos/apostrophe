@@ -3,7 +3,8 @@
  * `payment_state` and `still_owed` into a variant and a sentence. The chip draws the sentence and
  * the card's accessible name carries it, so the two can never say different things. It reads
  * only those two fields (never `still_owing`, the Payments or the Customer's Balance); a state or
- * an amount that cannot be shown is the `unknown` variant, never a guessed state or a $ 0.
+ * an amount that cannot be shown is the `unknown` variant, never a guessed state or a $ 0. The
+ * paid sentence, with or without the method of payment, is built only here.
  */
 
 import type { TFunction } from 'i18next'
@@ -45,11 +46,14 @@ export function paymentView(state: Sale['payment_state'], stillOwed: Sale['still
   }
 }
 
-/** The sentence for a view, in the shown language. */
-export function paymentText(t: TFunction, view: PaymentView): string {
+/** The sentence for a view, in the shown language. `method` (the name of how the sale was paid)
+ * is read only for `paid`, and only when it is not blank. */
+export function paymentText(t: TFunction, view: PaymentView, method?: string | null): string {
   switch (view.variant) {
-    case 'paid':
-      return t('sales:card.payment.paid')
+    case 'paid': {
+      const named = method?.trim() ?? ''
+      return named === '' ? t('sales:card.payment.paid') : t('sales:card.payment.paidWith', { method: named })
+    }
     case 'unpaid':
       return t('sales:card.payment.unpaid')
     case 'part_paid':
