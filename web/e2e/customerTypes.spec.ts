@@ -16,6 +16,7 @@ import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { settingsEntry } from './helpers/chrome.js'
 import { settingsShortcut } from './helpers/settingsHome.js'
+import { expectToast } from './helpers/toast.js'
 import { expectPath } from './helpers/url.js'
 
 test.use({ viewport: { width: 390, height: 844 } })
@@ -52,8 +53,7 @@ test('a seller creates a customer type in Settings and assigns it from the Custo
   await expect(page.getByText('Customer types have no price yet.')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Customer types' })).toHaveCount(0)
   await page.getByRole('switch', { name: 'Customer types' }).click()
-  await page.getByRole('button', { name: 'Save the prices' }).click()
-  await expect(page.getByText('Prices saved')).toBeVisible()
+  await expectToast(page, 'Prices saved', () => page.getByRole('button', { name: 'Save the prices' }).click())
 
   // Prices has no link to the list: it opens from its own Settings row.
   await expect(page.getByRole('link', { name: 'Customer types' })).toHaveCount(0)
@@ -85,8 +85,7 @@ test('a seller cannot delete a type that still has a customer, and is told how m
   await signUpNewBusiness(page)
   await page.goto(SETTINGS_PRICES)
   await page.getByRole('switch', { name: 'Customer types' }).click()
-  await page.getByRole('button', { name: 'Save the prices' }).click()
-  await expect(page.getByText('Prices saved')).toBeVisible()
+  await expectToast(page, 'Prices saved', () => page.getByRole('button', { name: 'Save the prices' }).click())
   await page.getByRole('button', { name: 'Close' }).click()
   await customerTypesRow(page).click()
   await page.getByRole('button', { name: '+ Customer type' }).click()
@@ -112,8 +111,7 @@ test('with the switch already on, the list is two taps from a Tab root', async (
   await signUpNewBusiness(page)
   await page.goto(SETTINGS_PRICES)
   await page.getByRole('switch', { name: 'Customer types' }).click()
-  await page.getByRole('button', { name: 'Save the prices' }).click()
-  await expect(page.getByText('Prices saved')).toBeVisible()
+  await expectToast(page, 'Prices saved', () => page.getByRole('button', { name: 'Save the prices' }).click())
   await page.goto(HOME)
   const counter: Counter = { taps: 0 }
 
