@@ -12,9 +12,11 @@
 
 **Cuando** ordeno mi lista de Payment methods en Settings, **quiero** que cualquier medio al que apunte un Payment o una Expense se archive y nunca se elimine, **para** acortar la lista sin perder el registro de cómo me pagaron o cómo pagué. (Parte 2 de GH-520: acá lo sirve que un medio usado solo por una Expense responda como en uso, que su eliminación se rechace con `payment_method.in_use` y nunca con un 500, y que el Business export y la Business removal sigan funcionando con Expenses que nombran un medio.)
 
+**Cuando** acabo de pagar algo que el negocio necesita, **quiero** registrarlo desde el teléfono en pocos toques (monto, Expense category y, si quiero, cómo pagué), **para** que mis Expenses estén completas y después saber de cuál de mis propios Payment methods salió la plata. (Parte 2 de GH-839, compartido con expenses.md: acá lo sirve el campo opcional "How you paid" del formulario Add expense, que ofrece los medios propios del Business con el mismo Selector y la misma lectura que New sale y Record payment.)
+
 # Payment methods
 
-La lista propia de cada **Business** de las formas en que le pagan sus **Customers** y en que paga sus **Expenses**. Es un **Growable set**, así que se elige solo con el **Selector** y nunca se declara en `fixedSets.ts` (ADR-0074). Cada **Payment** apunta a un medio por su id (`payment_method_id`); la columna vieja `payment.method` queda congelada con el valor que tenía y ya no se lee ni se escribe (ADR-20261111-payment-methods-by-id). Desde GH-837, una **Expense** puede apuntar también a un medio por id (`expense.payment_method_id`), de forma opcional (expenses.md). La configuración se guarda por Business en su propio hexágono `payment_methods` (ADR-0055). Hasta esta parte los medios eran Cash y Transfer, incorporados en la app; eso fallaba **Assume nothing**, que nombra a los Payment methods como algo que la app no puede fijar en el código. Parte 24 de GH-318.
+La lista propia de cada **Business** de las formas en que le pagan sus **Customers** y en que paga sus **Expenses**. Es un **Growable set**, así que se elige solo con el **Selector** y nunca se declara en `fixedSets.ts` (ADR-0074). Cada **Payment** apunta a un medio por su id (`payment_method_id`); la columna vieja `payment.method` queda congelada con el valor que tenía y ya no se lee ni se escribe (ADR-20261111-payment-methods-by-id). Desde GH-837, una **Expense** puede apuntar también a un medio por id (`expense.payment_method_id`), de forma opcional (expenses.md), y desde la parte 2 de GH-839 el formulario de la Expense lo elige. La configuración se guarda por Business en su propio hexágono `payment_methods` (ADR-0055). Hasta esta parte los medios eran Cash y Transfer, incorporados en la app; eso fallaba **Assume nothing**, que nombra a los Payment methods como algo que la app no puede fijar en el código. Parte 24 de GH-318.
 
 Supuesto sobre hoy: la vendedora registra efectivo o transferencia y guarda el canal real en la cabeza o, en una venta, en la **Note**; la información se pierde.
 
@@ -22,9 +24,11 @@ Línea de base de la parte 3 de GH-1010: antes, solo los Payments hacían que un
 
 Línea de base de la parte 2 de GH-520: Settings trataba como sin usar un medio que solo usa una Expense; se ofrecía "Delete" y confirmarlo fallaba con un error del servidor en lugar de un rechazo claro. La RESTRICT de la base igual protegía los datos, así que la Expense nunca perdía su medio.
 
+Línea de base de la parte 2 de GH-839: el formulario de la Expense no tenía dónde decir cómo se pagó, así que ninguna pantalla mandaba el medio de una Expense.
+
 Criterios de éxito:
 
-1. **Mi lista, sin código**: desde Settings en el teléfono, la vendedora agrega un medio (por ejemplo "Mercado Pago") con nombre e ícono y lo pone en el orden que quiere. Después aparece en New sale y en Record payment en ese orden, sin ningún cambio de código.
+1. **Mi lista, sin código**: desde Settings en el teléfono, la vendedora agrega un medio (por ejemplo "Mercado Pago") con nombre e ícono y lo pone en el orden que quiere. Después aparece en New sale, en Record payment y en el formulario de la Expense en ese orden, sin ningún cambio de código.
 2. **Nada de antes cambia**: todo Business existente y todo Business nuevo arranca con "Cash" y "Transfer". Todo Payment ya registrado sigue mostrando el medio con que se registró, y nada registrado antes cambia.
 3. **Los mismos toques**: registrar una venta o un pago en el teléfono lleva los mismos pocos toques que antes, y una venta sigue llevando menos de un minuto. Elegir el medio cuesta como máximo un paso (abrir el campo, tocar la opción) y nunca viene puesto.
 4. **Dejar de ofrecer sin perder historia**: un medio que la vendedora ya no acepta deja de ofrecerse para Payments y Expenses nuevos, y los Payments y Expenses pasados lo siguen mostrando.
@@ -33,6 +37,7 @@ Criterios de éxito:
 7. **Una Expense nunca pierde su medio** (parte 2 de GH-837, cumplido en la parte 3 de GH-1010 y verificado en la parte 2 de GH-520): un medio al que apunta alguna Expense solo se puede archivar, nunca eliminar, por el mismo camino y con la misma respuesta que uno con Payments, nunca un 500. Archivarlo funciona y la Expense sigue mostrando el nombre actual del medio. Vale también para un medio usado por Payments y Expenses a la vez.
 8. **Una sola respuesta de uso** (parte 3 de GH-1010): un medio sin Payments ni Expenses se sigue pudiendo eliminar, una Expense sin medio no cuenta para ninguno, y `in_use` es el mismo en Settings → Payment methods y en la API, calculado solo con los registros del propio Business, sin revelar nada de otro.
 9. **El export y la baja siguen andando** (parte 2 de GH-520): en un Business cuya Expense nombra un medio, el **Business export** lleva ese medio como referencia por nombre y la **Business removal** termina bien bajo la RESTRICT de la FK.
+10. **El medio de una Expense, opcional y sin perderse** (parte 2 de GH-839): en el formulario de la Expense, "How you paid" es opcional, nunca bloquea un guardado y nunca viene puesto; una edición manda el medio guardado hasta que la vendedora elija otro o None, aunque la lista de medios no haya cargado o haya fallado; y un medio que dejó de ofrecerse se dice en el campo, sin perder nada de lo tipeado.
 
 ## Comportamiento
 
@@ -41,8 +46,8 @@ Criterios de éxito:
 - **Campos**: `business_id`, nombre, ícono y posición, más si está archivado.
 - **Nombre**: único en el Business sin importar mayúsculas, minúsculas ni espacios, los archivados incluidos. No puede quedar en blanco después de recortar y tiene hasta 60 caracteres.
 - **Renombrar**: se permite en cualquier momento. Los Payments y las Expenses pasados muestran el nombre nuevo, porque apuntan al medio y no a su texto. Es a propósito, a diferencia de una **Price entry**. Quien quiera conservar el nombre viejo como historia agrega un medio nuevo y archiva el viejo.
-- **Ícono**: se elige de un conjunto fijo y neutro, nunca texto libre: `banknote`, `coins`, `card`, `bank`, `phone`, `wallet`, `qr`, `other`. Nada en él es propio de un solo tipo de negocio, de un país, de un banco ni de una marca. Un medio nuevo recibe `other` por defecto, así que nunca hay que elegir uno. En Settings el ícono va al lado del nombre y nunca lo reemplaza (**Icon and text rule**); en el Selector de New sale y Record payment cada medio se muestra solo por su nombre, sin ícono.
-- **Orden**: la posición la fija la vendedora; New sale y Record payment muestran los medios ofrecidos en ese orden, y el Selector nunca los reordena.
+- **Ícono**: se elige de un conjunto fijo y neutro, nunca texto libre: `banknote`, `coins`, `card`, `bank`, `phone`, `wallet`, `qr`, `other`. Nada en él es propio de un solo tipo de negocio, de un país, de un banco ni de una marca. Un medio nuevo recibe `other` por defecto, así que nunca hay que elegir uno. En Settings el ícono va al lado del nombre y nunca lo reemplaza (**Icon and text rule**); en el Selector de New sale, Record payment y el formulario de la Expense cada medio se muestra solo por su nombre, sin ícono.
+- **Orden**: la posición la fija la vendedora; New sale, Record payment y el formulario de la Expense muestran los medios ofrecidos en ese orden, y el Selector nunca los reordena.
 
 ### Los valores por defecto
 
@@ -66,7 +71,7 @@ Criterios de éxito:
 ### Eliminar y archivar
 
 - **Sin Payments ni Expenses**: un medio al que no apunta ningún Payment ni ninguna Expense se puede eliminar para siempre, con confirmación previa ("Keep it" para no hacerlo).
-- **Con Payments o con Expenses**: solo se puede archivar, con confirmación previa. Eliminarlo se rechaza (`payment_method.in_use`), por el mismo camino y con la misma respuesta tenga Payments, Expenses o los dos, nunca con un 500 por la FK y sin ningún texto nuevo (parte 2 de GH-837, cumplido en la parte 3 de GH-1010, verificado en la parte 2 de GH-520).
+- **Con Payments o con Expenses**: solo se puede archivar, con confirmación previa. Eliminarlo se rechaza (`payment_method.in_use`), por el mismo camino y con la misma respuesta tenga Payments, Expenses o los dos, nunca con un 500 por la FK y sin ningún texto nuevo (parte 2 de GH-837, cumplido en la parte 3 de GH-1010, verificado en la parte 2 de GH-520). En la app ese rechazo sigue mostrando el texto genérico (`refusals:generic`); la parte 2 de GH-839 no lo cambia.
   - Archivarlo lo saca de todo Selector para Payments nuevos y deja de poder elegirse para una Expense.
   - Los Payments y las Expenses pasados lo siguen mostrando con su nombre; una Expense que ya lo tiene lo puede conservar al editarse.
   - Conserva reservado su nombre: no se puede crear otro medio con ese nombre; el rechazo manda a restaurarlo desde Archived.
@@ -87,12 +92,21 @@ Criterios de éxito:
 
 ### El medio de una Expense (parte 2 de GH-837)
 
-- Es opcional en toda Expense y se manda por la API como `payment_method_id` (expenses.md). Hasta la parte del formulario Add expense, ninguna pantalla lo manda ni lo muestra.
+- Es opcional en toda Expense y se manda por la API como `payment_method_id` (expenses.md). Desde la parte 2 de GH-839 lo elige y lo manda el formulario de la Expense (abajo), y desde la parte 4 de GH-520 la fila de la vista mensual muestra su nombre actual.
 - Elegirlo exige un medio ofrecido del propio Business; cualquier otro responde el mismo 404 `payment_method.unavailable` que en Payments y Sales, controlado dentro de la misma sentencia INSERT o UPDATE que escribe la Expense, sin ningún SELECT previo que lo decida. Conservar al editar el medio archivado que la Expense ya tiene se permite.
 - Todo lector del medio de una Expense lo toma de la única `PaymentMethodLabel` armada en el outer join de `SqlExpenses`, sin filtro por `archived_at`.
 - A diferencia del de un Payment, el medio de una Expense se puede cambiar o borrar al editarla.
 - El medio de una Expense no entra en ningún total: el Cash, el Profit y el Money in no cambian.
 - Desde la parte 3 de GH-1010, una Expense con medio hace que ese medio esté en uso (arriba).
+
+### Elegir el medio de una Expense (parte 2 de GH-839)
+
+- El campo "How you paid" del formulario de la Expense (expenses.md) es un Selector **opcional**, siempre visible, a diferencia del campo obligatorio de New sale y Record payment: su elección vacía se lee "None" y es siempre una opción, y nunca bloquea un guardado.
+- Sus opciones, su carga y su línea de conjunto vacío salen de la misma lectura de medios ofrecidos (`usePaymentMethodOptions`), en el orden de la vendedora; ninguna pantalla las arma a mano. La línea de conjunto vacío del formulario es propia: "No payment methods yet. Add one in Settings." (`expenses:form.paymentMethodEmpty`). Qué se hace con un medio guardado que ya no se ofrece (se muestra con su nombre guardado y la marca "no longer available") lo decide solo `howYouPaidView`.
+- **Nunca viene puesto**: una Expense nueva arranca sin medio y el formulario nunca recuerda uno. Una edición arranca con el medio guardado de la Expense, tomado de su lectura y nunca de la lista, y lo manda tal cual hasta que la vendedora elija otro o None, aunque la lista no haya cargado o haya fallado.
+- **La lista no carga**: tocar el campo la vuelve a leer una vez; el guardado no se bloquea.
+- **No crea medios**: se crean en Settings → Payments and expenses → Payment methods.
+- **Un medio que dejó de ofrecerse al guardar** (404 `payment_method.unavailable` o `payment_method.not_found`): el formulario queda abierto con todo lo tipeado, la lista se vuelve a leer, el campo muestra la misma frase que New sale y Record payment ("That payment method is no longer available. Choose another one.", `common:paymentMethodUnavailable`, sin cambios) asociada al campo, y "Save" queda deshabilitado hasta que la vendedora elija otro medio o None.
 
 ### Business export y Business removal (parte 2 de GH-520)
 
@@ -150,6 +164,7 @@ Criterios de éxito:
 - Toda ruta nueva entra en el barrido de aislamiento y en el test de rutas con acceso restringido.
 - Las migraciones siguen la única cadena lineal, cada una con su `down_revision` en la anterior.
 - La página del grupo Payments and expenses no agrega ninguna ruta ni campo: lee `GET /api/payment-methods` y `GET /api/expense-categories`, compartiendo la caché de cada lista.
+- Las opciones, la carga y la línea de conjunto vacío de cualquier Selector de Payment method salen solo de `usePaymentMethodOptions`; la decisión sobre un medio guardado que ya no se ofrece, solo de `howYouPaidView`.
 
 ## Métricas
 
@@ -162,6 +177,7 @@ Criterios de éxito:
 - **Una Expense nunca pierde su medio (criterio 7)**: un test de API, con la Expense creada por `POST /api/expenses` con `payment_method_id` sobre una SQLite nueva, comprueba que un medio usado solo por una Expense trae `in_use: true`, que `DELETE` responde 409 `payment_method.in_use` (nunca un 500) y que archivarlo funciona, y que la Expense sigue mostrando el nombre actual del medio; con un Payment y una Expense, el mismo 409 con el cuerpo idéntico byte a byte. 100% de aprobación.
 - **Una sola respuesta de uso (criterio 8)**: un test de API comprueba que un medio sin Payments ni Expenses trae `in_use: false` y `DELETE` responde 204, que una Expense sin medio no cambia el `in_use` de ningún medio, y que el `in_use` de un medio del Business A no cambia con los registros del Business B ni revela que B existe. `test_payment_method_references.py` falla si un tipo de registro que apunta a `payment_method` no se cuenta. 100% de aprobación.
 - **El export y la baja siguen andando (criterio 9)**: un test sobre un Business cuya Expense nombra un medio comprueba que el Business export lleva el medio de esa Expense como referencia por nombre y que la Business removal termina bien bajo RESTRICT, sin ninguna fila del Business que quede; `app/business_removal` sin cambios. 100% de aprobación.
+- **El medio de una Expense (criterio 10)**: las pruebas de Testing Library del formulario de la Expense (expenses.md, M34 y M36) muestran que una edición manda el medio guardado con la lista fallida, que None manda `null`, que una Expense nueva manda `null` o el id elegido, y que un 404 conserva lo tipeado y marca el campo. `PUT` de edición sin el medio guardado: 0. 100% de aprobación.
 - **Assume nothing**: ningún literal "cash" o "transfer" decide comportamiento en el código nuevo; ningún medio aparece en `fixedSets.ts`.
 - **Las dos listas en un solo lugar (criterio 6)**: las Design captures de `ConfiguracionCobros` y `ConfiguracionCobrosOscuro` a 390 px dan ok (evidencia fijada por la decisión 2 del dueño), y la única diferencia aceptada es la flecha final del link a los gastos del mes, que no lleva (ADR-0037). `PaymentsGroup.test.tsx` comprueba los encabezados y la línea bajo el título, el subtítulo de Expense categories en el orden del servidor, que no hay subtítulo con la lista vacía ni con un 500 (y que la fila igual abre `/settings/expense-categories`), el `aria-busy` de `<main>` mientras las dos lecturas están pendientes y que ningún pedido nombra un Business. Se mantienen los 3 toques hasta cada lista y no se agregó ningún infractor al Mobile check: se quitó la entrada `aria-busy` de `ConfiguracionCobros`.
 
@@ -172,9 +188,10 @@ Criterios de éxito:
 - Recordar el último medio usado o proponer uno por defecto.
 - Arrastrar para ordenar.
 - Íconos subidos o de texto libre.
-- El ícono del medio dentro del Selector de New sale y Record payment.
+- El ícono del medio dentro del Selector de New sale, Record payment y el formulario de la Expense.
 - Pulido dedicado para la computadora de la página Payments and expenses.
-- Mostrar o elegir el medio de una Expense en pantalla: es la parte del formulario Add expense de GH-837.
+- Crear un medio desde el formulario de la Expense: se crea en Settings (parte 2 de GH-839).
+- Cambiar el texto de `common:paymentMethodUnavailable` para que mencione "None" en el formulario de la Expense, o el rechazo genérico de `payment_method.in_use` (parte 2 de GH-839).
 - Mostrar cuántos registros usan un medio (parte 3 de GH-1010).
 - Filtrar Expenses por medio y completar hacia atrás el medio de las Expenses existentes.
 - Cambiar `app/business_removal` o cómo una Expense controla su medio al escribirse (parte 2 de GH-520).
