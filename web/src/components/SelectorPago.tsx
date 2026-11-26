@@ -78,6 +78,7 @@ export default function SelectorPago({
           <div onClickCapture={methodOptions.failure === null ? undefined : methodOptions.reload}>
             <Selector
               {...methodOptions.selector}
+              required
               label={t('common:paymentMethod')}
               value={paymentMethodValue(method)}
               onChange={(next) => onMethod(paymentMethodOf(next))}
