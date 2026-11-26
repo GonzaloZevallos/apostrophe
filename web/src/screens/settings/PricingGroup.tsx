@@ -12,6 +12,9 @@
  * `dirty` is the switches against `accepted`: the pair the server last accepted, taken once
  * from the first read and reset from the PUT answer. It is never compared with the query
  * cache, which a save rewrites and a partner's edit can move under the form.
+ *
+ * This page has no link to the Customer types list: it opens from its own Settings row, which
+ * shows while the saved switch is on. Save writes the pricing cache, so that row appears at once.
  */
 
 import { type FormEvent, useState } from 'react'
