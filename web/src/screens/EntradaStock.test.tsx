@@ -1011,6 +1011,24 @@ test('a negative Adjustment is typed with a minus and a cost on it is refused on
   expect(screen.getByRole('button', { name: 'Adjustment' })).toHaveAttribute('aria-pressed', 'true')
 })
 
+test('negative grams on an Adjustment show no per-gram preview, whatever the cost typed', async () => {
+  fakeVarieties(VARIETIES)
+  renderForm(STOCK_ENTRY_NEW)
+
+  await userEvent.click(screen.getByRole('button', { name: 'Adjustment' }))
+  await userEvent.type(screen.getByLabelText(/^Total cost/), '1000')
+  await userEvent.type(screen.getByLabelText('Grams'), '3')
+  expect(await screen.findByText(/^It comes to .* per gram$/)).toBeInTheDocument()
+
+  await userEvent.clear(screen.getByLabelText('Grams'))
+  await userEvent.type(screen.getByLabelText('Grams'), '-3,5')
+  expect(screen.queryByText(/per gram/)).not.toBeInTheDocument()
+
+  await userEvent.clear(screen.getByLabelText('Grams'))
+  await userEvent.type(screen.getByLabelText('Grams'), '-0,05')
+  expect(screen.queryByText(/per gram/)).not.toBeInTheDocument()
+})
+
 test('with the archived name still loading the field is busy and saving the edit still sends the stored Variety', async () => {
   vi.stubGlobal(
     'fetch',

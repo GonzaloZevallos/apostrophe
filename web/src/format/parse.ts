@@ -28,9 +28,20 @@ export type MoneyParse = { ok: true; value: number } | { ok: false; tooManyDecim
 const INVALID: MoneyParse = { ok: false, tooManyDecimals: false }
 const TOO_MANY: MoneyParse = { ok: false, tooManyDecimals: true }
 
+/** An amount in minor units (cents; pesos when the business keeps no decimals). Made only by
+ * `toMinorUnits`. */
+export type MinorUnits = number & { readonly brand: 'MinorUnits' }
+
+/** `value` in minor units: `Math.round(value * 10 ** decimals)`. Its domain is a value with at most
+ * `decimals` fraction digits, as `parseMoneyInput` returns; it is exact for every value whose minor
+ * units are at or below `unitCost`'s cap. It has no guard of its own: `unitCost` is the guard. */
+export function toMinorUnits(value: number, decimals: number): MinorUnits {
+  return Math.round(value * 10 ** decimals) as MinorUnits
+}
+
 function positive(whole: string, fraction: string, decimals: number): MoneyParse {
   const value = Number(fraction === '' ? whole : `${whole}.${fraction}`)
-  if (!Number.isSafeInteger(Math.round(value * 10 ** decimals)) || value <= 0) return INVALID
+  if (!Number.isSafeInteger(toMinorUnits(value, decimals)) || value <= 0) return INVALID
   return { ok: true, value }
 }
 

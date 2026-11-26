@@ -7,7 +7,8 @@
  */
 
 import { expect, test } from 'vitest'
-import { costPerGram, gramsToHundredths } from './costPerGram'
+import { costPerGram } from './costPerGram'
+import { gramsToHundredths } from './stockUnit'
 import vectors from './costPerGram.vectors.json'
 
 for (const vector of vectors) {

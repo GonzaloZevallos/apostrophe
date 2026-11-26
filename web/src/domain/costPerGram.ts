@@ -12,15 +12,6 @@
 
 const HUNDREDTHS_PER_GRAM = 100
 
-/** `"11.5"` or `"11,5"` → `1150`. Assumes `parseGrams`'s own shape: digits, at most
- * one separator, at most two decimal digits — split on the separator and pad the
- * fraction, never multiply a parsed float by 100. */
-export function gramsToHundredths(grams: string): number {
-  const [whole = '0', fraction = ''] = grams.replace(',', '.').split('.')
-  const paddedFraction = (fraction + '00').slice(0, 2)
-  return Number(whole) * HUNDREDTHS_PER_GRAM + Number(paddedFraction)
-}
-
 /** `totalCost` (whole pesos) over `gramsHundredths`, rounded half up — the same
  * formula as `cost_per_gram` in `app/stock/domain/costing.py`. `gramsHundredths` must
  * be positive. */
