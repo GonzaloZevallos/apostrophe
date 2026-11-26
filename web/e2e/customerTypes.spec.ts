@@ -53,6 +53,7 @@ test('a seller creates a customer type in Settings and assigns it from the Custo
   await expect(page.getByRole('link', { name: 'Customer types' })).toHaveCount(0)
   await page.getByRole('switch', { name: 'Customer types' }).click()
   await page.getByRole('button', { name: 'Save the prices' }).click()
+  await expect(page.getByText('Prices saved')).toBeVisible()
 
   // Prices has no link to the list: it opens from its own Settings row.
   await expect(page.getByRole('link', { name: 'Customer types' })).toHaveCount(0)
@@ -85,6 +86,7 @@ test('a seller cannot delete a type that still has a customer, and is told how m
   await page.goto(SETTINGS_PRICES)
   await page.getByRole('switch', { name: 'Customer types' }).click()
   await page.getByRole('button', { name: 'Save the prices' }).click()
+  await expect(page.getByText('Prices saved')).toBeVisible()
   await page.getByRole('button', { name: 'Close' }).click()
   await customerTypesRow(page).click()
   await page.getByRole('button', { name: '+ Customer type' }).click()

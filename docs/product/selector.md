@@ -123,7 +123,7 @@ Todo texto sale del Copy module (`web/src/copy/`), en inglés, con el en-XA gene
 - `emptyStates`:
   - `selectorNoVarieties`: "No products yet. Add them in the Products tab." Lo usan Stock entry, Take from stock y cada línea de New sale.
   - `selectorNoCategories`: "No categories yet. Add them in Settings → Expense categories." Lo usa el formulario de la Expense desde la parte 6.
-  - `selectorNoReasons`: "No reasons yet. Add them in Settings → Business → Withdrawal reasons."
+  - `selectorNoReasons`: "No reasons yet. Add them in Settings → Withdrawal reasons."
   - `selectorNoPaymentMethods`: "No payment methods yet. Add one in Settings → Payment methods." Nombra un camino que no es el real (Settings → Payments and expenses → Payment methods); como no debería verse nunca, queda como observación para corregir su redacción.
   - `selectorPaymentMethodsFailed`: "Could not load the payment methods. Tap to try again."
 
