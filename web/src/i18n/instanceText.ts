@@ -24,6 +24,6 @@ export type InstanceTextKey =
   | 'payments:savePaymentNoAmount'
 
 /** `args` fills a key's placeholders (`payments:savePayment` takes the formatted `amount`). */
-export function instanceText(key: InstanceTextKey, args?: Readonly<Record<string, string>>): string {
-  return args === undefined ? i18n.t(key) : i18n.t(key, args)
+export function instanceText(key: InstanceTextKey, args?: { amount: string }): string {
+  return args === undefined ? i18n.t(key) : i18n.t(key, { amount: args.amount })
 }
