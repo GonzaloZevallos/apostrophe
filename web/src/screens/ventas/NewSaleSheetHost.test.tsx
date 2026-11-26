@@ -18,7 +18,27 @@ import { SALE_NEW, SALES } from '../../routes'
 import { stubViewport } from '../../test-viewport'
 import { METHODS_ANSWER } from '../../test-payment-methods'
 import NewSaleSheetHost, { type NewSaleSheetHostProps } from './NewSaleSheetHost'
-import { FORMAT, PRODUCTS, TODAY } from './renderNuevaVentaSheet'
+import type { SaleDraftApi } from '../../sales/useSaleDraft'
+import { FORMAT, OTHER_DAY, PRODUCTS, TODAY } from './renderNuevaVentaSheet'
+
+// The draft the host drives, captured so a test can set the fields the Sheet has no control for yet
+// (the date, Shipping charged and Note) and read them back: the real hook, wrapped, no production hook.
+const captured = vi.hoisted(() => ({ draft: null as SaleDraftApi | null }))
+vi.mock('../../sales/useSaleDraft', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../sales/useSaleDraft')>()
+  return {
+    ...original,
+    useSaleDraft: (args: Parameters<typeof original.useSaleDraft>[0]) => {
+      const draft = original.useSaleDraft(args)
+      captured.draft = draft
+      return draft
+    },
+  }
+})
+const currentDraft = (): SaleDraftApi => {
+  if (captured.draft === null) throw new Error('the host is not mounted')
+  return captured.draft
+}
 
 const ME: Me = { email: 'a@b.c', business_name: 'Shop', today: TODAY, shown_language: 'en', money: FORMAT } as Me
 
@@ -488,10 +508,25 @@ describe('the line detail', () => {
     await m.user.click(screen.getByRole('button', { name: /Ana/ }))
     await waitFor(() => expect(within(sheet()).getByText('Ana')).toBeInTheDocument())
     await addLine(m)
+    act(() => {
+      currentDraft().setDate(OTHER_DAY)
+      currentDraft().setShipping('250')
+      currentDraft().setNote('Leave at the door')
+    })
+    await waitFor(() => expect(currentDraft().state.note).toBe('Leave at the door'))
+    const before = currentDraft().state
+    expect(before.date).toBe(OTHER_DAY)
+    expect(before.shipping).toBe('250')
     await openRosa(m)
     await detail()
     await m.user.click(inDetail().getByRole('button', { name: 'Remove line' }))
     await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Rosa' })).toBeNull())
+    const after = currentDraft().state
+    expect(after.lines).toEqual([])
+    expect(after.customerId).toBe(before.customerId)
+    expect(after.date).toBe(OTHER_DAY)
+    expect(after.shipping).toBe('250')
+    expect(after.note).toBe('Leave at the door')
     expect(question()).toBeNull()
     expect(screen.queryByRole('group', { name: 'Rosa' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Collect' })).toBeNull()

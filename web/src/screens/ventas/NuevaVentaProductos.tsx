@@ -263,6 +263,10 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
                 </span>
                 {TEXT.lineNoPrice}
               </span>
+            ) : linePricing === undefined ? (
+              <span className="nv-productos__precio cifra-n">
+                <Loading compacto />
+              </span>
             ) : (
               priceCell(linePricing)
             )}
