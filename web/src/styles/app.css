@@ -4910,9 +4910,18 @@ a.ajustes-tema__opcion {
       calc(var(--margen-pantalla) + var(--inset-derecha))
       calc(var(--margen-pantalla) + var(--inset-abajo))
       calc(var(--margen-pantalla) + var(--inset-izquierda));
-    background: color-mix(in srgb, var(--tinta) 40%, transparent);
-    touch-action: none;
     overscroll-behavior: contain;
+  }
+
+  /* The scrim is drawn behind the dialog, not as the layer's own background: the phone check reads
+   * the colours of an element's ancestors, and a translucent colour-mix up there makes every
+   * text inside unprovable. */
+  .confirm-layer[data-open]::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: color-mix(in srgb, var(--tinta) 40%, transparent);
   }
 
   .confirm-layer > .confirmacion {
