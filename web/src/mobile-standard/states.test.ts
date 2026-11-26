@@ -249,7 +249,7 @@ describe('the walked states of an expense over a sale in progress', () => {
         return Promise.resolve(new Response('{}', { status: 201 }))
       }),
     )
-    await recordExpense({ spent_on: '2026-01-01', category_id: 1, amount: 1, detail: 'x' })
+    await recordExpense({ spent_on: '2026-01-01', category_id: 1, amount: 1, detail: 'x', payment_method_id: null })
     const sentPath = new URL(sent[0] ?? '', 'http://api.test').pathname
     const stubs = state('sale/expense-returned').writes ?? []
     expect(stubs).toHaveLength(1)

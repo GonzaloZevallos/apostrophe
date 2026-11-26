@@ -1916,6 +1916,21 @@ a.ajustes-tema__opcion {
   align-self: flex-start;
 }
 
+/* Save carries its amount: it may wrap onto a second line and is never cut, 44 px tall at least.
+ * The amount itself stays in one piece. */
+.gasto-form .boton[type="submit"] {
+  height: auto;
+  min-height: max(44px, var(--alto-boton));
+  padding-block: var(--espacio-sm);
+  text-align: center;
+  flex-wrap: wrap;
+  white-space: normal;
+}
+
+.gasto-form__monto {
+  white-space: nowrap;
+}
+
 .nueva-venta .nueva-venta__cerrar .boton--enlace,
 .gasto-form .gasto-form__cerrar .boton--enlace {
   box-shadow: none;
