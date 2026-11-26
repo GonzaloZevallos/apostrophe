@@ -24,8 +24,10 @@ function SettingsColumn() {
   const { pathname } = useLocation()
 
   return (
-    <aside className="ajustes-capa__columna">
-      <SettingsNav ctx={ctx} activeKey={activeSettingsRow(pathname, ctx)} />
+    <aside className="ajustes-capa__celda">
+      <div className="ajustes-capa__columna">
+        <SettingsNav ctx={ctx} activeKey={activeSettingsRow(pathname, ctx)} />
+      </div>
     </aside>
   )
 }

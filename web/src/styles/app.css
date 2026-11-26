@@ -7951,7 +7951,11 @@ button:has(> .venta-en-curso) {
 /* The wrapper and the panel add no padding, margin or overflow. On the phone they are not boxes
  * at all, so the page keeps the place it had. On a computer the column stands beside the page; it
  * is sticky against the document's scroll (`.disposicion` owns the top inset) and scrolls on its
- * own, and a wheel at its end does not scroll the page. */
+ * own, and a wheel at its end does not scroll the page.
+ * The page's height is the page's own, never the list's: the column's cell is as tall as the row
+ * and adds nothing to it (`height: 0` with `min-height: 100%`), and the list inside it shrinks to
+ * that cell. A short page therefore stays one viewport tall and a taller one stays as tall as it
+ * is when the viewport grows (the design capture's growth check). */
 .ajustes-capa,
 .ajustes-capa__panel {
   display: contents;
@@ -7965,10 +7969,20 @@ button:has(> .venta-en-curso) {
     align-items: start;
   }
 
+  .ajustes-capa__celda {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    height: 0;
+    min-height: 100%;
+    min-width: 0;
+  }
+
   .ajustes-capa__columna {
     position: sticky;
     top: var(--inset-arriba);
     box-sizing: border-box;
+    min-height: 0;
     max-height: calc(100dvh - var(--inset-arriba));
     padding: var(--espacio-xl);
     overflow-y: auto;
