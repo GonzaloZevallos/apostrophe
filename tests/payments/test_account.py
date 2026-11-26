@@ -304,13 +304,15 @@ def test_ledgers_in_any_order_keep_the_newest_row_equal_to_the_balance() -> None
         assert keys == sorted(keys)
 
 
-def test_a_deposit_sale_moves_the_running_balance_by_what_it_owes_at_its_start() -> None:
+def test_a_deposit_sale_adds_its_total_then_its_deposit_row_subtracts_the_amount() -> None:
+    """The Sale row at its full total, its Deposit row right after, then the later payment
+    (ADR-20261125; the Deposit row replaced the old "adds what it owes at its start")."""
     deposit = owed_sale(1, date(2026, 9, 1), 100, on_the_spot_method=CASH, on_the_spot_amount=30)
     later = LaterPaymentEntry(10, date(2026, 9, 5), AT, 20, TRANSFER)
 
     account = _account([deposit], [later])
 
-    assert [row.running_balance for row in account.rows] == [70, 50]
+    assert [row.running_balance for row in account.rows] == [100, 70, 50]
     assert account.balance == 50
 
 
