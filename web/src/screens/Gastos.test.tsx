@@ -112,8 +112,8 @@ function failing(match: (url: string, method: string) => boolean, make: () => Re
 async function fillAndSave(detail: string, amount: string): Promise<void> {
   await chooseCategory('Packaging')
   await userEvent.type(screen.getByLabelText('Amount'), amount)
-  await userEvent.type(screen.getByLabelText('Details'), detail)
-  await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+  await userEvent.type(screen.getByLabelText('Details (optional)'), detail)
+  await userEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
 }
 
 function subtotalOf(category: string): string {
@@ -233,7 +233,7 @@ test('editing an expense sends a PUT, toasts in place and the totals follow', as
   const amount = await screen.findByLabelText('Amount')
   await userEvent.clear(amount)
   await userEvent.type(amount, '5000')
-  await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+  await userEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
 
   expect(await screen.findAllByText('Expense saved')).toHaveLength(1)
   expect(fetch).toHaveBeenCalledWith('/expenses/9', expect.objectContaining({ method: 'PUT' }))
@@ -250,14 +250,14 @@ test('closing the edit with changes asks before discarding; an untouched close i
   expect(screen.queryByLabelText('Amount')).not.toBeInTheDocument()
 
   await userEvent.click(screen.getByText('Bolsas'))
-  await userEvent.type(await screen.findByLabelText('Details'), ' x')
+  await userEvent.type(await screen.findByLabelText('Details (optional)'), ' x')
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   expect(await screen.findByText('Discard the changes?')).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
-  expect(screen.getByLabelText('Details')).toHaveValue('Bolsas x')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Bolsas x')
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   await userEvent.click(screen.getByRole('button', { name: 'Yes, discard them' }))
-  expect(screen.queryByLabelText('Details')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Details (optional)')).not.toBeInTheDocument()
   expect(fetch).not.toHaveBeenCalledWith('/expenses/9', expect.objectContaining({ method: 'PUT' }))
 })
 
@@ -305,7 +305,7 @@ test('editing an expense that is already gone shows the gone notice and closes t
   )
 
   await userEvent.click(await screen.findByText('Bolsas'))
-  await userEvent.click(await screen.findByRole('button', { name: 'Save the expense' }))
+  await userEvent.click(await screen.findByRole('button', { name: /^Save expense/ }))
 
   const notice = await screen.findByText('That is gone. The list is up to date.')
   expect(screen.queryByLabelText('Amount')).not.toBeInTheDocument()
@@ -372,7 +372,7 @@ test('a category removed mid-form keeps what was typed and empties Categoría', 
 
   expect(await screen.findByText(CATEGORY_GONE)).toBeInTheDocument()
   expect(await categoryField()).toHaveTextContent('Pick a category')
-  expect(screen.getByLabelText('Details')).toHaveValue('Cinta para embalar')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Cinta para embalar')
 })
 
 test('the gone refusal is tied to the field, and an inline-created category that is gone is not offered afterwards', async () => {
@@ -398,8 +398,8 @@ test('the gone refusal is tied to the field, and an inline-created category that
   await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
   await waitFor(async () => expect(await categoryField()).toHaveTextContent('Insumos'))
   await userEvent.type(screen.getByLabelText('Amount'), '1000')
-  await userEvent.type(screen.getByLabelText('Details'), 'Cinta')
-  await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+  await userEvent.type(screen.getByLabelText('Details (optional)'), 'Cinta')
+  await userEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
 
   const refusal = await screen.findByText(CATEGORY_GONE)
   const field = await categoryField()
@@ -463,7 +463,7 @@ test('creating a category inside the expense form keeps what was typed and selec
   renderExpenses([EXPENSES], store([...SEED]))
 
   await userEvent.click(await screen.findByRole('link', { name: 'Add expense' }))
-  await userEvent.type(await screen.findByLabelText('Details'), 'Sustrato nuevo')
+  await userEvent.type(await screen.findByLabelText('Details (optional)'), 'Sustrato nuevo')
   await userEvent.click(screen.getByRole('button', { name: 'Create a new category' }))
   await userEvent.type(screen.getByLabelText('New category name'), 'Insumos')
   await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
@@ -471,7 +471,7 @@ test('creating a category inside the expense form keeps what was typed and selec
   await waitFor(async () => {
     expect(await categoryField()).toHaveTextContent('Insumos')
   })
-  expect(screen.getByLabelText('Details')).toHaveValue('Sustrato nuevo')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Sustrato nuevo')
 })
 
 test('links to the expense categories, now a Configuración group, from its foot', async () => {
@@ -507,7 +507,7 @@ test('subtotals and the total stay equal to the sum shown after create, edit and
   const amount = await screen.findByLabelText('Amount')
   await userEvent.clear(amount)
   await userEvent.type(amount, '5000')
-  await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+  await userEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
   await waitFor(() => expect(subtotalOf('Packaging')).toBe('$ 6.800'))
   expect(subtotalOf('Otros')).toBe('$ 700')
   expect(totalShown()).toBe('$ 7.500')
@@ -537,14 +537,14 @@ test('a duplicate category name inside the form is refused, keeping what was typ
   )
 
   await userEvent.click(await screen.findByRole('link', { name: 'Add expense' }))
-  await userEvent.type(await screen.findByLabelText('Details'), 'Sustrato nuevo')
+  await userEvent.type(await screen.findByLabelText('Details (optional)'), 'Sustrato nuevo')
   await userEvent.click(screen.getByRole('button', { name: 'Create a new category' }))
   await userEvent.type(screen.getByLabelText('New category name'), 'Packaging')
   await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
 
   expect(await screen.findByText('Check the details and try again.')).toBeInTheDocument()
   expect(screen.getByLabelText('New category name')).toHaveValue('Packaging')
-  expect(screen.getByLabelText('Details')).toHaveValue('Sustrato nuevo')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Sustrato nuevo')
   expect(await categoryField()).toHaveTextContent('Pick a category')
 })
 
