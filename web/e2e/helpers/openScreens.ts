@@ -1,5 +1,6 @@
 import { ANALYSIS, CATALOG, EXPENSES, HOME, WITHDRAWAL_NEW } from '../../src/routes.js'
 import { expectPath } from './url.js'
+import { openStockSegment } from './stockSegment.js'
 import { expect } from '../fixtures.js'
 import type { Page } from '@playwright/test'
 
@@ -54,6 +55,7 @@ export async function openGastos(page: Page): Promise<void> {
 export async function openTakeFromStock(page: Page): Promise<void> {
   await onPhone(page, async () => {
     await page.getByRole('link', { name: 'Products', exact: true }).click()
+    await openStockSegment(page)
     await page.getByRole('link', { name: 'Take from stock' }).click()
     await expectPath(page, WITHDRAWAL_NEW)
     await expect(page.getByRole('button', { name: 'Close' })).toBeVisible()

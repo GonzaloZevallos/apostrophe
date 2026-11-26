@@ -10,6 +10,7 @@
 
 import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { expect, test } from './fixtures.js'
+import { openStockSegment } from './helpers/stockSegment.js'
 import { expectToast } from './helpers/toast.js'
 import { pickStockVariety, pickWithdrawalReason, pickWithdrawalVariety } from './helpers/stockVariety.js'
 import { HOME, VARIETIES, WITHDRAWAL_NEW } from '../src/routes.js'
@@ -34,6 +35,7 @@ test('a seller records, edits and deletes withdrawals and reads Marketing and Ow
   await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.goto(VARIETIES)
+  await openStockSegment(page)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
   await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')

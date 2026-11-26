@@ -7,7 +7,8 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { Outlet, RouterProvider, createMemoryRouter } from 'react-router'
 import { vi } from 'vitest'
 import type { Me } from '../../api/me'
@@ -132,6 +133,14 @@ export function renderVarieties(initialEntries: string[], fetchImpl: FetchImpl) 
   )
   render(<RouterProvider router={router} />)
   return { router, queryClient, fetchMock }
+}
+
+/**
+ * Taps the "Stock" pill of the phone Products screen: the one way a phone test reaches a Stock-only
+ * control (the summary line, + Stock entry, Take from stock, All entries, Archived (N)).
+ */
+export async function tapStock(): Promise<void> {
+  await userEvent.click(await screen.findByRole('button', { name: 'Stock' }))
 }
 
 /** The requests that changed something, in order: `METHOD path` and the parsed body. */

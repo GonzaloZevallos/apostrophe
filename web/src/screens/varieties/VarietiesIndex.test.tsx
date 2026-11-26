@@ -23,7 +23,11 @@ function Where() {
   return <output aria-label="ubicación">{useLocation().pathname}</output>
 }
 
-function renderIndex(): void {
+function State() {
+  return <output aria-label="estado">{JSON.stringify(useLocation().state)}</output>
+}
+
+function renderIndex(state?: unknown): void {
   let answer: (response: Response) => void = () => undefined
   vi.stubGlobal(
     'fetch',
@@ -32,9 +36,9 @@ function renderIndex(): void {
   const router = createMemoryRouter(
     [
       { path: VARIETIES, element: <><VarietiesIndex /><Where /></> },
-      { path: VARIETY, element: <Where /> },
+      { path: VARIETY, element: <><Where /><State /></> },
     ],
-    { initialEntries: [VARIETIES] },
+    { initialEntries: [{ pathname: VARIETIES, state }] },
   )
   render(
     <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
@@ -58,6 +62,24 @@ test('on a computer the index selects the first variety by name', async () => {
   respond()
 
   expect(await screen.findByText(pathTo(VARIETY, { id: 1 }))).toBeInTheDocument()
+})
+
+test('the redirect keeps every key of the entry state and adds only the followed-redirect marker', async () => {
+  stubViewport('computer')
+  renderIndex({ kept: 'as-it-was' })
+  respond()
+
+  await screen.findByText(pathTo(VARIETY, { id: 1 }))
+  expect(JSON.parse(screen.getByLabelText('estado').textContent)).toEqual({ kept: 'as-it-was', flashFollows: true })
+})
+
+test('the redirect of an entry with no state carries the followed-redirect marker alone', async () => {
+  stubViewport('computer')
+  renderIndex()
+  respond()
+
+  await screen.findByText(pathTo(VARIETY, { id: 1 }))
+  expect(JSON.parse(screen.getByLabelText('estado').textContent)).toEqual({ flashFollows: true })
 })
 
 test('a history entry pushed after the index rendered is never replaced by the selection', async () => {

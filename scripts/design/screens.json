@@ -249,6 +249,8 @@
     {"screen": "PedidoNuevoCompuOscuro", "route": null, "path": "/orders/new", "tema": "oscuro", "viewport": [1280, 920]},
     { "screen": "Productos", "route": "/varieties", "path": "/varieties", "design_viewport": [414, 844] },
     { "screen": "ProductosOscuro", "route": "/varieties", "path": "/varieties", "tema": "oscuro", "design_viewport": [414, 844] },
+    { "screen": "ProductosStock", "design": "Productos", "route": "/varieties", "path": "/varieties", "design_viewport": [414, 844], "walked_as": "products/stock", "steps": [{"click": "Stock"}, {"wait": "Stock entry"}] },
+    { "screen": "ProductosStockOscuro", "design": "ProductosOscuro", "route": "/varieties", "path": "/varieties", "tema": "oscuro", "design_viewport": [414, 844], "walked_as": "products/stock", "steps": [{"click": "Stock"}, {"wait": "Stock entry"}] },
     { "screen": "ProductosCompu", "route": null, "path": "/products", "viewport": [1280, 920] },
     { "screen": "ProductosCompuOscuro", "route": null, "path": "/products", "tema": "oscuro", "viewport": [1280, 920] },
     { "screen": "ProductoDetalle", "route": null, "path": "/products/detail" },

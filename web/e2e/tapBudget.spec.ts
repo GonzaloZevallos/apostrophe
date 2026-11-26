@@ -3,13 +3,15 @@
  * expense form opens in two taps from Home (the Analysis segment, then "Record expense") and three
  * from Sales, Customers and Products, one from Gastos; Settings in one from each phone Tab root
  * (the avatar; phone Gastos is a detail screen with no avatar and no figure, owner's decision on
- * #724); a stock withdrawal in two (Products, then "Take from stock"). A computer never takes more taps than
- * the phone. A tap is a click this spec makes through `tap()`, so the count is of what a seller
+ * #724); a stock entry and a stock withdrawal in three on the phone (Products, Stock, then the action; two
+ * from Products itself) and in two on a computer, which has no segment; Send catalog in two. A
+ * computer never takes more taps than the phone. A tap is a click this spec makes through `tap()`, so the count is of what a seller
  * does, not of what the code calls. One expense is also recorded from the Expenses card on
  * Analysis, and the form's exit goes back by history to the screen that opened it.
  */
 
 import { expectPath } from './helpers/url.js'
+import { openStockSegment } from './helpers/stockSegment.js'
 import { expensesCard } from './helpers/openScreens.js'
 import {
   ANALYSIS,
@@ -172,6 +174,19 @@ async function settled(page: Page, computer: boolean): Promise<void> {
   if (computer) await expectPath(page, VARIETY)
 }
 
+/** The phone's Stock segment, one tap; a computer has no segment and takes none. */
+async function viaStock(page: Page, counter: Counter, computer: boolean): Promise<void> {
+  if (computer) return
+  counter.taps += 1
+  await openStockSegment(page)
+}
+
+/** The most taps a seller needs for each action on the phone; the computer's are never more. */
+function phoneBudget(key: string): number {
+  if (key.startsWith('sale') || key.startsWith('payment') || key.startsWith('settings')) return 1
+  return key.startsWith('stock entry') || key.startsWith('withdrawal') ? 3 : 2
+}
+
 test('the sale form, Registrar cobro, the catalog and a stock entry open within the tap budget', async ({ page }) => {
   test.setTimeout(180_000)
   const consoleMessages: string[] = []
@@ -246,6 +261,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       counter = { taps: 0 }
       if (root !== VARIETIES) await viaTab(page, counter, computer, 'Products')
       await settled(page, computer)
+      await viaStock(page, counter, computer)
       await tap(counter, page.getByRole('link', { name: '+ Stock entry' }))
       await expectPath(page, STOCK_ENTRY_NEW)
       measure(`stock entry ${root}`, device, counter.taps)
@@ -274,6 +290,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       counter = { taps: 0 }
       if (root !== VARIETIES) await viaTab(page, counter, computer, 'Products')
       await settled(page, computer)
+      await viaStock(page, counter, computer)
       const takeFromStock = page.getByRole('link', { name: 'Take from stock' }).first()
       if (!computer) await expect(takeFromStock, label).toBeInViewport()
       await tap(counter, takeFromStock)
@@ -291,10 +308,16 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       continue
     }
     expect(phone, `phone: ${key}`).toBeGreaterThan(0)
-    expect(phone, `phone: ${key}`).toBeLessThanOrEqual(
-      key.startsWith('sale') || key.startsWith('payment') || key.startsWith('settings') ? 1 : 2,
-    )
+    expect(phone, `phone: ${key}`).toBeLessThanOrEqual(phoneBudget(key))
     expect(computer, `computer: ${key}`).toBeLessThanOrEqual(phone)
+  }
+  // Stock entry and withdrawal: Products, Stock, the action from every other root; two from Products.
+  for (const action of ['stock entry', 'withdrawal']) {
+    for (const root of ROOTS) {
+      const measured = taps[`${action} ${root}`]
+      expect(measured?.phone, `phone: ${action} ${root}`).toBe(root === VARIETIES ? 2 : 3)
+      expect(measured?.computer, `computer: ${action} ${root}`).toBeLessThanOrEqual(2)
+    }
   }
   expect(consoleMessages).toEqual([])
 })

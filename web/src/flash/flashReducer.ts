@@ -17,6 +17,15 @@
  * screen the seller meant (Variedades' first variety on a computer): the toast follows it. */
 export const FOLLOWED_REDIRECT = { flashFollows: true } as const
 
+/** `FOLLOWED_REDIRECT` added to the entry's own history state: a redirect that replaces an entry
+ * keeps every key it carried (a screen's own state, like the Products tab's segment) and only
+ * adds the marker. Anything that is not a plain object carries no keys to keep. */
+export function followedRedirectState(historyState: unknown): Record<string, unknown> {
+  const prototype: unknown = typeof historyState === 'object' && historyState !== null ? Object.getPrototypeOf(historyState) : undefined
+  const kept = historyState !== null && (prototype === Object.prototype || prototype === null) ? historyState : {}
+  return { ...kept, ...FOLLOWED_REDIRECT }
+}
+
 import type { SuccessToast } from '../components/AvisoExito'
 
 /** What an Undo ended in: the sale is deleted, was already gone, or the call did not go through. */
