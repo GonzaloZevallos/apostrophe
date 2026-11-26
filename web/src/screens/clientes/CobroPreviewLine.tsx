@@ -24,8 +24,9 @@ export default function CobroPreviewLine({ current, query }: CobroPreviewLinePro
   const money = useMoney()
   const { preview, failure } = query
 
-  if (current.amount === null || failure === 'above_balance') return <p className="cobro__vista-previa" />
+  if (current.amount === null) return <p className="cobro__vista-previa" />
   if (!previewIsCurrent(query.key, current)) return <Loading busy />
+  if (failure === 'above_balance') return <p className="cobro__vista-previa" />
   if (failure === 'offline') return <Loading busy={false} />
   if (failure === 'other') {
     return (

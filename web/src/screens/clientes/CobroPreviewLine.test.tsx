@@ -97,6 +97,12 @@ describe('CobroPreviewLine', () => {
     expect(line).toBeEmptyDOMElement()
   })
 
+  test('an out-of-date key carrying above_balance shows loading with aria-busy, not an empty line', () => {
+    const { line } = renderLine({ key: { amount: 4, date: KEY.date }, failure: 'above_balance' })
+    expect(line).toHaveTextContent('Working out what they will still owe…')
+    expect(line).toHaveAttribute('aria-busy', 'true')
+  })
+
   test('a null current amount leaves the wrapper empty', () => {
     const nothing = { amount: null, date: KEY.date }
     const { line } = renderLine({ current: nothing, key: nothing, preview: owes })
