@@ -39,6 +39,8 @@ const KNOWN_MODULES = [
   '/src/copy/dates.ts',
   '/src/copy/expenses.ts',
   '/src/copy/inicio.ts',
+  '/src/copy/logoRefusals.ts',
+  '/src/copy/logoSettings.ts',
   '/src/copy/onboarding.ts',
   '/src/copy/payments.ts',
   '/src/copy/pinnedCatalog.ts',
