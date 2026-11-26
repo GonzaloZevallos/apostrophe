@@ -6,7 +6,7 @@
  * the form's refusals, and inline category creation.
  */
 
-import { screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
@@ -205,8 +205,7 @@ test('records from Gastos on a past month: back to that month with the expense s
   // The form's date is today (October), so the new expense lands in October;
   // move it into September to show the month the screen came from.
   const date = await screen.findByLabelText('Date')
-  await userEvent.clear(date)
-  await userEvent.type(date, '2026-09-30')
+  fireEvent.change(date, { target: { value: '2026-09-30' } })
   await fillAndSave('Cinta nueva', '1000')
 
   expect(await screen.findByText('Cinta nueva')).toBeInTheDocument()
