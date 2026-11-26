@@ -48,14 +48,14 @@ function serve(customerTypesOn = true) {
   vi.stubGlobal(
     'fetch',
     vi.fn().mockImplementation((input: RequestInfo | URL) => {
-      const path = String(input)
-      if (path.includes('/auth/me')) return Promise.resolve(json(ME))
-      if (path.includes('/business')) return Promise.resolve(json(BUSINESS))
-      if (path.includes('/pricing-settings')) {
+      const url = String(input)
+      if (url.includes('/auth/me')) return Promise.resolve(json(ME))
+      if (url.includes('/business')) return Promise.resolve(json(BUSINESS))
+      if (url.includes('/pricing-settings')) {
         return Promise.resolve(json({ is_vip_customers: customerTypesOn, is_bulk_pricing: true }))
       }
-      if (path.includes('/expenses')) return Promise.resolve(json({ categories: [], total: 0 }))
-      if (path.endsWith('/pinned-catalog')) {
+      if (url.includes('/expenses')) return Promise.resolve(json({ categories: [], total: 0 }))
+      if (url.endsWith('/pinned-catalog')) {
         return Promise.resolve(json({ token_saved_on: null, own_chat: null, channel_chat: null, can_publish: false, publish_blocked_by: 'not_tested', status: null }))
       }
       return Promise.resolve(json([]))
@@ -110,7 +110,7 @@ test.each(SETTINGS_ROWS.filter((row) => row.key !== 'language'))(
   },
 )
 
-test('/settings shows the prompt, no row is marked and there is one main', async () => {
+test('Settings with nothing chosen shows the prompt, no row is marked and there is one main', async () => {
   await open(SETTINGS)
 
   expect(await screen.findByText('Choose a setting')).toBeInTheDocument()
