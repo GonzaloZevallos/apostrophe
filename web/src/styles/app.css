@@ -2406,6 +2406,29 @@ a.ajustes-tema__opcion {
   gap: 10px;
 }
 
+/* The bottom row of the sale detail: one column per button ("Void" alone today; "Edit sale"
+ * (#561) goes in before it), each taking an equal share of the row. */
+.venta-detalle__botones {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--espacio-sm);
+}
+
+.venta-detalle__botones .boton {
+  color: var(--negativo);
+  min-height: var(--alto-tocable);
+}
+
+/* No tap delay and no text selection on the sale detail's Void button and its confirm dialog.
+ * Scoped to `.venta-detalle`, not on `.boton` or `.confirmacion`, so no other screen's listed
+ * touch-action offender changes. */
+.venta-detalle .venta-detalle__botones .boton,
+.venta-detalle > .confirmacion button {
+  touch-action: manipulation;
+  user-select: none;
+}
+
 /* The sale bill's own wrapper (`SaleBillButton`): it lays its children out as the actions row
  * does, and its Share/Copy takes no tap delay or double-tap zoom. Scoped here, not on `.boton`,
  * so no other screen's listed touch-action offender changes. */

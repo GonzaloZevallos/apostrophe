@@ -114,7 +114,7 @@ test('shows the skeleton while the sale is pending, then the sale in its place',
 
   expect(await screen.findByRole('progressbar', { name: 'Loading' })).toBeInTheDocument()
   expect(screen.queryByText('Sale #2')).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Delete sale' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Void' })).not.toBeInTheDocument()
   expect(fetch).toHaveBeenCalledTimes(1)
   expect(fetch).toHaveBeenCalledWith('/sales/10', expect.objectContaining({ method: 'GET' }))
 
@@ -176,18 +176,31 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
   expect(screen.getByRole('link', { name: 'Back to Sales' })).toHaveAttribute('href', SALES)
 })
 
-test('Delete sale asks "Antes de borrar" naming the date, the amount and the grams returning to stock, then deletes and returns to Ventas with the plain toast', async () => {
+test('Void shows on every sale: a settled one, one with no customer and one with a customer owing', async () => {
+  for (const sale of [{ ...SALE, payment: 'paid' }, { ...SALE, customer: null }, SALE]) {
+    vi.mocked(fetch).mockResolvedValue(jsonResponse(200, sale))
+    const { unmount } = renderDetalle()
+    await screen.findByText('Sale #2')
+    expect(screen.getByRole('button', { name: 'Void' })).toBeVisible()
+    unmount()
+  }
+})
+
+test('Void asks "Antes de borrar" naming the date, the amount and the grams returning to stock, then deletes on "Yes, void" and returns to Ventas with the plain toast', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, SALE))
   vi.mocked(fetch).mockResolvedValueOnce(jsonResponse(200, DELETED))
   renderDetalle()
   await screen.findByText('Sale #2')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Delete sale' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Void' }))
   expect(
     screen.getByText('Delete the sale of $ 11.000 from 14/09? 3,5 g go back to stock.'),
   ).toBeInTheDocument()
+  expect(screen.getByText("This can't be undone")).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'No, keep it' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Yes, delete it' })).not.toBeInTheDocument()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, void' }))
 
   await waitFor(() =>
     expect(fetch).toHaveBeenCalledWith('/sales/10', expect.objectContaining({ method: 'DELETE' })),
@@ -196,12 +209,12 @@ test('Delete sale asks "Antes de borrar" naming the date, the amount and the gra
   expect(await screen.findByText('Sale deleted')).toBeInTheDocument()
 })
 
-test('cancelling the delete confirmation keeps the sale', async () => {
+test('"No, keep it" closes the void confirmation and keeps the sale', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
   await screen.findByText('Sale #2')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Delete sale' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Void' }))
   await userEvent.click(screen.getByRole('button', { name: 'No, keep it' }))
 
   expect(
@@ -244,8 +257,8 @@ test('a sale already gone when deleted shows the gone notice and returns to Vent
   renderDetalle()
   await screen.findByText('Sale #2')
 
-  await userEvent.click(screen.getByRole('button', { name: 'Delete sale' }))
-  await userEvent.click(screen.getByRole('button', { name: 'Yes, delete it' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Void' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Yes, void' }))
 
   expect(await screen.findByText('That is gone. The list is up to date.')).toBeInTheDocument()
 })

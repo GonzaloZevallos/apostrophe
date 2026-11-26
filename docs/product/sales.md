@@ -469,7 +469,7 @@ Criterios de éxito, Sale number:
     - **Falla** (`failed`): el error genérico de Estados (`ErrorGenerico`).
     - Los cuatro duran 2,5 s (`DEFAULT_TOAST_MS`), como cualquier otro toast, y se van solos. Un aviso posterior reemplaza al resultado en el acto: nunca hay dos a la vez. Una falla o un sin conexión nunca muestran el texto de éxito.
     - Esta parte solo agrega el dibujo de los cuatro resultados; los conecta a Undo una parte posterior de GH-869. Hasta entonces la vendedora no los ve.
-  - Una vez que el aviso se fue, la forma de deshacer es "Delete sale".
+  - Una vez que el aviso se fue, la forma de deshacer es "Void".
   - Nunca contiene el botón Share/Copy; ese vive en el detalle de la venta.
 
 #### New sale en el teléfono
@@ -547,9 +547,10 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
   - Si sale bien, el aviso "Customer assigned".
   - Si alguien asignó uno antes, "This sale already has a customer." y el detalle se actualiza.
   - Después de asignar, el detalle se vuelve a leer del servidor, para que el Sale bill traiga el Balance del cliente recién asignado; nada arma el detalle a mano en el front. El Sale number no cambia, y las líneas conservan su precio y su regla.
-- **Delete sale**:
+- **Void**: botón de texto visible "Void" en la fila inferior `.venta-detalle__botones` (grilla de una columna por botón; "Edit sale" (#561) entrará como primer hijo), con el texto en `--negativo`.
+  - Se muestra en toda venta.
   - En el teléfono, el control y los botones de su confirmación miden al menos 44 px de alto.
-  - Se confirma con `Before deleting`, que nombra la fecha, el monto y el total de gramos de sus líneas que vuelven al stock, regalos incluidos. Por ejemplo: "Delete the $ 11.000 sale from 02/10? 4 g go back to stock." Los botones son "No, keep it / Yes, delete it".
+  - Se confirma con `Before deleting`, que nombra la fecha, el monto y el total de gramos de sus líneas que vuelven al stock, regalos incluidos. Por ejemplo: "Delete the $ 11.000 sale from 02/10? 4 g go back to stock." Los botones son "No, keep it / Yes, void".
   - Después, el aviso "Sale deleted" y de vuelta a Sales.
   - El texto nunca menciona deuda ni Credit; la cuenta del cliente muestra el efecto después (`payments.md`).
 - **Una venta que ya no existe** sigue accounts.md:
@@ -663,7 +664,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **Una venta por pedido**: una venta de varios productos es una venta, con total = líneas redondeadas + envío una vez, por la API y por el formulario. (Criterios 2, 8)
 - **Todo o nada**: una venta rechazada deja 0 filas nuevas en ventas, líneas y pagos, y no consume Sale number; también cuando el rechazo es un medio que ya no se ofrece. (Criterio 4)
 - **Debiendo sin cliente**: 0 guardadas; el dominio lo rechaza y un test lo cubre. (Criterio 4)
-- **Borrar devuelve gramos**: después de borrar una venta, el stock de sus productos sube exactamente los gramos de sus líneas, y la respuesta los nombra. La confirmación de Delete sale nombra los gramos, y el aviso de Undo dice que vuelven.
+- **Borrar devuelve gramos**: después de borrar una venta, el stock de sus productos sube exactamente los gramos de sus líneas, y la respuesta los nombra. La confirmación de Void nombra los gramos, y el aviso de Undo dice que vuelven.
 - **Cobertura de aislamiento**: cada ruta de ventas está en el barrido y responde 404 o vacío desde otro negocio, incluidas referencias a un cliente, un producto o un Payment method de otro negocio; un Customer-type price de otro negocio nunca cotiza una línea. En pantalla, la venta de otro negocio abierta por id muestra "That is gone." (Criterio 5)
 - **Sin eco**: (Criterio 5)
   - ningún cuerpo de rechazo ni línea de log contiene la nota, el nombre de un cliente ni un monto enviado;
@@ -745,7 +746,7 @@ El Balance es la cuenta entera del cliente al momento de compartir, no en la fec
 - **Un toque (criterio 20)**: tests del front (fetch simulado) muestran que Share llama a compartir con el texto del Sale bill; con `isSecureContext=false`, `execCommand('copy')` se llama de forma sincrónica justo después del clic y aparece el aviso "Bill copied"; cancelar no muestra nada; si compartir falla aparece su línea con el ícono de atención y la etiqueta pasa a Copy; si copiar falla aparece su línea y el bloque seleccionable; `bill` nulo oculta el botón; cargando conserva la etiqueta, deshabilitado y ocupado, sin dígitos ni `$`. El proyecto móvil recorre el detalle de la venta por su fila del registro, cargado y retenido, y pasa sin ningún infractor nuevo. No se agrega ningún `WalkState` para los estados de copia fallida ni de carga: un estado nuevo en la ruta de la venta trae los infractores que esa ruta ya tiene bajo un nombre de pantalla nuevo, y las listas de infractores no pueden aceptarlo (`gate.md`). Los dos estados los cubren los tests del front de arriba.
 - **El Sale bill no deja rastro**: después de los tests del front, la consola y el almacenamiento del navegador no tienen nada del Sale bill.
 - **Sale number, propio y desde 1 (criterios 24, 26)**: test de aislamiento con dos negocios: los dos registran su primera venta como Sale #1 y siguen 2, 3… cada uno por su lado, intercalando guardados entre los dos; ni el detalle, ni el Sale bill, ni un rechazo de uno contienen nada que dependa de la cantidad de ventas del otro, y la venta de otro negocio sigue en 404. En `tests/test_business_isolation.py`.
-- **Sale number, nunca reutilizado (criterio 24)**: borrar una venta del medio deja un hueco; borrar la de número más alto (por Delete sale y por Undo) y registrar otra da el número siguiente, nunca el borrado; un guardado rechazado no consume número; dos guardados simultáneos en un negocio reciben números distintos. Editar la fecha no aplica (no se edita); asignar un cliente después no cambia el número.
+- **Sale number, nunca reutilizado (criterio 24)**: borrar una venta del medio deja un hueco; borrar la de número más alto (por Void y por Undo) y registrar otra da el número siguiente, nunca el borrado; un guardado rechazado no consume número; dos guardados simultáneos en un negocio reciben números distintos. Editar la fecha no aplica (no se edita); asignar un cliente después no cambia el número.
 - **Sale number, el mismo en los dos lugares (criterio 25)**: un test del front muestra que el título del detalle y la línea `Sale #N · dd/mm` del Sale bill llevan el mismo número para la misma venta; el título es texto seleccionable, no un botón; mientras carga, el título queda vacío y no aparece ningún `#`, dígito ni "Sale".
 - **Sale number, historial (criterio 27)**: test de la migración: en una base con ventas de dos negocios, cada negocio queda numerado desde 1 por (fecha, momento de registro, id), con un empate de fecha y momento resuelto por id; la migración solo agrega una columna; la siguiente venta nueva de cada negocio sigue al número más alto. Una Spreadsheet import en un negocio vacío numera por fecha y orden de registro.
 - **Design capture**: el detalle de la venta en el teléfono muestra "Sale #N" en el lugar dibujado, en claro y en oscuro (`docs/product/design-capture.md`). En New sale, el campo de producto de la línea se lee como el campo del Selector dibujado en `NuevaVenta` y `NuevaVentaOscuro`. Paid · Owing, con el campo "Payment method" bajo Paid, se lee como lo dibujado en `NuevaVentaCompu` y `NuevaVentaClienteCompu`. Cualquier otra diferencia con el dibujo es un hallazgo aparte. La pista de nada para vender y su lugar guardado no tienen dibujo ni fila en el registro, así que su Design capture se informa como "not compared" hasta #793. El resultado de Undo tampoco tiene fila en el registro, y se informa como "not compared".

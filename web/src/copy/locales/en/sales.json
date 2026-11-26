@@ -20,5 +20,9 @@
   },
   "loading": {
     "label": "Loading sales"
+  },
+  "detail": {
+    "void": "Void",
+    "yesVoid": "Yes, void"
   }
 }

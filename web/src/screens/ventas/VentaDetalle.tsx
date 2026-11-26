@@ -292,7 +292,7 @@ function VentaDetalleScreen() {
   const refreshing = assignMutation.isPending || (awaitingAssigned && sale.customer === null)
 
   return (
-    <ContentArea as="main" className="pantalla">
+    <ContentArea as="main" className="pantalla venta-detalle">
       <div className="cuerpo">
         <div className="encabezado__fila">
           <span className="encabezado__titulo">{SALES_TEXT.saleNumber(sale.number)}</span>
@@ -378,8 +378,12 @@ function VentaDetalleScreen() {
               {SALES_TEXT.assignCustomer}
             </Boton>
           )}
+        </div>
 
-          <Boton variant="icon" action="delete" ariaLabel={SALES_TEXT.deleteSale} onClick={() => setConfirmingDelete(true)} />
+        <div className="venta-detalle__botones">
+          <Boton variant="secondary" onClick={() => setConfirmingDelete(true)}>
+            {t('sales:detail.void')}
+          </Boton>
         </div>
       </div>
 
@@ -391,7 +395,7 @@ function VentaDetalleScreen() {
         <ConfirmDialog
           title={deleteTitle(sale, money)}
           detail={COMMON_TEXT.cannotUndo}
-          confirmText={COMMON_TEXT.yesDelete}
+          confirmText={t('sales:detail.yesVoid')}
           cancelText={COMMON_TEXT.noKeep}
           onConfirm={() => {
             if (!deleting) void removeSale('borrar')

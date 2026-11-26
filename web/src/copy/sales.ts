@@ -203,7 +203,6 @@ export const SALES_TEXT = {
   perGram: VARIETIES_TEXT.elGramo,
   customerAssigned: 'Customer assigned',
   assignCustomer: 'Assign customer',
-  deleteSale: 'Delete sale',
   from: 'From',
   to: 'To',
   addAtLeastOne: 'Add at least one product.',
