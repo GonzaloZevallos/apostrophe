@@ -7,6 +7,7 @@
  */
 
 import { VARIETY_NAME_LABEL } from './helpers/labels.js'
+import { openStockSegment } from './helpers/stockSegment.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { expectPath } from './helpers/url.js'
@@ -74,6 +75,7 @@ for (const viewport of VIEWPORTS) {
 
       // Found in Archived (1); its page is read-only and Restore is the one action.
       await page.goto(VARIETIES)
+      await openStockSegment(page)
       await page.getByRole('link', { name: /Archived \(1\)/ }).click()
       if (computer) {
         // The two panes select the first archived variety by name on their own.
@@ -105,9 +107,11 @@ for (const viewport of VIEWPORTS) {
       // The page never turns into the live variety: it goes back, and with none archived left
       // lands on Variedades, where the restored variety is listed.
       await expect(page.getByRole('link', { name: /Rosa/ })).toBeVisible()
+      await openStockSegment(page)
       await expect(page.getByText(/Archived \(/)).toHaveCount(0)
       await page.goto(VARIETIES)
       await expect(page.getByRole('link', { name: /Rosa/ })).toBeVisible()
+      await openStockSegment(page)
       await expect(page.getByText(/Archived \(/)).toHaveCount(0)
 
       expect(consoleMessages).toEqual([])

@@ -13,6 +13,7 @@ import type { Page } from '@playwright/test'
 import { CUSTOMER, CUSTOMER_NEW, HOME, VARIETIES } from '../src/routes.js'
 import { expect, test } from './fixtures.js'
 import { DOCUMENT_CHANGED, DOCUMENT_CHANGED_AT_MARK, NO_RECORDER, expectToast } from './helpers/toast.js'
+import { openStockSegment } from './helpers/stockSegment.js'
 import { expectPath } from './helpers/url.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { railSettingsLink } from './helpers/chrome.js'
@@ -140,6 +141,7 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
   await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.goto(VARIETIES)
+  await openStockSegment(page)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
   await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')

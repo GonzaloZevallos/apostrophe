@@ -20,6 +20,7 @@ import {
   WITHDRAWAL_NEW,
   pathTo,
 } from '../src/routes.js'
+import { openStockSegment } from './helpers/stockSegment.js'
 import { expectPath } from './helpers/url.js'
 import { expensesCard } from './helpers/openScreens.js'
 import { expect, test, withToastRecorder } from './fixtures.js'
@@ -134,6 +135,7 @@ test.describe.serial('navigation', () => {
 
     // Take from stock: Products, next to the entry action.
     await page.goto(VARIETIES)
+    await openStockSegment(page)
     await page.getByRole('link', { name: 'Take from stock' }).click()
     await expectPath(page, WITHDRAWAL_NEW)
   })
