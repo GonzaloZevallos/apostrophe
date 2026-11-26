@@ -45,7 +45,7 @@ def _account(sales: list[OwedSale], payments: list[LaterPaymentEntry]) -> Accoun
 
 def _ids(account: Account) -> list[tuple[str, int]]:
     return [
-        (row.kind, row.sale_id if isinstance(row, SaleRow) else row.payment_id)
+        (row.kind, row.payment_id if isinstance(row, PaymentRow) else row.sale_id)
         for row in account.rows
     ]
 
@@ -297,7 +297,7 @@ def test_ledgers_in_any_order_keep_the_newest_row_equal_to_the_balance() -> None
         keys = [
             ledger_key(row.date, recorded[(row.kind, identity)], rank, identity)
             for row, rank, identity in (
-                (row, 0, row.sale_id) if isinstance(row, SaleRow) else (row, 1, row.payment_id)
+                (row, 1, row.payment_id) if isinstance(row, PaymentRow) else (row, 0, row.sale_id)
                 for row in account.rows
             )
         ]
