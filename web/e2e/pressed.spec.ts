@@ -183,6 +183,29 @@ test.describe('on a phone', () => {
   }
 })
 
+test.describe("Expenses' title row on a phone", () => {
+  for (const theme of THEMES) {
+    // 390 px draws the back with its word and Add expense as the pill or the icon; 246 px draws
+    // the round chevron and the round "+": each shape answers a press.
+    for (const width of [390, 246]) {
+      test(`the round back and Add expense show a press at ${width} px (${theme})`, async ({ page }) => {
+        const messages: string[] = []
+        watchConsole(page, messages)
+        await page.setViewportSize({ width, height: PHONE.height })
+        await signUpNewBusiness(page, {
+          businessName: `Flores de la Fila ${theme} ${width} ${uniqueTag()}`,
+          email: `duena-fila-${theme}-${width}-${uniqueTag()}@example.com`,
+        })
+        await openIn(page, EXPENSES, theme)
+        const row = page.getByRole('main').locator('.gastos__fila-titulo')
+        expectPressed(`the round back at ${width} px`, await whilePressed(page, row.getByRole('button', { name: /Analysis/ })))
+        expectPressed(`Add expense at ${width} px`, await whilePressed(page, row.getByRole('link', { name: 'Add expense' })))
+        expect(messages).toEqual([])
+      })
+    }
+  }
+})
+
 test.describe('the Settings avatar on a phone', () => {
   for (const theme of THEMES) {
     for (const route of [HOME, ANALYSIS]) {

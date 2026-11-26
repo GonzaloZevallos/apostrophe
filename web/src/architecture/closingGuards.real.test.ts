@@ -35,7 +35,7 @@ const OLD_SHAPES: Record<string, { buttons: number; classes: number }> = {}
  * icon-only map does not have and `BotonLink` cannot draw; the design and product issue about
  * that shape is what empties this list.
  */
-const ACTION_LINKS_LEFT = ['/src/screens/Gastos.tsx to={EXPENSE_NEW}']
+const ACTION_LINKS_LEFT = ['/src/screens/Gastos.tsx to={EXPENSE_NEW}', '/src/screens/expenses/ExpensesTitleRow.tsx to={EXPENSE_NEW}']
 
 function perFile(lines: string[]): Record<string, number> {
   const counts: Record<string, number> = {}
