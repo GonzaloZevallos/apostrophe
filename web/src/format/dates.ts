@@ -5,7 +5,7 @@ import { DATES_TEXT } from '../copy/dates'
  * months (`"YYYY-MM"`). The front never reads the device's clock, zone or locale here, and
  * never passes an API date to `Date.parse` (plan, invariants): "today" always comes in as a
  * parameter, read from `GET /auth/me`. Every function works on the string's digits alone,
- * except `formatTodayLong`, the one that builds a UTC instant from those digits and formats
+ * except `formatTodayLong` and `formatWeekdayDay`, the ones that build a UTC instant from those digits and formats
  * it only in UTC, in the language the screen is shown in (ADR-0049, amendment GH-748).
  */
 
@@ -45,23 +45,57 @@ interface LongDateFormatter {
   resolvedOptions(): { locale: string }
 }
 
+type DateShape = 'long' | 'weekdayDay'
+
 const formatters = new Map<string, LongDateFormatter>()
 
-/** The long-date formatter of a language tag, cached per tag. An unusable tag (`''`,
+/** The formatter of a language tag and shape, cached per both. An unusable tag (`''`,
  * `'en_US'`) gets the English one. The only place a formatter is built. */
-function formatterFor(tag: string): LongDateFormatter {
+function formatterFor(tag: string, shape: DateShape): LongDateFormatter {
   const key = tag.toLowerCase() === 'en-xa' ? ENGLISH : tag
-  const cached = formatters.get(key)
+  const cacheKey = `${key}|${shape}`
+  const cached = formatters.get(cacheKey)
   if (cached !== undefined) return cached
   let formatter: LongDateFormatter
   try {
-    formatter = new Intl.DateTimeFormat(key, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
+    formatter = new Intl.DateTimeFormat(key, {
+      weekday: 'long',
+      day: 'numeric',
+      month: shape === 'long' ? 'long' : undefined,
+      timeZone: 'UTC',
+    })
   } catch (error) {
     if (!(error instanceof RangeError)) throw error
-    formatter = formatterFor(ENGLISH)
+    formatter = formatterFor(ENGLISH, shape)
   }
-  formatters.set(key, formatter)
+  formatters.set(cacheKey, formatter)
   return formatter
+}
+
+type DatePart = { type: string; value: string }
+
+/** The parts of a date's UTC instant, built from its digits, in `language` and `shape`. */
+function partsOf(iso: string, language: string, shape: DateShape): { parts: DatePart[]; spanish: boolean } {
+  const { year, month, day } = parseDate(iso)
+  const formatter = formatterFor(language, shape)
+  const instant = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)))
+  return {
+    parts: formatter.formatToParts(instant),
+    spanish: formatter.resolvedOptions().locale.split('-')[0]?.toLowerCase() === 'es',
+  }
+}
+
+function capitalise(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+/** Spanish writes the weekday in lower case and joins it to the date with a comma or a
+ * non-breaking space: one plain space after the weekday, and a capital first letter. */
+function spanishText(parts: DatePart[]): string {
+  const text = parts
+    .map((part, index) => (part.type === 'literal' && parts[index - 1]?.type === 'weekday' ? ' ' : part.value))
+    .join('')
+  return capitalise(text)
 }
 
 /** `"2026-10-29"` → `"Jueves 29 de octubre"` in Spanish, `"Thursday, October 29"` in English,
@@ -69,17 +103,18 @@ function formatterFor(tag: string): LongDateFormatter {
  * names come from `Intl` in `language`, over a UTC instant built from the date's digits, so
  * neither the device's zone nor its locale can move it. */
 export function formatTodayLong(iso: string, language: string): string {
-  const { year, month, day } = parseDate(iso)
-  const formatter = formatterFor(language)
-  const instant = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)))
-  const parts = formatter.formatToParts(instant)
-  if (formatter.resolvedOptions().locale.split('-')[0]?.toLowerCase() !== 'es') {
-    return parts.map((part) => part.value).join('')
-  }
-  const text = parts
-    .map((part, index) => (part.type === 'literal' && parts[index - 1]?.type === 'weekday' ? ' ' : part.value))
-    .join('')
-  return text.charAt(0).toUpperCase() + text.slice(1)
+  const { parts, spanish } = partsOf(iso, language, 'long')
+  return spanish ? spanishText(parts) : parts.map((part) => part.value).join('')
+}
+
+/** `"2026-11-24"` → `"Tuesday 24"` in English, `"Martes 24"` in Spanish: the weekday and the
+ * day, no month, always in that order. Same `Intl` and UTC instant as `formatTodayLong`. */
+export function formatWeekdayDay(iso: string, language: string): string {
+  const { parts, spanish } = partsOf(iso, language, 'weekdayDay')
+  const weekday = parts.find((part) => part.type === 'weekday')?.value ?? ''
+  const day = parts.find((part) => part.type === 'day')?.value ?? ''
+  const text = `${weekday} ${day}`
+  return spanish ? capitalise(text) : text
 }
 
 /** `"2026-10-09"` → `"09/10"`, with no "today" to compare against: for a footer

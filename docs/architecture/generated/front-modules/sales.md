@@ -17,10 +17,12 @@ subgraph src["src"]
     src_sales_saleFormQueries_ts["saleFormQueries.ts"]
     src_sales_saleRefusal_ts["saleRefusal.ts"]
     src_sales_shipping_ts["shipping.ts"]
+    src_sales_useSaleBillShare_ts["useSaleBillShare.ts"]
   end
 end
 src_sales_paymentMethods_ts-->src_sales_pricing_ts
 src_sales_saleBill_ts-->src_sales_pricing_ts
 src_sales_saleBody_ts-->src_sales_pricing_ts
 src_sales_saleFormQueries_ts-->src_sales_pricing_ts
+src_sales_useSaleBillShare_ts-->src_sales_saleBill_ts
 ```

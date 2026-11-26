@@ -60,6 +60,16 @@ export const SALE_BILL_TEXT = {
 /** The Collect Sheet's Received field: a help line, never a refusal. */
 const RECEIVED_HELP = "Type what they hand over to see the change. It isn't saved."
 
+/** The line detail Sheet: its fixed Done, the Remove line that sits apart from it, and the quantity
+ * field's neutral label and refusal (no unit word: `enterGrams` stays with the live New sale). Their
+ * `en.baseline.json` entries are inserted in sorted order: the baseline script never adds one. */
+const LINE_DETAIL_TEXT = {
+  lineDetailDone: COMMON_TEXT.done,
+  removeLineButton: 'Remove line',
+  lineQuantityLabel: 'Quantity',
+  lineQuantityInvalid: 'Enter a quantity above 0, with up to two decimals.',
+} as const
+
 /** New sale's Product list. `stock` is already formatted; the step names carry the Product's own name. */
 const NEW_SALE_TEXT = {
   productsInSale: (n: number) => `In the sale · ${n}`,
@@ -120,6 +130,10 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: NEW_SALE_TEXT.productSearchPlaceholder },
   { kind: 'help', text: NEW_SALE_TEXT.addProductToCollect },
   { kind: 'help', text: RECEIVED_HELP },
+  { kind: 'help', text: LINE_DETAIL_TEXT.lineDetailDone },
+  { kind: 'help', text: LINE_DETAIL_TEXT.removeLineButton },
+  { kind: 'help', text: LINE_DETAIL_TEXT.lineQuantityLabel },
+  { kind: 'help', text: LINE_DETAIL_TEXT.lineQuantityInvalid },
 ]
 
 /** Nothing here is over 80 characters. */
@@ -197,6 +211,7 @@ export const SALES_TEXT = {
   lineSpecialPrice: (n: string | number) => `Line ${n} special price`,
   specialPrice: 'Special price',
   removeLine: (n: string | number) => `Remove line ${n}`,
+  ...LINE_DETAIL_TEXT,
   saleNumber: (n: number) => `Sale #${n}`,
   undo: 'Undo',
   lines: 'Lines',

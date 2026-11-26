@@ -1,28 +1,19 @@
 /**
  * `SaleBillButton`: Share or Copy of the sale bill, on the sale's detail (`sales.md`, "Sale
- * bill"). It renders the text from the `bill` of the last `GET /sales/{id}` it was handed and
- * never works settlement out. `loading` is an explicit state, never a missing bill: the button
- * then keeps its label, is disabled and busy, and draws no digit or `$`. A `null` bill draws
- * nothing.
- *
- * The tap calls `shareText` or `copyText` synchronously, with nothing awaited first: over plain
- * http (ADR-0002) the `execCommand` fallback must run inside the gesture. One synchronous
- * pending ref guards Share and Copy together, and a sequence number decides whose outcome
- * counts: a tap whose answer arrives after a newer tap changes nothing. A share sheet that
- * never settles is released when the page is visible again. Nothing of the bill is stored,
- * logged or written to the console.
+ * bill"). It draws what `useSaleBillShare` returns for the `bill` of the last `GET /sales/{id}`
+ * it was handed and never works settlement out. `loading` is an explicit state, never a missing
+ * bill: the button then keeps its label, is disabled and busy, and draws no digit or `$`. A
+ * `null` bill draws nothing. The tap logic (synchronous call inside the gesture, one pending
+ * ref, sequence number, release on visibility) lives in the hook.
  */
 
-import { useEffect, useRef, useState } from 'react'
-import type { SaleBill } from '../../api/sales'
 import AvisoAmbar from '../../components/AvisoAmbar'
 import Boton from '../../components/Boton'
-import { copyText } from '../../clipboard'
 import { SALE_BILL_TEXT } from '../../copy/sales'
-import { canShare, shareText } from '../../share'
-import { renderSaleBill } from '../../sales/saleBill'
+import { useSaleBillShare } from '../../sales/useSaleBillShare'
+import type { SaleBillButtonState } from '../../sales/useSaleBillShare'
 
-export type SaleBillButtonState = { kind: 'loading' } | { kind: 'ready'; bill: SaleBill | null }
+export type { SaleBillButtonState }
 
 export interface SaleBillButtonProps {
   state: SaleBillButtonState
@@ -32,69 +23,13 @@ export interface SaleBillButtonProps {
   onCopied: () => void
 }
 
-type Failure = { kind: 'share' } | { kind: 'copy'; text: string }
-
 export default function SaleBillButton({ state, refreshing, onCopied }: SaleBillButtonProps) {
-  const [shareFailed, setShareFailed] = useState(false)
-  const [failure, setFailure] = useState<Failure | null>(null)
-  const pending = useRef(false)
-  const sequence = useRef(0)
-  const release = useRef<(() => void) | null>(null)
-
-  useEffect(
-    () => () => {
-      sequence.current += 1
-      release.current?.()
-    },
-    [],
-  )
+  const { sharing, busy, onTap, failure } = useSaleBillShare({ state, refreshing, onCopied })
 
   if (state.kind === 'ready' && state.bill === null) return null
 
-  const sharing = canShare() && !shareFailed
   const label = sharing ? SALE_BILL_TEXT.share : SALE_BILL_TEXT.copy
   const icon = sharing ? 'compartir' : 'copiar'
-  const busy = state.kind === 'loading' || refreshing
-
-  function onClick() {
-    if (pending.current || state.kind !== 'ready' || state.bill === null) return
-    pending.current = true
-    sequence.current += 1
-    const tap = sequence.current
-    const text = renderSaleBill(state.bill)
-
-    release.current?.()
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') release.current?.()
-    }
-    const clear = () => {
-      pending.current = false
-      document.removeEventListener('visibilitychange', onVisible)
-      release.current = null
-    }
-    release.current = clear
-    document.addEventListener('visibilitychange', onVisible)
-
-    setFailure(null)
-    // No `await` before either call: the browser credits it to this click.
-    if (sharing) {
-      void shareText(text).then((outcome) => {
-        if (sequence.current !== tap) return
-        clear()
-        if (outcome === 'failed') {
-          setShareFailed(true)
-          setFailure({ kind: 'share' })
-        }
-      })
-    } else {
-      void copyText(text).then((copied) => {
-        if (sequence.current !== tap) return
-        clear()
-        if (copied) onCopied()
-        else setFailure({ kind: 'copy', text })
-      })
-    }
-  }
 
   return (
     <div className="sale-bill">
@@ -103,7 +38,7 @@ export default function SaleBillButton({ state, refreshing, onCopied }: SaleBill
         icon={icon}
         disabled={busy}
         ariaBusy={busy ? true : undefined}
-        onClick={onClick}
+        onClick={onTap}
       >
         {label}
       </Boton>
