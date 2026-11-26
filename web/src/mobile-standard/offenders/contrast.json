@@ -9,15 +9,6 @@
     ]
   },
   {
-    "screen": "DescartarVenta",
-    "rule": "contrast",
-    "target": "textbox:Line # special price::placeholder",
-    "issue": 78,
-    "themes": [
-      "oscuro"
-    ]
-  },
-  {
     "screen": "ElegirCliente",
     "rule": "contrast",
     "target": "textbox:Date",

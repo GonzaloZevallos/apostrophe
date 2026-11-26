@@ -549,6 +549,7 @@ Solo el diseño del teléfono; `NuevaVentaCompu` mantiene el suyo, salvo el desp
   - Después de asignar, el detalle se vuelve a leer del servidor, para que el Sale bill traiga el Balance del cliente recién asignado; nada arma el detalle a mano en el front. El Sale number no cambia, y las líneas conservan su precio y su regla.
 - **Delete sale**:
   - En el teléfono, el control y los botones de su confirmación miden al menos 44 px de alto.
+  - En el teléfono, su confirmación se dibuja en la capa única de toda confirmación, sobre la barra inferior y las hojas, y la app de atrás no recibe toques ni foco mientras está abierta (ADR [20261126-on-the-phone-every-confirmation-is-drawn-in-one-layer-above-the-bar-and-sheets](../adr/20261126-on-the-phone-every-confirmation-is-drawn-in-one-layer-above-the-bar-and-sheets.md)).
   - Se confirma con `Before deleting`, que nombra la fecha, el monto y el total de gramos de sus líneas que vuelven al stock, regalos incluidos. Por ejemplo: "Delete the $ 11.000 sale from 02/10? 4 g go back to stock." Los botones son "No, keep it / Yes, delete it".
   - Después, el aviso "Sale deleted" y de vuelta a Sales.
   - El texto nunca menciona deuda ni Credit; la cuenta del cliente muestra el efecto después (`payments.md`).
