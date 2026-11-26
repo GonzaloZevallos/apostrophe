@@ -8,7 +8,7 @@
 import i18n from 'i18next'
 import type { CopyKey } from './resources.generated.ts'
 
-/** The keys a `copy/` reader hands over: the customer-type and payment-method icon names, the payment states, Home's views, Customers' segments, Products' segments the New sale description and the Save payment label. */
+/** The keys a `copy/` reader hands over: the customer-type and payment-method icon names, the payment states, Home's views, Customers' segments, Products' segments, the New sale description and the Save payment label. */
 export type InstanceTextKey =
   | Exclude<Extract<CopyKey, `customerTypes:icon.${string}`>, 'customerTypes:icon.label'>
   | Extract<CopyKey, `paymentMethods:icon.${string}`>
