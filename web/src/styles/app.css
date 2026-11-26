@@ -2407,7 +2407,7 @@ a.ajustes-tema__opcion {
 }
 
 /* The bottom row of the sale detail: one column per button ("Void" alone today; "Edit sale"
- * (#561) goes in before it), each taking an equal share of the row. */
+ * (issue 561) goes in before it), each taking an equal share of the row. */
 .venta-detalle__botones {
   display: grid;
   grid-auto-flow: column;

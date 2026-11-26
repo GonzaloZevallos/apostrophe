@@ -14,7 +14,7 @@
 
 import { SALE as SALE_ROUTE, SALES, pathTo } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -179,10 +179,10 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
 test('Void shows on every sale: a settled one, one with no customer and one with a customer owing', async () => {
   for (const sale of [{ ...SALE, payment: 'paid' }, { ...SALE, customer: null }, SALE]) {
     vi.mocked(fetch).mockResolvedValue(jsonResponse(200, sale))
-    const { unmount } = renderDetalle()
+    renderDetalle()
     await screen.findByText('Sale #2')
     expect(screen.getByRole('button', { name: 'Void' })).toBeVisible()
-    unmount()
+    cleanup()
   }
 })
 
@@ -196,7 +196,7 @@ test('Void asks "Antes de borrar" naming the date, the amount and the grams retu
   expect(
     screen.getByText('Delete the sale of $ 11.000 from 14/09? 3,5 g go back to stock.'),
   ).toBeInTheDocument()
-  expect(screen.getByText("This can't be undone")).toBeInTheDocument()
+  expect(screen.getByText("This can't be undone.")).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'No, keep it' })).toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Yes, delete it' })).not.toBeInTheDocument()
 

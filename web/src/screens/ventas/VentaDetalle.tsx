@@ -381,7 +381,7 @@ function VentaDetalleScreen() {
         </div>
 
         <div className="venta-detalle__botones">
-          <Boton variant="secondary" onClick={() => setConfirmingDelete(true)}>
+          <Boton variant="secondary" icon="tacho" onClick={() => setConfirmingDelete(true)}>
             {t('sales:detail.void')}
           </Boton>
         </div>
