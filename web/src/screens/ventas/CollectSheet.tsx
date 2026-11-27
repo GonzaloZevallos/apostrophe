@@ -328,6 +328,7 @@ export default function CollectSheet({
           <div onClickCapture={methodOptions.failure === null ? undefined : methodOptions.reload}>
             <Selector
               {...methodOptions.selector}
+              required
               options={view.options}
               placeholder={SALES_TEXT.chooseMethod}
               label={SALES_TEXT.howTheyPay}

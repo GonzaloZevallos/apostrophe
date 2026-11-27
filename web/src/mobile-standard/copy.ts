@@ -42,3 +42,10 @@ export function sales(key: SalesKey, args?: Args): string {
 export function refusal(refused: Refusal): string {
   return resolveKey(ENGLISH_STATIC, refused.key)
 }
+
+type ProductsKey = Extract<CopyKey, `products:${string}`>
+
+/** The English text of a `products:` key (the phone Products segments). */
+export function products(key: ProductsKey): string {
+  return resolveKey(ENGLISH_STATIC, key)
+}

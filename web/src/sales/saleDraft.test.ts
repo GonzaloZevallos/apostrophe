@@ -7,6 +7,9 @@ import {
   isDirty,
   isQuantityHundredths,
   isSpecialPrice,
+  lineBufferOf,
+  lineBufferWith,
+  lineEditChanged,
   lineEditOf,
   saleDraftReducer,
   saleLineInputsOf,
@@ -580,5 +583,75 @@ describe('typedQuantity', () => {
     ['00000000000000001', 100],
   ])('accepts %j as %i hundredths', (text, hundredths) => {
     expect(typedQuantity(text)).toBe(hundredths)
+  })
+})
+
+describe('lineBufferOf', () => {
+  test('seeds the quantity as the row shows it and the Special price as the field prefills it', () => {
+    expect(lineBufferOf({ ...draftLineOf(1, 250), specialPrice: 1234 }, FORMAT)).toEqual({
+      quantityText: '2,5',
+      gift: false,
+      specialText: '1234',
+    })
+    expect(lineBufferOf({ ...draftLineOf(1, 200), specialPrice: 12.5 }, FORMAT_CENTS).specialText).toBe('12,50')
+  })
+
+  test('a line with no Special price seeds a blank text, and a Gift seeds gift on', () => {
+    expect(lineBufferOf(draftLineOf(1, 100), FORMAT)).toEqual({ quantityText: '1', gift: false, specialText: '' })
+    expect(lineBufferOf({ ...draftLineOf(1, 100), gift: true }, FORMAT).gift).toBe(true)
+  })
+})
+
+describe('lineBufferWith', () => {
+  const base = { quantityText: '2', gift: false, specialText: '' }
+
+  test('turning Gift on empties the Special price text, turning it off leaves it', () => {
+    expect(lineBufferWith({ ...base, specialText: '500' }, { gift: true })).toEqual({
+      quantityText: '2',
+      gift: true,
+      specialText: '',
+    })
+    expect(lineBufferWith({ ...base, gift: true }, { gift: false })).toEqual(base)
+  })
+
+  test('a non-blank Special price text turns Gift off; a blank one leaves it', () => {
+    expect(lineBufferWith({ ...base, gift: true }, { specialText: '500' })).toEqual({
+      quantityText: '2',
+      gift: false,
+      specialText: '500',
+    })
+    expect(lineBufferWith({ ...base, gift: true }, { specialText: '  ' }).gift).toBe(true)
+  })
+
+  test('a quantity edit leaves Gift and the Special price text as they are', () => {
+    const held = { quantityText: '2', gift: false, specialText: '500' }
+    expect(lineBufferWith(held, { quantityText: '3' })).toEqual({ ...held, quantityText: '3' })
+  })
+})
+
+describe('lineEditChanged', () => {
+  const line = { ...draftLineOf(1, 200), specialPrice: 1234 }
+  const seed = lineBufferOf(line, FORMAT)
+
+  test('the seeded buffer is no change', () => {
+    expect(lineEditChanged(line, seed, FORMAT)).toBe(false)
+  })
+
+  test('the same quantity written another way is no change', () => {
+    for (const quantityText of ['2', '2,00', '2,0']) {
+      expect(lineEditChanged(line, { ...seed, quantityText }, FORMAT)).toBe(false)
+    }
+  })
+
+  test('another quantity, a Gift toggle or another Special price is a change', () => {
+    expect(lineEditChanged(line, { ...seed, quantityText: '2,5' }, FORMAT)).toBe(true)
+    expect(lineEditChanged(line, lineBufferWith(seed, { gift: true }), FORMAT)).toBe(true)
+    expect(lineEditChanged(line, { ...seed, specialText: '1235' }, FORMAT)).toBe(true)
+    expect(lineEditChanged(line, { ...seed, specialText: '' }, FORMAT)).toBe(true)
+  })
+
+  test('a refused buffer counts as changed', () => {
+    expect(lineEditChanged(line, { ...seed, quantityText: '' }, FORMAT)).toBe(true)
+    expect(lineEditChanged(line, { ...seed, specialText: '0' }, FORMAT)).toBe(true)
   })
 })

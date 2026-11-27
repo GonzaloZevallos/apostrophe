@@ -92,6 +92,7 @@ export interface RenderedSheet {
   onClose: ReturnType<typeof vi.fn<() => void>>
   onChangeCustomer: ReturnType<typeof vi.fn<() => void>>
   onCollect: ReturnType<typeof vi.fn<(sale: CompleteSale) => void>>
+  onOpenLine: ReturnType<typeof vi.fn<(productId: number) => void>>
   /** The draft the Sheet is driven by. */
   draft: () => SaleDraftApi
   /** Holds a read back from now on (a request already answered is not undone). */
@@ -121,6 +122,7 @@ export function renderNuevaVentaSheet(spec: SheetCase = {}): RenderedSheet {
   const onClose = vi.fn<() => void>()
   const onChangeCustomer = vi.fn<() => void>()
   const onCollect = vi.fn<(sale: CompleteSale) => void>()
+  const onOpenLine = vi.fn<(productId: number) => void>()
   let current: SaleDraftApi | null = null
 
   function Host() {
@@ -146,6 +148,7 @@ export function renderNuevaVentaSheet(spec: SheetCase = {}): RenderedSheet {
         onClose={onClose}
         onChangeCustomer={onChangeCustomer}
         onCollect={onCollect}
+        onOpenLine={onOpenLine}
         computer={false}
         computerClass="pantalla cobro-modal"
         computerDialog
@@ -164,6 +167,7 @@ export function renderNuevaVentaSheet(spec: SheetCase = {}): RenderedSheet {
     onClose,
     onChangeCustomer,
     onCollect,
+    onOpenLine,
     draft: () => {
       if (current === null) throw new Error('the Sheet is not mounted')
       return current
