@@ -8,13 +8,14 @@
 
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { NetworkError, get } from '../../api/client'
+import { NetworkError } from '../../api/client'
 import { keys } from '../../api/keys'
+import { readPinnedCatalog } from '../../api/pinnedCatalog'
 import { sendPass } from '../../api/onboarding'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import Loading from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
-import { IntegrationsForm, type PinnedCatalog } from '../settings/IntegrationsGroup'
+import { IntegrationsForm } from '../settings/IntegrationsGroup'
 import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
@@ -26,7 +27,7 @@ export const PUBLISH_LINE = ONBOARDING_TEXT.publishItFromVarieties
 export default function BotStep({ progress, onDirtyChange, onProgress }: StepBodyProps) {
   const query = useQuery({
     queryKey: keys.pinnedCatalog(),
-    queryFn: () => get<PinnedCatalog>('/pinned-catalog'),
+    queryFn: readPinnedCatalog,
   })
   const [tested, setTested] = useState(false)
   const { run, sending, notice } = useOnboardingWrite(onProgress)
