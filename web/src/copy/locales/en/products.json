@@ -3,5 +3,8 @@
     "catalog": "Catalog",
     "stock": "Stock",
     "label": "Products view"
-  }
+  },
+  "searchLabel": "Search products",
+  "searchPlaceholder": "Search products",
+  "searchClear": "Clear"
 }

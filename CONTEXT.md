@@ -671,3 +671,7 @@ _Avoid_: revert, rollback, cancel sale, void, anular, deshacer venta
 **Recorder**:
 El User que registró un Payment, guardado como sus iniciales copiadas al registrarlo (la marca de quien registró, docs/product/initials.md) junto con una referencia al User que se anula cuando el User se va, mientras que las iniciales quedan. En el código es el valor `Recorder` (`app_user_id`, `initials`) que da `CurrentRecorder` a partir de la Session; todavía ningún router lo usa ni ninguna pantalla lo muestra (partes posteriores de GH-1057). En la app: todavía no tiene palabra propia.
 _Avoid_: author, creator, cashier, collector, owner, recorded by user
+
+**Products search**:
+La búsqueda por nombre dentro de la pestaña Products del celular: quien vende tipea una parte del nombre de un Product y ve solo los que coinciden. Su texto vive solo en memoria y nunca se guarda en el historial, el path, la consulta ni el dispositivo. Todavía ninguna pantalla la muestra (GH-1219); su campo es `SearchField` y en la app se rotula "Search products".
+_Avoid_: Global search, filter, lookup, finder, Ctrl K
