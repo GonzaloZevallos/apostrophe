@@ -6,7 +6,7 @@
 
 Esto afina el paso de configuración del primer job (el Test send antes de que lo vean los clientes); no es un job nuevo. Se cargó como un bug: Test it le echaba la culpa al canal por fallas del chat propio, y la línea de ayuda del chat propio prometía algo que la pantalla no hacía. Antes del arreglo, el vendedor adivinaba, revisando el token y el número a ciegas, o le pedía ayuda a alguien.
 
-**Cuando** estoy por pegar el token de mi bot de Telegram, **quiero** saber qué va a hacer la app con él antes de guardarlo, **para** pegarlo sin miedo a que se vuelva a mostrar o se filtre. (GH-1070: mientras no hay token guardado, bajo "Bot token" se ve "Saved encrypted and never shown again.", en Settings → Integrations y en el paso 4 del Onboarding, que comparten el formulario.)
+**Cuando** estoy por pegar el token de mi bot de Telegram, **quiero** saber qué va a hacer la app con él antes de guardarlo, **para** pegarlo sin miedo a que se vuelva a mostrar o se filtre. (GH-1070: mientras el campo "Bot token" está abierto para tipear, sin token guardado o después de Change, se ve "Saved encrypted and never shown again." bajo el campo, en Settings → Integrations y en el paso 4 del Onboarding, que comparten el formulario.)
 
 **Cuando** llevo mi negocio desde el teléfono entre pedidos o en medio de un chat con un cliente, varias veces por día, **quiero** cada configuración del negocio en un solo lugar, **para** nunca preguntarme cuál de varias pantallas tiene lo que necesito. (Es el job de navegación, navigation.md: acá lo sirven los Bot settings en Settings → Integrations.)
 
@@ -46,7 +46,7 @@ Criterios de éxito:
     - un rediseño se aprueba sobre una comparación de antes y después: teléfono y computadora, claro y oscuro, capturados de la misma forma (ADR-0042);
     - cada diferencia se lista como buscada o arreglada;
     - no cambia nada de lo que el vendedor lee o hace ahí.
-12. **Saber qué pasa con el token antes de pegarlo** (GH-1070): sin token guardado, bajo "Bot token" se ve "Saved encrypted and never shown again.", atada al campo con `aria-describedby`, en Integrations y en el paso 4 del Onboarding; con un token guardado, solo "Saved on … · not shown again".
+12. **Saber qué pasa con el token antes de pegarlo** (GH-1070): siempre que el campo "Bot token" está abierto para tipear (sin token guardado, o después de tocar Change con uno guardado), bajo él se ve "Saved encrypted and never shown again.", atada al campo con `aria-describedby`, en Integrations y en el paso 4 del Onboarding; con un token guardado y el campo cerrado, solo "Saved on … · not shown again".
 
 La configuración (token, chats, Find my chat, primer Test it y Publish) se juzga con los criterios 3, 5, 6, 7, 8, 9, 10 y 12. La Upkeep se juzga con los criterios 1, 2, 4 y 8. La Upkeep empieza solo después del primer Publish exitoso. Un rediseño de Integrations se juzga con el criterio 11.
 
@@ -61,8 +61,8 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
 - **Token**:
   - se guarda cifrado, con una clave derivada de `APOSTROPHE_SECRET_KEY`;
   - una vez guardado, ninguna ruta lo devuelve y nunca se registra en logs;
-  - **sin token guardado**: bajo "Bot token" la línea de ayuda fija "Saved encrypted and never shown again." (`campo__ayuda`, atada al campo con `aria-describedby`). Es la línea que dibuja `OnboardingBot.dc.html`; `ConfiguracionIntegraciones` no dibuja ese estado y la reusa tal cual (GH-1070);
-  - en pantalla, con un token guardado: "Saved on dd/mm · not shown again" con **Change**, que reemplaza a la línea de ayuda;
+  - **con el campo abierto para tipear**, sea porque no hay token guardado o porque el vendedor tocó **Change** sobre uno guardado: bajo "Bot token" la línea de ayuda fija "Saved encrypted and never shown again." (`campo__ayuda`, atada al campo con `aria-describedby`). Es la línea que dibuja `OnboardingBot.dc.html` para el estado sin token; `ConfiguracionIntegraciones` no dibuja ese estado ni el de Change, y la reusa tal cual (GH-1070). Dice lo mismo en los dos casos porque el token nuevo también se guarda cifrado y nunca se vuelve a mostrar;
+  - en pantalla, con un token guardado y el campo cerrado: "Saved on dd/mm · not shown again" con **Change**, sin la línea de ayuda. Lo que hace hoy esa línea mientras Change está abierto no cambia;
   - cuando Test it se rechaza, la línea de ayuda queda en su lugar y el motivo se ve debajo, con su redacción y su lugar de siempre; el campo queda atado a los dos textos para los lectores de pantalla.
 - **Chat del canal y chat propio**:
   - texto libre, del que solo se revisa que no esté en blanco;
@@ -256,7 +256,13 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
   - el enlace a la pantalla del Catalog, ningún estado del Pinned catalog y ningún Publish;
   - campos vacíos y ninguna línea "Saved" sin nada guardado;
   - la línea "unpin it yourself in Telegram" después de un cambio de token o de canal.
-- **La línea de ayuda del token (criterio 12)**: una prueba del front del formulario compartido muestra, sin token guardado, "Saved encrypted and never shown again." bajo "Bot token" y atada con `aria-describedby`; con un token guardado, solo "Saved on … · not shown again"; y ante un Test it rechazado, la línea en su lugar con el motivo debajo. Capturas claro y oscuro, teléfono y computadora, de `ConfiguracionIntegraciones`, `OnboardingBot` y `OnboardingBotCompu`. Ninguna lista de infractores, tolerancia ni control se amplía. 100% de aprobación.
+- **La línea de ayuda del token (criterio 12)**: una prueba del front del formulario compartido muestra:
+  - sin token guardado, "Saved encrypted and never shown again." bajo "Bot token" y atada con `aria-describedby`;
+  - con un token guardado y sin tocar Change, solo "Saved on … · not shown again", sin la línea de ayuda;
+  - con un token guardado, al tocar Change, la línea de ayuda bajo el campo reabierto, atada con `aria-describedby`;
+  - ante un Test it rechazado, la línea en su lugar con el motivo debajo.
+
+  Capturas claro y oscuro, teléfono y computadora, de `ConfiguracionIntegraciones`, `OnboardingBot` y `OnboardingBotCompu`. Ninguna lista de infractores, tolerancia ni control se amplía. 100% de aprobación.
 - **Motivos de Test it (criterio 7)**: 100% de aprobación.
   - Hay una prueba por causa: 401; 403 (tanto "can't initiate conversation" como "blocked by the user"); 400 chat not found, que muestra "We could not find your chat: check the number and tap Start in your bot."; Telegram caído, 429 o sin conexión; demasiado largo; y cualquier otra falla.
   - Cada una muestra su texto fijo, no repite nada de lo tipeado, conserva el formulario y no guarda nada.
@@ -307,4 +313,4 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
 - Guardar un número encontrado por Find my chat sin un Test it exitoso.
 - Mostrar los nombres o nombres de usuario de las personas que le escribieron al bot, o dejar que el vendedor elija entre varias.
 - Un requisito o una política nueva para rediseños futuros; juzgar si Integrations se ve bien; comparar después del merge o en la revisión de diseño.
-- Separar el formulario para que solo el Onboarding muestre la línea de ayuda del token; cambiar la redacción o el lugar de los motivos de Test it; quitar "Enter the token first" (pendiente del dueño).
+- Separar el formulario para que solo el Onboarding muestre la línea de ayuda del token, o mostrarla solo a un Business que nunca guardó un token; cambiar lo que hace "Saved on … · not shown again" mientras Change está abierto; cambiar la redacción o el lugar de los motivos de Test it; quitar "Enter the token first" (pendiente del dueño).
