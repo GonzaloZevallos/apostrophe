@@ -6,7 +6,11 @@ Cómo cada pantalla rotula sus opciones, acciones y avisos: qué controles son s
 
 **Cuando** estoy en el celular entre pedidos o en medio de un chat con un cliente y necesito encontrar una opción, una acción o qué me dice un aviso, **quiero** reconocerlo de un vistazo por su ícono y una etiqueta corta, y leer cualquier ayuda o aviso como una sola línea corta, **para poder** llegar sin leer bloques de texto y volver con el cliente.
 
+**Cuando** estoy en el celular en Customers y empezó a comprarme alguien nuevo, **quiero** empezar a registrarlo con un toque obvio, **para** agregarlo sin que la fila de arriba de la pantalla se envuelva, se apriete o tenga scroll horizontal. (Parte 1 de GH-1071: lo sirve el `+` redondo neutro de la fila de título de Customers en el celular, que aplica D-8ecb8c1d.)
+
 Esto afina el job de navegación (docs/product/navigation.md) y el job "feels like a phone app" (docs/product/accounts.md); no es un job nuevo y no agrega ninguna capacidad. Su protagonista es el vendedor, en un uso del celular ocupado y con una sola mano; las pantallas de configuración (Settings, Integrations, el Catalog) siguen la misma regla y no se diseñan aparte. La computadora es el mismo job en una pantalla más grande. Antes de esto, la app tenía 13 íconos y las pantallas se leían como paredes de palabras: encontrar una opción o una acción llevaba leer en vez de mirar.
+
+El job del `+` de Customers (parte 1 de GH-1071) es una entrada secundaria: los Customers se crean sobre todo donde pasa el trabajo, eligiendo o creando uno dentro de New sale o desde el flujo de un deudor. Por eso el `+` de la fila de título tiene que encontrarse y no apretar la fila, pero no compite por la atención: el tono neutro que decidió el dueño (Q34) lo marca como disponible sin hacerlo la llamada a la acción principal. Antes, el "+ New customer" con palabra no entraba en esa fila a 320 px. No se mide ni se promueve el uso de esta entrada.
 
 **Cuando** un cambio agrega o edita un enlace y el Gate lo revisa, **quiero** que el guardia deje pasar solo los enlaces que esta regla permite que lleven un chevron, y que marque todo otro enlace que lleve un ícono, **para poder** confiar en un Gate en verde y no dejar nunca que una acción llegue al vendedor con pinta de enlace.
 
@@ -33,6 +37,8 @@ Criterios de éxito:
    - `ACTION_LINKS_LEFT` sigue siendo exactamente el "Add expense" de Expenses, y `ENTRY_CLASSES` no crece.
    - Un infractor real que se encuentre en el árbol se arregla, nunca se exime.
    - Nada de lo que ve el vendedor cambia.
+8. **La fila de título de Customers entra en el celular** (parte 1 de GH-1071): a 320, 375 y 246 px, la fila (el título "Customers", el `+` y el avatar de Settings) entra en una línea sin scroll horizontal, en la lista de Customers y detrás del formulario de un Customer nuevo.
+9. **Agregar sigue siendo un toque y el mismo link**: el `+` se anuncia como "New customer", abre el mismo formulario New customer de hoy y sigue siendo un solo link con ese nombre, así que todo locator del e2e lo encuentra y ningún spec se mueve. En la computadora nada cambia: queda el "+ New customer" con palabra.
 
 ## Comportamiento
 
@@ -43,17 +49,19 @@ Las dos listas son cerradas. Agregar a cualquiera de las dos cambia este archivo
 - **Solo ícono**: borrar ("Delete…"), buscar ("Search"), cerrar ("Close"), editar ("Edit") y compartir ("Share") solo donde no es la acción principal de la pantalla (p. ej. el Share debajo de un enlace de invitación recién creado en Users, cuya acción principal es "Invite a partner").
   - El nombre accesible es la palabra exacta actual; "Close", nunca "Back", sigue valiendo a través de él.
   - El objetivo mide al menos 44 px.
-  - Estar en la lista permite el solo ícono; nunca lo exige. La acción principal de una pantalla siempre lleva su texto (el Share de la pantalla del Catalog conserva su palabra), con una sola excepción con nombre, la de la fila de título del celular de abajo.
+  - Estar en la lista permite el solo ícono; nunca lo exige. La acción principal de una pantalla siempre lleva su texto (el Share de la pantalla del Catalog conserva su palabra), con la única excepción con nombre de las filas de título del celular de abajo.
   - **Close es una sola forma en todas partes**: todo formulario y toda hoja se cierra con el mismo control solo ícono, de nombre accesible "Close". Ningún formulario muestra la palabra mientras otro muestra el ícono.
   - Back no está en la lista: es navegación y queda como "‹ <parent>" (docs/product/navigation.md).
     - El padre es el fijo que docs/product/navigation.md nombra para esa pantalla (su "‹ <parent>" y su tabla de volver sin historial), desde cualquier pantalla desde la que se haya llegado. Back sigue el historial.
     - Una pantalla muestra exactamente un back, el que le da su marco (el del shell); una pantalla nunca dibuja un segundo por su cuenta.
     - Back nunca es "‹" solo ni una palabra genérica como "Back": su texto visible y su nombre accesible nombran los dos al padre.
   - La "i" de More info es el único control solo ícono fuera de esta lista, definido por su propio término más abajo.
-- **La única excepción con nombre: agregar ("New product") en la fila de título de Products del celular** (GH-903, decisión del dueño D-8ecb8c1d).
-  - La palabra no cabe en esa fila a 320 y 246 px (la fila con la palabra necesita unos 317 px y hay 272 y 198), así que la acción es un botón redondo solo con el ícono `agregar`: objetivo de 44×44 px, relleno con --boton y --boton-texto (`.boton-icono--lleno`), nombre accesible "New product" (la clave existente `common:newVariety`). En el código es `action="add"` de `IconOnlyAction`, que solo usa ese botón.
-  - Regla del dueño, general: cuando una acción con palabra no cabe en una fila de título del celular, pasa a ser un botón redondo solo ícono con nombre accesible; nunca se achica el título, se acorta la palabra ni se envuelve la fila.
-  - Fuera de esa fila (la computadora incluida), "New product" conserva su palabra.
+- **La única excepción con nombre: agregar en las filas de título del celular** (decisión del dueño D-8ecb8c1d). Cuando una acción con palabra no cabe en una fila de título del celular, pasa a ser un botón redondo solo ícono con nombre accesible; nunca se achica el título, se acorta la palabra ni se envuelve la fila. Hoy la aplican dos filas:
+  - **Products** ("New product", GH-903): la palabra no cabe a 320 y 246 px (la fila con la palabra necesita unos 317 px y hay 272 y 198). Es un botón redondo solo con el ícono `agregar`: objetivo de 44×44 px, relleno con --boton y --boton-texto (`.boton-icono--lleno`), nombre accesible "New product" (la clave existente `common:newVariety`). Conserva el tono relleno; que no siga el tono neutro de abajo es un hallazgo registrado como `outside`, no un cambio de esta regla.
+  - **Customers** ("New customer", parte 1 de GH-1071): la palabra no cabe a 320 px. En el celular (menos de 900 px, el único corte de `useViewport`, así que 600 a 899 px también) la fila de título es el título "Customers", después un botón redondo solo con el ícono `agregar` y después el avatar de Settings, en la lista de Customers y detrás del formulario de un Customer nuevo, las dos dibujadas por un solo componente, `CustomersTitleRow`. Su nombre accesible es "New customer" (`COMMON_TEXT.newCustomer`, sin clave nueva) y abre el mismo formulario New customer (`CUSTOMER_NEW`). Tiene el mismo tamaño redondo y el mismo objetivo de 44×44 px que el de Products, en tono **neutro** (decisión Q34 del dueño): fondo de superficie, borde de 1 px en `--linea` e ícono en `--tinta`, con `user-select: none` y `touch-action: manipulation` (`.boton-icono--neutro`, solo tokens). Nunca es verde ni `.boton-icono--lleno`. Cada layout tiene exactamente un link para agregar, nunca una copia oculta con CSS. Customers vacío no agrega ninguna llamada a la acción: el `+` es el único control para agregar en el celular.
+  - **Fila apretada**: el botón redondo y el avatar nunca se achican, se envuelven ni salen de la fila. Solo como último recurso (246 px o el texto más largo de `en-XA`), el título se corta con puntos suspensivos y conserva su texto completo como encabezado; nunca se achica de tamaño. En inglés a 320 y 375 px el título se ve entero.
+  - **En el código**: `action="add"` de `IconOnlyAction`. Las props solo ícono de `Boton` y `BotonLink` son una unión discriminada: `{ variant: 'icon'; action: 'add'; tone?: 'filled' | 'neutral' }` o `{ variant: 'icon'; action: Exclude<IconOnlyAction, 'add'>; tone?: never }`. `botonVisual.tsx` elige la clase con un solo registro `ADD_TONE_CLASS`, indexado por `tone ?? 'filled'`, sin ninguna rama propia. Usan `action="add"` la fila de título de Products (relleno), la de Customers (neutro) y la tabla de resultados de New sale en la computadora (`ProductResultsTable.tsx`, relleno), un uso existente que también se registra como hallazgo `outside` frente al tono neutro.
+  - Fuera de esas filas (la computadora incluida), "New product" y "New customer" conservan su palabra; en la computadora Customers sigue mostrando "+ New customer" (ícono + texto).
 - **Solo texto**:
   - enlaces (`enlace`), como "Edit header and footer" y "See all";
   - el par de respuestas dentro de una confirmación, con sus palabras exactas actuales ("No, keep it / Yes, delete it", "No, keep entering / Yes, discard it" y el resto);
@@ -61,7 +69,7 @@ Las dos listas son cerradas. Agregar a cualquiera de las dos cambia este archivo
   - las elecciones entre opciones, que no son acciones: las pestañas de período (Today · Week · Month · Dates), Cash · Transfer · Owing, Promotion · Own use, el origen de un Stock entry, Light · Dark, "All: $ X";
   - Undo dentro de "Sale saved".
 - **Ícono + texto**: todo lo demás, p. ej. el "+ New sale" de la barra lateral, "+ Stock entry", "Take from stock", "Send catalog", Collect (el nombre accesible sigue siendo "Collect from <name>"), Publish, Test it, Find my chat, Archive, Restore, "Invite a partner", "Change password", "Sign out", Copy y el Share principal. Una acción nueva que no encaja en ninguna de las dos listas es ícono + texto. El ícono junto a una palabra es decorativo y se oculta para la tecnología asistiva, así que el nombre accesible sigue siendo la palabra.
-  - **El "+" de los docs es el ícono**: en el "+ New sale" de la barra lateral, "+ Add expense", "+ Stock entry", "+ Entry" y cualquier otra etiqueta escrita con un "+" al principio, el "+" representa al ícono `agregar`. En pantalla lo dibuja el ícono y el texto visible es solo la palabra, nunca un "+" literal junto al ícono. El nombre accesible no cambia.
+  - **El "+" de los docs es el ícono**: en el "+ New sale" de la barra lateral, "+ Add expense", "+ Stock entry", "+ Entry", "+ New customer" y cualquier otra etiqueta escrita con un "+" al principio, el "+" representa al ícono `agregar`. En pantalla lo dibuja el ícono y el texto visible es solo la palabra, nunca un "+" literal junto al ícono. El nombre accesible no cambia.
 - **Una acción nunca parece un enlace**: solo un enlace (`enlace`) se dibuja como tal (subrayado, con el estilo de enlace). Una acción, en cualquier forma, incluida una que abre otra pantalla como "New sale" o "New sale to <name>", se dibuja como la acción que es.
 - **Tappable notice**: un aviso que el vendedor toca para abrir aquello a lo que apunta. No es una fila de acción ni un control de ninguna de las dos listas cerradas, y no las cambia.
   - Conserva su tarjeta exactamente como fue diseñada: su superficie, sus esquinas redondeadas y su propio padding, sin espaciado de fila ni divisor de fila.
@@ -126,6 +134,7 @@ Las dos listas son cerradas. Agregar a cualquiera de las dos cambia este archivo
 
 - Este archivo y `docs/product/design-system/README.md`, enunciadas de la misma manera. `componentes.ts` guarda los nombres de `NombreIcono` y el tipo de componente de More info.
 - El copy acortado bajo esta regla cambia en su archivo de capacidad dueño, en el mismo diff que su test.
+- La fila de título de Customers se describe también en docs/product/customers.md ("En pantalla: Customers").
 
 ## Métricas
 
@@ -134,7 +143,13 @@ Sin telemetría; sale de los tests y del chequeo de diseño.
 - **Se encuentra de un vistazo (criterio 1)**: un test de front sobre cada pantalla de `scripts/design/screens.json`: cada fila de opción, fila de acción y acción fuera de las listas cerradas tiene un ícono y su texto; cada control solo ícono tiene su nombre accesible actual exacto y un objetivo de 44 px; el ícono junto a una palabra está oculto para la tecnología asistiva; ningún menú repite un ícono; todo formulario y toda hoja se cierra con el mismo "Close" solo ícono. 0 excepciones.
 - **Ícono y palabra sin duplicar**: ninguna etiqueta visible lleva un "+" literal junto a un ícono `agregar`, y cada control así conserva su nombre accesible. 0 excepciones.
 - **Un solo back por pantalla**: cada tarjeta y cada detalle de `scripts/design/screens.json` muestra exactamente un control de back, que dice "‹ <parent>" con el padre fijo que nombra docs/product/navigation.md, y su nombre accesible nombra a ese padre; ninguno dice "‹" solo ni "Back". 0 excepciones.
-- **La excepción de la fila de título**: los tests del front de Products a ancho de celular encuentran "New product" por rol y nombre accesible en el bloque de título, con un objetivo de 44×44 px; la medición a 320 y 246 px, claro y oscuro, está en docs/evidence/GH-548-design-capture.md. Ningún otro control usa `action="add"`.
+- **La excepción de la fila de título, Products**: los tests del front de Products a ancho de celular encuentran "New product" por rol y nombre accesible en el bloque de título, con un objetivo de 44×44 px; la medición a 320 y 246 px, claro y oscuro, está en docs/evidence/GH-548-design-capture.md. Después de la parte 1 de GH-1071, el `+` de Products y el de `ProductResultsTable` se dibujan exactamente igual que antes: sus tests pasan sin cambios.
+- **La excepción de la fila de título, Customers (criterios 8 y 9, parte 1 de GH-1071)**:
+  - `Boton.types.test.tsx`, con su patrón `Rejected`/`RejectedLink` y sin ningún comentario que silencie nada, rechaza `tone` en una acción que no es `add` (p. ej. `delete`) y `tone: 'green'`, y acepta `tone: 'neutral'` en `add`;
+  - `Clientes.test.tsx` divide el caso de "New customer" en uno con `stubViewport('computer')`, que conserva cada línea de hoy, y uno de celular, que lo encuentra por el mismo rol y nombre, sin palabra visible y con el svg `aria-hidden`; nada más cambia en esos tests;
+  - ningún spec de e2e se mueve: sigue siendo un link llamado "New customer" (D-69509906 no se activa);
+  - el Mobile check pasa sin que crezca ninguna lista de infractores, y no hay scroll horizontal a 320, 375 ni 246 px;
+  - el PR adjunta la medición a 320 px de que la fila con palabra no entra y las Design captures claro y oscuro de Clientes y ClientesCompu (celular a 320 y 375 px, y computadora); toda diferencia con el dibujo que el vendedor notaría la decide el dueño.
 - **Las acciones no son enlaces**: ninguna acción se dibuja con el estilo de enlace; se comprueba a ojo en el chequeo de diseño.
 - **Una regla (criterio 2)**: este archivo y el README enuncian las mismas listas y límites, el Tappable notice incluido; `componentes.ts` e `Icono.tsx` nombran el mismo conjunto; cada nombre de `NombreIcono` agregado por esta regla lo usa una pantalla. 0 nombres nuevos sin usar, 0 discrepancias.
 - **Corto por defecto (criterio 3)**:
@@ -154,8 +169,10 @@ Sin telemetría; sale de los tests y del chequeo de diseño.
 
 ## Fuera de alcance
 
-- Una interfaz solo de íconos; back como solo ícono; la acción principal de una pantalla como solo ícono, salvo la única excepción con nombre de la fila de título de Products del celular (ver arriba) y lo que la regla del dueño sobre las filas de título del celular decida en adelante.
+- Una interfaz solo de íconos; back como solo ícono; la acción principal de una pantalla como solo ícono, salvo la excepción con nombre de las filas de título del celular (ver arriba) y lo que la regla del dueño sobre las filas de título del celular decida en adelante.
 - Achicar el título, acortar la palabra o envolver una fila de título del celular para que entre una acción con palabra.
+- Pasar al tono neutro el `+` relleno de la fila de título de Products o el de `ProductResultsTable`: quedan como están y son hallazgos `outside`.
+- Una llamada a la acción con palabra en el estado vacío de Customers, o cambiar su texto; un segundo corte de ancho solo para el `+` de Customers.
 - Agregar, quitar, renombrar o reordenar cualquier acción u opción; cambiar una ruta, una confirmación o el texto de un toast.
 - Íconos en las filas de registro.
 - Un ícono opcional en los avisos; íconos que ninguna pantalla usa.
