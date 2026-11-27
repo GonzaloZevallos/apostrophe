@@ -667,3 +667,7 @@ _Avoid_: refund, Credit, vuelto, balance, difference
 **Undo**:
 Eliminar con un toque, sin confirmación, la última Sale guardada desde New sale, durante los 5 segundos de su aviso "Sale to {name} saved". Es la misma eliminación que se hace desde el detalle de la Sale, y siempre muestra cómo terminó; un Home que ya está en pantalla conserva sus cifras. _In the app_: Undo.
 _Avoid_: revert, rollback, cancel sale, void, anular, deshacer venta
+
+**Recorder**:
+El User que registró un Payment, guardado como sus iniciales copiadas al registrarlo (la marca de quien registró, docs/product/initials.md) junto con una referencia al User que se anula cuando el User se va, mientras que las iniciales quedan. En el código es el valor `Recorder` (`app_user_id`, `initials`) que da `CurrentRecorder` a partir de la Session; todavía ningún router lo usa ni ninguna pantalla lo muestra (partes posteriores de GH-1057). En la app: todavía no tiene palabra propia.
+_Avoid_: author, creator, cashier, collector, owner, recorded by user
