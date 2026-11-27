@@ -209,6 +209,7 @@
   {"source":"customers.ts:CUSTOMERS_TEXT.debtorsUnavailable","args":null,"text":"Owed amounts did not load: tap to try again"},
   {"source":"customers.ts:CUSTOMERS_TEXT.discardTheCustomer","args":null,"text":"Discard the customer?"},
   {"source":"customers.ts:CUSTOMERS_TEXT.giveItAName","args":null,"text":"Give them a name"},
+  {"source":"customers.ts:CUSTOMERS_TEXT.namePlaceholder","args":null,"text":"How you have them in your contacts"},
   {"source":"customers.ts:CUSTOMERS_TEXT.leftOwing","args":null,"text":"Left owing"},
   {"source":"customers.ts:CUSTOMERS_TEXT.needsCountryCode","args":null,"text":"Start the number with + and the country code."},
   {"source":"customers.ts:CUSTOMERS_TEXT.newSaleTo","args":null,"text":"New sale to "},
