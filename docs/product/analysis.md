@@ -22,6 +22,8 @@ Este job afina el primero para cada fila de semana y de mes; no es un job nuevo.
 
 **Cuando** abro Home en el celular entre pedidos, **quiero** que arriba de la pantalla se vea qué día estoy mirando y poder pasar entre Home y Analysis con un toque, **para poder** ver cómo va el día o el mes. No necesito que la app me diga en qué Business estoy, porque ya lo sé. (Parte 2 de GH-723, navigation.md: afina el job de navegación para el celular. Acá lo sirve el mismo encabezado de Home, en el mismo lugar, con "Analysis" elegido; el mes que se lee lo sigue nombrando el selector de mes.)
 
+**Cuando** miro un mes, o todo lo que pasó desde mi First record, en Analysis, **quiero** saber qué parte de mis Expenses se lleva cada Expense category, **para** ver adónde se va mi plata y qué recortar, sin hacer la división de cabeza. (Parte 1 de GH-1233: afina el primer job en la parte de "adónde se va la plata de las Expenses"; no es un job nuevo. Antes, Analysis daba solo el total de cada Expense category y el vendedor sacaba la proporción a ojo o a mano. Esta parte pone la cifra solo en la respuesta de `/analysis`; la muestra en pantalla una parte posterior de GH-1233.)
+
 Criterios de éxito:
 
 1. **Respuestas sin cuentas**: desde una sola pantalla en el teléfono, un vendedor puede nombrar el producto de mayor Margin del mes elegido y el de menor Margin, la Best week de las últimas 8 semanas, el Best weekday y la Expense category que más se llevó ese mes.
@@ -43,10 +45,15 @@ Criterios de éxito:
 12. **Se llega sin More** (GH-651): en el teléfono, Analysis se abre en 1 toque desde Home con el segmento Home | Analysis, y Expenses y su formulario se abren desde la tarjeta Expenses de Analysis.
 13. **El segmento nombra sus vistas** (#733): en el teléfono, las opciones del segmento de Analysis dicen "Home" y "Analysis", en pantalla y en su nombre accesible; ninguna dice "Today", y "Home" vuelve a Home en 1 toque.
 14. **El mismo encabezado que Home** (parte 2 de GH-723): en el teléfono, Analysis muestra la misma línea de fecha (el hoy del Business, nunca el mes que se lee), el mismo avatar y el mismo segmento, en el mismo lugar que Home, sin título visible y con un solo h1, oculto a la vista. Están en todos los estados de Analysis. En la computadora solo se ve el h1 "Analysis", como antes.
+15. **La parte de cada Expense category** (parte 1 de GH-1233):
+    - En `/analysis`, cada Expense category de `month_expenses` y de `since_first_record_expenses` lleva `share`: el porcentaje entero de su total sobre la suma de los totales de todas las Expense categories de esa misma lista, sin las Purchases, redondeado la mitad hacia arriba.
+    - Es el mismo con Money scale 0 o 2.
+    - Un período sin Expenses no lista ninguna Expense category, así que no hay ninguna parte para leer.
+    - Ninguna cifra existente de `/panel` ni de `/analysis` cambia, y ninguna pantalla cambia.
 
 # Análisis
 
-Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada producto: Margin por producto de un mes elegido; ventas, Cost of goods sold, Stock shortfall, Profit y Cash de las últimas 8 semanas y los últimos 12 meses; el patrón por día de la semana; los totales desde el First record, y las Expenses por Expense category. Es de solo lectura y lo ve solo su negocio (ADR-0004). Cada cifra que comparte con Resultados (#7) sale del cálculo de #7. El Cost of goods sold, el Stock shortfall y el costo de los Stock withdrawals por Withdrawal reason siguen a los Lots como están hoy (ADR-0009, ADR-0010). Lee ventas, stock (Stock entries, Stock withdrawals y la lista de Withdrawal reasons), Payments y Expenses. Se llega con el segmento Home | Analysis de Home en el teléfono y desde la barra lateral en la computadora (navigation.md). En el teléfono, además, es el lugar desde donde se llega a Expenses y al formulario de la Expense, por su tarjeta Expenses.
+Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada producto: Margin por producto de un mes elegido; ventas, Cost of goods sold, Stock shortfall, Profit y Cash de las últimas 8 semanas y los últimos 12 meses; el patrón por día de la semana; los totales desde el First record, y las Expenses por Expense category, cada una con su parte de las Expenses. Es de solo lectura y lo ve solo su negocio (ADR-0004). Cada cifra que comparte con Resultados (#7) sale del cálculo de #7. El Cost of goods sold, el Stock shortfall y el costo de los Stock withdrawals por Withdrawal reason siguen a los Lots como están hoy (ADR-0009, ADR-0010). Lee ventas, stock (Stock entries, Stock withdrawals y la lista de Withdrawal reasons), Payments y Expenses. Se llega con el segmento Home | Analysis de Home en el teléfono y desde la barra lateral en la computadora (navigation.md). En el teléfono, además, es el lugar desde donde se llega a Expenses y al formulario de la Expense, por su tarjeta Expenses.
 
 ## Comportamiento
 
@@ -83,6 +90,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
   - La línea nunca se oculta porque su costo esté pendiente.
   - El Profit, los Margins, los Margin percentages y el Average margin siguen sus propias reglas.
   - La API dice si una cifra está toda pendiente, una vez por cifra; el front solo le da formato.
+- **Porcentajes**: toda parte en porcentaje entero (la parte de cada Expense category y cualquier parte posterior) la calcula solo `app.shared.rounding.percent`, sobre los enteros guardados del dominio y nunca sobre un Decimal, con redondeo de mitad hacia arriba, floor(x + 1/2), en los dos signos. Da nulo cuando la base es 0. No se agrega ningún otro código de porcentaje con mitad hacia arriba (ADR-0020, ADR-0058).
 
 ### El mes elegido, por producto
 
@@ -150,6 +158,13 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 ### Expenses por Expense category: el mes elegido y desde el First record
 
 - Dos desgloses, cada uno con solo las Expense categories que tienen Expenses en su ventana, ordenadas por nombre como en Expenses, cada una con su total.
+- **La parte de cada Expense category** (parte 1 de GH-1233): en la API de `/analysis`, cada Expense category de `month_expenses` y de `since_first_record_expenses` lleva `share`.
+  - `share` es el porcentaje entero de su total sobre la suma de los totales de todas las Expense categories del mismo desglose. Las Purchases nunca entran en esa base.
+  - Lo calcula `app.shared.rounding.percent` en `_expense_breakdown`, sobre los enteros guardados del dominio, con mitad hacia arriba. Por eso es el mismo con Money scale 0 o 2.
+  - Es nulo solo cuando la base es 0. Hoy `/analysis` no puede dar ese caso: cada Expense category listada tiene al menos una Expense, y el dominio rechaza una Expense de monto 0.
+  - Las partes no se normalizan. Cada una se redondea por su cuenta, así que un desglose puede sumar 99 o 101. Nunca se ajusta una Expense category para llegar a 100, ni en la API ni en la pantalla que la muestre después.
+  - Un período sin Expenses no lista ninguna Expense category (`categories == []`), así que no hay ninguna parte para leer.
+  - Todavía ninguna pantalla la muestra; la muestra una parte posterior de GH-1233.
 - Las Purchases son siempre una línea propia en los dos, $0 incluido, con "Kept apart, added in Stock". Nunca se cuentan dentro de las Expenses.
 - Los Stock withdrawals nunca son Expenses y nunca aparecen acá.
 - Cómo se ubican los dos desgloses lo decide diseño.
@@ -200,6 +215,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 - El negocio sale de la Session. Cada ruta entra en el barrido de aislamiento y en la prueba de rutas protegidas.
 - Ningún monto ni nombre, los de los Withdrawal reasons incluidos, va a los logs, la consola ni el almacenamiento del navegador (CODING_STANDARDS §9, ADR-0005).
 - Cada regla del teléfono va debajo del corte de 900 px; por ellas, las capturas de la computadora no cambian.
+- `percent` se importa solo desde `app.shared.rounding`; no queda ningún alias ni shim en `app/results/domain/rounding.py`, que no existe más. `HEXAGON_ROOTS` no cambia.
 
 ## Métricas
 
@@ -264,6 +280,19 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
   - la Best week.
 
   El único cambio de presentación fuera de las filas es un Stock shortfall o la línea de un Withdrawal reason toda pendiente en la cabecera o desde el First record, que ahora muestra solo sus gramos en vez de "$ 0 and N g without cost".
+- **La parte de cada Expense category (criterio 15, parte 1 de GH-1233)**: 100% de aprobación.
+  - Una prueba HTTP en `tests/results/test_analysis_api.py`:
+    - un mes con Expenses de 1, 3 y 4 en tres Expense categories da `share` 13, 38 y 50;
+    - Expenses de 1 y 2 dan 33 y 67;
+    - las dos cosas se afirman en `month_expenses` y en `since_first_record_expenses`;
+    - un mes sin Expenses da `categories == []`.
+  - `tests/shared/test_rounding.py`, que junta las dos pruebas viejas de `percent` con cada caso una sola vez, cubre:
+    - la tabla de mitad hacia arriba en los dos signos;
+    - una base 0 que da `None`;
+    - valores grandes;
+    - que multiplicar los dos argumentos por 100 da el mismo porcentaje (Money scale 0 contra 2).
+  - El pin `tests/results/pins/analysis.json` (con `"share":100`), el snapshot de OpenAPI y `web/src/api/fixtures/analysis.json` (62/38 y 55/45) llevan la clave nueva. Toda otra prueba de `/panel` y `/analysis` pasa sin editarse, y la forma vacía de `tests/test_business_isolation.py` queda igual.
+  - Buscar `results.domain.rounding` en todo el repositorio no da ningún resultado. `mypy --strict` y `ruff` pasan sin silenciar nada, y `HEXAGON_ROOTS` no cambia.
 - **Se lee de arriba abajo en el teléfono (criterio 7)**: con los datos extremos de la semilla (un nombre de 60 caracteres, un nombre de Withdrawal reason de 60 caracteres y cifras de nueve dígitos), a 320 px y a 246 px (130 %):
   - el Mobile check no encuentra desplazamiento de costado en ninguno de los estados recorridos de Analysis;
   - los nombres terminan en puntos suspensivos;
@@ -284,7 +313,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 - **Se llega sin More (criterio 12)**: pruebas de Testing Library a través del router real, en ancho de teléfono: tocar "Analysis" en el segmento de Home lleva a `/analysis`; tocar "Home" en el de Analysis lleva a `/`; "Record expense" de la tarjeta abre el formulario de la Expense y "See expenses" abre Expenses; Analysis tiene la barra con su + y Home marcada como activa. 100% de aprobación.
 - **El segmento nombra sus vistas (criterio 13, #733)**: en ancho de teléfono, el grupo "Home view" de Analysis tiene exactamente dos links, de nombre accesible "Home" y "Analysis", y ninguno "Today"; el proyecto e2e `mobile` pasa en `Analisis` y `AnalisisOscuro` sin ningún infractor agregado. 100% de aprobación.
 - **El mismo encabezado que Home (criterio 14, parte 2 de GH-723)**: pruebas de Testing Library a través del router real (`HomeLayout.test.tsx`): en `/analysis` hay exactamente un h1, con `visualmente-oculto` en el teléfono y visible en la computadora, también cargando y con error; la línea de fecha muestra el hoy de la Session (`03/10` para 2026-10-03); la fila del encabezado no tiene otro elemento interactivo que las dos opciones del segmento y el avatar; cambiar de opción deja `router.state.historyAction === 'REPLACE'` con el índice del historial sin cambios, y la vista elegida abre arriba. El proyecto e2e `mobile` pasa en `Analisis` y `AnalisisOscuro` a 320, 360 y 390 px y al 130 %, con la línea de fecha en una sola línea y sin ningún infractor agregado, y la captura de `AnalisisCompu` no cambia. 100% de aprobación.
-- **Aislamiento (criterio 5)**: cada ruta de Analysis está en el barrido y responde solo las cifras y los nombres de Withdrawal reason de su propio negocio, nunca los datos del otro negocio sembrado.
+- **Aislamiento (criterio 5)**: cada ruta de Analysis está en el barrido y responde solo las cifras y los nombres de Withdrawal reason de su propio negocio, nunca los datos del otro negocio sembrado. La parte de cada Expense category sale solo de las Expenses del propio negocio.
 - **Sin eco**: después de una corrida completa del front, la consola y el almacenamiento del navegador no tienen montos ni nombres.
 - **Velocidad**: la pantalla responde en menos de 300 ms con un año de unos cientos de ventas y unas decenas de productos (el disparador de revisión de ADR-0010).
 - **Sin curl**: la corrida de punta a punta del front:
@@ -312,6 +341,8 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 - La barra inferior con su + y las etiquetas de la barra en Analysis (son de Navigation, parte 1 de GH-319 y parte 3 de GH-727; el "+ New sale" flotante ya no existe).
 - La pantalla Analysis rediseñada completa (sus pestañas Day/Week/Month/Year, la tarjeta Expenses con superficie propia y ubicada después de los resúmenes) y un conteo de Expenses en la tarjeta: los construye su propio issue de rediseño.
 - Mostrar en el encabezado el período que se lee ("Octubre de 2026" en el dibujo) y una función detrás del lugar vacío ("Sumar gráfico" en el dibujo) (parte 2 de GH-723).
+- Mostrar en pantalla la parte de cada Expense category: lo hace una parte posterior de GH-1233. Esta parte no toca `web/src/api/analysis.ts` ni el `docs/api` generado.
+- Normalizar las partes de las Expense categories para que sumen 100.
 
 ## Planificado en GH-318
 
