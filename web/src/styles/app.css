@@ -5837,7 +5837,7 @@ a.ajustes-tema__opcion {
  *   .variedad-fila, .variedades__todas, .catalogo__fila-nombre, .pestanas__opcion,
  *   .selector-pago__opcion, .gastos__mes-boton, .encabezado__volver, .historial-fila__borrar;
  *   resting on --superficie or --papel itself, so --linea is the fill cue (these come after
- *   the --superficie group): .search-field__clear (SearchField's ×, over the input's --superficie), .ajustes-tema__opcion and .inicio-segmento, plain and
+ *   the --superficie group): .search-field__clear (the search field's ×, over the input's --superficie), .ajustes-tema__opcion and .inicio-segmento, plain and
  *   --activa (the Settings track is --superficie, its selected option --papel; the segment track is --acento-suave, its marked option is --superficie), and the selected variants
  *   .riel-lateral__item--activo, .riel-lateral__ajustes--activo, .bar-inferior__item--activo,
  *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa.
@@ -5943,7 +5943,7 @@ a.ajustes-tema__opcion {
     /* Expenses' month arrows rest on the --superficie pill, so the --superficie fill shows nothing. */
     .gastos__mes-boton,
     .selector__campo,
-    /* SearchField's Clear is transparent over the input's --superficie fill. */
+    /* The search field's Clear is transparent over the input's --superficie fill. */
     .search-field__clear
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
@@ -7461,7 +7461,7 @@ a.ajustes-tema__opcion {
   opacity: 1;
 }
 
-/* `SearchField` (Products search on the phone): a controlled filter input, not a `Selector`.
+/* The search field (Products search on the phone): a controlled filter input, not a `Selector`.
  * The wrapper only positions; the input carries the border, radius and 44 px height, and
  * Clear lies over its right edge with the input's right-hand radius. 16 px so the browser
  * does not zoom. The placeholder is the only visible name: --tinta2 holds 4.5:1 on both themes. */
