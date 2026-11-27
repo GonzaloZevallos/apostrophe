@@ -1159,6 +1159,16 @@
             ],
             "title": "Phone Display"
           },
+          "phone_local": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PhoneLocalOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "standing": {
             "enum": [
               "owes",
@@ -1178,6 +1188,7 @@
           "name",
           "phone",
           "phone_display",
+          "phone_local",
           "vip",
           "customer_type_id",
           "balance",
@@ -3410,6 +3421,25 @@
           "example"
         ],
         "title": "PhoneCountryOut",
+        "type": "object"
+      },
+      "PhoneLocalOut": {
+        "description": "The national part of a phone, grouped by its listed country's template.",
+        "properties": {
+          "country": {
+            "title": "Country",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "country",
+          "text"
+        ],
+        "title": "PhoneLocalOut",
         "type": "object"
       },
       "PinStatusOut": {

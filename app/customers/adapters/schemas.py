@@ -50,12 +50,21 @@ class CustomerPatchIn(BaseModel):
 NO_BALANCE = CustomerBalance(balance=0, owing_since=None, standing="settled")
 
 
+class PhoneLocalOut(BaseModel):
+    """The national part of a phone, grouped by its listed country's template."""
+
+    country: str
+    text: str
+
+
 class CustomerOut(BaseModel):
     id: int
     name: str
     phone: str | None
     # The phone grouped by its own country's rule, for reading only; null with no phone.
     phone_display: str | None
+    # The national part and its listed country; null with no phone or when it cannot be grouped.
+    phone_local: PhoneLocalOut | None
     vip: bool
     customer_type_id: int | None
     balance: MoneyOut
@@ -72,11 +81,17 @@ class CustomerOut(BaseModel):
         """`vip` is membership in the business's VIP type, compared here against the id
         the request read once (docs/adr/0070); the frozen column is never read."""
         assert customer.id is not None, "only stored customers go out"
+        national = customer.phone.national if customer.phone is not None else None
         return cls(
             id=customer.id,
             name=customer.name.value,
             phone=customer.phone.value if customer.phone is not None else None,
             phone_display=customer.phone.display if customer.phone is not None else None,
+            phone_local=(
+                PhoneLocalOut(country=national[0].value, text=national[1])
+                if national is not None
+                else None
+            ),
             vip=vip_type_id is not None and customer.customer_type_id == vip_type_id,
             customer_type_id=customer.customer_type_id,
             balance=Decimal(balance.balance),
