@@ -44,6 +44,5 @@
   "^src/screens/ventas/renderNuevaVentaSheet\\.tsx$",
   "^src/screens/settings/settingsSearch\\.ts$",
   "^src/screens/settings/useSettingsSearchEntry\\.ts$",
-  "^src/components/DateRow\\.tsx$",
-  "^src/screens/varieties/productsSearch\\.ts$"
+  "^src/components/DateRow\\.tsx$"
 ]

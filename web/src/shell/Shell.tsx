@@ -23,7 +23,7 @@
 import { Fragment, useCallback, useMemo, useRef, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import { Link, Outlet, useOutletContext } from 'react-router'
+import { Link, Outlet, useOutletContext, type LinkProps } from 'react-router'
 import { actionableFirstRun, firstRunQuery } from '../api/firstRun'
 import type { Me } from '../api/me'
 import Icono, { type NombreIcono } from '../components/Icono'
@@ -48,8 +48,10 @@ import BackArrow from './BackArrow'
 import { NO_PRICE_HINT } from '../copy/sales'
 import { describeNewSale } from '../copy/readers/newSaleDescription'
 import { OTHER_RECORDS } from '../sales/otherRecords'
+import { ProductsSearchProvider } from '../screens/varieties/productsSearch'
 import { chromeOf } from './chrome'
 import { BackParentContext, type BackParentSlot, type BackParentStore } from './useBackParent'
+import { useProductsTabClick } from './productsTabClick'
 import { useLeafScreen } from './useLeafScreen'
 import { useViewport } from './useViewport'
 import { useVisualViewport } from '../components/useVisualViewport'
@@ -130,20 +132,32 @@ const BAR_SLOTS: BarSlot[] = [
   ...BAR_ITEMS.slice(BAR_TABS_BEFORE_PLUS).map((item): BarSlot => ({ kind: 'tab', item })),
 ]
 
+/** The Products entry: a `Link` whose tap carries the Products tab nonce (`productsTabClick.ts`). */
+function ProductsTabLink({ to, ...props }: Omit<LinkProps, 'to' | 'onClick'> & { to: string }) {
+  const onClick = useProductsTabClick(to)
+  return <Link {...props} to={to} onClick={onClick} />
+}
+
 /** One bottom-bar entry; `active` is the registry's mark, not a path comparison. The label is
  * also the `data-label` of its span: CSS draws it again, hidden, at the active weight, so the
  * tab is as wide inactive as active without a second text node. */
 function BarItem({ item, active }: { item: Item; active: boolean }) {
   const { t } = useTranslation()
   const label = t(item.labelKey)
-  return (
-    <Link
-      to={item.to}
-      aria-current={active ? 'page' : undefined}
-      className={active ? 'bar-inferior__item bar-inferior__item--activo' : 'bar-inferior__item'}
-    >
+  const tabClass = active ? 'bar-inferior__item bar-inferior__item--activo' : 'bar-inferior__item'
+  const content = (
+    <>
       {item.icono !== undefined && <Icono nombre={item.icono} />}
       <span data-label={label}>{label}</span>
+    </>
+  )
+  return item.place === 'varieties' ? (
+    <ProductsTabLink to={item.to} aria-current={active ? 'page' : undefined} className={tabClass}>
+      {content}
+    </ProductsTabLink>
+  ) : (
+    <Link to={item.to} aria-current={active ? 'page' : undefined} className={tabClass}>
+      {content}
     </Link>
   )
 }
@@ -253,19 +267,30 @@ export default function Shell() {
           )}
           {RAIL_ITEMS.map((item, index) => {
             const active = railPlace === item.place
+            const content = (
+              <>
+                {item.icono !== undefined && <Icono nombre={item.icono} />}
+                {t(item.labelKey)}
+              </>
+            )
             return (
               <Fragment key={item.to}>
                 {index > 0 && RAIL_ITEMS[index - 1]?.group !== item.group && (
                   <div role="separator" className="riel-lateral__divisor" />
                 )}
-                <Link
-                  to={item.to}
-                  aria-current={active ? 'page' : undefined}
-                  className={railClassName(item, active)}
-                >
-                  {item.icono !== undefined && <Icono nombre={item.icono} />}
-                  {t(item.labelKey)}
-                </Link>
+                {item.place === 'varieties' ? (
+                  <ProductsTabLink
+                    to={item.to}
+                    aria-current={active ? 'page' : undefined}
+                    className={railClassName(item, active)}
+                  >
+                    {content}
+                  </ProductsTabLink>
+                ) : (
+                  <Link to={item.to} aria-current={active ? 'page' : undefined} className={railClassName(item, active)}>
+                    {content}
+                  </Link>
+                )}
               </Fragment>
             )
           })}
@@ -287,7 +312,9 @@ export default function Shell() {
       )}
       <div className={chrome.bar ? 'columna-principal' : 'columna-principal columna-principal--sin-bar'}>
           {chrome.backArrow && <BackArrow id={leaf.id} />}
-          <Outlet context={me} />
+          <ProductsSearchProvider>
+            <Outlet context={me} />
+          </ProductsSearchProvider>
           {chrome.bar && (
             <nav className="bar-inferior" aria-label={t('shell:navigation')} data-menu>
               {BAR_SLOTS.map((slot) => (
