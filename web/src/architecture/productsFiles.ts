@@ -28,6 +28,7 @@ export const PRODUCTS_FILES = [
   'src/screens/varieties/StockActions.tsx',
   'src/screens/varieties/ProductsSummary.tsx',
   'src/screens/varieties/ProductsEmpty.tsx',
+  'src/screens/varieties/catalogRow.ts',
 ]
 
 const TYPE_ONLY = /^import\s+type\b/
