@@ -667,3 +667,7 @@ _Avoid_: refund, Credit, vuelto, balance, difference
 **Undo**:
 Eliminar con un toque, sin confirmación, la última Sale guardada desde New sale, durante los 5 segundos de su aviso "Sale to {name} saved". Es la misma eliminación que se hace desde el detalle de la Sale, y siempre muestra cómo terminó; un Home que ya está en pantalla conserva sus cifras. _In the app_: Undo.
 _Avoid_: revert, rollback, cancel sale, void, anular, deshacer venta
+
+**Offline notice**:
+El único aviso de atención que muestra la app cuando una solicitud falla porque se cayó la red, igual en el banner global y en el aviso en línea: el título "You're offline" y el detalle "apostrophe needs a connection.". No promete ni ofrece reintentar (docs/product/offline-notice.md). _In the app_: You're offline.
+_Avoid_: No connection, error banner, network error, sin conexión, toast
