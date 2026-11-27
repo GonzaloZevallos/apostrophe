@@ -245,6 +245,10 @@ interface ScreenBase {
   /** The route is drawn by one `Sheet` over its parent on a phone (ADR-0062): the page under it
    * keeps its place when it opens (navigation.md criterion 23). `scrollPlan.ts` reads it. */
   sheetOnPhone?: true
+  /** The card draws its back itself, first in its own title row (`BackArrow look="round"`,
+   * ADR 20261125), so the shell draws none. The only thing that turns the shell's back off;
+   * only `expenses` sets it. */
+  backInTitleRow?: true
 }
 
 /**
@@ -340,6 +344,7 @@ export const SCREENS = [
     titleKey: 'common:expenses',
     parent: { phone: 'analysis' },
     place: { bar: 'home', rail: 'expenses' },
+    backInTitleRow: true,
   }),
   screen({ id: 'expense-new', path: EXPENSE_NEW, declaredKind: 'form', titleKey: 'shell:newExpense', parent: 'expenses', sheetOnPhone: true }),
   screen({

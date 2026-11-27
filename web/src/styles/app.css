@@ -767,6 +767,24 @@ body {
   touch-action: manipulation;
 }
 
+/* The round look of the same arrow, for a card that draws it in its own title row (ADR
+ * 20261125): the row owns the padding, so the box is the 44 px touch target alone. The press
+ * cue is the global `.boton--enlace:active` --superficie fill. The chevron is hidden until the
+ * row's narrow step shows it in place of the text (the expenses title row's `@container`). */
+.flecha-atras--redonda .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-xs);
+  min-height: var(--alto-tocable);
+  border-radius: var(--radio-pildora);
+  touch-action: manipulation;
+}
+
+.flecha-atras--redonda .boton--enlace > svg {
+  display: none;
+}
+
 .riel-lateral {
   display: none;
   flex-direction: column;
@@ -1736,6 +1754,90 @@ a.ajustes-tema__opcion {
   text-align: center;
   font-size: 16px;
   font-weight: 600;
+}
+
+/* Expenses' phone title row (ADR 20261125, `ExpensesTitleRow`): the round back, the title and
+ * Add expense on one line that never wraps, with the month line as its own line below. The title
+ * is the one fixed thing: never wrapped, shrunk, clipped or ellipsised. The row is the size
+ * container, so its two steps follow the room the row itself has, in its own `em`, which grows
+ * with the text size: below 24em the labelled pill is the 44 x 44 round icon (its `aria-label`
+ * keeps the name), below 19em the back is the round chevron (its text is clipped, never removed,
+ * so the accessible name stays). Only the two thresholds may move; their number and order may not. */
+.gastos__encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+.gastos__encabezado > .gastos__mes {
+  flex: none;
+}
+
+.gastos__fila-titulo {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--espacio-sm);
+  container-type: inline-size;
+  container-name: fila-titulo-gastos;
+}
+
+.gastos__fila-titulo > .flecha-atras--redonda {
+  flex: 0 0 auto;
+}
+
+.gastos__fila-titulo > .gastos__titulo {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.gastos__fila-titulo > .gastos__cargar {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  width: auto;
+  height: var(--alto-tocable);
+  padding: 0 18px;
+  background: var(--boton);
+  color: var(--boton-texto);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.gastos__fila-titulo > .gastos__cargar .gastos__cargar-texto {
+  display: inline;
+}
+
+@container fila-titulo-gastos (max-width: 24em) {
+  .gastos__fila-titulo > .gastos__cargar {
+    width: var(--alto-tocable);
+    padding: 0;
+    background: var(--superficie);
+    color: var(--tinta);
+  }
+
+  .gastos__fila-titulo > .gastos__cargar .gastos__cargar-texto {
+    display: none;
+  }
+}
+
+@container fila-titulo-gastos (max-width: 19em) {
+  .flecha-atras--redonda .boton--enlace {
+    width: var(--alto-tocable);
+    padding: 0;
+    box-shadow: inset 0 0 0 1px var(--linea);
+  }
+
+  .flecha-atras--redonda .flecha-atras__texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .flecha-atras--redonda .boton--enlace > svg {
+    display: block;
+  }
 }
 
 .gastos__resumen,
@@ -6963,6 +7065,14 @@ a.ajustes-tema__opcion {
     white-space: nowrap;
   }
 
+  /* Expenses' month total fits the viewport at larger text too (GH-1127, Human Decision 2): where
+   * the fit above is not enough (130 % text from 320 px up) the figure breaks inside itself
+   * rather than push the page sideways. When it fits, nothing breaks and the render is as before. */
+  .gastos__total .cifra-xl {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
   .gastos__categoria .gastos__categoria-cabecera {
     min-width: 0;
   }
@@ -7035,10 +7145,23 @@ a.ajustes-tema__opcion {
     height: var(--alto-tocable);
   }
 
-  /* Scoped to Expenses' header: Analysis reuses the month pill and its arrows (part 2). */
-  .gastos__cabecera .gastos__mes-boton {
+  /* Scoped to Expenses' header (the computer's `gastos__cabecera` and the phone's title block
+   * `gastos__encabezado`): Analysis reuses the month pill and its arrows (part 2). */
+  .gastos__cabecera .gastos__mes-boton,
+  .gastos__encabezado .gastos__mes-boton {
+    flex: none;
     width: var(--alto-tocable);
     height: var(--alto-tocable);
+  }
+}
+
+/* The narrowest phone (320 px at 130 % text is 246 CSS px): the month line has 198 px, so with
+ * the arrows kept at 44 the month name ("September", the longest word) needs the pill's gap and
+ * padding closed to 4 px; the arrows never shrink below the touch target. */
+@media (max-width: 280px) {
+  .gastos__encabezado > .gastos__mes {
+    gap: var(--espacio-xs);
+    padding-inline: var(--espacio-xs);
   }
 }
 
