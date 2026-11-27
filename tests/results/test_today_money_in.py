@@ -123,23 +123,97 @@ def test_money_in_raises_a_named_error_for_an_unknown_method_without_leaking_dat
     assert "123456" not in str(raised.value)
 
 
-def test_last_7_days_is_seven_days_oldest_first_with_today_last() -> None:
-    result = last_7_days(_buckets(), TODAY)
+LONG_AGO = TODAY - timedelta(days=30)
 
-    assert [item.day for item in result] == [TODAY - timedelta(days=n) for n in range(6, -1, -1)]
+
+def _days(back_from: int = 6) -> list[date]:
+    return [TODAY - timedelta(days=n) for n in range(back_from, -1, -1)]
+
+
+@pytest.mark.parametrize(
+    "first_record", [None, TODAY, TODAY + timedelta(days=1)], ids=["none", "today", "tomorrow"]
+)
+def test_last_7_days_is_null_without_history_before_today(first_record: date | None) -> None:
+    assert last_7_days(_buckets(), TODAY, first_record) is None
+
+
+def test_last_7_days_is_seven_days_oldest_first_with_today_last() -> None:
+    result = last_7_days(_buckets(), TODAY, LONG_AGO)
+
+    assert result is not None
+    assert [item.day for item in result] == _days()
     assert all(item.sales == 0 for item in result)
+
+
+def test_last_7_days_is_null_before_the_first_record_and_a_figure_from_it() -> None:
+    first_record = TODAY - timedelta(days=3)
+    sales = [
+        _sale(1, first_record, 400, recorded=first_record),
+        _sale(2, TODAY - timedelta(days=1), 250, recorded=TODAY - timedelta(days=1)),
+        _sale(3, TODAY, 900, recorded=TODAY),
+    ]
+    buckets = _buckets(sales=sales)
+
+    result = last_7_days(buckets, TODAY, first_record)
+
+    assert result is not None
+    assert [item.sales for item in result] == [None, None, None, 400, 0, 250, 900]
+    assert result[-1].sales == buckets.sales(TODAY, TODAY)
+
+
+@pytest.mark.parametrize("back", [6, 30])
+def test_last_7_days_has_no_null_when_the_first_record_is_in_or_before_the_window(
+    back: int,
+) -> None:
+    result = last_7_days(_buckets(), TODAY, TODAY - timedelta(days=back))
+
+    assert result is not None
+    assert [item.sales for item in result] == [0] * 7
 
 
 def test_last_7_days_crosses_a_month_boundary_and_zero_fills_empty_days() -> None:
     today = date(2026, 11, 2)
     buckets = _buckets(sales=[_sale(1, date(2026, 10, 31), 800, recorded=date(2026, 10, 31))])
 
-    result = last_7_days(buckets, today)
+    result = last_7_days(buckets, today, date(2026, 10, 1))
 
+    assert result is not None
     assert result[0] == DaySales(date(2026, 10, 27), 0)
     assert result[4] == DaySales(date(2026, 10, 31), 800)
     assert result[5] == DaySales(date(2026, 11, 1), 0)
     assert result[6] == DaySales(today, 0)
+
+
+def test_last_7_days_nulls_the_days_before_the_first_record_across_a_month_boundary() -> None:
+    today = date(2026, 11, 2)
+
+    result = last_7_days(_buckets(), today, date(2026, 10, 31))
+
+    assert result is not None
+    assert [item.sales for item in result] == [None, None, None, None, 0, 0, 0]
+    assert result[0].day == date(2026, 10, 27)
+
+
+def test_a_future_dated_sale_does_not_move_the_first_record_and_is_in_no_day() -> None:
+    record_day = TODAY - timedelta(days=2)
+    future = TODAY + timedelta(days=1)
+    buckets, first_record = scan(
+        draws=[],
+        sales=[
+            _sale(1, future, 700, recorded=TODAY),
+            _sale(2, record_day, 300, recorded=record_day),
+        ],
+        payments=[],
+        expenses=[],
+        purchases=[],
+        earliest_entry_day=None,
+    )
+
+    result = last_7_days(buckets, TODAY, first_record)
+
+    assert first_record == record_day
+    assert result is not None
+    assert [item.sales for item in result] == [None, None, None, None, 300, 0, 0]
 
 
 def test_each_day_of_last_7_days_is_the_total_between_reads_for_that_day() -> None:
@@ -152,8 +226,9 @@ def test_each_day_of_last_7_days_is_the_total_between_reads_for_that_day() -> No
     ]
     buckets = _buckets(sales=sales)
 
-    result = last_7_days(buckets, TODAY)
+    result = last_7_days(buckets, TODAY, TODAY - timedelta(days=7))
 
+    assert result is not None
     assert len(result) == 7
     for item in result:
         assert item.sales == totals_between(buckets, item.day, item.day).sales

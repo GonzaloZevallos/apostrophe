@@ -21,7 +21,7 @@ would.
 
 from collections.abc import Callable, Iterator
 from dataclasses import replace
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -1320,6 +1320,18 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
         },
     )
     assert expense.status_code == 201, expense.text
+    # An Expense moves no Lot: it only gives A's last 7 days a First record before today.
+    three_days_ago = (TODAY - timedelta(days=3)).isoformat()
+    earlier_expense = business_a.post(
+        "/expenses",
+        json={
+            "spent_on": three_days_ago,
+            "category_id": category["id"],
+            "amount": 300,
+            "detail": f"{MARKER} panel earlier expense",
+        },
+    )
+    assert earlier_expense.status_code == 201, earlier_expense.text
     purchase = business_a.post(
         "/stock/entries",
         json={
@@ -1352,8 +1364,22 @@ def test_another_business_reads_the_panel_as_zero_while_a_has_every_figure(
     assert today_figures["shortfall"]["amount"] > 0
     assert a_panel["debts"]["total_owed"] > 0
     assert a_panel["stock"] != []
+    a_series = a_panel["today"]["last_7_days"]
+    assert [item["day"] for item in a_series] == [
+        (TODAY - timedelta(days=n)).isoformat() for n in range(6, -1, -1)
+    ]
+    assert [item["sales"] for item in a_series] == [
+        None,
+        None,
+        None,
+        0,
+        0,
+        0,
+        today_figures["sales"],
+    ]
 
     b_panel = business_b.get("/panel").json()
+    assert b_panel["today"]["last_7_days"] is None
 
     def _fresh(start: str, end: str) -> dict[str, Any]:
         return {

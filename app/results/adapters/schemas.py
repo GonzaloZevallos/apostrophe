@@ -193,7 +193,7 @@ def hourly_points(totals: tuple[int, ...]) -> list[HourlyPointOut]:
 
 class DaySalesOut(BaseModel):
     day: date
-    sales: MoneyOut
+    sales: MoneyOut | None  # null before the First record, never 0
 
 
 class MethodMoneyOut(BaseModel):
@@ -335,7 +335,7 @@ class TodayOut(BaseModel):
     change_percent: int | None
     hourly_today: list[HourlyPointOut]
     hourly_last_week: list[HourlyPointOut]
-    last_7_days: list[DaySalesOut]
+    last_7_days: list[DaySalesOut] | None
     money_in: MoneyInOut
     low_stock: LowStockOut
     best_sellers: list[BestSellerOut]
@@ -353,9 +353,17 @@ class TodayOut(BaseModel):
             change_percent=figures.change_percent,
             hourly_today=hourly_points(figures.hourly_today),
             hourly_last_week=hourly_points(figures.hourly_last_week),
-            last_7_days=[
-                DaySalesOut(day=item.day, sales=Decimal(item.sales)) for item in figures.last_7_days
-            ],
+            last_7_days=(
+                None
+                if figures.last_7_days is None
+                else [
+                    DaySalesOut(
+                        day=item.day,
+                        sales=None if item.sales is None else Decimal(item.sales),
+                    )
+                    for item in figures.last_7_days
+                ]
+            ),
             money_in=MoneyInOut.of(figures.money_in),
             low_stock=LowStockOut.of(figures.low_stock),
             best_sellers=[BestSellerOut.of(seller) for seller in figures.best_sellers],

@@ -83,7 +83,7 @@ SERIES_DAYS = 7
 @dataclass(frozen=True)
 class DaySales:
     day: date
-    sales: int
+    sales: int | None
 
 
 @dataclass(frozen=True)
@@ -107,12 +107,21 @@ class PaymentMethodMissing(LookupError):
         super().__init__("a payment's method is not among the business's payment methods")
 
 
-def last_7_days(buckets: Buckets, today: date) -> tuple[DaySales, ...]:
-    """`today` and the 6 days before it, oldest first. Each day reads the same
+def last_7_days(
+    buckets: Buckets, today: date, first_record: date | None
+) -> tuple[DaySales, ...] | None:
+    """`today` and the 6 days before it, oldest first, or `None` when the series has fewer
+    than two points of history: no First record, or one that is today or later. A day before
+    the First record has `sales=None`; every other day, $0 included, reads the same
     `Buckets.sales` every Sales total reads, so a day on its own never disagrees with
     `totals_between`."""
+    if first_record is None or first_record >= today:
+        return None
     days = (today - timedelta(days=back) for back in range(SERIES_DAYS - 1, -1, -1))
-    return tuple(DaySales(day=day, sales=buckets.sales(day, day)) for day in days)
+    return tuple(
+        DaySales(day=day, sales=None if day < first_record else buckets.sales(day, day))
+        for day in days
+    )
 
 
 def money_in(buckets: Buckets, methods: Sequence[PaymentMethodRecord], today: date) -> MoneyIn:

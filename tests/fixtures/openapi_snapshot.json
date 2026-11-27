@@ -1365,6 +1365,9 @@
               },
               {
                 "type": "number"
+              },
+              {
+                "type": "null"
               }
             ],
             "title": "Sales"
@@ -5482,11 +5485,18 @@
             "type": "array"
           },
           "last_7_days": {
-            "items": {
-              "$ref": "#/components/schemas/DaySalesOut"
-            },
-            "title": "Last 7 Days",
-            "type": "array"
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/DaySalesOut"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last 7 Days"
           },
           "last_week_day": {
             "format": "date",

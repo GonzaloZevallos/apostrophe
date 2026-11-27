@@ -103,7 +103,7 @@ class TodayFigures:
     change_percent: int | None
     hourly_today: tuple[int, ...]
     hourly_last_week: tuple[int, ...]
-    last_7_days: tuple[DaySales, ...]
+    last_7_days: tuple[DaySales, ...] | None
     money_in: MoneyIn
     low_stock: LowStock[StockRow]
     best_sellers: tuple[BestSeller, ...]
@@ -149,7 +149,7 @@ def read_panel(
     the_periods = periods(today)
     stock_answer = stock.read(today)
     all_sales = sales.all()
-    buckets, _ = scan(
+    buckets, first_record = scan(
         draws=stock_answer.draws,
         sales=all_sales,
         payments=payments.all(),
@@ -204,7 +204,7 @@ def read_panel(
         change_percent=change_percent(today_so_far, last_week_so_far),
         hourly_today=hourly_running_total(compared, today, tz, through_hour=through_hour),
         hourly_last_week=hourly_running_total(compared, last_week_day, tz, through_hour=LAST_HOUR),
-        last_7_days=last_7_days(buckets, today),
+        last_7_days=last_7_days(buckets, today, first_record),
         money_in=money_in(buckets, methods.all(), today),
         low_stock=low_stock(stock_answer.rows),
         best_sellers=best_sellers(stock_answer.draws, the_periods.week.start, today),
