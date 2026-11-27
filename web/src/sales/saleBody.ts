@@ -6,6 +6,9 @@
 import { type PaymentChoice, quantityOfHundredths } from './pricing'
 import type { DraftLine } from './saleDraft'
 
+/** The longest note a sale takes: the same 200 as `NOTE_MAX_LENGTH` in `app/sales/domain/sale.py`. */
+export const SALE_NOTE_MAX_LENGTH = 200
+
 export interface LineBody {
   product_id: number
   quantity: string

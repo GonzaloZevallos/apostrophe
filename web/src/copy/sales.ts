@@ -58,6 +58,8 @@ export const SALE_BILL_TEXT = {
 }
 
 /** The Collect Sheet's Received field: a help line, never a refusal. */
+/** Why the date and the shipping cannot be changed on the Collect Sheet (its price is fixed at the tap). */
+const DATE_SHIPPING_LOCKED = 'Date and shipping cannot be changed here yet'
 const RECEIVED_HELP = "Type what they hand over to see the change. It isn't saved."
 
 /** The line detail Sheet: its fixed Done, the Remove line that sits apart from it, and the quantity
@@ -134,6 +136,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: NEW_SALE_TEXT.productSearchPlaceholder },
   { kind: 'help', text: NEW_SALE_TEXT.addProductToCollect },
   { kind: 'help', text: RECEIVED_HELP },
+  { kind: 'help', text: DATE_SHIPPING_LOCKED },
   { kind: 'help', text: LINE_DETAIL_TEXT.lineDetailDone },
   { kind: 'help', text: LINE_DETAIL_TEXT.removeLineButton },
   { kind: 'help', text: LINE_DETAIL_TEXT.lineQuantityLabel },
@@ -162,6 +165,7 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.products': counted((n) => [n]),
   'SALES_TEXT.collectTitle': counted((n) => [n]),
   'SALES_TEXT.collect': [[M]],
+  'SALES_TEXT.dateShippingNoteSummaryShipping': [[M]],
   'SALES_TEXT.saleInProgressName': [
     ['2 products', M],
     ['1 product', null],
@@ -264,6 +268,12 @@ export const SALES_TEXT = {
   collectShort: COMMON_TEXT.collect,
   /** The Collect Sheet's Total row: the label alone, its figure drawn beside it. */
   totalLabel: 'Total',
+  /** The Collect Sheet's one collapsed row for the date, the shipping and the note. */
+  dateShippingNoteTitle: 'Date, shipping and note',
+  /** `amount` is the shipping in the business's Money format (`useMoney().money`). */
+  dateShippingNoteSummaryShipping: (amount: string) => `Shipping ${amount}`,
+  dateShippingNoteSummaryNote: COMMON_TEXT.note,
+  dateShippingLocked: DATE_SHIPPING_LOCKED,
   receivedLabel: 'Received',
   receivedHelp: RECEIVED_HELP,
   changeLabel: COMMON_TEXT.change,

@@ -833,3 +833,55 @@ test('only method A, refused by the server, the list read again still holding A:
   await waitFor(() => expect(sent).toHaveLength(2))
   expect(sent[1]?.body).toMatchObject({ payment: { kind: 'owing' } })
 })
+
+const ROW_TITLE = /^Date, shipping and note/
+
+test('the row sits first in the block that locks while saving, collapsed, with date and shipping locked and the reason told', async () => {
+  const user = userEvent.setup()
+  mount({ priced: pricedOf(3000), proposal: 1 })
+  await ready()
+  const row = screen.getByRole('button', { name: ROW_TITLE })
+  expect(row).toHaveAttribute('aria-expanded', 'false')
+  expect(row.closest('[inert]')).toBeNull()
+  await user.click(row)
+  const reason = screen.getByText('Date and shipping cannot be changed here yet')
+  for (const name of ['Date', 'Shipping charged']) {
+    const input = screen.getByLabelText(name)
+    expect(input).toBeDisabled()
+    expect(input).toHaveAttribute('aria-describedby', reason.id)
+  }
+  expect(screen.getByLabelText('Note')).toBeEnabled()
+})
+
+test('a note typed in the row reaches the body, and the body still carries the total and shipping of priced', async () => {
+  const user = userEvent.setup()
+  mount({ priced: pricedOf(3000, 2, 500), proposal: 1 })
+  await ready()
+  await user.click(screen.getByRole('button', { name: ROW_TITLE }))
+  await user.type(screen.getByLabelText('Note'), 'Leave at the door')
+  expect(screen.getByRole('button', { name: ROW_TITLE })).toHaveTextContent('Note')
+  await user.click(collect())
+  await waitFor(() => expect(sent).toHaveLength(1))
+  expect(sent[0]?.body).toMatchObject({
+    date: '2026-10-02',
+    shipping_charged: 500,
+    note: 'Leave at the door',
+    payment: { kind: 'paid', payment_method_id: 1 },
+  })
+})
+
+test('during a held save the whole row is inert, and Total stays outside the inert block', async () => {
+  stubFetch({ reply: 'held' })
+  const user = userEvent.setup()
+  mount({ priced: pricedOf(3000), proposal: 1 })
+  await ready()
+  await user.click(screen.getByRole('button', { name: ROW_TITLE }))
+  await act(async () => {
+    collect().click()
+  })
+  await screen.findByRole('button', { name: 'Saving…' })
+  expect(screen.getByLabelText('Note').closest('[inert]')).not.toBeNull()
+  expect(screen.getByRole('button', { name: ROW_TITLE }).closest('[inert]')).not.toBeNull()
+  expect(screen.getByText('Total').closest('[inert]')).toBeNull()
+  await act(async () => answerSave?.(json(201, { id: 55 })))
+})

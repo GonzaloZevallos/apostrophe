@@ -18,6 +18,7 @@
   "^src/screens/ventas/lineProduct\\.ts$",
   "^src/screens/ventas/saleWith\\.ts$",
   "^src/screens/ventas/NewSaleSheetHost\\.tsx$",
+  "^src/screens/ventas/DateShippingNoteRow\\.tsx$",
   "^src/i18n/switchFixture\\.ts$",
   "^src/components/selectorTestKit\\.tsx$",
   "^src/components/SelectorTestHost\\.tsx$",

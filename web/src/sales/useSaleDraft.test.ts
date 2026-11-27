@@ -60,3 +60,12 @@ test('editLine takes the edit lineEditOf returned and removeLine takes the line 
   act(() => result.current.removeLine(9))
   expect(result.current.state.lines.map((line) => line.productId)).toEqual([4])
 })
+
+test('today is exposed, and follows the argument on re-render', () => {
+  const { result, rerender } = renderHook((props: { today: string }) => useSaleDraft(props), {
+    initialProps: { today: '2026-11-19' },
+  })
+  expect(result.current.today).toBe('2026-11-19')
+  rerender({ today: '2026-11-20' })
+  expect(result.current.today).toBe('2026-11-20')
+})

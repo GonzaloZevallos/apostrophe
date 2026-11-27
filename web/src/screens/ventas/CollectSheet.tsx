@@ -20,6 +20,12 @@
  * The Collect label always holds the full "Collect {total}"; when it overflows, the short word is
  * drawn over it, and the button's name stays the full text.
  *
+ * Under the Total, first in the `inert={saving}` block, sits `DateShippingNoteRow` (date, shipping,
+ * note). The price is frozen at the tap on Collect (`priced`), so the date and the shipping are shown
+ * locked, with their reason, until the live re-pricing that follows this part unlocks them: changing either here
+ * would save a date or a shipping the figures were not computed for. The Note writes the draft,
+ * which the body already reads.
+ *
  * "Owes it" arrives with GH-944. A save that fails always releases the Sheet (`onSavingChange(false)`,
  * Close works again) and keeps the method and the lines. A 401 is left to the session boundary and
  * shows nothing. The refusal that the chosen method is no longer available (`isMethodUnavailable`,
@@ -73,6 +79,7 @@ import { bodyLinesOf, type SaleBody, saleBodyOf } from '../../sales/saleBody'
 import { effectiveChoice } from '../../sales/saleDraft'
 import { isMethodUnavailable } from '../../sales/saleRefusal'
 import type { SaleDraftApi } from '../../sales/useSaleDraft'
+import DateShippingNoteRow from './DateShippingNoteRow'
 
 /** What the server answers a saved sale with; the Sheet hands it on untouched. */
 export interface SavedSale {
@@ -324,6 +331,7 @@ export default function CollectSheet({
           <span>{SALES_TEXT.totalLabel}</span> <span className="cifra-n cobro__importe">{totalText}</span>
         </div>
         <div className="cobro__bloque" inert={saving}>
+          <DateShippingNoteRow draft={draft} datesAndShippingLocked />
           {/* A tap on a field whose list failed reads the list again; the Selector shows its own failure line. */}
           <div onClickCapture={methodOptions.failure === null ? undefined : methodOptions.reload}>
             <Selector

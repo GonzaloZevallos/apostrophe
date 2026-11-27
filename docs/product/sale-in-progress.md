@@ -236,20 +236,22 @@ El paso de cierre de New sale, `web/src/screens/ventas/CollectSheet.tsx`, dibuja
 
 ### Fila Date, shipping and note
 
-(Parte 4 de GH-868, GH-496 parte 9d.) El componente `web/src/screens/ventas/DateShippingNoteRow.tsx`. Hasta el flip de GH-496 ninguna ruta ni entrada de navegación lo alcanza: figura en `web/scripts/docs/front-exclude.json` (D-62e6dc23) y el flip saca esa entrada. Sirve para arreglar la fecha, el Shipping charged o la Note sin salir de la Collect Sheet; la fecha es lo que más importa, porque es lo único que cambia la plata (el envío cambia el total solo por su propio monto, nunca por una recotización).
+(Parte 4 de GH-868, GH-496 parte 9d.) El componente `web/src/screens/ventas/DateShippingNoteRow.tsx`. Hasta el flip de GH-496 ninguna ruta ni entrada de navegación lo alcanza: figura en `web/scripts/docs/front-exclude.json` (D-62e6dc23) y el flip saca esa entrada. Sirve para arreglar la fecha, el Shipping charged o la Note sin salir de la Collect Sheet. Acotada por la decisión 1 del humano en GH-988: en esta parte la fila se monta con la fecha y el envío **bloqueados**, porque la Collect Sheet todavía manda el precio que `priced` congeló al tocar Collect; dejar cambiar la fecha o el envío guardaría una fecha o un envío para los que esas cifras no se calcularon. Solo la Note se edita, y ya llega al cuerpo, que lee `state.note`. La recotización al cambiar la fecha llega con #1196, que desbloquea la fila (ver "Recotización, carga y sin precio").
 
 - Una sola fila cerrada con el título "Date, shipping and note", nunca "More", con `aria-expanded`. Arranca cerrada en cada apertura de la Sheet.
-- Va justo encima de la fila Total, dentro del bloque `cobro__bloque` con `inert={saving}`; la fila Total, "How they pay", Received y Change, y Collect conservan su orden. Una venta con todo por defecto se ve como antes más una fila de título.
+- Va como primer hijo del bloque `cobro__bloque` con `inert={saving}`, justo debajo de la fila Total; la fila Total, "How they pay", Received y Change, y Collect conservan su orden. Una venta con todo por defecto se ve como antes más una fila de título.
 - **Resumen, cerrada:** une con " · ", en este orden, solo los valores que no están por defecto: la fecha como dd/mm cuando no es el día del Business, "Shipping {amount}" cuando el Shipping charged es mayor que 0 (con el monto en el Money format del Business) y "Note" cuando la Note no está en blanco, nunca su texto. Con todo por defecto se ve solo el título y la fila no agrega ningún toque.
 - **Abierta**, en este orden:
-  - la fecha: un control de tipo date, obligatorio, con `autocomplete` off y como máximo el día del Business, que escribe `draft.setDate`; un valor que `dateSet` rechaza (vacío, mal formado, imposible o posterior a hoy) vuelve al último válido, sin texto de rechazo, y la venta conserva su fecha, su lectura y su total;
-  - el aviso de recotización, cuando lo hay (ver abajo);
-  - el Shipping charged, mediante `MoneyInput` con su etiqueta y su rechazo existentes;
-  - la Note, con `autocomplete` off.
+  - la fecha: un control de tipo date, obligatorio, con `autocomplete` off y como máximo `draft.today` (el mismo valor con el que `setDate` guarda, expuesto por `useSaleDraft`; la fila no tiene prop `today` ni llama al reloj), que escribe `draft.setDate`; un valor que `dateSet` rechaza (vacío, mal formado, imposible o posterior a hoy) vuelve al último válido, sin texto de rechazo;
+  - el Shipping charged, mediante `MoneyInput` con su etiqueta existente (`SALES_TEXT.shippingCharged`) y `autocomplete` off;
+  - la Note, con `autocomplete` off y como máximo 200 caracteres (`SALE_NOTE_MAX_LENGTH` en `web/src/sales/saleBody.ts`, el mismo `NOTE_MAX_LENGTH` de `app/sales/domain/sale.py`).
+- **Bloqueada (prop `datesAndShippingLocked`):** la fecha y el Shipping charged están `disabled`, siguen mostrando su valor y apuntan con `aria-describedby` a la línea de ayuda "Date and shipping cannot be changed here yet" (`SALES_TEXT.dateShippingLocked`), para que el estado se diga con palabras y no solo con el aspecto. La Note nunca se bloquea. La Collect Sheet monta la fila siempre bloqueada hasta #1196, que la desbloquea y borra ese texto. La prop es comportamiento de producción, no un hook de test.
 - Cada campo de texto y el control de fecha llevan los atributos de teléfono controlados, comprobados en el test propio del componente.
 - Lo que se cambia acá va directo a la Sale in progress: cerrar la Collect Sheet vuelve a New sale con la fecha, el envío y la Note nuevos y con todas las líneas.
 
 ### Recotización, carga y sin precio
+
+**Pendiente: llega con #1196, no con GH-988.** Brecha conocida: hoy la Collect Sheet sigue recibiendo `priced` congelado, la fecha y el envío no se pueden cambiar en ella (ver "Fila Date, shipping and note") y no hay aviso de recotización, marca de carga ni aviso de línea sin precio. Lo que sigue es lo que #1196 construye.
 
 (Parte 4 de GH-868.) La Collect Sheet guarda una foto de `{date, total}` en el inicializador de un `useState` cada vez que se abre, y `collectViewOf` compara contra esa foto.
 
