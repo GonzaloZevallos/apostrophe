@@ -71,6 +71,7 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
   - cada campo tiene una línea de ayuda corta y fija.
 - **La línea de ayuda del chat propio**: "Tap Start in your bot; find your number with @userinfobot." (80 caracteres como máximo, GH-97; sacó "Open your bot in Telegram" y "or tap Find my chat", que ya dice el botón al lado del campo). Reemplazó a "Open your chat with the bot and write anything to see it here.", que prometía algo que la pantalla no hacía. La línea de ayuda del chat del canal no cambia. El cómo más largo (abrir el bot, tocar Iniciar, después Find my chat completa el número, o buscarlo con @userinfobot) está detrás de More info ("More info") en esa línea, cerrado en cada apertura.
 - **Todavía nada guardado**: campos vacíos, ninguna línea "Saved" y, bajo "Bot token", la línea de ayuda del token.
+- **Mientras carga**: Integrations muestra su estado de carga y dibuja el formulario solo cuando ya conoce la configuración guardada, así que la línea de ayuda del token nunca aparece de paso en un Business que tiene un token guardado.
 - **Se guardan solo con Test it**: la configuración se guarda solo cuando una prueba de los valores tipeados tiene éxito, así que la configuración guardada siempre fue probada.
 - **Cambiar cualquiera de los tres** vuelve a exigir un Test send antes de Publish. El Test it exitoso que guarda el cambio vuelve a cumplir ese requisito.
 - **Cambiar solo el chat propio** deja el canal y su Pinned catalog como estaban: la Upkeep sigue y el estado no cambia.

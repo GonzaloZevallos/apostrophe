@@ -6,7 +6,7 @@ Antes, quien vendía caía en un Home vacío y abría Products, la pantalla del 
 
 **Cuando** acabo de aceptar mi Invitation y estoy armando mi Business nuevo desde el celular, **quiero** que el primer paso muestre solo lo que me pide (mi primer Product y su precio para hoy), **para** completarlo de una sin leer líneas sobre las que ahí no puedo hacer nada. (GH-1070: el paso 1 no muestra la marca ni una línea de moneda, y el bloque de título queda justo arriba de "Name".)
 
-**Cuando** estoy por pegar el token de mi bot de Telegram, **quiero** saber qué va a hacer la app con él antes de guardarlo, **para** pegarlo sin miedo a que se vuelva a mostrar o se filtre. (Se define en pinned-catalog.md; lo sirve acá el paso 4, que comparte el formulario de Integrations y muestra "Saved encrypted and never shown again." bajo "Bot token" mientras no hay token guardado.)
+**Cuando** estoy por pegar el token de mi bot de Telegram, **quiero** saber qué va a hacer la app con él antes de guardarlo, **para** pegarlo sin miedo a que se vuelva a mostrar o se filtre. (Se define en pinned-catalog.md; lo sirve acá el paso 4, que comparte el formulario de Integrations y muestra "Saved encrypted and never shown again." bajo "Bot token" mientras el campo está abierto para tipear: sin token guardado, o después de Change.)
 
 **Cuando** manejo mi negocio desde el celular entre pedidos o en medio de un chat con un cliente, varias veces al día, **quiero** la app organizada según lo que de verdad hago y cada cuánto, **para** volver con el cliente en vez de buscar entre menús. (El job de navegación, navigation.md: lo sirve acá el Onboarding como el único camino guiado de un Business nuevo, abierto al aceptar su Invitation; Home no muestra ningún aviso de primer uso.)
 
@@ -41,7 +41,7 @@ Criterios de éxito:
 7. **Ninguna palabra que elegir**: el Onboarding nunca muestra "What you sell" ni pide una Unit, y cada texto suyo dice "Product" / "Products", nunca "variety".
 8. **Home queda limpio**: ningún estado del Onboarding (sin empezar, a mitad de camino, con todo hecho o pasado sin "Done", terminado) pone un aviso, insignia ni recordatorio en Home ni en ningún otro lado.
 9. **El paso 1 muestra solo lo que pide** (GH-1070): en el celular (320 px incluidos) y en la computadora, el bloque de título queda justo arriba de "Name", sin la marca, sin línea de moneda y sin hueco; a 320 px el orden es el mismo y nada queda fuera de la pantalla. No se pierde nada que quien vende necesite: los campos de precio conservan el símbolo del Business como prefijo, y el símbolo y los decimales se siguen cambiando en Settings → Business → Currency and decimals.
-10. **Saber qué pasa con el token antes de pegarlo** (GH-1070): sin token guardado, el paso 4 muestra "Saved encrypted and never shown again." bajo "Bot token", atado al campo; con un token guardado, solo "Saved on … · not shown again" (pinned-catalog.md).
+10. **Saber qué pasa con el token antes de pegarlo** (GH-1070): mientras el campo "Bot token" está abierto para tipear (sin token guardado, o después de Change), el paso 4 muestra "Saved encrypted and never shown again." bajo él, atada al campo; con un token guardado y el campo cerrado, solo "Saved on … · not shown again" (pinned-catalog.md).
 
 ## Comportamiento
 
@@ -131,7 +131,7 @@ Criterios de éxito:
 ![Paso 4 del Onboarding en el teléfono](../assets/screens/OnboardingBot.webp)
 
 - Es el mismo formulario que Settings → Integrations (`IntegrationsForm`), con sus reglas, motivos y líneas de ayuda (pinned-catalog.md).
-- **La línea de ayuda del token** (GH-1070): mientras no hay token guardado, bajo "Bot token" se ve "Saved encrypted and never shown again.", como línea de ayuda del campo (`campo__ayuda`, atada con `aria-describedby`). Con un token guardado la reemplaza "Saved on … · not shown again". Cuando Test it se rechaza, la línea queda y el motivo se ve debajo, con su redacción y su lugar de siempre.
+- **La línea de ayuda del token** (GH-1070): mientras el campo "Bot token" está abierto para tipear (sin token guardado, o después de tocar Change sobre uno guardado), bajo él se ve "Saved encrypted and never shown again.", como línea de ayuda del campo (`campo__ayuda`, atada con `aria-describedby`). Con un token guardado y el campo cerrado la reemplaza "Saved on … · not shown again". Cuando Test it se rechaza, la línea queda y el motivo se ve debajo, con su redacción y su lugar de siempre; el campo queda atado a los dos textos.
 - **"Enter the token first"**, el motivo del "Find my chat" desactivado, no está en `OnboardingBot.dc.html`; queda como está hasta que el dueño decida.
 
 ### Hecho y pasado
@@ -238,7 +238,7 @@ No hay telemetría.
   - con un Product con precio para hoy y un segundo guardado sin precio, al volver al paso 1, el nombre del segundo conservado y solo su precio por completar, guardando solo el precio, con el conteo de avance sin cambios;
   - el símbolo del Business antes del List price, el Bulk price y el VIP price y nunca antes del Bulk minimum, y ningún campo ni chip de fecha.
 - **El paso 1 muestra solo lo que pide (criterio 9)**: tests del front (`OnboardingStep.test.tsx`) muestran que ningún paso dibuja el lockup de la marca ni una línea de moneda, y que el paso 1 tiene solo "Close" en su cabecera; los estados del recorrido de `web/src/mobile-standard/statesRecords.ts` y cada uso e2e de los elementos quitados se migran en la misma tarea; `ONBOARDING_TEXT.currencyLine` y su entrada de `en.baseline.json` ya no existen. El Mobile check pasa sin ampliar ninguna lista de infractores, tolerancia ni control. Las capturas de `OnboardingVariedad` y `OnboardingVariedadCompu`, claro y oscuro, muestran el bloque de título justo arriba de "Name", también a 320 px.
-- **El token, antes de pegarlo (criterio 10)**: tests del front del formulario compartido muestran "Saved encrypted and never shown again." bajo "Bot token" y atada con `aria-describedby` sin token guardado, solo "Saved on … · not shown again" con un token guardado, y la línea en su lugar con el motivo debajo cuando Test it se rechaza. Capturas de `OnboardingBot` y `OnboardingBotCompu`, claro y oscuro.
+- **El token, antes de pegarlo (criterio 10)**: tests del front del formulario compartido muestran "Saved encrypted and never shown again." bajo "Bot token" y atada con `aria-describedby` sin token guardado y después de tocar Change, solo "Saved on … · not shown again" con un token guardado y el campo cerrado, y la línea en su lugar con el motivo debajo cuando Test it se rechaza; un test del paso 4 muestra la línea sin token guardado. Capturas de `OnboardingBot` y `OnboardingBotCompu`, claro y oscuro.
 - **El chip del paso 2**: tests del front (`web/src/screens/StockEntryForm.test.tsx`) muestran:
   - ninguna etiqueta "Origin" sobre el chip fijo "Initial stock" del paso 2. La aserción de que estaba presente pasa a ausente en el mismo diff que este doc, y el PR la lista (icon-and-text-rule.md criterio 5);
   - la elección de origen del formulario completo de Stock entry sin cambios, con cada aserción sobre ella sin editar.
