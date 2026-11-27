@@ -5837,7 +5837,7 @@ a.ajustes-tema__opcion {
  *   .variedad-fila, .variedades__todas, .catalogo__fila-nombre, .pestanas__opcion,
  *   .selector-pago__opcion, .gastos__mes-boton, .encabezado__volver, .historial-fila__borrar;
  *   resting on --superficie or --papel itself, so --linea is the fill cue (these come after
- *   the --superficie group): .ajustes-tema__opcion and .inicio-segmento, plain and
+ *   the --superficie group): .search-field__clear (SearchField's ×, over the input's --superficie), .ajustes-tema__opcion and .inicio-segmento, plain and
  *   --activa (the Settings track is --superficie, its selected option --papel; the segment track is --acento-suave, its marked option is --superficie), and the selected variants
  *   .riel-lateral__item--activo, .riel-lateral__ajustes--activo, .bar-inferior__item--activo,
  *   .pestanas__opcion--activa, .variedad-fila--activa and .selector-pago__opcion--activa.
@@ -5942,7 +5942,9 @@ a.ajustes-tema__opcion {
     .inicio-segmento--activa,
     /* Expenses' month arrows rest on the --superficie pill, so the --superficie fill shows nothing. */
     .gastos__mes-boton,
-    .selector__campo
+    .selector__campo,
+    /* SearchField's Clear is transparent over the input's --superficie fill. */
+    .search-field__clear
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   background-color: var(--linea);
@@ -5996,7 +5998,8 @@ a.ajustes-tema__opcion {
     .historial-fila__borrar,
     .fila-stock--enlace,
     .selector__campo,
-    .selector-lista__fila
+    .selector-lista__fila,
+    .search-field__clear
   ) {
   -webkit-user-select: none;
   user-select: none;
@@ -7456,6 +7459,81 @@ a.ajustes-tema__opcion {
 .selector-lista__buscar::placeholder {
   color: var(--tinta2);
   opacity: 1;
+}
+
+/* `SearchField` (Products search on the phone): a controlled filter input, not a `Selector`.
+ * The wrapper only positions; the input carries the border, radius and 44 px height, and
+ * Clear lies over its right edge with the input's right-hand radius. 16 px so the browser
+ * does not zoom. The placeholder is the only visible name: --tinta2 holds 4.5:1 on both themes. */
+.search-field {
+  position: relative;
+}
+
+.search-field__input {
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--alto-tocable);
+  padding: 0;
+  padding-left: calc(var(--espacio-md) + 18px + var(--espacio-sm));
+  padding-right: var(--alto-tocable);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+  color: var(--tinta);
+  font: inherit;
+  font-size: 16px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-field__input::placeholder {
+  color: var(--tinta2);
+  opacity: 1;
+  font-size: 16px;
+}
+
+/* The native clear control and the magnifier decoration are hidden: the field draws its own. */
+.search-field__input::-webkit-search-cancel-button,
+.search-field__input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.search-field__icon {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--espacio-md);
+  display: flex;
+  align-items: center;
+  color: var(--tinta2);
+  pointer-events: none;
+}
+
+.search-field__icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.search-field__clear {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--alto-tocable);
+  min-width: var(--alto-tocable);
+  padding: 0;
+  border: 0;
+  border-radius: 0 var(--radio-campo) var(--radio-campo) 0;
+  background: transparent;
+  color: var(--tinta2);
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .selector-lista__filas {
