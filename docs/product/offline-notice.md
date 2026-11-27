@@ -20,6 +20,13 @@ En los dos lugares dice exactamente lo mismo.
 
 La frase vieja "Offline: check your internet and try again." ya no aparece en ningún lado.
 
+## Botones de reintento sin red
+
+Un botón que, tras un fallo de red, vuelve a pedir algo cuando se lo toca no es el Offline notice y no usa el título solo como rótulo, porque "You're offline" no dice que tocarlo reintenta. Lleva su propia clave, `common:offlineRetry`, "You're offline · Try again", que es también su nombre accesible, y no muestra la línea de detalle.
+
+- Hoy es el botón del campo Product del formulario de Stock entry cuando no se pudo leer la lista de Archived products; tocarlo la vuelve a leer.
+- Cualquier otro lugar que use el texto sin red como rótulo de una acción sigue la misma regla; un lugar que solo muestra el estado usa el título.
+
 ## Cómo se ve
 
 - Es un aviso de atención: se dibuja dentro de `AvisoAmbar`, con el Attention icon, `role=status`, el título en `span.aviso-ambar__titulo` y el detalle en `span.aviso-ambar__detalle`.
@@ -29,13 +36,14 @@ La frase vieja "Offline: check your internet and try again." ya no aparece en ni
 
 ## Lo que no hace
 
-- No reintenta. El dibujo agrega que la app reintenta sola; esa mitad se deja afuera porque la app no reintenta sola, y prometerlo sería falso (decisión del dueño en GH-1073, Dibujo 1). Si algún día la app reintenta sola, devolver esa mitad es un trabajo aparte.
-- No tiene acción de reintentar ni botón.
+- No reintenta solo. El dibujo agrega que la app reintenta sola; esa mitad se deja afuera porque la app no reintenta sola, y prometerlo sería falso (decisión del dueño en GH-1073, Dibujo 1). Si algún día la app reintenta sola, devolver esa mitad es un trabajo aparte.
+- El aviso no tiene acción de reintentar ni botón; los botones de reintento que ya existían conservan su acción con su propio rótulo (arriba).
 - No cambia la única excepción que ya existe: la lista de Products de New sale vuelve a leer sola al reconectar o al volver a la app tras un fallo (`sale-in-progress.md`).
 - No depende del service worker ni del origen (accounts.md, Sin red).
 
 ## Métricas
 
 - **Mismas dos líneas en todos lados**: en el banner global y en el aviso en línea se leen "You're offline" y "apostrophe needs a connection.", con 0 apariciones de la frase vieja en `web/` y `scripts/design/`.
+- **Reintento con nombre**: todo botón de reintento sin red se lee "You're offline · Try again"; ninguno se rotula solo con el título.
 - **Aviso de atención en ambos temas**: Attention icon, `role=status` y solo tokens en claro y oscuro; 0 infractores nuevos en el proyecto e2e móvil.
 - **Fiel al dibujo**: las Design captures en claro y oscuro de `EstadosSinConexion` y de Settings → Business tras un guardado fallido muestran lo que dice el estado 'Sin conexión', salvo la mitad aceptada como fuera.
