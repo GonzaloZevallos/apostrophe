@@ -52,6 +52,8 @@ export interface Sale {
   payment_state: 'paid' | 'unpaid' | 'part_paid' | null
   /** The amount still owed on the sale, `0` when paid; `null` with `payment_state`. */
   still_owed: number | null
+  /** How the sale was paid, as the seller named it; `null` when it was not paid with a method. */
+  payment_method: { id: number; name: string; icon: string } | null
 }
 
 export function listSales(dateFrom: string, dateTo: string): Promise<Sale[]> {

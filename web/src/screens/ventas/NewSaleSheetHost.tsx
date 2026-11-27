@@ -37,6 +37,7 @@ import { useUndoSale } from '../../sales/useUndoSale'
 import { parentOf } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import CollectSheet from './CollectSheet'
+import LineDetailSheet from './LineDetailSheet'
 import { useLeaveQuestion } from './leaveQuestion'
 import NuevaVentaCliente from './NuevaVentaCliente'
 import NuevaVentaSheet from './NuevaVentaSheet'
@@ -47,7 +48,11 @@ import NuevaVentaSheet from './NuevaVentaSheet'
  */
 const SALE_SHEET_FLOOR = 0
 
-type Over = { kind: 'none' } | { kind: 'customer' } | { kind: 'collect'; priced: CompleteSale }
+type Over =
+  | { kind: 'none' }
+  | { kind: 'customer' }
+  | { kind: 'collect'; priced: CompleteSale }
+  | { kind: 'line'; productId: number }
 
 export interface NewSaleSheetHostProps {
   /** Called when Collect's save succeeds; by default the host leaves. */
@@ -171,6 +176,12 @@ function NewSaleSheetBody({ onSaved }: NewSaleSheetHostProps) {
     sheet.open()
   }
 
+  // The detail shows only while it is the stacked Sheet and the draft still holds its line.
+  const openLine =
+    over.kind === 'line' && sheet.isOpen
+      ? draft.state.lines.find((line) => line.productId === over.productId)
+      : undefined
+
   const frame = { computer, computerClass: 'pantalla cobro-modal', computerDialog: true }
   return (
     <>
@@ -182,8 +193,29 @@ function NewSaleSheetBody({ onSaved }: NewSaleSheetHostProps) {
         onClose={close}
         onChangeCustomer={() => ask({ kind: 'customer' })}
         onCollect={(sale) => ask({ kind: 'collect', priced: sale })}
+        onOpenLine={(productId) => ask({ kind: 'line', productId })}
         {...frame}
       />
+      {openLine !== undefined && (
+        // The line detail is the first Sheet over the form, like Collect: one history entry while it is open.
+        <SheetLevel.Provider value={1}>
+          <LineDetailSheet
+            line={openLine}
+            title={reads.products?.find((product) => product.id === openLine.productId)?.name ?? t('common:noLongerAvailable')}
+            format={me.money}
+            onDone={(edit) => {
+              if (edit !== null) draft.editLine(openLine.productId, edit)
+              sheet.close()
+            }}
+            onRemove={() => {
+              draft.removeLine(openLine.productId)
+              sheet.close()
+            }}
+            onClose={sheet.close}
+            {...frame}
+          />
+        </SheetLevel.Provider>
+      )}
       {over.kind === 'customer' && sheet.isOpen && <NuevaVentaCliente allowNone onChosen={onChosen} />}
       {over.kind === 'collect' && sheet.isOpen && (
         // Collect is the first Sheet over the form: its method Selector opens one entry over it.

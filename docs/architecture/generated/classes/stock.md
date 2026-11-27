@@ -24,6 +24,8 @@ classDiagram
   }
   class lot_order {
   }
+  class movement_order {
+  }
   class stock_level {
   }
   class threshold {
@@ -212,6 +214,9 @@ classDiagram
   class EntryQuantityInvalid {
     code : ClassVar~str~
   }
+  class InvalidMovementCursor {
+    code : ClassVar~str~
+  }
   class LastReason {
     code : ClassVar~str~
   }
@@ -232,6 +237,18 @@ classDiagram
     rank : int
     recorded_at : datetime
     ref_id : int
+  }
+  class MovementCursor {
+    decode(text: str) MovementKey
+    encode(key: MovementKey) str
+  }
+  class MovementKey {
+    day : date
+    id : int
+    rank : int
+    recorded_at : datetime
+    comes_after(cursor: MovementKey) bool
+    newest_first() tuple~int, int, int, int~
   }
   class Origin {
     name

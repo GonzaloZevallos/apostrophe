@@ -91,6 +91,33 @@ describe('invalidateResource and the catalog', () => {
   })
 })
 
+describe('invalidateResource and the Global search', () => {
+  test('keys under its own prefix, by the query', () => {
+    expect(keys.search('José')).toEqual(['search', { q: 'José' }])
+  })
+
+  test.each(['sales', 'payments', 'customers', 'stock', 'varieties'] as const)(
+    'a %s write also invalidates the search',
+    (resource) => {
+      const queryClient = clientWithData()
+      queryClient.setQueryData(keys.search('x'), { sales: [], customers: [], products: [] })
+
+      invalidateResource(queryClient, resource)
+
+      expect(isInvalidated(queryClient, keys.search('x'))).toBe(true)
+    },
+  )
+
+  test('a withdrawal reasons write reaches stock but leaves the search valid', () => {
+    const queryClient = clientWithData()
+    queryClient.setQueryData(keys.search('x'), { sales: [], customers: [], products: [] })
+
+    invalidateResource(queryClient, 'withdrawalReasons')
+
+    expect(isInvalidated(queryClient, keys.search('x'))).toBe(false)
+  })
+})
+
 describe('invalidateResource', () => {
   test('invalidates every query under the resource\'s own prefix', () => {
     const queryClient = clientWithData()

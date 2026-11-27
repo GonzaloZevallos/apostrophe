@@ -7,6 +7,7 @@ import {
   formatDateShort,
   formatMonthLong,
   formatTodayLong,
+  formatWeekdayDay,
   isIsoDate,
   maxSaleDate,
   monthRange,
@@ -223,5 +224,29 @@ describe('isIsoDate', () => {
 
   test.each(['2024-02-29', '0001-01-01', '2026-02-28', '2026-12-31', '2000-02-29'])('accepts %j', (text) => {
     expect(isIsoDate(text)).toBe(true)
+  })
+})
+
+describe('formatWeekdayDay', () => {
+  test.each([
+    ['en', '2026-11-23', 'Monday 23'],
+    ['en', '2026-11-29', 'Sunday 29'],
+    ['en', '2026-12-01', 'Tuesday 1'],
+    ['es', '2026-11-23', 'Lunes 23'],
+    ['es', '2026-12-01', 'Martes 1'],
+    ['en-XA', '2026-11-23', 'Monday 23'],
+    ['', '2026-11-23', 'Monday 23'],
+  ])('%s reads %s as "%s"', (language, iso, expected) => {
+    expect(formatWeekdayDay(iso, language)).toBe(expected)
+  })
+
+  test('rejects a string that is not an API date', () => {
+    expect(() => formatWeekdayDay('23/11/2026', 'en')).toThrow('not an API date: 23/11/2026')
+  })
+
+  test('shares no cached formatter with the long form of the same language', () => {
+    expect(formatTodayLong('2026-11-23', 'en')).toBe('Monday, November 23')
+    expect(formatWeekdayDay('2026-11-23', 'en')).toBe('Monday 23')
+    expect(formatTodayLong('2026-11-23', 'en')).toBe('Monday, November 23')
   })
 })

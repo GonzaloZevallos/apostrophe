@@ -530,6 +530,18 @@ _Avoid_: invoice, receipt, statement, ticket
 El idioma en que se escribe la documentación funcional y técnica del producto, `docs/product/` y las definiciones de `CONTEXT.md` incluidas: español rioplatense, con identificadores, nombres de clases, nombres UML, términos del glosario y palabras de pantalla en inglés. No es el Product language, que sigue en inglés, y no cambia nada de lo que muestra la app. En la app: no tiene palabra propia.
 _Avoid_: Product language, locale, idioma de la app, traducción
 
+## Planned in GH-1063 (not yet in the code)
+
+Estos términos no forman parte del glosario actual. El código, los tests y las pantallas conservan los términos actuales hasta que se entregue la parte que registra un Deposit; la definición de On-the-spot payment de arriba no cambia hasta entonces. Cada línea da el término y el ADR que lo decide.
+
+**Deposit**:
+Un On-the-spot payment parcial: un monto mayor que $0 y menor que el total de la Sale, con uno de los Payment methods del Business, que salda solo su propia Sale. Existe solo como el de un Order. El Settlement arranca esa Sale en su total menos el Deposit; la cuenta del Customer la muestra con su total completo seguida de una fila de Deposit. Decidido en docs/adr/20261125-an-on-the-spot-payment-may-be-partial-only-as-an-orders-deposit-and-settlement-starts-its-sale-at-total-minus-it.md.
+_Avoid_: down payment, advance, anticipo
+
+**Order**:
+Un pedido de un Customer que se registra como una Sale y puede llevar un Deposit. Decidido en docs/adr/20261125-an-on-the-spot-payment-may-be-partial-only-as-an-orders-deposit-and-settlement-starts-its-sale-at-total-minus-it.md.
+_Avoid_: reservation, preorder
+
 ## Planned in GH-318 (not yet in the code)
 
 Estos términos no forman parte del glosario actual. El código, los tests y las pantallas conservan los términos actuales hasta que se entregue la parte nombrada en cada línea; solo esa parte pasa su término al glosario propiamente dicho y corrige la definición que reemplaza. Cada línea da el término, el ADR que lo decide y la parte a cargo, nombrada por capacidad.
@@ -621,7 +633,7 @@ Las reglas de redacción del texto que la app muestra en pantalla: límites de l
 _Avoid_: style guide, copy guide, UI guidelines
 
 **New sale suggestions**:
-Los ids que la lectura de ventas le ofrece a New sale para acortar elecciones: hasta 8 Customers a los que se les vendió más recientemente, hasta 8 Products más vendidos en los 30 días que terminan en la fecha de la venta (sin Gifts ni Archived products) y el Payment method de la última Sale pagada en el momento, o ninguno si ese medio está archivado. Solo acortan elecciones: nunca fijan un precio, un monto ni una cantidad, y salen solo del propio Business. En la app: todavía no tiene palabra propia.
+Los ids que la lectura de ventas le ofrece a New sale para acortar elecciones: hasta 8 Customers a los que se les vendió más recientemente, hasta 8 Products más vendidos en los 30 días que terminan en la fecha de la venta (sin Gifts ni Archived products) y el Payment method de la última Sale pagada por completo en el momento (su On-the-spot payment igual a sus líneas más el Shipping charged, así que un pago parcial en el momento nunca cuenta), o ninguno si ese medio está archivado. Solo acortan elecciones: nunca fijan un precio, un monto ni una cantidad, y salen solo del propio Business.
 _Avoid_: recommendations, favorites, shortcuts, defaults, quick picks
 
 **So far**:
@@ -655,3 +667,7 @@ _Avoid_: refund, Credit, vuelto, balance, difference
 **Undo**:
 Eliminar con un toque, sin confirmación, la última Sale guardada desde New sale, durante los 5 segundos de su aviso "Sale to {name} saved". Es la misma eliminación que se hace desde el detalle de la Sale, y siempre muestra cómo terminó; un Home que ya está en pantalla conserva sus cifras. _In the app_: Undo.
 _Avoid_: revert, rollback, cancel sale, void, anular, deshacer venta
+
+**Recorder**:
+El User que registró un Payment, guardado como sus iniciales copiadas al registrarlo (la marca de quien registró, docs/product/initials.md) junto con una referencia al User que se anula cuando el User se va, mientras que las iniciales quedan. En el código es el valor `Recorder` (`app_user_id`, `initials`) que da `CurrentRecorder` a partir de la Session; todavía ningún router lo usa ni ninguna pantalla lo muestra (partes posteriores de GH-1057). En la app: todavía no tiene palabra propia.
+_Avoid_: author, creator, cashier, collector, owner, recorded by user

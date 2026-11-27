@@ -9,11 +9,15 @@
  * index re-renders with the old location and a bare `<Navigate replace>` would overwrite the
  * entry the tap just pushed. So the redirect runs from an effect that first checks the
  * browser's history is still on the entry this index rendered for (`isStillCurrent`).
+ *
+ * The redirect keeps every key of the entry's own history state (the phone Products tab's
+ * segment among them) and only adds the followed-redirect marker, so going back to a phone
+ * width still finds the segment the seller chose. This file never reads that key itself.
  */
 
 import { useEffect } from 'react'
 import { useLocation, useNavigate } from 'react-router'
-import { FOLLOWED_REDIRECT } from '../../flash/flashReducer'
+import { followedRedirectState } from '../../flash/flashReducer'
 import { VARIETY, pathTo } from '../../routes'
 import { useViewport } from '../../shell/useViewport'
 import Variedades from '../Variedades'
@@ -29,7 +33,7 @@ export default function VarietiesIndex() {
   useEffect(() => {
     if (!computer || selected === null) return
     if (!isStillCurrent(location, window.history.state)) return
-    void navigate(pathTo(VARIETY, { id: selected }), { replace: true, state: FOLLOWED_REDIRECT })
+    void navigate(pathTo(VARIETY, { id: selected }), { replace: true, state: followedRedirectState(location.state) })
   }, [computer, selected, location, navigate])
 
   if (!computer) return <Variedades />

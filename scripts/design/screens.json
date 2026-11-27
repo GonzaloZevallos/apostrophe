@@ -194,7 +194,7 @@
       "steps": [{ "offline": true }, { "wait": "Offline: check your internet and try again." }] },
     { "screen": "EstadosGone", "design": "Estados", "route": "/sales/999999", "path": "/sales/999999" },
     { "screen": "EstadosConfirmar", "design": "Estados", "section": "Antes de borrar", "route": "/sales/{owing_sale}", "path": "/sales/{owing_sale}",
-      "steps": [{ "press": "Delete sale" }] }
+      "steps": [{ "press": "Void" }] }
 ,
     { "screen": "VariedadDetalleOscuro", "design_viewport": [414, 844], "design": "VariedadDetalle", "route": "/varieties/{low}", "path": "/varieties/{low}", "tema": "oscuro" },
     { "screen": "ArchivadasOscuro", "design": "Archivadas", "route": "/varieties/archived", "path": "/varieties/archived", "tema": "oscuro" },
@@ -249,6 +249,8 @@
     {"screen": "PedidoNuevoCompuOscuro", "route": null, "path": "/orders/new", "tema": "oscuro", "viewport": [1280, 920]},
     { "screen": "Productos", "route": "/varieties", "path": "/varieties", "design_viewport": [414, 844] },
     { "screen": "ProductosOscuro", "route": "/varieties", "path": "/varieties", "tema": "oscuro", "design_viewport": [414, 844] },
+    { "screen": "ProductosStock", "design": "Productos", "route": "/varieties", "path": "/varieties", "design_viewport": [414, 844], "walked_as": "products/stock", "steps": [{"click": "Stock"}, {"wait": "Stock entry"}] },
+    { "screen": "ProductosStockOscuro", "design": "ProductosOscuro", "route": "/varieties", "path": "/varieties", "tema": "oscuro", "design_viewport": [414, 844], "walked_as": "products/stock", "steps": [{"click": "Stock"}, {"wait": "Stock entry"}] },
     { "screen": "ProductosCompu", "route": null, "path": "/products", "viewport": [1280, 920] },
     { "screen": "ProductosCompuOscuro", "route": null, "path": "/products", "tema": "oscuro", "viewport": [1280, 920] },
     { "screen": "ProductoDetalle", "route": null, "path": "/products/detail" },

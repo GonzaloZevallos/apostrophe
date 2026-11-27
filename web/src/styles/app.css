@@ -2406,6 +2406,29 @@ a.ajustes-tema__opcion {
   gap: 10px;
 }
 
+/* The bottom row of the sale detail: one column per button ("Void" alone today; "Edit sale"
+ * (issue 561) goes in before it), each taking an equal share of the row. */
+.venta-detalle__botones {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--espacio-sm);
+}
+
+.venta-detalle__botones .boton {
+  color: var(--negativo);
+  min-height: var(--alto-tocable);
+}
+
+/* No tap delay and no text selection on the sale detail's Void button and its confirm dialog.
+ * Scoped to `.venta-detalle`, not on `.boton` or `.confirmacion`, so no other screen's listed
+ * touch-action offender changes. */
+.venta-detalle .venta-detalle__botones .boton,
+.venta-detalle > .confirmacion button {
+  touch-action: manipulation;
+  user-select: none;
+}
+
 /* The sale bill's own wrapper (`SaleBillButton`): it lays its children out as the actions row
  * does, and its Share/Copy takes no tap delay or double-tap zoom. Scoped here, not on `.boton`,
  * so no other screen's listed touch-action offender changes. */
@@ -5442,6 +5465,34 @@ a.ajustes-tema__opcion {
   font-size: 20px;
 }
 
+/* A line's name and price are one tappable `Boton` row beside the stepper, with no mark of their own:
+ * reshaped here into a side-by-side, at least 44 px target that keeps the name's ellipsis. */
+.nv-productos__abrir {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.nv-productos__abrir .boton--fila {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  padding: 0;
+  border-bottom: 0;
+}
+
+.nv-productos__precio {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.nv-productos__precio--sin {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+}
+
 .nv-productos__paso-vacio {
   width: var(--alto-tocable);
   height: var(--alto-tocable);
@@ -5615,6 +5666,52 @@ a.ajustes-tema__opcion {
   max-width: var(--owed-figure-w);
 }
 /* ===== end Owed summary ===== */
+
+/* `DateRow`: one row of at least 44 px, the label and the day. The native date input is transparent and
+ * covers the whole row, so the tap lands on it (never `pointer-events: none`); 16 px keeps the phone from
+ * zooming on focus. The row's pressed cue is its fill alone. */
+.date-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  box-sizing: border-box;
+  padding: 0 var(--espacio-lg);
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+  color: var(--tinta);
+  font-size: 16px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.date-row:active {
+  background: var(--linea);
+  transition: none;
+}
+
+.date-row__label {
+  color: var(--tinta2);
+}
+
+.date-row__value {
+  color: var(--tinta);
+}
+
+.date-row__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+  font-size: 16px;
+}
 
 /* pressed */
 /* The pressed state (GH-77, GH-102): of every control a finger can tap, from tokens only.

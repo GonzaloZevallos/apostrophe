@@ -31,7 +31,21 @@ export function emptyState(key: EmptyStatesKey, args?: Args): string {
   return resolveKey(ENGLISH_STATIC, key, args)
 }
 
+type SalesKey = Extract<CopyKey, `sales:${string}`>
+
+/** The English text of a `sales:` key, `{{name}}` filled from `args`. */
+export function sales(key: SalesKey, args?: Args): string {
+  return resolveKey(ENGLISH_STATIC, key, args)
+}
+
 /** The English text of a refusal. */
 export function refusal(refused: Refusal): string {
   return resolveKey(ENGLISH_STATIC, refused.key)
+}
+
+type ProductsKey = Extract<CopyKey, `products:${string}`>
+
+/** The English text of a `products:` key (the phone Products segments). */
+export function products(key: ProductsKey): string {
+  return resolveKey(ENGLISH_STATIC, key)
 }

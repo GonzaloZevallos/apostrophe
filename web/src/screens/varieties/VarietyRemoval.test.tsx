@@ -18,6 +18,7 @@ import FlashProvider from '../../flash/FlashProvider'
 import { VARIETIES, VARIETY, pathTo, relative } from '../../routes'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
+import { readSegment, withSegment } from './productsSegment'
 import ContentArea from '../../components/ContentArea'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
@@ -76,9 +77,11 @@ interface Options {
   /** The list the left pane would have cached, as `GET /api/products` answered it. */
   list?: unknown[]
   computer?: boolean
+  /** The state of the Products entry under the page: the segment the seller left it on. */
+  listState?: unknown
 }
 
-function renderPage({ removal = 'archive', grams = 12, overrides = {}, list, computer = false }: Options = {}) {
+function renderPage({ removal = 'archive', grams = 12, overrides = {}, list, computer = false, listState }: Options = {}) {
   setComputer(computer)
   const answers = { ...defaults(removal, grams), ...overrides }
   const fetchMock = vi.fn((url: string, init?: RequestInit) => {
@@ -109,7 +112,7 @@ function renderPage({ removal = 'archive', grams = 12, overrides = {}, list, com
         ],
       },
     ],
-    { initialEntries: [VARIETIES, pathTo(VARIETY, { id: 2 })], initialIndex: 1 },
+    { initialEntries: [{ pathname: VARIETIES, state: listState }, pathTo(VARIETY, { id: 2 })], initialIndex: 1 },
   )
   render(<RouterProvider router={router} />)
   return { router, fetchMock, queryClient }
@@ -233,6 +236,22 @@ describe('archiving', () => {
     expect(await screen.findByText('Products screen')).toBeInTheDocument()
     expect(await screen.findByText('Product archived')).toBeInTheDocument()
     expect(writes(fetchMock)).toEqual(['POST /api/products/2/archive'])
+  })
+})
+
+describe('leaving the page by Delete from the Stock segment', () => {
+  test.each([
+    ['archives', 'archive', 'Archive product', 'Yes, archive it', { 'POST /api/products/2/archive': () => json(200, {}) }],
+    ['deletes', 'delete', 'Delete product', 'Yes, delete it', { 'DELETE /api/products/2': () => new Response(null, { status: 204 }) }],
+  ] as const)('confirming it %s and lands on Products opened on Catalog', async (_verb, removal, trigger, confirm, overrides) => {
+    const user = userEvent.setup()
+    const { router } = renderPage({ removal, overrides, listState: withSegment(null, 'stock') })
+    await user.click(await screen.findByRole('button', { name: trigger }))
+
+    await user.click(screen.getByRole('button', { name: confirm }))
+
+    expect(await screen.findByText('Products screen')).toBeInTheDocument()
+    expect(readSegment(router.state.location.state)).toBe('catalog')
   })
 })
 

@@ -15,7 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import ClassVar
 
-from app.shared.names import fold
+from app.shared.names import fold, name_matches
 from app.shared.phone_country import PhoneCountry, PhoneCountryRule, grouped, listed_country_of
 
 NAME_MAX_LENGTH = 60
@@ -287,7 +287,7 @@ class Customer:
         stripped = query.strip()
         if not stripped:
             return True
-        if fold(stripped) in fold(self.name.value):
+        if name_matches(self.name.value, stripped):
             return True
         if self.phone is None:
             return False

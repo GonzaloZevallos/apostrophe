@@ -1,7 +1,7 @@
 /** Sales and collections (`sales.md`, `payments.md`): the forms, sheets and dialogs the walk visits. Nothing here reaches the backend: a save is answered by its stub. */
 
 import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
-import { common, emptyState } from './copy.ts'
+import { common, emptyState, sales } from './copy.ts'
 import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
@@ -71,6 +71,7 @@ interface StubSale {
   still_owing: boolean
   payment_state: 'paid' | 'unpaid' | 'part_paid' | null
   still_owed: number | null
+  payment_method: { id: number; name: string; icon: string } | null
 }
 
 /** One ordinary line every stub sale below carries. */
@@ -98,6 +99,7 @@ export const UNKNOWN_PAYMENT_ROW = {
   still_owing: true,
   payment_state: null,
   still_owed: null,
+  payment_method: null,
 } satisfies StubSale
 
 /** `GET /sales` for the unknown-payment state: a paid, an unpaid, a part-paid and an unknown-payment sale, each for its own customer. */
@@ -115,6 +117,7 @@ export const UNKNOWN_PAYMENT_SALES = [
     still_owing: false,
     payment_state: 'paid',
     still_owed: 0,
+    payment_method: { id: 1, name: 'Cash', icon: 'banknote' },
   },
   {
     id: 9002,
@@ -129,6 +132,7 @@ export const UNKNOWN_PAYMENT_SALES = [
     still_owing: true,
     payment_state: 'unpaid',
     still_owed: 10000,
+    payment_method: null,
   },
   {
     id: 9003,
@@ -143,6 +147,7 @@ export const UNKNOWN_PAYMENT_SALES = [
     still_owing: true,
     payment_state: 'part_paid',
     still_owed: 4000,
+    payment_method: null,
   },
   UNKNOWN_PAYMENT_ROW,
 ] satisfies readonly StubSale[]
@@ -343,8 +348,8 @@ export const SALES_STATES: readonly WalkState[] = [
   {
     screen: 'VentaBorrar',
     route: SALE.replace(':id', '{owing_sale}'),
-    steps: [{ click: SALES_TEXT.deleteSale }],
-    visible: common('common:yesDelete'),
+    steps: [{ click: sales('sales:detail.void') }],
+    visible: sales('sales:detail.yesVoid'),
   },
   {
     screen: 'CobroDesdeClientes',

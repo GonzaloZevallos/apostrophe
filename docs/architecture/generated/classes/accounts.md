@@ -40,6 +40,8 @@ classDiagram
   }
   class ports {
   }
+  class recorder {
+  }
   class reset_link {
   }
   class reset_password {
@@ -61,6 +63,7 @@ classDiagram
   deps --> address
   deps --> password
   deps --> ports
+  deps --> recorder
   deps --> session_token
   deps --> sign_in
   deps --> sql_accounts
@@ -78,6 +81,7 @@ classDiagram
   onboarding_facts --> tables
   ports --> account
   ports --> invitation
+  recorder --> account
   reset_password --> account
   reset_password --> invitation
   reset_password --> password

@@ -141,7 +141,7 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
   await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: '+ Stock entry' }).click()
+  await openStockSegment(page); await page.getByRole('link', { name: '+ Stock entry' }).click()
   await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')
   await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill('20000')
@@ -166,4 +166,5 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
 })
 
 import { pickStockVariety } from './helpers/stockVariety.js'
+import { openStockSegment } from './helpers/stockSegment.js'
 import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'
