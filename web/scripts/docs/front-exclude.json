@@ -44,5 +44,6 @@
   "^src/screens/ventas/renderNuevaVentaSheet\\.tsx$",
   "^src/screens/settings/settingsSearch\\.ts$",
   "^src/screens/settings/useSettingsSearchEntry\\.ts$",
-  "^src/components/DateRow\\.tsx$"
+  "^src/components/DateRow\\.tsx$",
+  "^src/screens/expenses/expensesSummary\\.ts$"
 ]
