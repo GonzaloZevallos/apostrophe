@@ -12,6 +12,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import { SETTINGS_WITHDRAWAL_REASONS } from '../../routes'
 import { SETTINGS_TEXT } from '../../copy/settings'
+import { testT } from '../../i18n/testing'
 import WithdrawalReasons from './WithdrawalReasons'
 import type { ReactElement, ReactNode } from 'react'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
@@ -195,4 +196,27 @@ test.each([
   expect(screen.getByRole('alertdialog')).toHaveAccessibleName('Delete the reason Marketing?')
   await userEvent.click(within(screen.getByRole('alertdialog')).getByRole('button', { name: SETTINGS_TEXT.delete }))
   expect(await screen.findByText(text)).toBeVisible()
+})
+
+test('a delete the network drops shows the offline notice with both lines, and the next move clears it', async () => {
+  const served = [...LIST]
+  renderScreen(async (url, init) => {
+    if (url === '/api/withdrawal-reasons/1' && init?.method === 'DELETE') throw new TypeError('offline')
+    if (url === '/api/withdrawal-reasons/1/move' && init?.method === 'POST') {
+      served.reverse()
+      return jsonResponse(200, served)
+    }
+    throw new Error(`unexpected ${url}`)
+  }, served)
+
+  await userEvent.click((await screen.findAllByRole('button', { name: SETTINGS_TEXT.delete }))[0]!)
+  await userEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: SETTINGS_TEXT.delete }))
+  const status = await screen.findByRole('status')
+  expect(within(status).getByText(testT('common:offline'))).toBeVisible()
+  expect(within(status).getByText(testT('common:offlineDetail'))).toBeVisible()
+  expect(screen.queryByRole('alert')).toBeNull()
+
+  await userEvent.click(screen.getByRole('button', { name: 'Move Marketing down' }))
+  await waitFor(() => expect(screen.queryByText(testT('common:offlineDetail'))).toBeNull())
+  expect(screen.queryByText(testT('common:offline'))).toBeNull()
 })

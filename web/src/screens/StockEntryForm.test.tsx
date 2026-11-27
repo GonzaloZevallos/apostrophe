@@ -15,6 +15,7 @@ import { afterEach, expect, test, vi } from 'vitest'
 import { SheetRouterProvider, SheetStackProvider } from '../components/useSheetStack'
 import type { StockEntry } from '../api/stock'
 import { HOME } from '../routes'
+import { testT } from '../i18n/testing'
 import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
 import StockEntryForm, { type StockEntryFormProps } from './StockEntryForm'
 import type { Variety } from './Variedades'
@@ -250,4 +251,42 @@ test("an edit preselects the product whose id is the entry's product_id", async 
 
   const field = await screen.findByRole('button', { name: /^Product/ })
   await waitFor(() => expect(field).toHaveTextContent(VARIETIES[1]!.name))
+})
+
+test('when the archived list cannot be reached, the product button is named by the offline retry key and a tap asks again', async () => {
+  const entry = {
+    id: 10,
+    date: '2026-10-03',
+    product_id: 99,
+    origin: 'purchase',
+    quantity: 30,
+    total_cost: null,
+    cost_per_gram: null,
+    note: null,
+  } satisfies StockEntry
+  const archivedReads = vi.fn()
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: string | URL | Request) => {
+      const url = typeof input === 'string' ? input : input.toString()
+      if (url === '/api/products') return Promise.resolve(jsonResponse(200, VARIETIES))
+      if (url === '/api/products?archived=true') {
+        archivedReads()
+        return archivedReads.mock.calls.length === 1
+          ? Promise.reject(new TypeError('offline'))
+          : Promise.resolve(jsonResponse(200, [{ id: 99, name: 'Old Gelato', archived: true, current_price: null }]))
+      }
+      if (url === '/stock') return Promise.resolve(jsonResponse(200, { ...STOCK_VIEW, entries: [entry] }))
+      return Promise.resolve(jsonResponse(500, {}))
+    }),
+  )
+  renderInStack(<StockEntryForm mode="editar" initial={entry} today="2026-10-03" onSaved={vi.fn()} />)
+
+  const retry = await screen.findByRole('button', { name: testT('common:offlineRetry') })
+  expect(archivedReads).toHaveBeenCalledTimes(1)
+  await userEvent.click(retry)
+
+  await waitFor(() => expect(archivedReads).toHaveBeenCalledTimes(2))
+  expect(await screen.findByRole('button', { name: /^Product/ })).toHaveTextContent('Old Gelato')
+  expect(screen.queryByRole('button', { name: testT('common:offlineRetry') })).toBeNull()
 })

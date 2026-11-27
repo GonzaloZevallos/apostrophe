@@ -1,7 +1,7 @@
 /**
  * The fixed copy of `Estados` ("Offline" and the generic server-error retry), registered
  * for `copy/copyLimits.test.ts`. `SinConexion` and `ErrorGenerico` render these same
- * bindings. "Offline" is one sentence and promises no automatic retry: the app performs
+ * bindings. "Offline" is a title and one body line, and promises no automatic retry: the app performs
  * none (`queryClient.ts`).
  *
  * The texts live in `locales/en/common.json` (ADR-0050). `COMMON_TEXT` and the two messages
@@ -20,12 +20,14 @@ export const NAMESPACE = 'common'
 export const MOVED_TO_KEYS = ['COMMON_TEXT', 'SIN_CONEXION_MENSAJE', 'ERROR_GENERICO_MENSAJE'] as const
 
 /** @deprecated read `common:offline` */
-export const SIN_CONEXION_MENSAJE = 'Offline: check your internet and try again.'
+export const SIN_CONEXION_MENSAJE = "You're offline"
 /** @deprecated read `common:genericError` */
 export const ERROR_GENERICO_MENSAJE = 'Something went wrong. Try again.'
 
 export const LIMITED_COPY: readonly KeyedCopy[] = [
   { kind: 'notice', key: 'common:offline' },
+  { kind: 'notice', key: 'common:offlineDetail' },
+  { kind: 'notice', key: 'common:offlineRetry' },
   { kind: 'notice', key: 'common:genericError' },
   { kind: 'notice', key: 'common:saleSavedTo' },
   { kind: 'notice', key: 'common:undoSaleOffline' },

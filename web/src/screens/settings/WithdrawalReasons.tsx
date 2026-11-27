@@ -32,7 +32,7 @@ import Loading from '../../components/Loading'
 import Sheet, { SheetActions } from '../../components/Sheet'
 import SinConexion from '../../components/SinConexion'
 import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
-import { COMMON_TEXT, SIN_CONEXION_MENSAJE } from '../../copy/common'
+import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE, SETTINGS_TEXT } from '../../copy/settings'
 import { useViewport } from '../../shell/useViewport'
 import SettingsGroup from './SettingsGroup'
@@ -41,6 +41,8 @@ import SettingsGroup from './SettingsGroup'
 type Target = 'add' | WithdrawalReasonItem
 
 type ReasonToast = typeof SETTINGS_TEXT.reasonSaved | typeof SETTINGS_TEXT.reasonDeleted
+/** What the delete row shows after a failure: the offline notice, or one line of text. */
+type InlineNotice = { kind: 'offline' } | { kind: 'text'; text: string }
 
 const NAME_OVERRIDES: Partial<Record<RefusalCode, string>> = {
   'stock.withdrawal_reason_name_blank': SETTINGS_TEXT.reasonNameBlank,
@@ -74,7 +76,7 @@ function Reasons() {
   const sheet = useSheet(1)
   const [target, setTarget] = useState<Target | null>(null)
   const [deleting, setDeleting] = useState<WithdrawalReasonItem | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const [notice, setNotice] = useState<InlineNotice | null>(null)
   const [moveFailed, setMoveFailed] = useState(false)
   const [toast, setToast] = useState<ReasonToast | null>(null)
   const [goneNotice, setGoneNotice] = useState(false)
@@ -146,9 +148,9 @@ function Reasons() {
         refresh()
         flashGone()
       } else if (caught instanceof ApiError) {
-        setNotice(resolveOverride(DELETE_OVERRIDES, caught.code) ?? ERROR_GENERICO_MENSAJE)
+        setNotice({ kind: 'text', text: resolveOverride(DELETE_OVERRIDES, caught.code) ?? ERROR_GENERICO_MENSAJE })
       } else {
-        setNotice(caught instanceof NetworkError ? SIN_CONEXION_MENSAJE : ERROR_GENERICO_MENSAJE)
+        setNotice(caught instanceof NetworkError ? { kind: 'offline' } : { kind: 'text', text: ERROR_GENERICO_MENSAJE })
       }
     } finally {
       setBusy(false)
@@ -206,10 +208,11 @@ function Reasons() {
                 {SETTINGS_TEXT.reasonMoveFailed}
               </span>
             )}
-            {notice !== null && (
+            {notice?.kind === 'offline' && <SinConexion />}
+            {notice?.kind === 'text' && (
               <div className="motivos__aviso" role="alert">
                 <Icono nombre="atencion" />
-                <span>{notice}</span>
+                <span>{notice.text}</span>
               </div>
             )}
             <Boton variant="secondary" icon="agregar" onClick={() => open('add')}>

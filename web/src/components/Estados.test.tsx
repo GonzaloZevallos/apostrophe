@@ -1,12 +1,13 @@
 import { SALES } from '../routes'
 import { GONE_NOTICE } from '../api/refusals'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { expect, test } from 'vitest'
 import ErrorGenerico from './ErrorGenerico'
 import GoneScreen from './GoneScreen'
 import Notice from './Notice'
 import SinConexion from './SinConexion'
+import { testT } from '../i18n/testing'
 
 test('the gone screen says one fixed line and offers one way back, with no data', () => {
   const { container } = render(
@@ -34,13 +35,16 @@ test('the gone screen builds its way back from the label it is given', () => {
   expect(screen.getByRole('link')).toHaveTextContent('Back to Customers')
 })
 
-test('"Sin conexión" is announced as one sentence in a status, promises no retry, and has nothing to press', () => {
+test('"Sin conexión" is announced in a status as a title and one body line, promises no retry, and has nothing to press', () => {
   render(<SinConexion />)
 
   const status = screen.getByRole('status')
-  expect(status).toHaveTextContent('Offline: check your internet and try again.')
+  const title = testT('common:offline')
+  const detail = testT('common:offlineDetail')
+  expect(within(status).getByText(title)).toBeVisible()
+  expect(within(status).getByText(detail)).toBeVisible()
+  expect(status).toHaveTextContent(`${title}${detail}`)
   expect(status.textContent).not.toMatch(/retry|only|automatic/i)
-  expect(status.querySelectorAll('.aviso-ambar__detalle')).toHaveLength(0)
   expect(screen.queryAllByRole('button')).toHaveLength(0)
 })
 

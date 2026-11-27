@@ -197,7 +197,7 @@
   {"source":"common.ts:COMMON_TEXT.yourAccount","args":null,"text":"Your account"},
   {"source":"common.ts:ERROR_GENERICO_MENSAJE","args":null,"text":"Something went wrong. Try again."},
   {"source":"common.ts:LANGUAGE","args":null,"text":"en"},
-  {"source":"common.ts:SIN_CONEXION_MENSAJE","args":null,"text":"Offline: check your internet and try again."},
+  {"source":"common.ts:SIN_CONEXION_MENSAJE","args":null,"text":"You're offline"},
   {"source":"customers.ts:CUSTOMERS_TEXT.accountHeading","args":null,"text":"Account · running balance"},
   {"source":"customers.ts:CUSTOMERS_TEXT.balanceAmount","args":["$ 11.000"],"text":"balance $ 11.000"},
   {"source":"customers.ts:CUSTOMERS_TEXT.credit","args":null,"text":"Credit "},

@@ -82,7 +82,7 @@ Criterios de éxito:
 5. Se siente como una app de teléfono.
    - Está en la pantalla de inicio con su propio nombre e ícono. En iOS se instala por la red de casa. En Android es un acceso directo en la pantalla de inicio ahí, y una instalación completa en la instalación publicada con TLS.
    - Sigue por defecto la configuración clara u oscura del teléfono; un Light o Dark elegido en ese dispositivo gana sobre el teléfono.
-   - Dice "No connection" cuando se cae la red.
+   - Dice "You're offline" cuando se cae la red.
    - Ningún estado se distingue solo por color: un signo, una flecha o una palabra en cada suba, pérdida, deuda o estado; las series de los gráficos rotuladas directamente.
    - Instalada, llena la pantalla y responde como una app de teléfono (criterios 33–36).
    - Cada pantalla en anchos de teléfono (por debajo del corte de computadora de 900 px) cumple el estándar del teléfono, escrito en CODING_STANDARDS §10 "Phone" y en "En el celular" del README de diseño, y verificado por `web/e2e/mobile.spec.ts` (criterios 37–41).
@@ -141,7 +141,7 @@ Criterios de éxito, cambiar y resetear una contraseña:
 Criterios de éxito, las pantallas para entrar y los estados compartidos rediseñados (GH-49):
 
 27. **Entrar es rápido.** Desde el teléfono, quien vende abre un link de Invitation, o un Reset link, y llega a Home con la sesión iniciada en menos de un minuto, e inicia sesión desde la pantalla de inicio de sesión en pocos segundos. No aparece ningún paso que el diseño no dibuje.
-28. **Cada estado se distingue por palabra y forma, nunca solo por color**: el mensaje del freno, "This invitation no longer works", "This link no longer works. Ask whoever sent it for a new one.", "No connection", vacío, cargando, el reintento genérico ante un error del servidor y "That is gone.". Todos los textos siguen el Product language (inglés, desde el Copy module); el español es solo el Documentation language. (Corregido en GH-521: decía "Rioplatense Spanish with vos", un resto de antes de la decisión del Product language.)
+28. **Cada estado se distingue por palabra y forma, nunca solo por color**: el mensaje del freno, "This invitation no longer works", "This link no longer works. Ask whoever sent it for a new one.", "You're offline", vacío, cargando, el reintento genérico ante un error del servidor y "That is gone.". Todos los textos siguen el Product language (inglés, desde el Copy module); el español es solo el Documentation language. (Corregido en GH-521: decía "Rioplatense Spanish with vos", un resto de antes de la decisión del Product language.)
 29. **El teléfono y la computadora coinciden con el diseño.** La pantalla de inicio de sesión (`Entrar`), la de Business nuevo (`NegocioNuevo`), la de Invitation (`Invitacion`), la de reseteo y los estados compartidos (`Estados`) coinciden con `docs/product/design-system/pantallas/` en ambos, revisado a ojo; `scripts/design/compare.sh` corre antes y después.
 30. **El aspecto no revela nada nuevo.**
     - Ninguna pantalla ni estado dice si un email tiene un User, qué freno saltó ni cuántos intentos quedan.
@@ -383,7 +383,7 @@ Criterios de éxito, el test de seguridad de la cookie (seguimiento de GH-130):
   - Android recibe un acceso directo en la pantalla de inicio, porque los navegadores permiten un service worker y el aviso de instalación solo en un origen seguro;
   - la app no muestra ningún banner ni explicación de la diferencia.
 - **Instalación en la instalación publicada**, con el TLS de Render: se ofrece el aviso de instalación propio de Android cuando el navegador lo hace disponible. El manifest y el service worker que ya existen no necesitan más trabajo para eso.
-- **Sin red**: cuando una solicitud falla porque se cayó la red, la app abierta muestra "No connection" en cualquier origen. Esto no depende del service worker. La app no reintenta sola en segundo plano; la única excepción es la lista de Products de New sale, que tras un fallo vuelve a leer al reconectar o al volver a la app, sin botón (ADR 20261121, `sale-in-progress.md`).
+- **Sin red**: cuando una solicitud falla porque se cayó la red, la app abierta muestra "You're offline" y debajo "apostrophe needs a connection." en cualquier origen (`offline-notice.md`). Esto no depende del service worker. La app no reintenta sola en segundo plano; la única excepción es la lista de Products de New sale, que tras un fallo vuelve a leer al reconectar o al volver a la app, sin botón (ADR 20261121, `sale-in-progress.md`).
 - **Tema**: la app está en Automatic por defecto: sin nada guardado sigue en vivo la configuración clara u oscura del teléfono, y la vuelve a revisar cuando la persona vuelve a la app. Un Light o Dark guardado en ese dispositivo gana sobre el teléfono. El único lugar donde una persona elige es Settings → Appearance, Theme: Automatic, Light o Dark (navigation.md).
   - La regla es una: el atributo en `<html>` lleva el tema resuelto. Sin atributo significa claro, `data-tema="oscuro"` significa oscuro. No hay excepción por pantalla, ruta ni Session. El valor guardado es `claro` u `oscuro`; sin clave, cualquier otro valor o un error de almacenamiento es Automatic.
   - **La Theme choice se recuerda por dispositivo**:
@@ -499,7 +499,7 @@ Este archivo solo dice dónde se aplica y cómo se mantiene. No repite los requi
   - **Cobertura**:
     - cada ruta de `scripts/design/screens.json`;
     - cada formulario y Sheet, la Forgot sheet incluida, recorrida sin bloqueo (`EntrarOlvido`) y con el mensaje del freno visible (`EntrarFrenoOlvido`);
-    - los estados compartidos de `Estados`: el mensaje del freno, los dos textos de link muerto, "No connection", el reintento genérico, las dos formas de "That is gone." y la carga.
+    - los estados compartidos de `Estados`: el mensaje del freno, los dos textos de link muerto, "You're offline", el reintento genérico, las dos formas de "That is gone." y la carga.
 
     Una ruta del front que falta en `screens.json` lo hace fallar.
   - **Datos de prueba**: un nombre de 60 caracteres, y cifras de nueve dígitos ("$ 999.999.999", y "−$ 999.999.999" en **Profit** y **Cash**).
@@ -589,7 +589,7 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo renovado a partir del 
 - **Los estados vacíos** conservan la redacción fija propia de cada capacidad.
 - **Salir de un formulario o una Sheet** con cambios sin guardar pregunta antes de descartar, y uno sin tocar se cierra al instante (navigation.md). La pregunta de New sale es "Discard the sale?" (sales.md). La Forgot sheet no tiene nada que guardar, así que siempre se cierra al instante.
 - **Los rechazos** se muestran en línea y conservan lo tipeado. La única excepción: una contraseña actual incorrecta vacía "Current password".
-- **Sin red** muestra "No connection"; un error del servidor muestra un reintento genérico. Única excepción al reintento solo a pedido: la lista de Products de New sale vuelve a leer sola al reconectar o al volver a la app tras un fallo (`sale-in-progress.md`).
+- **Sin red** muestra "You're offline" y debajo "apostrophe needs a connection." (`offline-notice.md`); un error del servidor muestra un reintento genérico. Única excepción al reintento solo a pedido: la lista de Products de New sale vuelve a leer sola al reconectar o al volver a la app tras un fallo (`sale-in-progress.md`).
 - **Un registro que ya no está** responde 404 tanto si se borró, como si nunca existió o si pertenece a otro Business (ADR-0004). La app nunca dice quién lo borró ni que alguna vez existió.
   - **Guardar una edición, confirmar un borrado o deshacer** sobre un registro que ya no está:
     - el formulario o el diálogo se cierra y lo tipeado se descarta;
@@ -626,7 +626,7 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo renovado a partir del 
   - el manifest pasa el control de instalabilidad del navegador, corrido en `localhost`;
   - la instalación en un teléfono no se verifica automáticamente;
   - ambos temas se dibujan a partir de los tokens;
-  - un control sin conexión muestra "No connection";
+  - un control sin conexión muestra "You're offline";
   - ningún estado se distingue solo por color.
 - **Tema (criterios 23–26)**:
   - Automatic sigue al teléfono: una corrida e2e con el sistema emulado en oscuro (`emulateMedia({ colorScheme: 'dark' })`) y nada guardado pone `data-tema="oscuro"` y `theme-color` igual al `--papel` oscuro; un cambio de `emulateMedia` a claro quita el atributo y devuelve el meta a #f6f7f5, en vivo;
@@ -689,7 +689,7 @@ Estos estados los dibuja `Estados` (GH-49), con el estilo renovado a partir del 
   - ve el estado de link muerto para un link usado.
 - **Entrar, rediseñado (criterios 27–32)**:
   - rápido: desde un viewport de teléfono, la corrida de punta a punta por el front acepta una Invitation, completa un reseteo desde un link impreso e inicia sesión en la pantalla de inicio de sesión, y en cada caso llega a Home con la sesión iniciada (`web/e2e/passwords.spec.ts`); ningún test mide la duración de los links;
-  - estados: los tests del front muestran cada texto fijo (mensaje del freno, los dos textos de link muerto, "No connection", el reintento, las dos formas de "That is gone.", la carga); la forma y el color se revisan a ojo en ambos temas;
+  - estados: los tests del front muestran cada texto fijo (mensaje del freno, los dos textos de link muerto, "You're offline", el reintento, las dos formas de "That is gone.", la carga); la forma y el color se revisan a ojo en ambos temas;
   - la carga no es un dato: un test del front muestra que el estado de carga no tiene ningún dígito, símbolo de moneda ni cifra de relleno;
   - diseño:
     - `scripts/design/compare.sh` corre antes y después para la pantalla de inicio de sesión (`Entrar`), la de Business nuevo (`NegocioNuevo`), la de Invitation (`Invitacion`), `/reset/{token}` y los estados compartidos (`Estados`), con las comparaciones adjuntas al PR;

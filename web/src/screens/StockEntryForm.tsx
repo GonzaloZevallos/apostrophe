@@ -432,7 +432,7 @@ export default function StockEntryForm({
               <div className="campo">
                 <span className="campo__rotulo">{COMMON_TEXT.variety}</span>
                 <Boton variant="notice" onClick={() => void archivedQuery.refetch()}>
-                  {archivedQuery.error instanceof NetworkError ? t('common:offline') : t('common:genericError')}
+                  {archivedQuery.error instanceof NetworkError ? t('common:offlineRetry') : t('common:genericError')}
                 </Boton>
                 {varietyHelp}
               </div>

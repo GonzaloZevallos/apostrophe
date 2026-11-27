@@ -4,6 +4,7 @@
  * (`'pending'` stands for a Customer read in flight), a date control and a typed-quantity button.
  */
 
+import { testT } from '../../i18n/testing'
 import { focusManager, onlineManager, QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -465,7 +466,7 @@ test('a 500 on the Pricing settings shows the generic error too', async () => {
 test('a network failure shows the no-connection state, not busy', async () => {
   broken.set('products', 'network')
   renderList()
-  expect(await within(area()).findByRole('status')).toHaveTextContent('Offline: check your internet and try again.')
+  expect(await within(area()).findByRole('status')).toHaveTextContent(testT('common:offline'))
   expect(within(area()).queryByRole('alert')).toBeNull()
   expect(isBusy()).toBe(false)
   expect(within(area()).queryByRole('heading')).toBeNull()
@@ -611,7 +612,7 @@ test('a failed read that fails again on focus keeps the notice and asks once per
 test('an offline phone at mount shows no connection with no products request, and the list once it is back', async () => {
   onlineManager.setOnline(false)
   renderList()
-  expect(await within(area()).findByRole('status')).toHaveTextContent('Offline: check your internet and try again.')
+  expect(await within(area()).findByRole('status')).toHaveTextContent(testT('common:offline'))
   expect(isBusy()).toBe(false)
   expect(searched('/api/products')).toBe(0)
   act(() => onlineManager.setOnline(true))

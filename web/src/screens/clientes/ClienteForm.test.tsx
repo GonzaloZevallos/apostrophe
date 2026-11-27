@@ -5,6 +5,7 @@
  * (plan, "Gone records").
  */
 
+import { testT } from '../../i18n/testing'
 import { DETECTED_COUNTRY_BUTTON } from '../../mobile-standard/countryField.ts'
 import { CUSTOMER, CUSTOMERS, CUSTOMER_EDIT, CUSTOMER_NEW, LOGIN, pathTo, SETTINGS_CUSTOMER_TYPES } from '../../routes'
 import { useGoneNotice } from '../../components/goneExit'
@@ -763,7 +764,7 @@ test('after a failed load the field stays busy with the failure line, described 
   renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
   const user = userEvent.setup()
 
-  const line = await screen.findByText('Offline: check your internet and try again.')
+  const line = await screen.findByText(testT('common:offline'))
   const field = await typeField()
   expect(field).toBeDisabled()
   expect(screen.queryByText('No type')).not.toBeInTheDocument()
