@@ -12,7 +12,7 @@ from app.search.application.ports import CustomerHit, ProductHit
 from app.search.application.search import SearchResult
 
 
-class SaleOut(BaseModel):
+class SearchSaleOut(BaseModel):
     """Placeholder: the Sales group arrives in a later part, and its list is empty."""
 
 
@@ -38,14 +38,14 @@ class ProductHitOut(BaseModel):
 
 
 class SearchOut(BaseModel):
-    sales: list[SaleOut]
+    sales: list[SearchSaleOut]
     customers: list[CustomerHitOut]
     products: list[ProductHitOut]
 
     @classmethod
     def of(cls, result: SearchResult) -> SearchOut:
         return cls(
-            sales=[SaleOut() for _ in result.sales],
+            sales=[SearchSaleOut() for _ in result.sales],
             customers=[CustomerHitOut.of(h) for h in result.customers],
             products=[ProductHitOut.of(h) for h in result.products],
         )
