@@ -1,0 +1,69 @@
+/* The Sale detail's lines, shipping, total and note. Only the Product name truncates. Tokens only. */
+
+.sale-detail-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  padding: var(--espacio-lg);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+}
+
+.sale-detail-card__lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sale-detail-card__line {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  min-width: 0;
+  padding: var(--espacio-md) 0;
+  border-bottom: 1px solid var(--linea);
+}
+
+.sale-detail-card__line:last-child {
+  border-bottom: 0;
+}
+
+.sale-detail-card__name {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sale-detail-card__figure {
+  flex: none;
+  white-space: nowrap;
+}
+
+.sale-detail-card__line-total {
+  margin-left: auto;
+}
+
+.sale-detail-card__summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: var(--espacio-sm) var(--espacio-md);
+  margin: 0;
+}
+
+.sale-detail-card__summary dt,
+.sale-detail-card__summary dd {
+  margin: 0;
+}
+
+.sale-detail-card__summary dd {
+  justify-self: end;
+}
+
+.sale-detail-card__note {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
