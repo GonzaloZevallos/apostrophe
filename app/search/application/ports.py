@@ -1,6 +1,8 @@
 """What grouped search needs from its three groups, and the hits each answers.
 
-Every port receives the whole `SearchQuery` and never folds the text again.
+Every port receives the whole `SearchQuery`. An adapter never strips, folds or rewrites
+the text: it passes `query.q` to the shared rules (`Customer.matches`, `name_matches` and
+`search_order_key`).
 """
 
 from __future__ import annotations
@@ -9,7 +11,6 @@ from dataclasses import dataclass
 from typing import Protocol
 
 from app.search.domain.query import SearchQuery
-from app.shared.money import Money
 from app.shared.quantity import Quantity
 
 
@@ -17,7 +18,9 @@ from app.shared.quantity import Quantity
 class CustomerHit:
     id: int
     name: str
-    balance: Money
+    # In the unit of the business's decimals, exactly `CustomerBalance.balance`; signed, so
+    # a Credit is below 0. It is never a `Money`: that would read it at the wrong scale.
+    balance: int
 
 
 @dataclass(frozen=True)
