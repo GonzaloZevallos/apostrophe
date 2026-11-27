@@ -88,6 +88,8 @@ export const STATE_NAMES: readonly string[] = [
   'customer/search-no-match',
   'customer/search-cleared-to-all',
   'EntradasTodas',
+  'products/catalog',
+  'products/stock',
   'stock-entry/variety-selector-open',
   'new-sale/line-variety-selector-open',
   'new-sale/nothing-priced',

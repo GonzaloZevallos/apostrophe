@@ -1,6 +1,6 @@
 /**
  * Withdrawal reasons end to end, from a phone (GH-318 M2): a seller adds a reason in
- * Settings → Business → Withdrawal reasons, "Take from stock" offers it last with nothing
+ * Settings → Withdrawal reasons, "Take from stock" offers it last with nothing
  * preselected, she records a withdrawal with it, and Inicio's Semana shows that reason's
  * cost line. Through the built front alone, against the real backend.
  *
@@ -9,6 +9,7 @@
 
 import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'
 import { expect, test } from './fixtures.js'
+import { openStockSegment } from './helpers/stockSegment.js'
 import { expectToast } from './helpers/toast.js'
 import { pickStockVariety, pickWithdrawalReason, pickWithdrawalVariety } from './helpers/stockVariety.js'
 import { HOME, VARIETIES } from '../src/routes.js'
@@ -37,6 +38,7 @@ test('a seller adds a withdrawal reason, records a withdrawal with it and reads 
   await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.goto(VARIETIES)
+  await openStockSegment(page)
   await page.getByRole('link', { name: '+ Stock entry' }).click()
   await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')

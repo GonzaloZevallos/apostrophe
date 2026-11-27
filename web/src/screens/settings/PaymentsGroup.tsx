@@ -6,7 +6,7 @@
  * Each row also shows a count before its chevron, the length of the same list its subtitle joins ("0" and no subtitle
  * for no categories). Both exist only once their own read answered: no count and no subtitle while it is pending or
  * after it failed.
- * Each row sits under its own heading ("Payments", "Expenses"). The Withdrawal reasons row stays in Business (`docs/product/payment-methods.md`).
+ * Each row sits under its own heading ("Payments", "Expenses"). Withdrawal reasons is its own Settings row, not part of this group (`docs/product/payment-methods.md`).
  * After the `<nav>`, and outside it so it keeps its two rows, a text link "See this month's expenses" opens Expenses on
  * plain `/expenses` (no month: Expenses opens on the session's `me.today`). A link is text-only (ADR-0037), so no arrow.
  */

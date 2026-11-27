@@ -221,7 +221,8 @@ test.each([
 test.each([
   ['a root', HOME, true, true, false],
   ['a root: Análisis', ANALYSIS, true, true, false],
-  ['a card on the phone: Gastos', EXPENSES, true, true, true],
+  // Gastos draws its own back in its title row (`backInTitleRow`), so the shell draws none.
+  ['a card on the phone: Gastos', EXPENSES, true, true, false],
   ['a card: a sale', pathTo(SALE, { id: 7 }), true, true, true],
   ['a card: a customer', pathTo(CUSTOMER, { id: 3 }), true, true, true],
   // A variety's back names the loaded record, so it shows no arrow until its screen declares one.
@@ -495,9 +496,9 @@ test('Configuración\'s list opened directly reads "‹ Home" on the phone and o
   expect(screen.getByRole('button', { name: '‹ Home' })).toBeInTheDocument()
 })
 
-test('Gastos reads "‹ Analysis" on the phone and draws no back arrow on a computer', () => {
+test('the shell draws no back arrow for Gastos on the phone (its title row draws it) nor on a computer', () => {
   const phone = renderShell([EXPENSES])
-  expect(screen.getByRole('button', { name: '‹ Analysis' })).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: /^‹ / })).not.toBeInTheDocument()
   phone.unmount()
 
   renderShell([EXPENSES], { computer: true })

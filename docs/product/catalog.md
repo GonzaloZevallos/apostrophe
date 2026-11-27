@@ -110,7 +110,7 @@ Criterios de éxito:
 - **Frescura**: el texto se calcula en cada apertura a partir de los datos, las Pricing settings, el Shown language y el Money format tal como están. No se guarda nada, y la pantalla no se actualiza sola mientras está abierta. Disparan la Upkeep del Pinned catalog (pinned-catalog.md, stored-language.md, money.md):
   - un guardado de Prices que cambia cualquiera de los dos interruptores;
   - un cambio del Stored language;
-  - un cambio guardado del símbolo o de los decimales en Settings → Business → Currency and decimals.
+  - un cambio guardado del símbolo o de los decimales en Settings → Currency and decimals.
 - **Cuando nada califica**: no hay texto, y la pantalla dice que hoy no hay nada en el Catalog. El Pinned catalog envía en cambio su propio mensaje vacío (pinned-catalog.md).
 
 ### Marcadores de negrita

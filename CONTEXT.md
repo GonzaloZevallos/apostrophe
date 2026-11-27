@@ -419,7 +419,7 @@ Cuáles de Bulk price y Customer types usa un Business: dos interruptores indepe
 _Avoid_: price config, pricing mode, plan, tariff settings
 
 **Money format**:
-El símbolo de la moneda (de 1 a 4 code points de caracteres visibles, sin dos asteriscos seguidos, siempre antes del monto) y los decimales (de 0 a 2) con que un Business muestra y acepta su dinero, "$" y 0 por defecto. Cualquier User cambia el símbolo en Settings → Business → Currency and decimals; subir los decimales por encima de 0 llama al rescale cuando la escala todavía es 0, bajarlos se rechaza mientras algún monto registrado tenga más, y un cambio nunca cambia el valor de un monto. Se guarda en una fila de money_format por Business, junto con la Money scale (ADR-0058).
+El símbolo de la moneda (de 1 a 4 code points de caracteres visibles, sin dos asteriscos seguidos, siempre antes del monto) y los decimales (de 0 a 2) con que un Business muestra y acepta su dinero, "$" y 0 por defecto. Cualquier User cambia el símbolo en Settings → Currency and decimals; subir los decimales por encima de 0 llama al rescale cuando la escala todavía es 0, bajarlos se rechaza mientras algún monto registrado tenga más, y un cambio nunca cambia el valor de un monto. Se guarda en una fila de money_format por Business, junto con la Money scale (ADR-0058).
 _Avoid_: currency settings, locale, number format
 
 **Money scale**:
@@ -593,7 +593,7 @@ Un Product que quien vende eligió dejar fuera del Catalog, sin importar su prec
 _Avoid_: hidden variety, inactive, disabled, archived
 
 **Withdrawal reason**:
-Uno de los motivos de la lista propia de un Business bajo el que se registra cada Stock withdrawal, con un nombre único en el Business (sin importar mayúsculas, minúsculas ni espacios, de hasta 60 caracteres) y una posición. Un Business nuevo arranca con "Marketing" y "Own use" en su Stored language, que un cambio de idioma nunca renombra. La lista se edita solo en Settings → Business → Withdrawal reasons, nunca queda vacía, y un motivo con retiros no se puede eliminar; nunca registra Stock perdido, que es un Adjustment negativo. _In the app_: Withdrawal reasons (la lista), Reason (en el formulario), y cada motivo por su nombre.
+Uno de los motivos de la lista propia de un Business bajo el que se registra cada Stock withdrawal, con un nombre único en el Business (sin importar mayúsculas, minúsculas ni espacios, de hasta 60 caracteres) y una posición. Un Business nuevo arranca con "Marketing" y "Own use" en su Stored language, que un cambio de idioma nunca renombra. La lista se edita solo en Settings → Withdrawal reasons, nunca queda vacía, y un motivo con retiros no se puede eliminar; nunca registra Stock perdido, que es un Adjustment negativo. _In the app_: Withdrawal reasons (la lista), Reason (en el formulario), y cada motivo por su nombre.
 _Avoid_: category, type, tag, cause, Promotion (old name of one default reason)
 
 **VIP type**:
@@ -667,3 +667,7 @@ _Avoid_: refund, Credit, vuelto, balance, difference
 **Undo**:
 Eliminar con un toque, sin confirmación, la última Sale guardada desde New sale, durante los 5 segundos de su aviso "Sale to {name} saved". Es la misma eliminación que se hace desde el detalle de la Sale, y siempre muestra cómo terminó; un Home que ya está en pantalla conserva sus cifras. _In the app_: Undo.
 _Avoid_: revert, rollback, cancel sale, void, anular, deshacer venta
+
+**Recorder**:
+El User que registró un Payment, guardado como sus iniciales copiadas al registrarlo (la marca de quien registró, docs/product/initials.md) junto con una referencia al User que se anula cuando el User se va, mientras que las iniciales quedan. En el código es el valor `Recorder` (`app_user_id`, `initials`) que da `CurrentRecorder` a partir de la Session; todavía ningún router lo usa ni ninguna pantalla lo muestra (partes posteriores de GH-1057). En la app: todavía no tiene palabra propia.
+_Avoid_: author, creator, cashier, collector, owner, recorded by user

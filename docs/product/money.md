@@ -15,7 +15,7 @@ Cada Business tiene una Money scale (ADR-0058):
 - Todo Business abierto desde la parte 18 empieza en escala 2 y guarda centésimos: la apertura del Business (`app/money_format/adapters/opening.py`) escribe su fila de `money_format` con "$", 0 decimales y escala 2.
 - El rescale de escala 0 a escala 2 (#402) lo llama la subida de decimales de Settings, en el mismo guardado que el símbolo (ADR-0080).
 
-La escala es un dato de guardado, no de pantalla. Lo que ve el vendedor es el Money format del Business: un símbolo y sus decimales, "$" y 0 por defecto. Cualquier User del Business cambia el símbolo y sube o baja los decimales, de 0 a 2, en Settings → Business → Currency and decimals.
+La escala es un dato de guardado, no de pantalla. Lo que ve el vendedor es el Money format del Business: un símbolo y sus decimales, "$" y 0 por defecto. Cualquier User del Business cambia el símbolo y sube o baja los decimales, de 0 a 2, en Settings → Currency and decimals.
 
 Antes de la parte 20, todo Business estaba fijo en "$" y 0 decimales: un vendedor en otra moneda veía "$" en todas partes, también en el Catalog y el Sale bill que leen sus clientes, y uno que cobraba con centavos no tenía dónde registrarlos.
 
@@ -158,7 +158,7 @@ Algunas cifras dividen: el total de una Sale line, el costo por unidad que se to
 - Módulos de caso de uso o de dominio que importan el helper de dinero o leen la escala, y adaptadores que tocan una columna de dinero sin el helper: 0.
 - Sentencias SQL de más por pedido o por lista por leer la escala y los decimales: 0.
 - Respuestas que filtran el dinero, la escala o el Money format de otro Business: 0.
-- **Rapidez desde el teléfono (criterio 1 de la parte 20)**: un flujo en el viewport del teléfono cambia el símbolo y los decimales en Settings → Business → Currency and decimals y guarda con un solo Save, sin paso de confirmación: pasa.
+- **Rapidez desde el teléfono (criterio 1 de la parte 20)**: un flujo en el viewport del teléfono cambia el símbolo y los decimales en Settings → Currency and decimals y guarda con un solo Save, sin paso de confirmación: pasa.
 - **Ningún valor cambia (criterio 1)**: cada campo de dinero de cada ruta, leído antes y después de un cambio de símbolo, una subida y una bajada aceptada, en escala 0 y en escala 2: 0 valores distintos.
 - **Símbolo válido**: 100% de aprobación en ambos sentidos.
   - Se rechazan junto al campo, sin guardar nada: uno en blanco, uno de más de 4 code points, uno con `**` ("**", "a**b"), con un salto de línea o una tabulación, con un carácter de ancho cero, con un override o un aislamiento de dirección, con un separador de línea o de párrafo, y un emoji compuesto con unión de ancho cero.

@@ -257,6 +257,8 @@ describe('walked_as: a row whose screen a walked state proves', () => {
       'ClientesBusquedaLimpiada',
       'ClientesAvisoDeudores',
       'VentaVuelve',
+      'ProductosStock',
+      'ProductosStockOscuro',
     ])
     for (const screen of proved) {
       const state = STATES.find((candidate) => candidate.screen === screen.walkedAs)

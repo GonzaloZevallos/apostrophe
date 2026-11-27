@@ -293,14 +293,14 @@ test('a seller records, undoes, fixes and isolates sales, from the front alone',
   await expectToast(page, 'Customer assigned', () => page.getByRole('button', { name: /Carla Pérez/ }).click())
   await expect(page.getByRole('button', { name: 'Assign customer' })).toHaveCount(0)
 
-  // Delete sale, confirmed with the date and the amount, then gone from the list.
-  await page.getByRole('button', { name: 'Delete sale' }).click()
+  // Void, confirmed with the date and the amount, then gone from the list.
+  await page.getByRole('button', { name: 'Void' }).click()
   await expect(
     page.getByRole('alertdialog', {
       name: `Delete the sale of $ 1.000 from ${shortDate(todayIso)}? 2 g go back to stock.`,
     }),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Yes, delete it' }).click()
+  await page.getByRole('button', { name: 'Yes, void' }).click()
   await expectPath(page, SALES)
   await expect(page.getByText('Sale deleted')).toBeVisible()
 

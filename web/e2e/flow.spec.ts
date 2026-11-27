@@ -74,7 +74,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(STOCK)
   await expect(page.getByText('No stock entries')).toBeVisible()
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: '+ Stock entry' }).click()
+  await openStockSegment(page); await page.getByRole('link', { name: '+ Stock entry' }).click()
   await expectPath(page, STOCK_ENTRY_NEW)
   await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')
@@ -206,4 +206,5 @@ test('a seller does everything the backend offers today, from the front alone', 
 })
 
 import { pickStockVariety } from './helpers/stockVariety.js'
+import { openStockSegment } from './helpers/stockSegment.js'
 import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'
