@@ -3,5 +3,16 @@
     "catalog": "Catalog",
     "stock": "Stock",
     "label": "Products view"
+  },
+  "badge": {
+    "soldOut": "Sold out",
+    "low": "Low"
+  },
+  "row": {
+    "hidden": "Hidden",
+    "noPrice": "No price",
+    "noPriceHint": "A product needs a price before you can sell it.",
+    "bulk": " · Bulk {{amount}}",
+    "a11yName": "{{name}}, {{items}}"
   }
 }

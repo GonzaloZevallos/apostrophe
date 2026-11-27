@@ -38,6 +38,10 @@ Este es el job de navegación aplicado a los productos, el stock y el Catalog, n
 job nuevo; su situación principal es en medio de un chat, entre pedidos. Los jobs de stock y de Catalog siguen
 en `stock.md` y `catalog.md`; la computadora es el mismo job en dos paneles.
 
+**Cuando** abro Products en el celular, **quiero** ver en cada fila el precio del Product, si está agotado o bajo, y si está oculto del Catalog, **para** saber qué puedo ofrecer y qué necesita mi atención sin abrir cada Product.
+
+Este afina para la fila de la vista Catalog del celular el job de arriba ("que la lista me diga de un vistazo"); no es un job nuevo (GH-846). Es un job de lectura, no de velocidad de venta, y la computadora conserva su lista sin pulido dedicado (**Phone first**). La parte 1 entrega solo el modelo puro de esa fila y su copy, sin ninguna pantalla que lo use; el job se juzga contra la fila que pone en pantalla la parte 2. Antes, quien vendía abría la página de cada Product o recorría las cifras de Stock de Products: el Stock status, la falta de precio y la marca de **Hidden product** no se leían juntos en una fila, y el **Pinned catalog** no ayuda porque deja afuera justamente los Products ocultos, agotados o sin precio.
+
 **Cuando** un producto que cargué por error, o uno con el que ya no trabajo, sigue apareciendo en mis
 listas y selectores, **quiero** sacarlo desde el celular en pocos toques, eliminándolo si
 nunca se movió y archivándolo si tiene historial, **para** que mis listas muestren solo lo que todavía
@@ -158,6 +162,12 @@ Criterios de éxito:
 32. **La vista se mantiene mientras trabajo** (GH-898): volver de un formulario, de la página de un Product, de All entries o de Archived deja a quien vende en la vista que dejó; después de guardar una Stock entry sigue en Stock con "Entry saved". Una recarga conserva la vista. Una visita nueva, la pestaña Products, Delete y el Restore del último Archived product abren Catalog. Pasar de Stock en el celular a la computadora y volver al celular sigue en Stock.
 33. **El segmento se toca y se lee bien** (GH-898): cada opción es una píldora de 32 px dentro de un botón de 44 px; la marcada es rellena y de peso mayor, con `aria-pressed`, nunca solo por color; el grupo se llama "Products view" y las opciones "Catalog" y "Stock". Cambiar de vista no agrega una entrada al historial y la vista nueva empieza arriba.
 34. **La computadora no cambia** (GH-898): a 900 px y más, el marcado, las clases y el comportamiento de Products son los de antes, y la disposición de la computadora nunca importa `productsSegment.ts`. Ninguna lista de infractores, tolerancia, `CONTENT_SHIFT_PX` ni control se agranda, y ninguna fila del registro se marca not-captured.
+35. **La fila de la vista Catalog, de un vistazo** (GH-846, parte 1: solo el modelo, que todavía ninguna pantalla usa; el job se juzga con la fila que pone en pantalla la parte 2):
+    - la fila muestra el List price con el copy de precio existente y el **Money format** del Business, y agrega el Bulk price solo con Bulk price activado en los Pricing settings y cuando el Current price tiene uno;
+    - un Product sin Current price dice "No price" con "A product needs a price before you can sell it.", y nunca parece costar $0;
+    - solo "sold out" y "low" llevan marca, siempre con su palabra y nunca solo por color; "ok", "no entries" y un estado faltante no llevan ninguna;
+    - el nombre accesible dice, en este orden: nombre, línea de precio (con la ayuda cuando no hay precio), palabra de estado y "Hidden"; una parte que no corresponde se va junto con su separador;
+    - no se agrega ninguna unidad, símbolo de moneda ni decimales literales (**Assume nothing**), y todo el texto vive en el Copy module, en inglés y con su gemelo en-XA.
 
 ## Comportamiento
 
@@ -307,6 +317,8 @@ Criterios de éxito:
     reponiendo;
   - gramos y **Days left**;
   - el List price por gramo de hoy, o "No price: cannot be sold" cuando no tiene.
+
+  Esta fila sigue igual hasta que la parte 2 de GH-846 ponga en la vista Catalog del celular la fila del modelo `catalogRow` (abajo); qué reemplaza ahí lo decide esa parte.
 - **La línea de resumen**, arriba de la lista (en el celular, solo en la vista Stock), que cuenta solo Products sin archivar:
   - sin ningún Product: no hay línea de resumen, y un estado vacío fijo invita a quien vende
     a agregar el primer Product (solo texto, sin botón propio; se muestra solo cuando la lista está lista, sin falla y sin filas);
@@ -327,6 +339,30 @@ Criterios de éxito:
   Archived. No se muestra cuando no hay ninguno, ni en el celular mientras la lista carga.
 
 ![Products en el teléfono](../assets/screens/Productos.webp)
+
+### El modelo de la fila de la vista Catalog del celular (`catalogRow`, GH-846)
+
+La parte 1 de GH-846 agrega el modelo puro de una fila de la vista Catalog del celular y su copy. Todavía ninguna pantalla lo usa, así que nada visible cambia: lo pone en pantalla la parte 2, que es donde se compara con el dibujo.
+
+- **Firma**: `catalogRow(input, money, t)`, en `web/src/screens/varieties/catalogRow.ts`.
+- **Entrada**:
+  - `name`;
+  - `currentPrice`: el Current price con `list_price` y `bulk_price`, o `null`;
+  - `isBulkPricing`: si Bulk price está activado en los Pricing settings;
+  - `status`, de `GET /stock`: `no_entries`, `sold_out`, `low`, `ok`, o `undefined` cuando `/stock` no tiene fila para el Product;
+  - `hidden`: la marca de Hidden product.
+
+  No recibe nada de archivado: un Archived product no está en ninguna lista.
+- **`priceLine`**:
+  - con Current price, el copy existente `common:pricePerGram(money(list_price))`. La fila no tiene lógica de unidad propia: cuando la parte units de GH-318 cambie ese copy, la fila lo sigue sin cambiar nada acá;
+  - le suma `products:row.bulk` (" · Bulk {amount}", el precio a través de `money`, sin unidad) solo cuando `isBulkPricing` es verdadero y `bulk_price` no es `null`. Nunca muestra el Bulk minimum: una fila es para recorrer de un vistazo, el mínimo sigue en la página del Product con sus Price entries, y mostrarlo exigiría un literal nuevo con unidad, que depende de GH-318;
+  - sin Current price, `products:row.noPrice` ("No price"). Nunca se lee como $0.
+- **`hint`**: `products:row.noPriceHint` ("A product needs a price before you can sell it.") en una fila sin precio; si no, `null`.
+- **`badge`**: el valor `'sold_out'`, `'low'` o `null` (`null` para `ok`, `no_entries` y un estado faltante). Es un valor, no un texto: su palabra ("Sold out", "Low") sale de `products:badge.soldOut` y `products:badge.low`, así que el estado nunca se dice solo por color. "No price", su ayuda y una marca "Sold out" o "Low" se muestran juntas: cada una es un hecho distinto y cierto.
+- **`hidden`**: tal como llega.
+- **`accessibleName`**: armado con `products:row.a11yName`, en este orden: nombre; línea de precio (con la ayuda en una fila sin precio); palabra de estado, de `products:badge.*`, solo cuando hay `badge`; "Hidden" (`products:row.hidden`), solo con la marca. Una parte que no corresponde se va junto con su separador, que es una coma y un espacio. El texto exacto de unión es el de `products:row.a11yName`.
+- **Brecha conocida**: un Product con "no entries" o sin fila en `/stock` se ve en esta fila como uno sano. Si merece una palabra propia no se decide acá.
+- **Ningún literal nuevo** de unidad, símbolo de moneda ni decimales (**Assume nothing**): todo el texto vive en el Copy module.
 
 ### En pantalla: Archived
 
@@ -533,10 +569,11 @@ Criterios de éxito:
 - **Sin palabra configurable**: ninguna ruta, campo de esquema ni columna guarda ni sirve una palabra elegida por el Business para lo que vende. La palabra de pantalla vive solo en el Copy module (docs/adr/0075-the-screen-word-is-always-product-and-no-product-word-setting-exists.md).
 - **Piezas de la lista separadas en dos disposiciones** (GH-897 y GH-903): `web/src/screens/Variedades.tsx` conserva su ruta y sus lecturas (`FIRST_RUN_READERS` sin cambios) y dibuja `ProductsComputer` en la computadora (900 px y más) o `ProductsPhone` en el celular, según el único valor `computer` de `useViewport()`, que pasa también como `view.computer`; no hay ningún otro control de ancho. El bloque de "Send catalog" (`SendCatalog`), los links "+ Stock entry" y "Take from stock" (`StockActions`), la línea de resumen (`ProductsSummary`), el estado vacío (`ProductsEmpty`), las filas (`VarietyRows`), el cuerpo común (`ProductsBody`, con su lugar `newProduct`, que el celular deja en `null`) y `ProductsPhone` viven en `web/src/screens/varieties/` con el marcado y las clases de siempre. Ninguno de esos archivos importa un valor (solo tipos) de `../Variedades` ni ningún módulo `api/*`, y todos están en `PRODUCTS_FILES`; un test de arquitectura (`web/src/architecture/productsFiles.test.ts`) lo controla sobre esa lista explícita.
 - **Los cuerpos del celular** (GH-898): `web/src/screens/varieties/ProductsPhoneBodies.tsx` tiene `ProductsNotices` (aviso o "That is gone", después la falla, después Loading, una sola vez), `CatalogBody` y `StockBody`; la regla de datos listos (`showsData`: lista y sin falla) vive en su propio módulo. El celular usa este orden nuevo y la computadora sigue con `ProductsBody`, sin editar. Los dos archivos están en `PRODUCTS_FILES`.
+- **El modelo de la fila del Catalog** (GH-846, parte 1): `web/src/screens/varieties/catalogRow.ts` es puro: sin React, sin hooks, sin ningún import de `api/*` y sin ningún import de valor de `screens/Variedades`. Está en `PRODUCTS_FILES`, así que el test de arquitectura lo controla, y en `web/scripts/docs/front-exclude.json` hasta que la parte que lo conecta a una pantalla saque esa entrada (D-62e6dc23). No agrega ninguna unidad, símbolo de moneda ni decimales literales: el precio pasa por `common:pricePerGram` y por el `money` recibido.
 - **La vista del celular, un solo lector y escritor** (GH-898): `web/src/screens/varieties/productsSegment.ts` es lo único que lee y escribe la vista, y solo `ProductsPhone` la lee. `readSegment(state)` lee solo la clave `productsSegment`, con control de forma, y responde `'catalog'` cuando falta o es inválida; `withSegment(state, segment)` devuelve el estado con `productsSegment` fijado, conservando `inApp`, `from` y cualquier clave de aviso. Su comentario de documentación dice que es un escritor del estado del historial junto a `feedback.ts` e `inAppState.ts`. Las opciones salen solo de `PRODUCTS_SEGMENTS` (con motivo no vacío, en `FIXED_SETS`). La disposición de la computadora nunca importa `productsSegment.ts`: un barrido de arquitectura (`web/src/architecture/productsLeaves.ts`) sigue los imports relativos desde `ProductsComputer.tsx` y falla ante un import de valor; un `import type` no lleva código a la computadora y se admite, y un test lo fija en los dos sentidos. Otro barrido falla ante una entrada vieja de `front-exclude.json` para un módulo de `src/screens/varieties/` que ya se importa.
 - **La redirección de la computadora conserva el estado** (GH-898, decisión 2 del humano): la redirección de `web/src/screens/varieties/VarietiesIndex.tsx` conserva cada clave del estado de la entrada del historial y solo agrega su marca de redirección seguida (`followedRedirectState`, junto a `FOLLOWED_REDIRECT`), así que pasar de Stock en el celular a la computadora y volver sigue en Stock; `VarietiesIndex.tsx` no importa `productsSegment.ts`.
 - **El aspecto de píldora de Pestanas** es opcional (`ajuste="pastilla"`), con CSS en `web/src/styles/app.css` solo con tokens (el radio de píldora, `--acento-suave`, `--tinta`, `--tinta2`); cada uso existente de Pestanas queda igual.
-- **Textos del segmento**: el namespace `products` de `web/src/copy/locales/en/` (`segment.catalog`, `segment.stock`, `segment.label`), registrado como los demás, con su en-XA y sus tipos generados.
+- **Textos del segmento y de la fila**: el namespace `products` de `web/src/copy/locales/en/` (`segment.catalog`, `segment.stock`, `segment.label`, y desde GH-846 `badge.soldOut`, `badge.low`, `row.hidden`, `row.noPrice`, `row.noPriceHint`, `row.bulk` y `row.a11yName`), registrado como los demás, con su en-XA y sus tipos generados.
 - **El botón "New product" del celular** es `BotonLink variant="icon" action="add"` (clase `boton-icono boton-icono--lleno`, más `productos-cabecera__nueva`), con sus colores de --boton y --boton-texto; nunca la clase del botón de New sale, el componente de la barra ni la clave "Vender". Su clase propia no fija ningún color.
 - **Landmarks del e2e** (D-69509906): el paso de clic del recorrido móvil (`web/e2e/mobile/walk.ts`) encuentra un link solo ícono por su nombre accesible, así que los pasos que tocan "New product" siguen funcionando sin volver a poner la palabra ni el link viejo. Desde GH-898, el helper `openStockSegment(page)` de `web/e2e/helpers/` (un clic real en "Stock" dentro del grupo "Products view", que espera `aria-pressed`; en la computadora no hace nada) es el camino de todo spec del celular que llega a "+ Stock entry", "Take from stock", "All entries", "Archived (" o la línea de resumen; ninguno se vuelve a poner en la vista Catalog para satisfacer un localizador. En vitest, los tests del celular tocan "Stock" primero con el helper de `renderVarieties.tsx`.
 
@@ -603,6 +640,16 @@ Criterios de éxito:
   - en la computadora, con `firstRun` retenido, "Send catalog" se ve de inmediato y no hay píldoras;
   - los barridos de arquitectura: ningún import de valor de `productsSegment.ts` desde la computadora (un `import type` pasa) y ninguna entrada vieja en `front-exclude.json`.
   - Un e2e: Stock → "+ Stock entry" → guardar → sigue en Stock con "Entry saved" y sin "Send catalog". El proyecto móvil del e2e pasa sin ningún infractor nuevo, y la captura de 900 px de Products no cambia.
+- **El modelo de la fila del Catalog (criterio 35, GH-846 parte 1)**: tests unitarios de `catalogRow` sin React, sobre el copy real en inglés, 100% en verde, muestran:
+  - el precio con el copy de precio existente;
+  - la parte Bulk presente, y ausente sin `bulk_price` y con `isBulkPricing` falso aunque haya `bulk_price`;
+  - "No price" con su ayuda;
+  - la marca para `sold_out` y `low`, y ninguna para `ok`, `no_entries` ni un estado faltante;
+  - `hidden` tal como llega;
+  - el orden del nombre accesible, con las partes ausentes y sus separadores afuera;
+  - la combinación "No price", una marca y Hidden.
+
+  `tsc` estricto, oxlint y los tests de arquitectura pasan sin silenciar nada; `catalogRow.ts` está en `PRODUCTS_FILES` y en `front-exclude.json`, y no agrega ninguna unidad, símbolo de moneda ni decimales literales. Que la fila sirva al job se mide en la parte 2, donde aparece en pantalla.
 - **La lista fijada en los dos anchos** (GH-897): tests del front con ancho de celular y de computadora fijan el marcado de la lista (título y avatar, línea de resumen, acciones con "Send catalog" o su botón deshabilitado con motivo, "+ Stock entry" y "Take from stock", y en la computadora "New product" (en el celular lo trae el bloque de título), estado vacío solo cuando está lista sin falla ni filas, filas con `replace` solo en la computadora, "All entries" y "Archived (N)"). Se escribieron antes de separar las piezas; las únicas aserciones editadas después son las de ancho de celular que GH-903 cambió por el bloque de título y las que GH-898 hace pasar primero por "Stock", listadas en sus PRs, y ninguna de ancho de computadora. 100% en verde.
 - **Nada perdido (criterio 8)**: cada ruta vieja de Stock, Products y Catalog responde como una
   dirección desconocida (navigation.md, Direcciones retiradas, criterio 52), `/mi-stock/entradas/{id}` incluida; cada acción
@@ -742,6 +789,7 @@ Criterios de éxito:
 - En la fila de título del celular: mostrar la palabra "New product", acortarla, achicar el título o el avatar, cortar con puntos suspensivos o envolver la fila (D-8ecb8c1d).
 - Un bloque de título fijo o pegajoso, o un `header`, en el celular.
 - Cualquier cambio en la disposición de la computadora (900 px y más).
+- En el modelo de la fila del Catalog (GH-846, parte 1): conectarlo a una pantalla o cambiar la fila de hoy (parte 2); el Bulk minimum en la fila; una palabra para el estado "no entries"; cualquier entrada de archivado; lógica de unidad propia.
 
 ## Planned in GH-318
 
@@ -765,7 +813,7 @@ Decidido en docs/adr/0056-a-stored-quantity-is-a-whole-number-of-hundredths-what
 
 - Cada Product va a tener una **Unit** con un nombre, una etiqueta corta y de 0 a 2 decimales, que se usa para su Stock, su precio, la cantidad vendida, el Bulk minimum y el Low-stock threshold. La Unit se va a elegir por Product al crearlo, de la lista propia del Business (#390), y nunca se va a preguntar en el Onboarding. Un Business va a poder mezclar Units. La Unit se va a bloquear una vez que el Product tenga historial.
 - Una cantidad se va a guardar como un número entero de centésimos, cualquiera sea la Unit; los decimales de la Unit solo van a validar lo ingresado y decidir cómo se muestra (ADR-0056). Las cantidades de Units distintas nunca se van a sumar: una cifra que totaliza cantidades va a mostrar un monto por Unit.
-- Va a reemplazar: "un List price por gramo en pesos enteros", "un Bulk price por gramo con su Bulk minimum en gramos (hasta dos decimales)" y "**Low-stock threshold**: gramos opcionales, mayores que cero, de hasta dos decimales".
+- Va a reemplazar: "un List price por gramo en pesos enteros", "un Bulk price por gramo con su Bulk minimum en gramos (hasta dos decimales)" y "**Low-stock threshold**: gramos opcionales, mayores que cero, de hasta dos decimales". La línea de precio del modelo `catalogRow` sigue el copy `common:pricePerGram` que cambie esta parte, sin cambio propio.
 
 ### Dinero
 
