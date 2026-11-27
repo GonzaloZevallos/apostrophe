@@ -273,7 +273,7 @@ describe('a tap on the Products tab', () => {
     expect(router.state.location.pathname).toBe(HOME)
   })
 
-  test.each(['/varieties/', '/varieties?x'])('on %s pushes an entry', async (entry) => {
+  test.each([`${VARIETIES}/`, `${VARIETIES}?x`])('on %s pushes an entry', async (entry) => {
     const { router } = renderShell([entry])
 
     await userEvent.setup().click(productsLink('bar'))
