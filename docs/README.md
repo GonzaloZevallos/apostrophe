@@ -32,6 +32,7 @@ Cada capacidad tiene su página en [docs/product/](product/):
 - [Pinned catalog](product/pinned-catalog.md)
 - [Pricing settings](product/pricing-settings.md)
 - [Product language](product/product-language.md)
+- [Products search](product/products-search.md)
 - [Cantidad](product/quantity.md)
 - [Results](product/results.md)
 - [Sale bill](product/sale-bill.md)
