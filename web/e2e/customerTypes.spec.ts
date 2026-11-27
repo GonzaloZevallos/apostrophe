@@ -60,7 +60,7 @@ test('a seller creates a customer type in Settings and assigns it from the Custo
   await page.getByLabel('Name', { exact: true }).fill('Carla Cobrar')
   await page.getByRole('button', { name: /^Customer type/ }).click()
   await page.getByRole('option', { name: 'Friends' }).or(page.getByRole('button', { name: 'Friends', exact: true })).click()
-  await page.getByRole('button', { name: 'Save and use' }).click()
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
 
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Friends')).toBeVisible()
@@ -81,7 +81,7 @@ test('a seller cannot delete a type that still has a customer, and is told how m
   await page.getByLabel('Name', { exact: true }).fill('Carla Cobrar')
   await page.getByRole('button', { name: /^Customer type/ }).click()
   await page.getByRole('option', { name: 'Friends' }).or(page.getByRole('button', { name: 'Friends', exact: true })).click()
-  await page.getByRole('button', { name: 'Save and use' }).click()
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
   await expectPath(page, CUSTOMER)
 
   await page.goto(SETTINGS_CUSTOMER_TYPES)

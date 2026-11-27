@@ -109,7 +109,7 @@ describe('on a phone, a direct address', () => {
     expect(pane).toHaveTextContent('Owed to you')
     expect(pane).toHaveTextContent(/owes you since \d\d\/\d\d/)
     expect(pane).not.toContainElement(dialog)
-    expect(document.querySelector('.sheet__actions')).toContainElement(screen.getByRole('button', { name: 'Save and use' }))
+    expect(document.querySelector('.sheet__actions')).toContainElement(screen.getByRole('button', { name: 'Save' }))
   })
 
   test('edit customer: the sheet over the customer\'s card, focus in Name, one Close', async () => {
