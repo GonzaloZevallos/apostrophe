@@ -112,19 +112,26 @@ test('step 1 has no "Back": "Close" is its only way out', async () => {
   expect(screen.getByRole('button', { name: 'Close' })).toBeInTheDocument()
 })
 
-test('the first step opens with the lockup, in the main region', async () => {
+test.each(ORDER)('%s shows no brand lockup in the main region', async (slug) => {
+  renderFrame(slug)
+
+  await screen.findByText(/^Step \d of 6$/)
+  expect(within(screen.getByRole('main')).queryByRole('img', { name: 'apostrophe' })).not.toBeInTheDocument()
+})
+
+test('step 1 has no currency line', async () => {
   renderFrame('variety')
 
   await screen.findByText('Step 1 of 6')
-  const lockup = within(screen.getByRole('main')).getByRole('img', { name: 'apostrophe' })
-  expect(lockup).toHaveTextContent('apostrophe’')
+  expect(screen.queryByText(/^Currency:/)).not.toBeInTheDocument()
 })
 
-test('no other step shows the brand', async () => {
-  renderFrame('stock')
+test('on step 1 the title block comes before the first form field', async () => {
+  renderFrame('variety', { Body: () => <input aria-label="Name" /> })
 
-  await screen.findByText('Step 2 of 6')
-  expect(within(screen.getByRole('main')).queryByRole('img', { name: 'apostrophe' })).not.toBeInTheDocument()
+  const title = await screen.findByRole('heading', { level: 1 })
+  const field = screen.getByRole('textbox', { name: 'Name' })
+  expect(title.compareDocumentPosition(field) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
 })
 
 test.each(ORDER.slice(1).map((slug, index) => [slug, index + 1] as const))(

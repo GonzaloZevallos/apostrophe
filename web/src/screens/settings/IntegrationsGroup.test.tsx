@@ -13,7 +13,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import IntegrationsGroup from './IntegrationsGroup'
 import { iconAndTextProblems } from '../../test/iconAndTextRule'
-import { LIMITED_COPY, OWN_CHAT_HELP, OWN_CHAT_INFO, PREVIOUS_PIN_NOTICE } from '../../copy/settings'
+import { LIMITED_COPY, OWN_CHAT_HELP, OWN_CHAT_INFO, PREVIOUS_PIN_NOTICE, SETTINGS_TEXT } from '../../copy/settings'
 import { LIMITS } from '../../copy/limits'
 import type { ReactElement, ReactNode } from 'react'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
@@ -111,6 +111,46 @@ test('an empty business shows empty fields and no "Guardado" line', async () => 
   expect(screen.getByLabelText('Your chat')).toHaveValue('')
   expect(screen.getByLabelText('Channel chat')).toHaveValue('')
   expect(screen.queryByText(/Saved on/)).not.toBeInTheDocument()
+})
+
+test('with no token saved the Bot token field is described by the encrypted-storage help line', async () => {
+  renderGroup(EMPTY)
+
+  const field = await screen.findByLabelText('Bot token')
+  expect(field).toHaveAccessibleDescription(SETTINGS_TEXT.tokenStoredEncrypted)
+})
+
+test('with a token saved there is no help line and no token field, only the saved line', async () => {
+  renderGroup(SAVED)
+
+  expect(await screen.findByText('Saved on 12/08 · not shown again')).toBeInTheDocument()
+  expect(screen.queryByText(SETTINGS_TEXT.tokenStoredEncrypted)).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Bot token')).not.toBeInTheDocument()
+})
+
+test('tapping Change on a saved token reopens the field with the help line as its description', async () => {
+  renderGroup(SAVED)
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Change' }))
+
+  expect(screen.getByLabelText('Bot token')).toHaveAccessibleDescription(SETTINGS_TEXT.tokenStoredEncrypted)
+})
+
+test('a refused Test it keeps the help line and the field is described by it and the refusal', async () => {
+  renderGroup(EMPTY, () =>
+    jsonResponse(422, { detail: 'refused', code: 'pinned_catalog.telegram_unreachable' }),
+  )
+
+  await userEvent.type(await screen.findByLabelText('Bot token'), '123:secret')
+  await userEvent.type(screen.getByLabelText('Your chat'), '555')
+  await userEvent.click(screen.getByRole('button', { name: 'Test it' }))
+
+  const alert = await screen.findByRole('alert')
+  expect(alert).toHaveTextContent('Telegram did not respond')
+  expect(screen.getByText(SETTINGS_TEXT.tokenStoredEncrypted)).toBeInTheDocument()
+  expect(screen.getByLabelText('Bot token')).toHaveAccessibleDescription(
+    `${SETTINGS_TEXT.tokenStoredEncrypted} Telegram did not respond`,
+  )
 })
 
 test('links to the catalog screen, with no pin status and no Publicar', async () => {

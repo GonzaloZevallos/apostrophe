@@ -16,6 +16,7 @@ import { SHOWN_EN } from '../../test/shownLanguage'
 import type { OnboardingProgress, StepSlug, StepState } from '../../api/onboarding'
 import { expectIconAndTextRule, iconAndTextProblems } from '../../test/iconAndTextRule'
 import { PUBLISH_LINE } from './BotStep'
+import { SETTINGS_TEXT } from '../../copy/settings'
 import Listo from './Listo'
 import OnboardingLayout from './OnboardingLayout'
 import { OnboardingEntry, OnboardingStepRoute } from './OnboardingRoutes'
@@ -398,6 +399,15 @@ test('step 4 passes done after a successful Probarlo and shows no catalog link; 
   await user.click(screen.getByRole('button', { name: 'Test it' }))
   expect(await screen.findByRole('heading', { name: 'Send the link to your partner' })).toBeInTheDocument()
   expect(bodies).toEqual([{ step: 'bot', as: 'done' }])
+})
+
+test('step 4 with no token saved shows the encrypted-storage help line under "Bot token"', async () => {
+  stubFetch(answer(['done', 'done', 'done', 'pending', 'pending', 'pending'], { stock_entries_count: 1 }), {
+    'GET /pinned-catalog': () => json({ token_saved_on: null, own_chat: null, channel_chat: null }),
+  })
+  renderAt(ONBOARDING_BOT)
+
+  expect(await screen.findByLabelText('Bot token')).toHaveAccessibleDescription(SETTINGS_TEXT.tokenStoredEncrypted)
 })
 
 test('step 4 says where to publish only after a successful Probarlo, not before and not after a failed one', async () => {

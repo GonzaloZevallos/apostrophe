@@ -25,7 +25,6 @@ import {
 } from '../../api/onboarding'
 import { isGone } from '../../api/refusals'
 import Boton from '../../components/Boton'
-import BrandMark from '../../components/BrandMark'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import LeaveConfirm from '../../components/LeaveConfirm'
@@ -131,7 +130,6 @@ function OnboardingStepFrame({
   return (
     <ContentArea as="main" className="pantalla onboarding">
       <div className="onboarding__columna">
-        {isFirst(slug) && <BrandMark />}
         <div className={`onboarding__cabecera${previous === undefined ? ' onboarding__cabecera--derecha' : ''}`}>
           {previous !== undefined && (
             <Boton variant="secondary" icon="atras" onClick={() => void navigate(previous)}>
@@ -152,9 +150,6 @@ function OnboardingStepFrame({
         <div className="onboarding__titulos">
           <h1 className="onboarding__titulo">{resolve(info.title)}</h1>
           <p className="onboarding__porque">{info.why}</p>
-          {isFirst(slug) && (
-            <p className="pie">{ONBOARDING_TEXT.currencyLine(me.money.symbol, me.money.decimals)}</p>
-          )}
         </div>
 
         <div className="onboarding__cuerpo">
