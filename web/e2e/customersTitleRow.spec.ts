@@ -6,7 +6,7 @@
  * breakpoint, so the round "+" is drawn up to it.
  */
 
-import { expect, test } from './fixtures.js'
+import { expect, test, withToastRecorder } from './fixtures.js'
 import type { Page } from '@playwright/test'
 import { PHONE_CONTEXT, TOLERANCE } from './helpers/textScale.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -59,7 +59,9 @@ test.describe.serial('the Customers title row on a phone', () => {
 
   test.beforeAll(async ({ browser, workerServer }) => {
     page = await (
-      await browser.newContext({ ...PHONE_CONTEXT, baseURL: workerServer.url, viewport: { width: 320, height: HEIGHT } })
+      await withToastRecorder(
+        browser.newContext({ ...PHONE_CONTEXT, baseURL: workerServer.url, viewport: { width: 320, height: HEIGHT } }),
+      )
     ).newPage()
     await signUpNewBusiness(page)
   })
