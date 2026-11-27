@@ -32,7 +32,6 @@ export const CUSTOMERS_TEXT = {
   deletePayment: 'Delete payment',
   newSaleTo: 'New sale to ',
   owesYouSince: 'owes you since ',
-  saveAndUse: 'Save and use',
   discardTheCustomer: 'Discard the customer?',
   paid: 'Paid',
   paidWith: (method: string | number) => `Paid · ${method}`,

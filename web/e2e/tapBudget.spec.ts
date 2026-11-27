@@ -397,7 +397,7 @@ test('a new customer, alone or from Pick a customer, with a local number in the 
     await awaitDetected()
     if (other) await pickUruguay(counter)
     await phone.fill(distinct(other ? uruguay.example : argentina.example, other ? 2 : 1))
-    await tap(counter, page.getByRole('button', { name: 'Save and use' }))
+    await tap(counter, page.getByRole('button', { name: 'Save', exact: true }))
     await expectPath(page, CUSTOMER)
     measured[`customer ${key}`] = counter.taps
   }

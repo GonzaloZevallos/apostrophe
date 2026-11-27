@@ -248,7 +248,6 @@
   {"source":"customers.ts:CUSTOMERS_TEXT.phoneOptional","args":null,"text":"(optional)"},
   {"source":"customers.ts:CUSTOMERS_TEXT.phoneTaken","args":null,"text":"That phone number already belongs to another customer"},
   {"source":"customers.ts:CUSTOMERS_TEXT.saleTitle","args":null,"text":"Sale"},
-  {"source":"customers.ts:CUSTOMERS_TEXT.saveAndUse","args":null,"text":"Save and use"},
   {"source":"customers.ts:CUSTOMERS_TEXT.searchCustomer","args":null,"text":"Search customer"},
   {"source":"customers.ts:CUSTOMERS_TEXT.searching","args":null,"text":"Searching…"},
   {"source":"customers.ts:CUSTOMERS_TEXT.since","args":null,"text":"since "},

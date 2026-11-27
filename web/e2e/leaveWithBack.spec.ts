@@ -41,7 +41,7 @@ test('Back on a dirty Record payment and on a dirty New sale asks, and "No" keep
 
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name', { exact: true }).fill('Carla Volver')
-  await page.getByRole('button', { name: 'Save and use' }).click()
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'New sale to Carla Volver' }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })

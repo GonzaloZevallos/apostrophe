@@ -57,7 +57,7 @@ test('on a card the bar and its + are the whole chrome, and the chrome top is th
   await signUpNewBusiness(page)
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name', { exact: true }).fill(`Ficha ${uniqueTag()}`)
-  await page.getByRole('button', { name: 'Save and use' }).click()
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
   await expectPath(page, CUSTOMER)
 
   await expect(bottomBar(page)).toBeVisible()
