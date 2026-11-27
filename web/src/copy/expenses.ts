@@ -1,6 +1,6 @@
 /**
- * The fixed help line of Gastos, registered for `copy/copyLimits.test.ts`. `Gastos.tsx`
- * renders this same binding.
+ * The texts of Gastos. It has no fixed help line, so `LIMITED_COPY` (read by
+ * `copy/copyLimits.test.ts`) is empty.
  */
 
 import { baselineArgs, FIXTURE } from './baselineArgs.ts'
@@ -9,9 +9,7 @@ import type { LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
 
-export const FLOWER_NOTICE = "Flower purchases don't go here: enter them in Stock."
-
-export const LIMITED_COPY: readonly LimitedCopy[] = [{ kind: 'help', text: FLOWER_NOTICE }]
+export const LIMITED_COPY: readonly LimitedCopy[] = []
 export const LONG_REFUSALS: readonly string[] = []
 
 
@@ -35,7 +33,6 @@ export const EXPENSES_TEXT = {
   youSpentThisMonth: 'You spent this month',
   byCategory: 'By category',
   latest: 'Latest',
-  categories: 'Categories',
   whatYouChangedIsLost: 'What you changed is lost: the expense stays as it was.',
   yesDiscardThem: 'Yes, discard them',
   editExpense: 'Edit expense',
