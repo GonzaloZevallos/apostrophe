@@ -1,8 +1,8 @@
 /**
  * The never-by-color census (design README: no state told by color alone). `stateColorRules`
  * reads CSS text and returns each rule, by its normalised selector list, whose declarations use
- * a state color: `--deuda*`, `--critico*`, `--acento-calido*`, `--positivo`, `--negativo` or a
- * chart series. `checkColorCensus` compares that to the list of entries below.
+ * a state color: `--deuda*`, `--critico*`, `--acento-calido*`, `--positivo`, `--negativo`, a
+ * chart series (`--serie1..5`) or an Expenses series (`--gasto*`). `checkColorCensus` compares that to the list of entries below.
  */
 
 export interface CensusEntry {
@@ -16,7 +16,7 @@ export interface CensusEntry {
   tests: readonly string[]
 }
 
-const STATE_COLOR = /--(?:(?:deuda|critico|acento-calido)[\w-]*|positivo|negativo|serie[1-5])(?![\w-])/
+const STATE_COLOR = /--(?:(?:deuda|critico|acento-calido)[\w-]*|positivo|negativo|serie[1-5]|gasto[\w-]*)(?![\w-])/
 const GAIN_OR_LOSS = /--(?:positivo|negativo)(?![\w-])/
 
 const normalise = (selectors: string): string =>

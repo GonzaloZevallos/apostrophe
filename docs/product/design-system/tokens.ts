@@ -70,6 +70,10 @@ export interface Paleta {
   serie3: string;
   serie4: string;
   serie5: string;
+  gasto1: string;
+  gasto2: string;
+  gasto3: string;
+  gastoOtros: string;
 }
 
 export const claro: Paleta = {
@@ -107,6 +111,10 @@ export const claro: Paleta = {
   serie3: '#4c7fd0',
   serie4: '#b8457a',
   serie5: '#b9c2bc',
+  gasto1: '#1e6b47',
+  gasto2: '#a85a06',
+  gasto3: '#1c6fa8',
+  gastoOtros: '#7e8c84',
 };
 
 export const oscuro: Paleta = {
@@ -144,6 +152,10 @@ export const oscuro: Paleta = {
   serie3: '#7fa8e8',
   serie4: '#e07aa8',
   serie5: '#7f8c85',
+  gasto1: '#5cc594',
+  gasto2: '#e8a54b',
+  gasto3: '#5aa9e6',
+  gastoOtros: '#7e8c84',
 };
 
 export const paletas: Record<Tema, Paleta> = { claro, oscuro };

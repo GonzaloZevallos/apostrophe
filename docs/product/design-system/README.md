@@ -149,6 +149,10 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 | `--serie3` | ícono | — | — | — | |
 | `--serie4` | ícono | — | — | — | |
 | `--serie5` | ícono | — | — | — | |
+| `--gasto1` | ícono | — | — | — | |
+| `--gasto2` | ícono | — | — | — | |
+| `--gasto3` | ícono | — | — | — | |
+| `--gasto-otros` | ícono | — | — | — | |
 | `--linea` | ícono | — | — | — | |
 | `--deuda-linea` | ícono | — | — | — | |
 | `--deuda-reciente` | ícono | — | — | — | |
@@ -223,6 +227,19 @@ cinco de la dueña. Oscuro: variantes más claras de los mismos cinco tonos, ele
 En claro `--serie2` y `--serie5` quedan bajo 3:1 sobre `--superficie` porque son los valores
 de la dueña; no se movieron porque nunca se leen por el color solo: la etiqueta directa
 dice cuál es cuál.
+
+**Series de Gastos** (`--gasto1` a `--gasto-otros`). Son marcas, no texto: van siempre
+rotuladas directamente y apuntan a 3:1 contra la `--superficie` de su tema. Los dos temas
+llevan los rellenos dibujados en `Gastos.dc.html` y `GastosOscuro.dc.html`. `--gasto2` en
+claro (`#a85a06`) es un relleno de gráfico, no texto, así que el cambio a 4,5:1 que llevó
+`--deuda` a `#a35706` no le aplica. Filas `ícono`, sin selectores.
+
+| Serie | Claro | Relación | Oscuro | Relación |
+|---|---|---|---|---|
+| `--gasto1` | `#1e6b47` | 6,46 | `#5cc594` | 7,75 |
+| `--gasto2` | `#a85a06` | 5,08 | `#e8a54b` | 7,79 |
+| `--gasto3` | `#1c6fa8` | 5,40 | `#5aa9e6` | 6,48 |
+| `--gasto-otros` | `#7e8c84` | 3,52 | `#7e8c84` | 4,69 |
 
 ### El logo
 
