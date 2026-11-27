@@ -9,6 +9,6 @@
   "web/src/screens/clientes/Cobro.tsx",
   "web/src/screens/clientes/CobroRoute.tsx",
   "web/src/screens/clientes/CustomerFields.tsx",
-  "web/src/screens/clientes/CustomersBehind.tsx",
+  "web/src/screens/clientes/CustomersTitleRow.tsx",
   "web/src/screens/clientes/TeDeben.tsx"
 ]
