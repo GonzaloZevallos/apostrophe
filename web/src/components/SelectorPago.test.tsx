@@ -12,6 +12,7 @@ import type { PayState } from '../sales/pricing'
 import type { PaymentMethod } from '../api/payments'
 import { stubViewport } from '../test-viewport'
 import SelectorPago, { type SelectorPagoProps } from './SelectorPago'
+import { testT } from '../i18n/testing'
 import { renderForm, stubPaymentMethodsFetch } from './selectorTestKit'
 
 beforeEach(() => {
@@ -125,6 +126,6 @@ test('with no connection the sin conexión notice shows and the form keeps its s
   vi.stubGlobal('fetch', vi.fn(() => Promise.reject(new TypeError('Failed to fetch'))))
   renderForm(<Harness initial="paid" />)
 
-  expect(await screen.findByText(/^Offline/)).toBeInTheDocument()
+  expect(await screen.findByText(testT('common:offline'))).toBeInTheDocument()
   expect(screen.getByRole('radio', { name: 'Paid' })).toHaveAttribute('aria-checked', 'true')
 })
