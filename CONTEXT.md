@@ -21,6 +21,11 @@ Un link que deja entrar a una persona, una sola vez, en un plazo de siete días:
 _In the app_: Invitation
 _Avoid_: signup link, referral, code
 
+**Business logo**:
+La imagen propia de un Business, un PNG o JPEG de hasta 1.048.576 bytes; es un registro de ese Business, nunca se ve desde otro, y no es la Yerba mark, que es del producto. Todavía no se muestra en ningún lado: ni en el Catalog, ni en Telegram, ni en una pantalla.
+_In the app_: no tiene palabra propia
+_Avoid_: logo, avatar, Yerba mark
+
 ## Catalog y precios
 
 **Product**:
