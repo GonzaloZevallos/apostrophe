@@ -1225,9 +1225,10 @@ a.ajustes-tema__opcion {
   color: var(--tinta2);
 }
 
-/* The phone field's example: the secondary ink, fully opaque, so it reads at 4.5:1 in both themes
-   (the browser's own placeholder grey does not in the dark one). */
-.campo__input[type='tel']::placeholder {
+/* The phone field's example and the Name field's hint: the secondary ink, fully opaque, so they read
+   at 4.5:1 in both themes (the browser's own placeholder grey does not in the dark one). */
+.campo__input[type='tel']::placeholder,
+.campo__input--pista::placeholder {
   color: var(--tinta2);
   opacity: 1;
 }

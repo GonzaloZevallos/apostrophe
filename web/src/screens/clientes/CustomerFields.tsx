@@ -91,7 +91,7 @@ export default function CustomerFields({
           <span className="campo__rotulo">{COMMON_TEXT.name}</span>
           <input
             ref={nameRef}
-            className="campo__input campo__input--enfoque"
+            className="campo__input campo__input--enfoque campo__input--pista"
             type="text"
             autoComplete="off"
             placeholder={CUSTOMERS_TEXT.namePlaceholder}
