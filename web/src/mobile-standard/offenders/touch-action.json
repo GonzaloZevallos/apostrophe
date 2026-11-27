@@ -618,24 +618,6 @@
     "issue": 47
   },
   {
-    "screen": "EstadosConfirmar",
-    "rule": "touch-action",
-    "target": "button:Delete sale",
-    "issue": 49
-  },
-  {
-    "screen": "EstadosConfirmar",
-    "rule": "touch-action",
-    "target": "button:No, keep it",
-    "issue": 49
-  },
-  {
-    "screen": "EstadosConfirmar",
-    "rule": "touch-action",
-    "target": "button:Yes, delete it",
-    "issue": 49
-  },
-  {
     "screen": "EstadosGoneAviso",
     "rule": "touch-action",
     "target": "button:Dates",
@@ -1822,17 +1804,6 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Delete sale",
-    "issue": 78,
-    "sizes": [
-      "320x568",
-      "375x812",
-      "430x932"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
     "target": "button:Cliente LarguísimoLarguísimoLarguísimoLarguísimoLargu",
     "issue": 78,
     "sizes": [
@@ -1855,15 +1826,6 @@
   {
     "screen": "VentaAsignarCliente",
     "rule": "touch-action",
-    "target": "button:Delete sale",
-    "issue": 78,
-    "sizes": [
-      "246x437"
-    ]
-  },
-  {
-    "screen": "VentaAsignarCliente",
-    "rule": "touch-action",
     "target": "button:Lu Fernández+# # # #-#",
     "issue": 78,
     "sizes": [
@@ -1960,30 +1922,6 @@
     "sizes": [
       "246x437"
     ]
-  },
-  {
-    "screen": "VentaBorrar",
-    "rule": "touch-action",
-    "target": "button:Delete sale",
-    "issue": 78
-  },
-  {
-    "screen": "VentaBorrar",
-    "rule": "touch-action",
-    "target": "button:No, keep it",
-    "issue": 78
-  },
-  {
-    "screen": "VentaBorrar",
-    "rule": "touch-action",
-    "target": "button:Yes, delete it",
-    "issue": 78
-  },
-  {
-    "screen": "VentaDetalle",
-    "rule": "touch-action",
-    "target": "button:Delete sale",
-    "issue": 78
   },
   {
     "screen": "Ventas",
