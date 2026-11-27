@@ -37,6 +37,7 @@ El diagrama de clases de cada capacidad lo genera [scripts/docs/generate.py](../
 | Capacidad | Puertos (clases de `application/ports.py`) | Diagrama de clases |
 | --- | --- | --- |
 | accounts | [accounts](../../app/accounts/application/ports.py) `Accounts` `BusinessOpening` `AccountsMoneyFormat` | [accounts](generated/classes/accounts.md) |
+| business_logo | sin `ports.py`: su contrato es [logo](../../app/business_logo/application/logo.py) `BusinessLogoRepository`; por ahora solo tiene `domain/` y `application/`, sin adapters ni ruta en esta parte | el diagrama se genera después del merge |
 | business_removal | sin `ports.py`: sus contratos están en [schema_rows](../../app/business_removal/application/schema_rows.py) y [money_format_read](../../app/business_removal/application/money_format_read.py) `MoneyFormatRead`, que implementa [export_reader](../../app/money_format/adapters/export_reader.py) `SqlMoneyFormatRead` de money_format | [business_removal](generated/classes/business_removal.md) |
 | catalog | [catalog](../../app/catalog/application/ports.py) `CatalogVarieties` `CatalogStock` `CatalogMoneyFormat` (el formato de la plata del Catalog; `app/main.py` lo cuelga en `app.state.catalog_money_format`) | [catalog](generated/classes/catalog.md) |
 | customer_types | [customer_types](../../app/customer_types/application/ports.py) `CustomerTypes` `CustomersInType` | [customer_types](generated/classes/customer_types.md) |
