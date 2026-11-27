@@ -281,32 +281,42 @@ def test_a_repeated_q_binds_the_last_value(client: TestClient) -> None:
 
 
 @pytest.mark.parametrize(
-    "instant",
-    [datetime(2026, 10, 3, 2, 59, tzinfo=UTC), datetime(2026, 10, 3, 3, 0, tzinfo=UTC)],
+    ("instant", "same_day_entry", "expected"),
+    [
+        (datetime(2026, 10, 3, 2, 59, tzinfo=UTC), "2026-10-02", 8.5),
+        (datetime(2026, 10, 3, 3, 0, tzinfo=UTC), "2026-10-03", 8.5),
+    ],
     ids=["just-before-argentina-midnight", "just-after-argentina-midnight"],
 )
 def test_the_quantity_is_the_one_stock_gives_around_argentina_midnight(
-    client: TestClient, clock: MovableClock, instant: datetime
+    client: TestClient,
+    clock: MovableClock,
+    instant: datetime,
+    same_day_entry: str,
+    expected: float,
 ) -> None:
+    """Movements sit on the day the clock reads at each instant (10-02 before midnight,
+    10-03 after it), so a search that read another day would disagree with `/stock`."""
+    clock.set(instant)
     product_id = _product(client, "Hierba Medianoche", 1_000)
     _entry(client, product_id, "10", date="2026-10-02")
     withdrawal = client.post(
         "/stock/withdrawals",
         json={
             "reason_id": 1,
-            "date": "2026-10-01",
+            "date": "2026-10-02",
             "lines": [{"product_id": product_id, "quantity": "2.5"}],
         },
     )
     assert withdrawal.status_code == 201, withdrawal.text
-    clock.set(instant)
+    _entry(client, product_id, "1", date=same_day_entry)
 
     [hit] = _search(client, "medianoche")["products"]
     stock = next(
         p for p in client.get("/stock").json()["products"] if p["product_id"] == product_id
     )
 
-    assert hit["quantity"] == stock["quantity"] == 7.5
+    assert hit["quantity"] == stock["quantity"] == expected
 
 
 def test_the_other_business_lookalikes_are_never_returned(
