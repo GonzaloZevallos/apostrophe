@@ -15,12 +15,10 @@
  * ever keeping the old query's matches as its placeholder.
  */
 
-import { CUSTOMER, CUSTOMER_NEW } from '../../routes'
+import { CUSTOMER } from '../../routes'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useMatch } from 'react-router'
-import BotonLink from '../../components/BotonLink'
-import SettingsAvatar from '../../components/SettingsAvatar'
 import { NetworkError } from '../../api/client'
 import { listCustomers } from '../../api/customers'
 import { keys } from '../../api/keys'
@@ -46,6 +44,7 @@ import { CUSTOMERS_TEXT } from '../../copy/customers'
 import { useTranslation } from 'react-i18next'
 import { EMPTY_STATE_KEYS } from '../../copy/emptyStates'
 import ClienteFila from './ClienteFila'
+import CustomersTitleRow from './CustomersTitleRow'
 import TeDeben from './TeDeben'
 import { OwedSummarySkeleton } from './OwedSummary'
 import { DEBTORS_NOTICE_PLACE, DebtorsSlot } from './DebtorsUnavailable'
@@ -132,13 +131,7 @@ export default function Clientes() {
       {/* The first answer only: a new search over the list already shown is not the area loading. */}
       <LoadingWhile active={isPending || debtors.state === 'pending'} />
       <div className="cuerpo">
-        <div className="clientes__encabezado cabecera-fila">
-          <span className="encabezado__titulo">{COMMON_TEXT.customers}</span>
-          <BotonLink to={CUSTOMER_NEW} variant="secondary" icon="agregar">
-            {COMMON_TEXT.newCustomer}
-          </BotonLink>
-          <SettingsAvatar />
-        </div>
+        <CustomersTitleRow avatar />
         {feedback !== null && <Notice {...feedback} />}
         <label className="campo">
           <span className="visualmente-oculto">{SEARCH_LABEL}</span>

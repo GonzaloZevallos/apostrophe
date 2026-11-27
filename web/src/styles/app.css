@@ -4469,6 +4469,16 @@ a.ajustes-tema__opcion {
   color: var(--boton-texto);
 }
 
+/* The neutral round add (the phone Customers title row's "New customer"): the plain
+ * `.boton-icono` surface with a --linea ring and the --tinta icon, never --boton. */
+.boton-icono--neutro {
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  color: var(--tinta);
+  user-select: none;
+  touch-action: manipulation;
+}
+
 .productos-cabecera__nueva {
   user-select: none;
   touch-action: manipulation;
@@ -5941,6 +5951,18 @@ a.ajustes-tema__opcion {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--espacio-md);
+}
+
+/* On the phone the row is one line: the title is cut by `.cabecera-fila`, the round add and the
+ * avatar keep their 44 px. */
+@media (max-width: 899.98px) {
+  .clientes__encabezado {
+    flex-wrap: nowrap;
+  }
+
+  .clientes__encabezado > .boton-icono {
+    flex-shrink: 0;
+  }
 }
 
 .clientes__encabezado > .boton {

@@ -112,6 +112,18 @@ describe('on a phone, a direct address', () => {
     expect(document.querySelector('.sheet__actions')).toContainElement(screen.getByRole('button', { name: 'Save and use' }))
   })
 
+  test('new customer: the "New customer" link behind the sheet is the only one and it is inert, so none is reachable', async () => {
+    renderApp([{ pathname: CUSTOMER_NEW }], 'phone')
+
+    await screen.findByRole('dialog', { name: COMMON_TEXT.newCustomer })
+    // The pane draws only once the list has answered.
+    await waitFor(() => expect(behindPane()).toHaveTextContent('Ana Pérez'))
+    expect(screen.queryByRole('link', { name: COMMON_TEXT.newCustomer })).not.toBeInTheDocument()
+    const behindLink = within(behindPane()).getByRole('link', { name: COMMON_TEXT.newCustomer, hidden: true })
+    expect(screen.getAllByRole('link', { name: COMMON_TEXT.newCustomer, hidden: true })).toHaveLength(1)
+    expect(behindLink.closest('[inert], [aria-hidden="true"]')).not.toBeNull()
+  })
+
   test('edit customer: the sheet over the customer\'s card, focus in Name, one Close', async () => {
     renderApp([{ pathname: EDIT }], 'phone')
 
