@@ -7,9 +7,11 @@ import { render, screen } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import { formatWeekdayDay } from '../../format/dates'
+import { moneyFormatter } from '../../format/money'
 import SaleCustomerCard, { type SaleCustomerCardProps } from './SaleCustomerCard'
 
 const FORMAT = { symbol: '$', decimals: 0 }
+const money = moneyFormatter(FORMAT)
 const DATE = '2026-09-14'
 
 function renderCard(props: Partial<SaleCustomerCardProps> = {}) {
@@ -41,7 +43,7 @@ describe('the payment chip', () => {
 
   test('part_paid reads as on the Sales card', () => {
     renderCard({ paymentState: 'part_paid', stillOwed: 4000 })
-    expect(screen.getByText(/Part-paid/).textContent).toBe('Part-paid · $ 4.000 owed')
+    expect(screen.getByText(/Part-paid/).textContent).toBe(`Part-paid · ${money.money(4000)} owed`)
   })
 
   test('unpaid reads "Unpaid"', () => {
