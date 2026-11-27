@@ -14,7 +14,7 @@
  */
 
 import { choosePaymentMethod } from '../../components/selectorTestKit'
-import { CUSTOMER, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SALE_NEW, pathTo } from '../../routes'
+import { CUSTOMER, CUSTOMER_EDIT, CUSTOMER_PAYMENT, CUSTOMERS, HOME, SALE_NEW, pathTo } from '../../routes'
 import { consumePaymentReturn, setPaymentReturn } from '../../paymentReturn'
 import { inAppState } from '../../components/inAppState'
 import { useGoneNotice } from '../../components/goneExit'
@@ -1139,4 +1139,92 @@ test('the card takes focus back only once its account has answered', async () =>
 
   await waitFor(() => expect(record).toHaveFocus())
   expect(scrollTo).not.toHaveBeenCalled()
+})
+
+// The card's own top row (`CustomerCardTopRow`) sits under the shell's single back: it is
+// there in every state but gone, so the content does not move when the customer arrives, and
+// only a loaded card has the 'Edit' link in it.
+
+// The row and the name row have no role or text of their own, so they are found by their classes.
+function topRow(): HTMLElement {
+  const row = document.querySelector<HTMLElement>('.ficha-cliente__superior')
+  if (row === null) throw new Error('the card draws no top row')
+  return row
+}
+
+function nameRow(): HTMLElement {
+  const row = document.querySelector<HTMLElement>('.ficha-cliente__encabezado')
+  if (row === null) throw new Error('the card draws no name row')
+  return row
+}
+
+function expectEmptyCardFrame(): void {
+  expect(topRow()).toBeEmptyDOMElement()
+  expect(nameRow()).toHaveTextContent('')
+  expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument()
+}
+
+test('while loading the card draws its top row and an empty name row, with no Edit link', async () => {
+  api.mockImplementation(() => new Promise<Response>(() => undefined))
+  renderFicha('3')
+
+  expect(await screen.findByRole('progressbar')).toBeInTheDocument()
+  expectEmptyCardFrame()
+})
+
+test('after a network failure the card keeps its top row and an empty name row, with no Edit link', async () => {
+  api.mockImplementation(() => Promise.reject(new TypeError('Failed to fetch')))
+  renderFicha('3')
+
+  expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
+  expectEmptyCardFrame()
+})
+
+test('after a generic failure the card keeps its top row and an empty name row, with no Edit link', async () => {
+  api.mockResolvedValue(jsonResponse(500, {}))
+  renderFicha('3')
+
+  expect(await screen.findByText(ERROR_GENERICO_MENSAJE)).toBeInTheDocument()
+  expectEmptyCardFrame()
+})
+
+test('a gone customer draws neither the top row nor the name row', async () => {
+  api.mockResolvedValue(jsonResponse(404, { detail: 'no such customer', code: 'customer.not_found' }))
+  renderFicha('999')
+
+  expect(await screen.findByText('That is gone.')).toBeInTheDocument()
+  expect(document.querySelector('.ficha-cliente__superior')).toBeNull()
+  expect(document.querySelector('.ficha-cliente__encabezado')).toBeNull()
+})
+
+test('a loaded card has one Edit link in its top row, to the edit screen, and nothing to press in the name row', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/3': () => jsonResponse(200, SETTLED_CUSTOMER),
+      'GET /customers/3/account': () => jsonResponse(200, EMPTY_ACCOUNT),
+    }),
+  )
+  renderFicha('3')
+
+  const edit = await screen.findByRole('link', { name: 'Edit' })
+  expect(screen.getAllByRole('link', { name: 'Edit' })).toHaveLength(1)
+  expect(topRow()).toContainElement(edit)
+  expect(edit).toHaveAttribute('href', pathTo(CUSTOMER_EDIT, { id: 3 }))
+  expect(edit.querySelector('svg')).toBeNull()
+  expect(nameRow()).toHaveTextContent('Fer')
+  expect(within(nameRow()).queryByRole('button')).not.toBeInTheDocument()
+  expect(within(nameRow()).queryByRole('link')).not.toBeInTheDocument()
+})
+
+test('the card draws no back link of its own', async () => {
+  api.mockImplementation(
+    dispatchFetch({
+      'GET /customers/3': () => jsonResponse(200, SETTLED_CUSTOMER),
+      'GET /customers/3/account': () => jsonResponse(200, EMPTY_ACCOUNT),
+    }),
+  )
+  renderFicha('3')
+
+  await screen.findByRole('link', { name: 'Edit' })
+  expect(screen.queryByRole('link', { name: /Customers/ })).not.toBeInTheDocument()
 })

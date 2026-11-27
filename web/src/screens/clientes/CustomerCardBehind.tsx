@@ -3,7 +3,8 @@
  * card's own query keys, so opened from inside the app it is already cached. It draws only from
  * resolved data: while pending and on any error (a gone customer included) it is empty, and the
  * form route shows its own gone handling. It keeps the card's heading, balance, phone and account
- * rows, and draws no chrome, no `h1`, no ids and no control.
+ * rows, and draws no chrome, no `h1`, no ids and no control (its top row is empty: the same height as
+ * the card's, so the page does not jump when the sheet closes).
  */
 
 import { useQuery } from '@tanstack/react-query'
@@ -16,6 +17,7 @@ import { formatDateShort } from '../../format/dates'
 import { useMoney } from '../../format/moneyContext'
 import AccountRowLine from './AccountRowLine'
 import { rowKey } from './accountRows'
+import CustomerCardTopRow from './CustomerCardTopRow'
 
 export default function CustomerCardBehind({ customerId }: { customerId: string }) {
   const money = useMoney()
@@ -37,6 +39,7 @@ export default function CustomerCardBehind({ customerId }: { customerId: string 
   return (
     <div className="pantalla">
       <div className="cuerpo">
+        <CustomerCardTopRow />
         <div className="ficha-cliente__encabezado">
           <span className="encabezado__titulo">{data.name}</span>
         </div>

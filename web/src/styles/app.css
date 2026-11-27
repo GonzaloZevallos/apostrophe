@@ -5953,9 +5953,27 @@ a.ajustes-tema__opcion {
   flex-shrink: 0;
 }
 
-/* "Editar" on a customer's card keeps its plain accent link look: no underline. */
-.ficha-cliente__encabezado .boton--enlace {
+/* The card's own top row, directly under the shell's single back: "Edit" right-aligned, one touch
+ * target tall, drawn in every state but gone so the content does not move when the customer arrives. */
+.ficha-cliente__superior {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: var(--alto-tocable);
+}
+
+.ficha-cliente__superior .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--alto-tocable);
+  padding-inline: var(--espacio-md);
+  touch-action: manipulation;
   box-shadow: none;
+}
+
+/* The name row keeps one line of title height while the name is not there yet. */
+.ficha-cliente__encabezado .encabezado__titulo {
+  min-height: 1lh;
 }
 
 /* "Borrar cobro" is the trash at the end of its account row. */

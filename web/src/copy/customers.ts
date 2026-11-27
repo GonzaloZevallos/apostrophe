@@ -44,6 +44,8 @@ export const CUSTOMERS_TEXT = {
   paymentTitle: (method: string | number) => `Payment · ${method}`,
   creditAmount: (running_balance: string | number) => `In your favor ${running_balance}`,
   giveItAName: 'Give them a name',
+  /** The Name field's hint: guidance only, so the same person is found next time. */
+  namePlaceholder: 'How you have them in your contacts',
   notAPhone: 'Enter the number with its area code, or start with + and the country code.',
   phoneHintNone: '+ and country code, then the number',
   phoneCountryLabel: 'Phone country',
@@ -138,6 +140,7 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'notice', text: CUSTOMERS_TEXT.debtorsUnavailable },
   { kind: 'help', text: CUSTOMERS_TEXT.saleTitle },
   { kind: 'help', text: CUSTOMERS_TEXT.nothingToPay },
+  { kind: 'help', text: CUSTOMERS_TEXT.namePlaceholder },
   { kind: 'help', text: CUSTOMERS_TEXT.accountHeading },
   { kind: 'help', text: CUSTOMERS_TEXT.paymentTitle(SAMPLES.name) },
   { kind: 'help', text: CUSTOMERS_TEXT.paidWith(SAMPLES.name) },

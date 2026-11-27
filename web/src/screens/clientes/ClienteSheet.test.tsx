@@ -128,6 +128,18 @@ describe('on a phone, a direct address', () => {
     expect(pane).not.toContainElement(dialog)
   })
 
+  test('edit customer: the card behind draws its top row with no link and no control', async () => {
+    renderApp([{ pathname: EDIT }], 'phone')
+
+    await screen.findByRole('dialog', { name: COMMON_TEXT.editCustomer })
+    const pane = behindPane()
+    await waitFor(() => expect(pane).toHaveTextContent('Ana Pérez'))
+    const row = pane.querySelector('.ficha-cliente__superior')
+    expect(row).not.toBeNull()
+    expect(row).toBeEmptyDOMElement()
+    expect(pane.querySelector('a, button')).toBeNull()
+  })
+
   test('the card behind shows phone_display, not the stored phone', async () => {
     renderApp([{ pathname: EDIT }], 'phone')
 

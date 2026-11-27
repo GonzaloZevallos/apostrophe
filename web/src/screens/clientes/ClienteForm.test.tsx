@@ -165,6 +165,15 @@ test('only Nombre is marked required; Teléfono stays optional', () => {
   expect(screen.getByLabelText('Phone')).not.toBeRequired()
 })
 
+test('the Name field hints how to write the name, and keeps its label', async () => {
+  renderForm(CUSTOMER_NEW)
+
+  const name = await screen.findByLabelText('Name')
+  expect(name).toHaveAttribute('placeholder', 'How you have them in your contacts')
+  expect(name).toHaveAttribute('autocomplete', 'off')
+  expect(screen.getByLabelText('Phone')).not.toHaveAttribute('placeholder', 'How you have them in your contacts')
+})
+
 test('the form has Nombre required, an optional phone and no Canal field', async () => {
   renderForm(CUSTOMER_NEW)
 

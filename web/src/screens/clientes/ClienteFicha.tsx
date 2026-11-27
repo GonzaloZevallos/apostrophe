@@ -50,9 +50,49 @@ import { deleteRowIndices, rowKey } from './accountRows'
 import { COMMON_TEXT } from '../../copy/common'
 import { CUSTOMERS_TEXT } from '../../copy/customers'
 import ContentArea from '../../components/ContentArea'
+import type { ReactNode, Ref } from 'react'
+import CustomerCardTopRow from './CustomerCardTopRow'
 
 function deletePaymentTitle(payment: { amount: number; method: string; paid_on: string }, money: MoneyFormatter): string {
   return CUSTOMERS_TEXT.deletePaymentOf(money.money(payment.amount), payment.method, formatDateShort(payment.paid_on))
+}
+
+/** Every non-gone state of the card: the top row (with "Edit" once the customer is there) and
+ * the body, so the content does not move when the customer arrives. */
+function CardFrame({
+  editTo,
+  ref,
+  after,
+  children,
+}: {
+  editTo?: string
+  ref?: Ref<HTMLElement>
+  /** What sits after the body, outside it (the delete-payment dialog). */
+  after?: ReactNode
+  children: ReactNode
+}) {
+  return (
+    <ContentArea as="main" className="pantalla" ref={ref}>
+      <div className="cuerpo">
+        <CustomerCardTopRow editTo={editTo} />
+        {children}
+      </div>
+      {after}
+    </ContentArea>
+  )
+}
+
+/** The name row: only the name, no control. Empty (one line tall through the CSS) until the customer is there. */
+function CardHeading({ name }: { name?: string }) {
+  return (
+    <div className="ficha-cliente__encabezado">
+      {name === undefined ? (
+        <span className="encabezado__titulo" />
+      ) : (
+        <span className="encabezado__titulo" tabIndex={-1} data-place="card-heading">{name}</span>
+      )}
+    </div>
+  )
 }
 
 function cardHeading(root: HTMLElement): HTMLElement | null {
@@ -136,125 +176,118 @@ export default function ClienteFicha() {
     }
     if (error instanceof NetworkError) {
       return (
-        <ContentArea as="main" className="pantalla">
-          <div className="cuerpo">
-            <SinConexion />
-          </div>
-        </ContentArea>
+        <CardFrame>
+          <CardHeading />
+          <SinConexion />
+        </CardFrame>
       )
     }
     return (
-      <ContentArea as="main" className="pantalla">
-        <div className="cuerpo">
-          <ErrorGenerico />
-        </div>
-      </ContentArea>
+      <CardFrame>
+        <CardHeading />
+        <ErrorGenerico />
+      </CardFrame>
     )
   }
 
   if (isPending || data === undefined) {
     return (
-      <ContentArea as="main" className="pantalla">
-        <div className="cuerpo">
-          <Loading />
-        </div>
-      </ContentArea>
+      <CardFrame>
+        <CardHeading />
+        <Loading />
+      </CardFrame>
     )
   }
 
   const rows = account.data?.rows ?? []
   const deleteIndices = deleteRowIndices(rows)
 
+  const confirmDialog =
+    confirmingDelete === null ? null : (
+      <ConfirmDialog
+        title={deletePaymentTitle(confirmingDelete, money)}
+        detail={COMMON_TEXT.cannotUndo}
+        confirmText={COMMON_TEXT.yesDelete}
+        cancelText={COMMON_TEXT.noKeep}
+        onConfirm={() => void onConfirmDeletePayment()}
+        onCancel={() => setConfirmingDelete(null)}
+      />
+    )
+
   return (
-    <ContentArea as="main" className="pantalla" ref={root}>
-      <div className="cuerpo">
-        <div className="ficha-cliente__encabezado">
-          <span className="encabezado__titulo" tabIndex={-1} data-place="card-heading">{data.name}</span>
-          <BotonLink variant="icon" action="edit" ariaLabel={COMMON_TEXT.edit} to={pathTo(CUSTOMER_EDIT, { id: customerId })} />
+    <CardFrame ref={root} editTo={pathTo(CUSTOMER_EDIT, { id: customerId })} after={confirmDialog}>
+      <CardHeading name={data.name} />
+      {feedback !== null && <Notice {...feedback} />}
+      {accountGone && <Notice kind="notice" refusal={GONE_NOTICE} />}
+      {deletedToast && (
+        <div className="toast" role="status">
+          <span className="toast__texto">{CUSTOMERS_TEXT.paymentDeleted}</span>
         </div>
-        {feedback !== null && <Notice {...feedback} />}
-        {accountGone && <Notice kind="notice" refusal={GONE_NOTICE} />}
-        {deletedToast && (
-          <div className="toast" role="status">
-            <span className="toast__texto">{CUSTOMERS_TEXT.paymentDeleted}</span>
-          </div>
-        )}
-        {deletePaymentOffline && <SinConexion />}
-        {deletePaymentFailed && <ErrorGenerico />}
+      )}
+      {deletePaymentOffline && <SinConexion />}
+      {deletePaymentFailed && <ErrorGenerico />}
 
-        {data.standing === 'owes' && (
-          <div className="ficha-deuda">
-            <span className="rotulo ficha-deuda__rotulo">{CUSTOMERS_TEXT.owesYou}</span>
-            <span className="cifra-l monto-deuda">{money.money(data.balance)}</span>
-            {data.owing_since !== null && (
-              <span className="rotulo">{CUSTOMERS_TEXT.since}{formatDateShort(data.owing_since)}</span>
-            )}
-            <div className="clientes__accion">
-              <BotonLink {...paymentLink(customerId, 'card')} icon="cobro">
-                {COMMON_TEXT.recordPayment}
-              </BotonLink>
-            </div>
-          </div>
-        )}
-        {data.standing === 'credit' && (
-          <div className="ficha-deuda ficha-deuda--credito">
-            <span className="rotulo ficha-deuda__rotulo">{CUSTOMERS_TEXT.creditLabel}</span>
-            <span className="cifra-l monto-credito">{money.magnitude(data.balance)}</span>
-          </div>
-        )}
-
-        <div className="formulario">
-          {data.phone_display !== null && (
-            <div className="campo">
-              <span className="campo__rotulo">{CUSTOMERS_TEXT.phone}</span>
-              <span className="campo__valor-telefono">{data.phone_display}</span>
-            </div>
+      {data.standing === 'owes' && (
+        <div className="ficha-deuda">
+          <span className="rotulo ficha-deuda__rotulo">{CUSTOMERS_TEXT.owesYou}</span>
+          <span className="cifra-l monto-deuda">{money.money(data.balance)}</span>
+          {data.owing_since !== null && (
+            <span className="rotulo">{CUSTOMERS_TEXT.since}{formatDateShort(data.owing_since)}</span>
           )}
-          <CustomerTypeLine typeId={data.customer_type_id} />
+          <div className="clientes__accion">
+            <BotonLink {...paymentLink(customerId, 'card')} icon="cobro">
+              {COMMON_TEXT.recordPayment}
+            </BotonLink>
+          </div>
         </div>
-
-        <section className="cuenta-cliente" aria-labelledby="cuenta-cliente-titulo">
-          <h2 id="cuenta-cliente-titulo" className="rotulo cuenta-cliente__encabezado">
-            {CUSTOMERS_TEXT.accountHeading}
-          </h2>
-          {rows.map((row, index) => (
-            <AccountRowLine key={rowKey(row)} row={row}>
-              {deleteIndices.has(index) && row.kind !== 'sale' && (
-                <Boton
-                  variant="icon"
-                  action="delete"
-                  ariaLabel={CUSTOMERS_TEXT.deletePayment}
-                  onClick={() =>
-                    setConfirmingDelete({
-                      id: row.payment.id,
-                      amount: row.payment.amount,
-                      method: row.payment.payment_method.name,
-                      paid_on: row.payment.paid_on,
-                    })
-                  }
-                />
-              )}
-            </AccountRowLine>
-          ))}
-        </section>
-
-        <div className="ficha-cliente__pie">
-          <BotonLink to={SALE_NEW} state={newSaleFor(customerId)} icon="agregar">
-            <span className="ficha-cliente__pie-texto">{CUSTOMERS_TEXT.newSaleTo}{data.name}</span>
-          </BotonLink>
+      )}
+      {data.standing === 'credit' && (
+        <div className="ficha-deuda ficha-deuda--credito">
+          <span className="rotulo ficha-deuda__rotulo">{CUSTOMERS_TEXT.creditLabel}</span>
+          <span className="cifra-l monto-credito">{money.magnitude(data.balance)}</span>
         </div>
+      )}
+
+      <div className="formulario">
+        {data.phone_display !== null && (
+          <div className="campo">
+            <span className="campo__rotulo">{CUSTOMERS_TEXT.phone}</span>
+            <span className="campo__valor-telefono">{data.phone_display}</span>
+          </div>
+        )}
+        <CustomerTypeLine typeId={data.customer_type_id} />
       </div>
 
-      {confirmingDelete !== null && (
-        <ConfirmDialog
-          title={deletePaymentTitle(confirmingDelete, money)}
-          detail={COMMON_TEXT.cannotUndo}
-          confirmText={COMMON_TEXT.yesDelete}
-          cancelText={COMMON_TEXT.noKeep}
-          onConfirm={() => void onConfirmDeletePayment()}
-          onCancel={() => setConfirmingDelete(null)}
-        />
-      )}
-    </ContentArea>
+      <section className="cuenta-cliente" aria-labelledby="cuenta-cliente-titulo">
+        <h2 id="cuenta-cliente-titulo" className="rotulo cuenta-cliente__encabezado">
+          {CUSTOMERS_TEXT.accountHeading}
+        </h2>
+        {rows.map((row, index) => (
+          <AccountRowLine key={rowKey(row)} row={row}>
+            {deleteIndices.has(index) && row.kind !== 'sale' && (
+              <Boton
+                variant="icon"
+                action="delete"
+                ariaLabel={CUSTOMERS_TEXT.deletePayment}
+                onClick={() =>
+                  setConfirmingDelete({
+                    id: row.payment.id,
+                    amount: row.payment.amount,
+                    method: row.payment.payment_method.name,
+                    paid_on: row.payment.paid_on,
+                  })
+                }
+              />
+            )}
+          </AccountRowLine>
+        ))}
+      </section>
+
+      <div className="ficha-cliente__pie">
+        <BotonLink to={SALE_NEW} state={newSaleFor(customerId)} icon="agregar">
+          <span className="ficha-cliente__pie-texto">{CUSTOMERS_TEXT.newSaleTo}{data.name}</span>
+        </BotonLink>
+      </div>
+    </CardFrame>
   )
 }

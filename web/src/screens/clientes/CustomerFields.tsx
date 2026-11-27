@@ -94,6 +94,7 @@ export default function CustomerFields({
             className="campo__input campo__input--enfoque"
             type="text"
             autoComplete="off"
+            placeholder={CUSTOMERS_TEXT.namePlaceholder}
             value={value.name}
             onChange={(event) => onChange({ ...value, name: event.target.value })}
             required

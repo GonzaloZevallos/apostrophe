@@ -40,7 +40,7 @@ Criterios de éxito:
 
 Las dos listas son cerradas. Agregar a cualquiera de las dos cambia este archivo y el README, nunca una sola pantalla.
 
-- **Solo ícono**: borrar ("Delete…"), buscar ("Search"), cerrar ("Close"), editar ("Edit") y compartir ("Share") solo donde no es la acción principal de la pantalla (p. ej. el Share debajo de un enlace de invitación recién creado en Users, cuya acción principal es "Invite a partner").
+- **Solo ícono**: borrar ("Delete…"), buscar ("Search"), cerrar ("Close"), editar ("Edit") y compartir ("Share") solo donde no es la acción principal de la pantalla (p. ej. el Share debajo de un enlace de invitación recién creado en Users, cuya acción principal es "Invite a partner"). Estar en esta lista permite el ícono, nunca lo exige: el "Edit" de la ficha de un Customer es un link de solo texto en la fila debajo del "‹ Customers".
   - El nombre accesible es la palabra exacta actual; "Close", nunca "Back", sigue valiendo a través de él.
   - El objetivo mide al menos 44 px.
   - Estar en la lista permite el solo ícono; nunca lo exige. La acción principal de una pantalla siempre lleva su texto (el Share de la pantalla del Catalog conserva su palabra), con una sola excepción con nombre, la de la fila de título del celular de abajo.
@@ -55,7 +55,7 @@ Las dos listas son cerradas. Agregar a cualquiera de las dos cambia este archivo
   - Regla del dueño, general: cuando una acción con palabra no cabe en una fila de título del celular, pasa a ser un botón redondo solo ícono con nombre accesible; nunca se achica el título, se acorta la palabra ni se envuelve la fila.
   - Fuera de esa fila (la computadora incluida), "New product" conserva su palabra.
 - **Solo texto**:
-  - enlaces (`enlace`), como "Edit header and footer" y "See all";
+  - enlaces (`enlace`), como "Edit header and footer" y "See all", y el "Edit" de la ficha de un Customer: un link de solo texto, sin ícono, a la derecha de su propia fila de 44 px, la fila debajo del "‹ Customers" (parte 2 de GH-1071). Estar en la lista de solo ícono permite el ícono pero nunca lo exige;
   - el par de respuestas dentro de una confirmación, con sus palabras exactas actuales ("No, keep it / Yes, delete it", "No, keep entering / Yes, discard it" y el resto);
   - el envío de un formulario o una hoja ("Save sale", "Save the warning", "Save the catalog", "Record payment", "Save and sign in", "Sign in" y el resto);
   - las elecciones entre opciones, que no son acciones: las pestañas de período (Today · Week · Month · Dates), Cash · Transfer · Owing, Promotion · Own use, el origen de un Stock entry, Light · Dark, "All: $ X";
