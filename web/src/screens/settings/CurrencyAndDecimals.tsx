@@ -1,5 +1,5 @@
 /**
- * `CurrencyAndDecimals`, Settings → Business → Currency and decimals (`money.md`): the
+ * `CurrencyAndDecimals`, Settings → Currency and decimals (`money.md`): the
  * Business's symbol and decimals (0 to 2), one form with one Save, framed by `SettingsGroup`
  * (title, "Close", the Discard dialog).
  *

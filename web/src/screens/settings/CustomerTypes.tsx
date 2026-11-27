@@ -1,5 +1,5 @@
 /**
- * "Customer types" (Settings → Prices → Customer types; `docs/product/customers.md`): the
+ * "Customer types" (Settings → Customer types; `docs/product/customers.md`): the
  * seller's own groups of customers, each a name and an icon. A list with "+ Customer type", and
  * Rename and Delete on each row; the new/edit form is an in-page Sheet (`CustomerTypeForm`).
  * Deleting a type that still has customers is refused by the server with their count, and the

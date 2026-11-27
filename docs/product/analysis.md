@@ -188,7 +188,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 - **Mismas cifras, mismo orden, mismas etiquetas**: cada tarjeta lleva cada cifra de la fila que reemplaza, en el orden de esa fila, con las etiquetas que ya tiene el Copy module (y, para un Withdrawal reason, su nombre). Nada se reordena, se esconde detrás de un toque ni se pliega, y no hay saltos entre secciones.
 - **Cifra principal**: las ventas son la cifra principal de una tarjeta. Entran en una línea, y su "$" nunca se separa de su número.
 - **Ajuste**:
-  - Los nombres, los nombres de Withdrawal reason y las etiquetas de período se cortan con puntos suspensivos. El nombre completo de un producto se sigue leyendo en la computadora y en su página, y el de un Withdrawal reason en Settings → Business → Withdrawal reasons.
+  - Los nombres, los nombres de Withdrawal reason y las etiquetas de período se cortan con puntos suspensivos. El nombre completo de un producto se sigue leyendo en la computadora y en su página, y el de un Withdrawal reason en Settings → Withdrawal reasons.
   - Las cifras nunca se cortan, nunca pasan a otra línea, nunca se parten y nunca pierden su "$".
   - Una marca de pendiente ("and N g without cost", o "N g without cost" cuando toda la cifra está pendiente) va en la línea de abajo de su cifra, dentro de la misma tarjeta, y nunca se corta ni se recorta. Así, una cifra con parte pendiente nunca se lee como completa.
   - Nada se desplaza de costado a 320 px ni a 246 px (texto al 130 %), con un nombre de 60 caracteres y cifras de nueve dígitos. Ningún texto mide menos de 12 px. Cada zona de toque mide al menos 44×44, las flechas del mes incluidas. Las dos acciones de la tarjeta Expenses pasan a dos líneas antes que achicarse.
@@ -296,7 +296,7 @@ Dónde un negocio gana y pierde plata, a lo largo de los períodos y hasta cada 
 ## Fuera de alcance
 
 - Un rango de fechas a medida (Dates) o un selector de semana.
-- Editar cualquier cosa desde Analysis, la lista de Withdrawal reasons incluida (se edita en Settings → Business → Withdrawal reasons).
+- Editar cualquier cosa desde Analysis, la lista de Withdrawal reasons incluida (se edita en Settings → Withdrawal reasons).
 - Un monto inicial de Cash o la plata en mano.
 - Stock shortfall por producto; el costo de cada Withdrawal reason por producto.
 - Un total de Cost of goods sold en la cabecera del mes o desde el First record.

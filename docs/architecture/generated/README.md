@@ -20,6 +20,7 @@ A diagram shows only its own package: classes of other packages, and the edges t
 - [classes/products.md](classes/products.md)
 - [classes/results.md](classes/results.md)
 - [classes/sales.md](classes/sales.md)
+- [classes/search.md](classes/search.md)
 - [classes/shared.md](classes/shared.md)
 - [classes/spreadsheet_import.md](classes/spreadsheet_import.md)
 - [classes/stock.md](classes/stock.md)

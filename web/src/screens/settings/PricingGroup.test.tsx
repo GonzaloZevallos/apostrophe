@@ -112,9 +112,10 @@ test('offers the Customer types entry only while the saved switch is on', async 
   expect(screen.queryByRole('link', { name: 'Customer types' })).not.toBeInTheDocument()
 })
 
-test('shows the Customer types entry row when the saved switch is on', async () => {
+test('has no Customer types link even when the saved switch is on (the Settings row opens the list)', async () => {
   renderGroup(serving(undefined, [], { is_bulk_pricing: true, is_vip_customers: true }))
-  expect(await screen.findByRole('link', { name: 'Customer types' })).toBeInTheDocument()
+  expect(await screen.findByRole('switch', { name: 'Customer types' })).toHaveAttribute('aria-checked', 'true')
+  expect(screen.queryByRole('link', { name: 'Customer types' })).toBeNull()
 })
 
 test('saving sends both switches and shows the fixed toast "Prices saved"', async () => {

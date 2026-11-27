@@ -84,6 +84,14 @@ test('shows the business name', async () => {
   expect(await screen.findByDisplayValue('La Huerta')).toBeInTheDocument()
 })
 
+test('has no link rows: Currency and decimals and Withdrawal reasons open from their own Settings rows', async () => {
+  renderBusiness(vi.fn().mockResolvedValue(jsonResponse(200, BUSINESS)))
+
+  await screen.findByLabelText('Business name')
+  expect(screen.queryByRole('link', { name: 'Currency and decimals' })).toBeNull()
+  expect(screen.queryByRole('link', { name: 'Withdrawal reasons' })).toBeNull()
+})
+
 test('renaming the business shows the fixed success toast, never the name or an id', async () => {
   const fetchMock = vi.fn((_url: string, init?: RequestInit) => {
     if (init?.method === 'PATCH') {

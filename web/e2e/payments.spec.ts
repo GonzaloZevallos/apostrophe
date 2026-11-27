@@ -171,13 +171,13 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expect(saleTwoCard).toHaveCount(1)
   await expect(saleTwoCard.locator('.payment-chip')).toHaveText('Unpaid')
   await saleTwoCard.click()
-  await page.getByRole('button', { name: 'Delete sale' }).click()
+  await page.getByRole('button', { name: 'Void' }).click()
   await expect(
     page.getByRole('alertdialog', {
       name: `Delete the sale of $ 8.000 from ${today}? 8 g go back to stock.`,
     }),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Yes, delete it' }).click()
+  await page.getByRole('button', { name: 'Yes, void' }).click()
   await expectPath(page, SALES)
   await expect(page.getByText('Sale deleted')).toBeVisible()
 
@@ -212,8 +212,8 @@ test('a seller records, settles, undoes and traces payments, from the front alon
   await expectToast(page, 'Payment saved', () => page.getByRole('button', { name: 'Save' }).click())
 
   await page.goto(creditSaleUrl)
-  await page.getByRole('button', { name: 'Delete sale' }).click()
-  await page.getByRole('button', { name: 'Yes, delete it' }).click()
+  await page.getByRole('button', { name: 'Void' }).click()
+  await page.getByRole('button', { name: 'Yes, void' }).click()
   await expectPath(page, SALES)
   await expect(page.getByText('Sale deleted')).toBeVisible()
 

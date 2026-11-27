@@ -172,7 +172,7 @@ describe('the walk reads the shared words from the English bundle', () => {
     expect(state('EstadosReintento').visible).toBe('Something went wrong. Try again.')
     expect(state('EstadosGoneAviso').visible).toBe(refusal(GONE_NOTICE))
     expect(refusal(GONE_NOTICE)).toBe('That is gone. The list is up to date.')
-    expect(state('EstadosGoneAviso').steps).toContainEqual({ click: 'Yes, delete it' })
+    expect(state('EstadosGoneAviso').steps).toContainEqual({ click: 'Yes, void' })
   })
 
   it('taps the payment form by the words the form shows', () => {

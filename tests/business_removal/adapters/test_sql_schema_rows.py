@@ -6,6 +6,7 @@ proven to reach every table the schema holds and nothing of the other business.
 
 from __future__ import annotations
 
+import base64
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
@@ -14,14 +15,17 @@ import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import text
+from sqlalchemy import types as sa_types
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.accounts.adapters.sql_accounts import SqlAccounts
 from app.accounts.application.invitations import invite_partner
-from app.business_removal.adapters.sql_schema_rows import SqlSchemaRows
-from app.business_removal.domain.classification import delete_order
+from app.business_removal.adapters.sql_schema_rows import SqlSchemaRows, _column_type
+from app.business_removal.domain.classification import delete_order, other_type_columns
+from app.business_removal.domain.export_document import Business, build_document
 from app.business_removal.domain.labels import exported_tables
+from app.business_removal.domain.schema import ColumnType
 from app.db import make_engine
 from app.main import create_app
 from app.settings import Settings
@@ -491,3 +495,66 @@ def test_rows_parses_bool_date_and_naive_datetime_columns(tmp_path: Path) -> Non
         assert type(recorded_at) is datetime
         assert recorded_at.tzinfo is None
         assert recorded_at == NOW.replace(tzinfo=None)
+
+
+@pytest.mark.parametrize(
+    "sa_type",
+    [sa_types.LargeBinary(), sa_types.BLOB(), sa_types.BINARY(), sa_types.VARBINARY()],
+    ids=["LargeBinary", "BLOB", "BINARY", "VARBINARY"],
+)
+def test_every_binary_type_is_a_binary_column(sa_type: sa_types.TypeEngine[Any]) -> None:
+    assert _column_type(sa_type) is ColumnType.BINARY
+
+
+def test_a_type_with_no_mapping_is_still_other() -> None:
+    assert _column_type(sa_types.Float()) is ColumnType.OTHER
+
+
+def test_a_binary_column_is_read_exported_as_base64_and_no_longer_refused(
+    file_engine: Engine, leaving_token: str
+) -> None:
+    stored = b"\x89PNG\r\n\x1a\n\x00\xff\xfe\x00\x01"
+    with file_engine.begin() as connection:
+        connection.execute(
+            text(
+                "CREATE TABLE later_blob ("
+                "id INTEGER PRIMARY KEY, "
+                "business_id INTEGER NOT NULL REFERENCES business(id), "
+                "name TEXT NOT NULL, "
+                "image BLOB)"
+            )
+        )
+
+    with Session(file_engine) as session:
+        rows = SqlSchemaRows(session)
+        business = rows.business_of("leaving@example.com")
+        assert business is not None
+        session.execute(
+            text(
+                "INSERT INTO later_blob (business_id, name, image) VALUES (:b, 'one', :image), "
+                "(:b, 'two', NULL)"
+            ),
+            {"b": business.id, "image": stored},
+        )
+        session.commit()
+
+    with Session(file_engine) as session:
+        rows = SqlSchemaRows(session)
+        schema = rows.schema()
+        business = rows.business_of("leaving@example.com")
+        assert business is not None
+        assert schema.table("later_blob").column("image").type is ColumnType.BINARY
+        assert other_type_columns(schema) == ()
+
+        read = {name: rows.rows(name, business.id) for name in exported_tables(schema)}
+        document = build_document(
+            Business(business.id, business.name, business.language, business.default_phone_country),
+            schema,
+            read,
+            datetime(2026, 10, 3, 12, 0, 0),
+        )
+
+    records = document["kinds"]["later_blob"]
+    assert base64.b64decode(records[0]["image_base64"], validate=True) == stored
+    assert records[1]["image_base64"] is None
+    assert all("image" not in record for record in records)
