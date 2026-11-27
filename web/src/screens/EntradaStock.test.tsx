@@ -28,6 +28,7 @@ import { LIMITS } from '../copy/limits'
 import emptyStates from '../copy/locales/en/emptyStates.json'
 import { expectIconAndTextRule } from '../test/iconAndTextRule'
 import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
+import { withProductsSearch } from './varieties/renderVarieties'
 
 const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-03', shown_language: SHOWN_EN, money: { symbol: '$', decimals: 0 } }
 
@@ -60,7 +61,7 @@ async function renderFromVariety() {
 function Provide() {
   return (
     <FlashProvider>
-      <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
+      <MoneyFormatProvider format={ME.money}>{withProductsSearch(<Outlet context={ME} />)}</MoneyFormatProvider>
     </FlashProvider>
   )
 }

@@ -18,6 +18,7 @@ import FlashProvider from '../../flash/FlashProvider'
 import { VARIETIES, VARIETY, pathTo, relative } from '../../routes'
 import VarietyPage from './VarietyPage'
 import VarietyRoute from './VarietyRoute'
+import { withProductsSearch } from './renderVarieties'
 import { readSegment, withSegment } from './productsSegment'
 import ContentArea from '../../components/ContentArea'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
@@ -98,7 +99,7 @@ function renderPage({ removal = 'archive', grams = 12, overrides = {}, list, com
         element: (
           <QueryClientProvider client={queryClient}>
             <FlashProvider>
-              <MoneyFormatProvider format={ME.money}><Outlet context={ME} /></MoneyFormatProvider>
+              <MoneyFormatProvider format={ME.money}>{withProductsSearch(<Outlet context={ME} />)}</MoneyFormatProvider>
               <Where />
             </FlashProvider>
           </QueryClientProvider>
