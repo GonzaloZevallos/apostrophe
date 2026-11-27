@@ -57,9 +57,9 @@ export const SALE_BILL_TEXT = {
   unit: 'g',
 }
 
-/** The Collect Sheet's Received field: a help line, never a refusal. */
 /** Why the date and the shipping cannot be changed on the Collect Sheet (its price is fixed at the tap). */
 const DATE_SHIPPING_LOCKED = 'Date and shipping cannot be changed here yet'
+/** The Collect Sheet's Received field: a help line, never a refusal. */
 const RECEIVED_HELP = "Type what they hand over to see the change. It isn't saved."
 
 /** The line detail Sheet: its fixed Done, the Remove line that sits apart from it, and the quantity
