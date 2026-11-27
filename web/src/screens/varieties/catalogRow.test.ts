@@ -44,7 +44,7 @@ describe('the price line', () => {
   test('no current price reads No price with its hint', () => {
     const row = rowOf({ currentPrice: null, isBulkPricing: true })
     expect(row.priceLine).toBe('No price')
-    expect(row.hint).toBe('Add a price to sell it.')
+    expect(row.hint).toBe('A product needs a price before you can sell it.')
   })
 })
 
@@ -85,7 +85,7 @@ describe('the accessible name', () => {
 
   test('no price, a badge and Hidden together', () => {
     const row = rowOf({ currentPrice: null, status: 'sold_out', hidden: true })
-    expect(row.accessibleName).toBe('Lemon, No price, Add a price to sell it., Sold out, Hidden')
+    expect(row.accessibleName).toBe('Lemon, No price, A product needs a price before you can sell it., Sold out, Hidden')
   })
 
   test.each(['{{items}}', '{{amount}}', 'Cost $& $1 $$', "O'Brien's {{name}}"])(

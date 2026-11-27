@@ -164,7 +164,7 @@ Criterios de éxito:
 34. **La computadora no cambia** (GH-898): a 900 px y más, el marcado, las clases y el comportamiento de Products son los de antes, y la disposición de la computadora nunca importa `productsSegment.ts`. Ninguna lista de infractores, tolerancia, `CONTENT_SHIFT_PX` ni control se agranda, y ninguna fila del registro se marca not-captured.
 35. **La fila de la vista Catalog, de un vistazo** (GH-846, parte 1: solo el modelo, que todavía ninguna pantalla usa; el job se juzga con la fila que pone en pantalla la parte 2):
     - la fila muestra el List price con el copy de precio existente y el **Money format** del Business, y agrega el Bulk price solo con Bulk price activado en los Pricing settings y cuando el Current price tiene uno;
-    - un Product sin Current price dice "No price" con "Add a price to sell it.", y nunca parece costar $0;
+    - un Product sin Current price dice "No price" con "A product needs a price before you can sell it.", y nunca parece costar $0;
     - solo "sold out" y "low" llevan marca, siempre con su palabra y nunca solo por color; "ok", "no entries" y un estado faltante no llevan ninguna;
     - el nombre accesible dice, en este orden: nombre, línea de precio (con la ayuda cuando no hay precio), palabra de estado y "Hidden"; una parte que no corresponde se va junto con su separador;
     - no se agrega ninguna unidad, símbolo de moneda ni decimales literales (**Assume nothing**), y todo el texto vive en el Copy module, en inglés y con su gemelo en-XA.
@@ -355,9 +355,9 @@ La parte 1 de GH-846 agrega el modelo puro de una fila de la vista Catalog del c
   No recibe nada de archivado: un Archived product no está en ninguna lista.
 - **`priceLine`**:
   - con Current price, el copy existente `common:pricePerGram(money(list_price))`. La fila no tiene lógica de unidad propia: cuando la parte units de GH-318 cambie ese copy, la fila lo sigue sin cambiar nada acá;
-  - le suma `products:row.bulk` (" · Bulk {price}", el precio a través de `money`, sin unidad) solo cuando `isBulkPricing` es verdadero y `bulk_price` no es `null`. Nunca muestra el Bulk minimum: una fila es para recorrer de un vistazo, el mínimo sigue en la página del Product con sus Price entries, y mostrarlo exigiría un literal nuevo con unidad, que depende de GH-318;
+  - le suma `products:row.bulk` (" · Bulk {amount}", el precio a través de `money`, sin unidad) solo cuando `isBulkPricing` es verdadero y `bulk_price` no es `null`. Nunca muestra el Bulk minimum: una fila es para recorrer de un vistazo, el mínimo sigue en la página del Product con sus Price entries, y mostrarlo exigiría un literal nuevo con unidad, que depende de GH-318;
   - sin Current price, `products:row.noPrice` ("No price"). Nunca se lee como $0.
-- **`hint`**: `products:row.noPriceHint` ("Add a price to sell it.") en una fila sin precio; si no, `null`.
+- **`hint`**: `products:row.noPriceHint` ("A product needs a price before you can sell it.") en una fila sin precio; si no, `null`.
 - **`badge`**: el valor `'sold_out'`, `'low'` o `null` (`null` para `ok`, `no_entries` y un estado faltante). Es un valor, no un texto: su palabra ("Sold out", "Low") sale de `products:badge.soldOut` y `products:badge.low`, así que el estado nunca se dice solo por color. "No price", su ayuda y una marca "Sold out" o "Low" se muestran juntas: cada una es un hecho distinto y cierto.
 - **`hidden`**: tal como llega.
 - **`accessibleName`**: armado con `products:row.a11yName`, en este orden: nombre; línea de precio (con la ayuda en una fila sin precio); palabra de estado, de `products:badge.*`, solo cuando hay `badge`; "Hidden" (`products:row.hidden`), solo con la marca. Una parte que no corresponde se va junto con su separador, que es una coma y un espacio. El texto exacto de unión es el de `products:row.a11yName`.

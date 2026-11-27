@@ -11,7 +11,7 @@
   "row": {
     "hidden": "Hidden",
     "noPrice": "No price",
-    "noPriceHint": "Add a price to sell it.",
+    "noPriceHint": "A product needs a price before you can sell it.",
     "bulk": " · Bulk {{amount}}",
     "a11yName": "{{name}}, {{items}}"
   }
