@@ -76,7 +76,7 @@ test.describe.serial('the Customers title row on a phone', () => {
       await page.goto(CUSTOMERS)
       const row = await measureRow(page)
       expect(Math.abs(row.addTop - row.avatarTop), 'the + and the avatar are on different lines').toBeLessThanOrEqual(TOLERANCE)
-      expect(row.addWidth, 'the + is not a round 44 px target').toBeGreaterThanOrEqual(44 - TOLERANCE)
+      expect(Math.abs(row.addWidth - 44), 'the + is not a 44 px target').toBeLessThanOrEqual(TOLERANCE)
       expect(row.addRight).toBeLessThanOrEqual(row.viewport + TOLERANCE)
       expect(row.avatarRight).toBeLessThanOrEqual(row.viewport + TOLERANCE)
       expect(row.pageWidth, 'the page scrolls sideways').toBeLessThanOrEqual(row.viewport)

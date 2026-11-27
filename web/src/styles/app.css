@@ -4472,6 +4472,8 @@ a.ajustes-tema__opcion {
 /* The neutral round add (the phone Customers title row's "New customer"): the plain
  * `.boton-icono` surface with a --linea ring and the --tinta icon, never --boton. */
 .boton-icono--neutro {
+  /* The ring is inside the 44 px target: a link is content-box by default, so without this it grows to 46. */
+  box-sizing: border-box;
   background: var(--superficie);
   border: 1px solid var(--linea);
   color: var(--tinta);
