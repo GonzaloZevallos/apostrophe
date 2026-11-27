@@ -1,5 +1,5 @@
 /**
- * `WithdrawalReasons`, Settings → Business → Withdrawal reasons (`docs/product/stock.md`,
+ * `WithdrawalReasons`, Settings → Withdrawal reasons (`docs/product/stock.md`,
  * "Withdrawal reason"), a Configuración group framed by `SettingsGroup` (title, "Close"): the business's own list, in the order the API answers it. Nothing here
  * sorts or numbers it. Each row has Rename, Delete and the two move buttons (the first row has
  * no Up, the last no Down). A move renders the list the API answers back; a failed one says

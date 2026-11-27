@@ -6,6 +6,7 @@ plan's invariants)."""
 
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -487,6 +488,81 @@ def test_a_mismatch_between_exported_and_deleted_ids_rolls_back_and_removes_the_
     assert transaction.committed is False
     assert export_file.exists is False
     assert output.lines[-1] == RECORDS_CHANGED_MESSAGE
+
+
+def _binary_schema() -> Schema:
+    business, customer, invitation = _schema().tables
+    photo = Column("photo", ColumnType.BINARY, nullable=True, primary_key=False)
+    return Schema(
+        (
+            business,
+            Table(customer.name, (*customer.columns, photo), customer.foreign_keys),
+            invitation,
+        )
+    )
+
+
+class ChangedOnDiskExportFile(FakeExportFile):
+    """Reads back the document it was given with one `_base64` value changed, as a
+    file that was altered or corrupted between the write and the read would."""
+
+    def read_back(self, path: Path) -> dict[str, Any]:
+        document = copy.deepcopy(super().read_back(path))
+        document["kinds"]["customer"][0]["photo_base64"] = "AAAA"
+        return document
+
+
+def test_a_document_read_back_that_differs_from_the_one_built_deletes_nothing() -> None:
+    rows = _rows()
+    rows["customer"][0]["photo"] = b"\x89PNG"
+    schema_rows = FakeSchemaRows(_binary_schema(), BUSINESS, rows)
+    export_file = ChangedOnDiskExportFile()
+    transaction = FakeTransaction()
+    output = FakeOutput()
+
+    result = _remove(schema_rows, export_file=export_file, transaction=transaction, output=output)
+
+    assert result == 1
+    assert schema_rows.delete_calls == []
+    assert transaction.rolled_back is True
+    assert transaction.committed is False
+    assert export_file.exists is False
+    assert output.lines[-1] == FAILED_MESSAGE
+
+
+def test_a_non_bytes_value_in_a_binary_column_fails_before_any_delete() -> None:
+    rows = _rows()
+    rows["customer"][0]["photo"] = "not-bytes-at-all"
+    schema_rows = FakeSchemaRows(_binary_schema(), BUSINESS, rows)
+    export_file = FakeExportFile()
+    transaction = FakeTransaction()
+    output = FakeOutput()
+
+    result = _remove(schema_rows, export_file=export_file, transaction=transaction, output=output)
+
+    assert result == 1
+    assert schema_rows.delete_calls == []
+    assert transaction.rolled_back is True
+    assert transaction.committed is False
+    assert export_file.written is None
+    assert export_file.exists is False
+    assert output.lines[-1] == FAILED_MESSAGE
+    assert all("not-bytes-at-all" not in line for line in output.lines)
+
+
+def test_a_faithful_binary_export_deletes_and_commits() -> None:
+    rows = _rows()
+    rows["customer"][0]["photo"] = b"\x89PNG"
+    schema_rows = FakeSchemaRows(_binary_schema(), BUSINESS, rows)
+    export_file = FakeExportFile()
+    transaction = FakeTransaction()
+
+    result = _remove(schema_rows, export_file=export_file, transaction=transaction)
+
+    assert result == 0
+    assert transaction.committed is True
+    assert export_file.written is not None
+    assert export_file.written[1]["kinds"]["customer"][0]["photo_base64"] == "iVBORw=="
 
 
 def test_a_failure_during_the_delete_rolls_back_and_removes_the_file() -> None:

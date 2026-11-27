@@ -13,9 +13,9 @@ test('the categories message cites Settings and Expense categories', () => {
   expect(emptyStates.selectorNoCategories).toContain(common.expenseCategories)
 })
 
-test('the reasons message cites Settings, Business and Withdrawal reasons', () => {
+test('the reasons message names the path Settings → Withdrawal reasons, with no Business step', () => {
   expect(emptyStates.selectorNoReasons).toContain(common.settings)
-  expect(emptyStates.selectorNoReasons).toContain(common.business)
+  expect(emptyStates.selectorNoReasons).not.toContain(common.business)
   expect(emptyStates.selectorNoReasons).toContain(common.withdrawalReasons)
 })
 

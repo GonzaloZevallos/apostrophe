@@ -1,5 +1,5 @@
 /**
- * Settings → Prices → Customer types, through Testing Library with `fetch` faked: the list, the
+ * Settings → Customer types, through Testing Library with `fetch` faked: the list, the
  * Form Sheet (new and edit), the inline refusals, the discard question and the delete refusal
  * that carries the count.
  */

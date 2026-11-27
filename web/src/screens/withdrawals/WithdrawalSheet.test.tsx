@@ -14,6 +14,7 @@ import WITHDRAWAL_FIXTURE from '../../api/fixtures/withdrawal.json'
 import { COMMON_TEXT } from '../../copy/common'
 import { STOCK_TEXT } from '../../copy/stock'
 import { VARIETIES, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, pathTo } from '../../routes'
+import { tapStock } from '../varieties/renderVarieties'
 import { flipViewport, stubViewport } from '../../test-viewport'
 import { behindPane, expectBehindPane, expectBehindPaneEmpty } from '../../test/behindPane'
 import { jsonResponse, reasonField, renderWithdrawals } from './renderWithdrawals'
@@ -106,6 +107,7 @@ test('on the new withdrawal a failing Varieties list leaves the pane empty', asy
 
 test('opened from inside the app no pane is drawn', async () => {
   const { router } = renderWithdrawals([VARIETIES], withdrawalApi())
+  await tapStock()
   await userEvent.click(await screen.findByRole('link', { name: 'Take from stock' }))
 
   await screen.findByRole('dialog', { name: COMMON_TEXT.takeFromStock })

@@ -33,6 +33,8 @@ classDiagram
   class InvalidQuantity {
     code : ClassVar~str~
   }
+  class InvalidRecorder {
+  }
   class Language {
     tag : str
   }
@@ -118,6 +120,10 @@ classDiagram
     units : Fraction
     as_decimal() Decimal
     of(value: Decimal #124; int #124; str) Quantity
+  }
+  class Recorder {
+    app_user_id : int
+    initials : str
   }
   class ReferenceRefused {
   }

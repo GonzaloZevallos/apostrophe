@@ -39,6 +39,8 @@ def _column_type(sa_type: sa_types.TypeEngine[Any]) -> ColumnType:
         return ColumnType.INTEGER
     if isinstance(sa_type, (sa_types.String, sa_types.Text)):
         return ColumnType.TEXT
+    if isinstance(sa_type, (sa_types.LargeBinary, sa_types.BINARY, sa_types.VARBINARY)):
+        return ColumnType.BINARY
     return ColumnType.OTHER
 
 

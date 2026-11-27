@@ -2,17 +2,20 @@
 `web/src/format/initials.ts`, held equal on every row of the shared fixture
 `web/src/format/initials.cases.json`.
 
-Standard library only (CODING_STANDARDS section 1). The cluster segmenter is an
-approximation of the browser's `Intl.Segmenter`: Prepend characters, Indic conjuncts and a
-ZWJ between ordinary letters are known gaps, and they give a less exact split, never an
-empty or overlong cluster.
+Standard library and this capability's own domain only (CODING_STANDARDS section 1). The
+cluster segmenter is an approximation of the browser's `Intl.Segmenter`: Prepend
+characters, Indic conjuncts and a ZWJ between ordinary letters are known gaps, and they
+give a less exact split, never an empty or overlong cluster.
 """
 
 from __future__ import annotations
 
 import unicodedata
 
+from app.accounts.domain.account import Email
+
 _CLUSTER_LIMIT = 16
+FALLBACK_INITIALS = "?"
 
 # Exactly JS `\s`; `str.split`, `str.strip` and `str.isspace` use a different set (they also
 # take U+001C-U+001F and U+0085), so a name is never split by them.
@@ -142,3 +145,17 @@ def initials_of(name: str) -> str:
     else:
         kept = [_clusters(words[0])[0], _clusters(words[1])[0]]
     return "".join(_shown(cluster) for cluster in kept)
+
+
+def name_of(email: Email) -> str:
+    """The local part: the text before the `@`."""
+    return email.value.partition("@")[0]
+
+
+def recorder_initials(email: Email) -> str:
+    """The initials a Payment keeps for the User who recorded it: `initials_of` the local
+    part, or `FALLBACK_INITIALS` when that is `''` (among emails `Email` accepts, only a local
+    part made only of U+FEFF). Never empty and never over `MAX_INITIALS` code points: two
+    clusters at most, each upper-cased and then cut to 16. A name of invisible, non-whitespace
+    code points keeps its invisible initials."""
+    return initials_of(name_of(email)) or FALLBACK_INITIALS

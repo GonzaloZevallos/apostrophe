@@ -1,7 +1,7 @@
 /** Sales and collections (`sales.md`, `payments.md`): the forms, sheets and dialogs the walk visits. Nothing here reaches the backend: a save is answered by its stub. */
 
 import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
-import { common, emptyState } from './copy.ts'
+import { common, emptyState, sales } from './copy.ts'
 import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
@@ -348,8 +348,8 @@ export const SALES_STATES: readonly WalkState[] = [
   {
     screen: 'VentaBorrar',
     route: SALE.replace(':id', '{owing_sale}'),
-    steps: [{ click: SALES_TEXT.deleteSale }],
-    visible: common('common:yesDelete'),
+    steps: [{ click: sales('sales:detail.void') }],
+    visible: sales('sales:detail.yesVoid'),
   },
   {
     screen: 'CobroDesdeClientes',
