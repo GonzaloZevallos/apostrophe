@@ -3,7 +3,7 @@
  * a Configuración group like its siblings (title and "Close"; `routes.test.ts` requires every group to be a form). It holds two rows:
  * "Payment methods", whose subtitle is the offered names joined by ", " (truncated by CSS), and
  * "Expense categories", whose subtitle is the Business's category names in the order the server returns them.
- * Each row sits under its own heading ("Payments", "Expenses"). The Withdrawal reasons row stays in Business (`docs/product/payment-methods.md`).
+ * Each row sits under its own heading ("Payments", "Expenses"). Withdrawal reasons is its own Settings row, not part of this group (`docs/product/payment-methods.md`).
  * After the `<nav>`, and outside it so it keeps its two rows, a text link "See this month's expenses" opens Expenses on
  * plain `/expenses` (no month: Expenses opens on the session's `me.today`). A link is text-only (ADR-0037), so no arrow.
  */

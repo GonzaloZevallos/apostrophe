@@ -380,7 +380,7 @@
     { "path": "/settings/business", "kind": "form", "parent": "/settings" },
     { "path": "/settings/users", "kind": "form", "parent": "/settings" },
     { "path": "/settings/prices", "kind": "form", "parent": "/settings" },
-    { "path": "/settings/prices/customer-types", "kind": "form", "parent": "/settings/prices" },
+    { "path": "/settings/prices/customer-types", "kind": "form", "parent": "/settings" },
     { "path": "/settings/payments", "kind": "form", "parent": "/settings" },
     { "path": "/settings/payments/methods", "kind": "card", "parent": "/settings/payments" },
     { "path": "/settings/payments/methods/archived", "kind": "form", "parent": "/settings/payments/methods" },
