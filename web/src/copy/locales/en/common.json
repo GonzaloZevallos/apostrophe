@@ -107,7 +107,7 @@
   "backArrow": "‹ {{parent}}",
   "offline": "You're offline",
   "offlineDetail": "apostrophe needs a connection.",
-  "offlineRetry": "You're offline · Try again",
+  "offlineRetry": "Offline · Try again",
   "genericError": "Something went wrong. Try again.",
   "undoSaleOffline": "No connection. The sale is still saved: delete it from its detail in Sales.",
   "undoSaleFailed": "The sale is still saved. Delete it from its detail in Sales.",
