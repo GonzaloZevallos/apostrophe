@@ -14,12 +14,13 @@
  * on screen is `accepted`, not whatever a refetch brings. The parent hears `dirty` through
  * `onDirtyChange`, and keeps its own chrome and its own leave question.
  *
- * `addCollapsed` (the Onboarding's step 6, `OnboardingCategorias.dc.html`): the "New category"
- * field starts closed behind an add action, and a saved add closes it again; the submit and the
- * owner's POST are the same. With it off (Configuración) the field is always there, as drawn.
+ * One mode, in both callers: the "New category" field starts closed behind the "+ Category"
+ * action, opening it focuses the field, and a saved add closes it and gives focus back to the
+ * action. A caller that wants a line under the add control passes it as `footnote` (the
+ * Onboarding's step 6 does, `OnboardingCategorias.dc.html`; Configuración does not).
  */
 
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ApiError, NetworkError, UNKNOWN_CODE } from '../../api/client'
 import {
@@ -43,6 +44,9 @@ import { COMMON_TEXT } from '../../copy/common'
 
 export const CANNOT_REMOVE = SETTINGS_TEXT.cannotDeleteStillHasExpenses
 
+/** The line the Onboarding's step passes as `footnote`, re-exported so the step reads no copy file of its own. */
+export { CATEGORIES_SAVE_AT_ONCE }
+
 const REMOVE_OVERRIDES: Partial<Record<RefusalCode, 'in-use'>> = {
   'expense_category.in_use': 'in-use',
 }
@@ -53,10 +57,10 @@ function isRefusal(caught: unknown): caught is ApiError {
 
 export default function ExpenseCategoriesEditor({
   onDirtyChange,
-  addCollapsed = false,
+  footnote,
 }: {
   onDirtyChange: (dirty: boolean) => void
-  addCollapsed?: boolean
+  footnote?: ReactNode
 }) {
   const { data, isPending, isError, error } = useQuery({
     ...expenseCategoriesQueryOptions(),
@@ -74,7 +78,7 @@ export default function ExpenseCategoriesEditor({
       </>
     )
   }
-  return <Categories initial={data} onDirtyChange={onDirtyChange} addCollapsed={addCollapsed} />
+  return <Categories initial={data} onDirtyChange={onDirtyChange} footnote={footnote} />
 }
 
 /** The server orders by the case-folded name (binary); the list keeps that order after an add or a rename. */
@@ -86,11 +90,11 @@ function byNameKey(categories: ExpenseCategory[]): ExpenseCategory[] {
 function Categories({
   initial,
   onDirtyChange,
-  addCollapsed,
+  footnote,
 }: {
   initial: ExpenseCategory[]
   onDirtyChange: (dirty: boolean) => void
-  addCollapsed: boolean
+  footnote: ReactNode
 }) {
   const queryClient = useQueryClient()
   const [accepted, setAccepted] = useState(initial)
@@ -101,7 +105,7 @@ function Categories({
   const [toast, setToast] = useState<SuccessToast | null>(null)
   const [goneNotice, setGoneNotice] = useState(false)
   const [sending, setSending] = useState(false)
-  const [adding, setAdding] = useState(!addCollapsed)
+  const [adding, setAdding] = useState(false)
   const addRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const focusAddAction = useRef(false)
@@ -119,14 +123,13 @@ function Categories({
 
   // Opening the field moves focus into it; closing it after a save gives focus back to the add action.
   useEffect(() => {
-    if (!addCollapsed) return
     if (adding) {
       inputRef.current?.focus()
     } else if (focusAddAction.current) {
       focusAddAction.current = false
       addRef.current?.querySelector('button')?.focus()
     }
-  }, [adding, addCollapsed])
+  }, [adding])
 
   // The toast and the gone notice clear themselves after 2.5 s; a pending timer must not outlive the editor.
   const timers = useRef<number[]>([])
@@ -173,10 +176,8 @@ function Categories({
       const created = await addCategory(newName)
       accept([...accepted, created])
       setNewName('')
-      if (addCollapsed) {
-        focusAddAction.current = true
-        setAdding(false)
-      }
+      focusAddAction.current = true
+      setAdding(false)
       flash(SETTINGS_TEXT.categorySaved)
     } catch (caught) {
       if (caught instanceof NetworkError) setOffline(true)
@@ -242,11 +243,7 @@ function Categories({
           </Boton>
         </div>
       )}
-      {addCollapsed && (
-        <span className="campo__rotulo" data-copy="help">
-          {CATEGORIES_SAVE_AT_ONCE}
-        </span>
-      )}
+      {footnote}
 
       {toast !== null && <Aviso texto={toast} />}
       {goneNotice && (

@@ -14,6 +14,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { SIN_CONEXION_MENSAJE } from '../../copy/common'
+import { CATEGORIES_SAVE_AT_ONCE } from '../../copy/settings'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import ExpenseCategoriesGroup, { CANNOT_REMOVE } from './ExpenseCategoriesGroup'
 import type { ReactElement, ReactNode } from 'react'
@@ -83,19 +84,32 @@ test('lists categories and adds a new one with a fixed toast', async () => {
 
   expect(await screen.findByText('Packaging')).toBeInTheDocument()
 
+  await userEvent.click(screen.getByRole('button', { name: 'Category' }))
   await userEvent.type(screen.getByLabelText('New category'), 'Insumos')
   await userEvent.click(screen.getByRole('button', { name: '+ Category' }))
 
   expect(await screen.findByText('Category saved')).toBeInTheDocument()
   expect(screen.getByText('Insumos')).toBeInTheDocument()
-  expect(screen.getByLabelText('New category')).toHaveValue('')
+  expect(screen.queryByLabelText('New category')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Category' })).toHaveFocus()
+})
+
+test('Settings shows no field and no "saves right away" line until the add action is tapped', async () => {
+  renderGroup(serving())
+  await screen.findByText('Packaging')
+
+  expect(screen.queryByLabelText('New category')).not.toBeInTheDocument()
+  expect(screen.queryByText(CATEGORIES_SAVE_AT_ONCE)).not.toBeInTheDocument()
+  await userEvent.click(screen.getByRole('button', { name: 'Category' }))
+  expect(screen.getByLabelText('New category')).toHaveFocus()
+  expect(screen.queryByText(CATEGORIES_SAVE_AT_ONCE)).not.toBeInTheDocument()
 })
 
 test('with no categories it shows an empty list and the add action', async () => {
   renderGroup(async () => jsonResponse(200, []))
 
-  expect(await screen.findByLabelText('New category')).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: '+ Category' })).toBeInTheDocument()
+  expect(await screen.findByRole('button', { name: 'Category' })).toBeInTheDocument()
+  expect(screen.queryByLabelText('New category')).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Rename' })).not.toBeInTheDocument()
 })
 
@@ -173,6 +187,7 @@ test('after an add or a rename the list keeps the server order, by name without 
   )
 
   await screen.findByText('Bolsas')
+  await userEvent.click(screen.getByRole('button', { name: 'Category' }))
   await userEvent.type(screen.getByLabelText('New category'), 'alquiler')
   await userEvent.click(screen.getByRole('button', { name: '+ Category' }))
   await screen.findByText('alquiler')
@@ -239,11 +254,23 @@ test('a dropped network on add shows the offline notice and keeps what was typed
   )
 
   await screen.findByText('Packaging')
+  await userEvent.click(screen.getByRole('button', { name: 'Category' }))
   await userEvent.type(screen.getByLabelText('New category'), 'Insumos')
   await userEvent.click(screen.getByRole('button', { name: '+ Category' }))
 
   expect(await screen.findByText(SIN_CONEXION_MENSAJE)).toBeInTheDocument()
   expect(screen.getByLabelText('New category')).toHaveValue('Insumos')
+})
+
+test('closing with the field open and empty does not ask', async () => {
+  renderGroup(serving())
+  await screen.findByText('Packaging')
+  await userEvent.click(screen.getByRole('button', { name: 'Category' }))
+
+  await userEvent.click(screen.getByRole('button', { name: 'Close' }))
+
+  expect(await screen.findByText('Lista de grupos')).toBeInTheDocument()
+  expect(screen.queryByText('Discard the category?')).not.toBeInTheDocument()
 })
 
 test('an untouched group closes at once, and so does one whose rename was opened and left as it was', async () => {
@@ -259,6 +286,7 @@ test('an untouched group closes at once, and so does one whose rename was opened
 test('closing with a new name typed asks first, and keeping stays on the group', async () => {
   renderGroup(serving())
   await screen.findByText('Packaging')
+  await userEvent.click(screen.getByRole('button', { name: 'Category' }))
   await userEvent.type(screen.getByLabelText('New category'), 'Sin guardar')
 
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
@@ -293,6 +321,7 @@ test('after a save, "Close" closes at once even while the refetch is pending and
   })
   await screen.findByText('Packaging')
 
+  await userEvent.click(screen.getByRole('button', { name: 'Category' }))
   await userEvent.type(screen.getByLabelText('New category'), 'Insumos')
   await userEvent.click(screen.getByRole('button', { name: '+ Category' }))
   await screen.findByText('Category saved')
@@ -314,6 +343,7 @@ test('a partner changing the list behind the screen does not make a clean group 
   })
   await screen.findByText('Packaging')
 
+  await userEvent.click(screen.getByRole('button', { name: 'Category' }))
   await userEvent.type(screen.getByLabelText('New category'), 'Insumos')
   await userEvent.click(screen.getByRole('button', { name: '+ Category' }))
   await screen.findByText('Category saved')
@@ -325,7 +355,7 @@ test('a partner changing the list behind the screen does not make a clean group 
 
 test('with no categories the group follows the icon and text rule', async () => {
   renderGroup(async () => jsonResponse(200, []))
-  await screen.findByLabelText('New category')
+  await screen.findByRole('button', { name: 'Category' })
   expectIconAndTextRule(document.body)
 })
 

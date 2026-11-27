@@ -5,7 +5,7 @@
  */
 
 import { sendPass } from '../../api/onboarding'
-import ExpenseCategoriesEditor from '../settings/ExpenseCategoriesEditor'
+import ExpenseCategoriesEditor, { CATEGORIES_SAVE_AT_ONCE } from '../settings/ExpenseCategoriesEditor'
 import StepSubmit from './StepSubmit'
 import { useOnboardingWrite } from './useOnboardingWrite'
 import type { StepBodyProps } from './stepBodies'
@@ -15,7 +15,14 @@ export default function CategoriesStep({ onDirtyChange, onProgress }: StepBodyPr
   const { run, sending, notice } = useOnboardingWrite(onProgress)
   return (
     <>
-      <ExpenseCategoriesEditor onDirtyChange={onDirtyChange} addCollapsed />
+      <ExpenseCategoriesEditor
+        onDirtyChange={onDirtyChange}
+        footnote={
+          <span className="campo__rotulo" data-copy="help">
+            {CATEGORIES_SAVE_AT_ONCE}
+          </span>
+        }
+      />
       <StepSubmit disabled={sending} onSubmit={() => void run(() => sendPass('categories', 'done'))}>
         {ONBOARDING_TEXT.continue}
       </StepSubmit>

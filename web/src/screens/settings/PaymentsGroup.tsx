@@ -3,6 +3,9 @@
  * a Configuración group like its siblings (title and "Close"; `routes.test.ts` requires every group to be a form). It holds two rows:
  * "Payment methods", whose subtitle is the offered names joined by ", " (truncated by CSS), and
  * "Expense categories", whose subtitle is the Business's category names in the order the server returns them.
+ * Each row also shows a count before its chevron, the length of the same list its subtitle joins ("0" and no subtitle
+ * for no categories). Both exist only once their own read answered: no count and no subtitle while it is pending or
+ * after it failed.
  * Each row sits under its own heading ("Payments", "Expenses"). Withdrawal reasons is its own Settings row, not part of this group (`docs/product/payment-methods.md`).
  * After the `<nav>`, and outside it so it keeps its two rows, a text link "See this month's expenses" opens Expenses on
  * plain `/expenses` (no month: Expenses opens on the session's `me.today`). A link is text-only (ADR-0037), so no arrow.
@@ -33,8 +36,13 @@ function PaymentsRows() {
   const { t } = useTranslation()
   const methods = useQuery(paymentMethodsQueryOptions())
   const categories = useQuery(expenseCategoriesQueryOptions())
-  const names = methods.data?.map((method) => method.name).join(', ')
-  const categoryNames = categories.data?.map((category) => category.name).join(', ')
+  // A list exists only once its own read answered: `isSuccess` is false while pending and after
+  // any failure (a failed refetch too), so the count and the second line never show a stale or
+  // missing read, and never disagree.
+  const offered = methods.isSuccess ? methods.data : undefined
+  const cats = categories.isSuccess ? categories.data : undefined
+  const names = offered?.map((method) => method.name).join(', ')
+  const categoryNames = cats?.map((category) => category.name).join(', ')
 
   // The rows can still gain a subtitle until both reads settle; an error settles a read too.
   useLoading(methods.isPending || categories.isPending)
@@ -55,6 +63,7 @@ function PaymentsRows() {
                 {names !== undefined && <span className="ajustes__item-detalle">{names}</span>}
               </span>
               <span className="ajustes__item-flecha">
+                {offered !== undefined && <span className="ajustes__item-cuenta cifra-n">{offered.length}</span>}
                 <Icono nombre="chevron" />
               </span>
             </InAppLink>
@@ -74,6 +83,7 @@ function PaymentsRows() {
                 )}
               </span>
               <span className="ajustes__item-flecha">
+                {cats !== undefined && <span className="ajustes__item-cuenta cifra-n">{cats.length}</span>}
                 <Icono nombre="chevron" />
               </span>
             </InAppLink>

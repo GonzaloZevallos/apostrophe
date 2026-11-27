@@ -15,6 +15,11 @@
 - Afina el job de Settings de navigation.md ("cada configuración de todo el negocio en un solo lugar"); no es un job nuevo de producto. Su protagonista es quien vende, en el celular, en un momento poco frecuente y deliberado.
 - Lo sirve la lista de inicio de Settings del celular (GH-843), construida como componente en #999 y conectada por #927 (parte 3 de GH-843) dentro de la pantalla de inicio de Settings del celular.
 
+**Cuando** abro Settings en el celular para ver cómo está configurado mi negocio, **quiero** que cada fila me diga cuántos **Payment method**s y cuántas **Expense category**s tengo, y que la lista de Expense categories muestre solo lo que ya configuré hasta que elija agregar una, **para poder** revisar mi configuración de un vistazo y agregar una Expense category en un toque cuando la necesito.
+
+- Pasada de detalle de Settings contra los dibujos aprobados (GH-1069, parte 2 de 2). Lo sirven el grupo Expense categories con un solo botón "+ Category" y los conteos de las filas de Payments and expenses.
+- Antes: quien vendía pasaba por un campo "New category" vacío y siempre abierto, con un "+ Category" desactivado debajo, y para saber cuántos medios o categorías tenía abría cada grupo. No se pierde plata: el costo es desorden y toques de más.
+
 **Cuando** entro a Settings para cambiar cómo funciona mi negocio, **quiero** encontrar cada configuración en un solo lugar, la lista de Settings, y que cada camino que me nombran la app o los docs coincida con lo que toco, **para** llegar rápido y no preguntarme si dos links llevan a dos cosas distintas.
 
 - Afina el job de Settings de navigation.md; no es un job nuevo de producto (GH-1068, pasada de detalle 1/2). Antes, Currency and decimals y Withdrawal reasons también se abrían desde la página Business, y Customer types desde Prices; el texto nombraba caminos que pasaban por esas páginas.
@@ -93,6 +98,13 @@ El componente `SettingsNav` (`web/src/screens/settings/SettingsNav.tsx`) dibuja 
 
 Métrica: la cumplen los tests de Testing Library de los criterios 1 a 3: orden de títulos y tira, conteos de filas por contexto, nombres y destinos de los shortcuts, `enteredFrom: 'settings'` en cada link y grupo vacío sin título. Los cubren `SettingsHomeList.test.tsx` y `settingsRows.test.ts`. La medida del job para quien vende (llegar a la pantalla correcta sin buscar) la toman `SettingsHome.test.tsx` y `tapBudget.spec.ts`.
 
+## Criterios de éxito de los grupos Expense categories y Payments and expenses (GH-1069)
+
+1. **Un solo "+ Category".** En Settings, el grupo Expense categories muestra la lista y un solo botón "+ Category", y ningún campo "New category" hasta tocarlo. Tocarlo abre el campo con el foco; un agregado guardado lo cierra y devuelve el foco al botón; un campo abierto con texto pregunta "Discard the category?" antes de salir.
+2. **Conteos que nunca mienten.** La fila "Payment methods" muestra la cantidad de medios ofrecidos y la fila "Expense categories" la cantidad de Expense categories del Business, cada una antes del chevron y solo después de que respondió con éxito su propia lectura. Sin categorías, "0". Nunca se muestra una cifra equivocada ni durante una lectura pendiente o fallida.
+3. **Como el dibujo.** ConfiguracionCategorias, ConfiguracionCategoriasCompu y ConfiguracionCobros no le dejan al dueño nada para leer o hacer distinto del dibujo, en claro y en oscuro (**Drawing as guide**), con las Design captures de evidencia; no es una comparación de píxeles.
+4. **Nada más cambia.** Renombrar y eliminar funcionan como antes, el paso de categorías del Onboarding se comporta igual y no se agrega ningún pedido a la API.
+
 ## Comportamiento
 
 ### Pantalla de inicio de Settings (celular)
@@ -134,6 +146,35 @@ No hay campo de búsqueda: puede ser una parte posterior. Los estilos de la pant
 - Cada fila y cada atajo es un `InAppLink` a la dirección de su fila, con el estado `{enteredFrom: 'settings'}`.
 - Cada fila y cada atajo mide al menos 44 px y tiene un estado `:active`.
 
+### Grupo Payments and expenses: conteos (GH-1069)
+
+El grupo Payments and expenses (`PaymentsGroup.tsx`, dibujo `ConfiguracionCobros.dc.html`) tiene dos filas, "Payment methods" y "Expense categories". Cada una muestra un conteo a su derecha, antes del chevron, como en el dibujo ("3", "5"):
+
+- "Payment methods" cuenta los Payment methods que el Business ofrece ahora (sin archivar): la misma lista que une su segunda línea.
+- "Expense categories" cuenta las Expense categories del Business. Sin ninguna, muestra "0" y ninguna segunda línea.
+- Cada fila toma su lista solo cuando su propia lectura respondió con éxito (`isSuccess`), y la segunda línea y el conteo salen de esa misma lista, así que nunca se contradicen. Mientras una lectura está pendiente, o después de que falló (también cuando falla una relectura después de una primera respuesta buena), esa fila no tiene ni conteo ni segunda línea; la otra fila sigue mostrando los suyos. El contenido queda `aria-busy` mientras alguna lectura está pendiente, como antes (`useLoading`). No hay reintento: se cierra el grupo y se vuelve a abrir.
+- El conteo es un número solo, sin palabra de unidad: la etiqueta de la fila ya nombra lo que se cuenta. Es un `span.ajustes__item-cuenta` dentro de `ajustes__item-flecha`, antes del chevron, en **Tabular figures** (`cifra-n`), de 13 px en `--tinta2` (el mismo token y tamaño que la segunda línea construida), solo con tokens de diseño, en claro y en oscuro. El dibujo lo pone en 14 px; la diferencia no cambia lo que quien vende lee o hace (**Drawing as guide**).
+- El conteo no está oculto a la tecnología de asistencia: es parte del texto del link, así que el nombre accesible de la fila empieza por su etiqueta y termina con el conteo.
+- Los dos conteos salen de las lecturas que `PaymentsGroup.tsx` ya hace (`GET /api/payment-methods` y `GET /api/expense-categories`): no se agrega ningún pedido a la API. Después de agregar una Expense category, el editor invalida la misma lectura, así que el conteo está al día al volver al grupo.
+- En el celular el grupo sigue siendo un grupo con "Close" (decisión 21), no la página con "‹ Ajustes" del dibujo: diferencia aceptada por el dueño (abajo).
+
+![Settings → Payments and expenses en el celular](../assets/screens/ConfiguracionCobros.webp)
+
+### Grupo Expense categories (GH-1069)
+
+En Settings, el grupo Expense categories (`ExpenseCategoriesGroup.tsx`, dibujos `ConfiguracionCategorias.dc.html` y `ConfiguracionCategoriasCompu.dc.html`) dibuja `ExpenseCategoriesEditor`, que desde GH-1069 tiene un solo modo, el mismo en Settings y en el paso de categorías del Onboarding (`web/src/screens/onboarding/CategoriesStep.tsx`):
+
+- Muestra la lista de Expense categories y un solo botón "+ Category" (el ícono de agregar con `COMMON_TEXT.category`), habilitado. El campo "New category" no se ve hasta tocarlo, y no hay ningún botón desactivado.
+- Tocar "+ Category" abre el campo con el foco en él. Un agregado guardado limpia el nombre, cierra el campo, devuelve el foco al botón y muestra el aviso de guardado. Un agregado rechazado deja el campo abierto con su texto y el error en línea, o el aviso sin conexión.
+- No hay ningún control para plegar el campo sin guardar: un campo vacío nunca bloquea "Close", y uno con texto (o un renombre sin guardar) pregunta "Discard the category?" antes de salir, como en el dibujo.
+- La prop `addCollapsed` ya no existe. La línea "Adding, renaming or removing a category saves right away." (`CATEGORIES_SAVE_AT_ONCE`) es ahora la prop opcional `footnote` del llamador, que se dibuja debajo del control de agregar una vez cargada la lista: el Onboarding la pasa, porque su dibujo la tiene, y Settings no pasa ninguna, porque sus dibujos no la tienen. Cada agregado, renombre o eliminación ya muestra su resultado al hacerse.
+- Renombrar y eliminar quedan como estaban, solo con ícono, como lo permite la **Icon and text rule**, igual que el aviso de una categoría con Expenses que no se puede eliminar.
+- El contenido del grupo va dentro de su propio envoltorio, `.categorias-grupo`, que solo sirve para aplicar `touch-action: manipulation` a sus botones y al "Close" del encabezado del grupo, sin cambiar la disposición y nunca sobre el editor mismo, así que el paso del Onboarding no cambia. Las entradas de `touch-action` de ConfiguracionCategorias, ConfiguracionCategoriaRenombrar y ConfiguracionCategoriaConfirmarBorrado salieron de la lista de infractores: la lista solo se achicó.
+- El Mobile check recorre también el estado `ConfiguracionCategoriaNueva`, con el campo de agregar abierto después de tocar "+ Category", sin que crezca ninguna lista de infractores, tolerancia ni control.
+- Los localizadores de vitest y e2e que encontraban el campo siempre visible tocan primero "+ Category"; el campo nunca se vuelve a poner, ni visible ni oculto, para satisfacer un localizador (D-69509906).
+
+![Settings → Expense categories en el celular](../assets/screens/ConfiguracionCategorias.webp)
+
 ### Las páginas Business y Prices (GH-1068)
 
 Las dos páginas siguen sus dibujos aprobados, en el celular y en la computadora (la lista lateral de la computadora lee el mismo registro):
@@ -166,6 +207,13 @@ El dibujo es `Configuracion.dc.html` y su gemelo oscuro. Las cuatro diferencias 
 
 Además, por **Drawing as guide** y sin cambiar lo que quien vende lee o hace: el título mide 26 px en vez de 28, y la inicial va en el tinte suave del acento con texto en el color del acento, en vez del acento sólido con texto blanco.
 
+En GH-1069 (decisión 1 del humano, 2026-11-26) el dueño aceptó otras cuatro diferencias, que quedan como están construidas:
+
+1. Integrations (`ConfiguracionIntegraciones.dc.html`) conserva "Find my chat" (**Own chat lookup**) y su **More info** "i" junto a "Your chat".
+2. Integrations conserva "Enter the token first" debajo del "Find my chat" desactivado, el motivo visible de que esté desactivado.
+3. Integrations conserva el link "Go to the catalog" al pie, la única entrada a la pantalla del Catalog además de la línea "Out of date" de Home (#848).
+4. En el celular, Payments and expenses (`ConfiguracionCobros.dc.html`) se abre como un grupo con "Close" (decisión 21), no como la página con "‹ Ajustes" del dibujo.
+
 ## Métricas
 
 - Toques desde la pantalla de inicio de Settings hasta la pantalla de cualquier fila: 1, para cada fila del registro, según el recorrido de vitest con la tabla de rutas real (`SettingsHome.test.tsx`, con las dos filas condicionales visibles).
@@ -174,6 +222,12 @@ Además, por **Drawing as guide** y sin cambiar lo que quien vende lee o hace: e
 - Objetivos táctiles de la pantalla de inicio de Settings por debajo de 44 px: 0, según el Mobile check, sin que crezca ninguna lista de infractores.
 - Cantidades de Users equivocadas o rotas mostradas durante una lectura pendiente o fallida: 0, según los tests de Testing Library.
 - Cambios en la Settings de computadora: 0, según los tests de Settings existentes contra la vista de computadora y la captura de ConfiguracionCompu antes y después (#994).
+- Grupo Expense categories de Settings con el campo "New category" visible antes de tocar "+ Category": 0, según los tests de `ExpenseCategoriesGroup` y `ExpenseCategoriesEditor` y el e2e de Settings (GH-1069).
+- Toques desde el grupo Expense categories hasta el campo de agregar abierto y con foco: 1 (GH-1069).
+- Conteos mostrados en las filas de Payments and expenses durante una lectura pendiente o fallida (una relectura fallida incluida), o distintos del largo de su lista: 0, según `PaymentsGroup.test.tsx` (GH-1069).
+- Pedidos a la API agregados por `PaymentsGroup`: 0 (GH-1069).
+- Infracciones del Mobile check en el estado `ConfiguracionCategoriaNueva`: 0, sin ampliar ninguna lista de infractores, tolerancia ni control; la lista de `touch-action` solo se achicó (GH-1069).
+- Design captures adjuntas de ConfiguracionCategorias, ConfiguracionCategoriasCompu y ConfiguracionCobros, en celular de 375 px y computadora, claro y oscuro: todas (GH-1069).
 - Filas link que repiten otra fila del registro en las páginas Business y Prices: 0 (antes 3), según los tests de BusinessGroup y PricingGroup (GH-1068).
 - Toques desde un Tab root hasta la lista de Customer types con el interruptor ya activado: 2 (antes 3, pasando por Prices); en un Business nuevo, 4 hasta la lista y 7 para crear un tipo, sin contar encender el interruptor ni guardarlo (decisión 1 del humano en GH-1068). "‹ Settings" o Close desde la lista cae en Settings en el 100 % de los casos, se llegue desde la fila o por la dirección, según el test de rutas (padre `settings`), `SettingsNavigation.test.tsx` y `customerTypes.spec.ts` (GH-1068).
 - Caminos nombrados en el Copy module o en `docs/product/` que pasan por "Settings → Business →" hacia Currency and decimals o Withdrawal reasons, o por "Settings → Prices → Customer types": 0 (GH-1068).

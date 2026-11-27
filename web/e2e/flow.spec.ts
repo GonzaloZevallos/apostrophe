@@ -167,7 +167,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   // (`app/expenses/domain/category.py`'s `DEFAULT_CATEGORY_NAMES`), so this one
   // uses a name of its own.
   await page.goto(EXPENSE_CATEGORIES)
-  await page.getByLabel('New category', { exact: true }).fill('Delivery en bici')
+  await page.getByRole('button', { name: 'Category', exact: true }).click(); await page.getByLabel('New category', { exact: true }).fill('Delivery en bici')
   await page.getByRole('button', { name: '+ Category' }).click()
   await expect(page.getByText('Category saved')).toBeVisible()
   const newRow = page.locator('.fila', { hasText: 'Delivery en bici' })
