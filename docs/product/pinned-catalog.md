@@ -1,12 +1,3 @@
-# Pinned catalog
-
-El bot de Telegram propio de cada **Business** entrega el texto del **Catalog** (catalog.md) en el chat del Business, en un solo mensaje que deja fijado, y lo mantiene al día por su cuenta. El vendedor ve primero un **Test send** en su propio chat. Lo ve solo su Business (ADR-0004). El texto sale del único autor del Catalog (ADR-0022). Esta capacidad lo envía y lo mantiene al día. El bot solo publica; nunca toma pedidos.
-
-Dónde viven sus partes (navigation.md):
-- los **Bot settings**, Find my chat y Test it están en Settings → Integrations, con un enlace simple a la pantalla del Catalog;
-- el estado del **Pinned catalog** y **Publish** están en la pantalla del Catalog (catalog.md);
-- Home lleva el aviso de **Out of date**.
-
 ## Jobs
 
 **Cuando** algo cambia lo que dice mi Catalog (se registra o se elimina un precio, un producto se agota o vuelve, oculto, archivo, restauro o edito un producto, cambio el header o el footer, activo o desactivo el Bulk price), **quiero** que el Pinned catalog del chat de Telegram de mi negocio se actualice solo, después de haber visto un Test send en mi propio chat antes que los clientes, **para que** mis clientes nunca vean un precio desactualizado ni un producto que no puedo vender, y yo nunca tenga que acordarme de copiarlo, pegarlo y fijarlo de nuevo.
@@ -14,6 +5,8 @@ Dónde viven sus partes (navigation.md):
 **Cuando** conecto mi bot en Settings → Integrations y toco Test it, **quiero** que, si falla, me diga en una oración qué tengo que arreglar (el token, mi chat sin iniciar o mi número de chat), **para** arreglarlo desde el teléfono, probar de nuevo y llegar a publicar el Catalog sin adivinar ni pedirle ayuda a nadie.
 
 Esto afina el paso de configuración del primer job (el Test send antes de que lo vean los clientes); no es un job nuevo. Se cargó como un bug: Test it le echaba la culpa al canal por fallas del chat propio, y la línea de ayuda del chat propio prometía algo que la pantalla no hacía. Antes del arreglo, el vendedor adivinaba, revisando el token y el número a ciegas, o le pedía ayuda a alguien.
+
+**Cuando** estoy por pegar el token de mi bot de Telegram, **quiero** saber qué va a hacer la app con él antes de guardarlo, **para** pegarlo sin miedo a que se vuelva a mostrar o se filtre. (GH-1070: mientras no hay token guardado, bajo "Bot token" se ve "Saved encrypted and never shown again.", en Settings → Integrations y en el paso 4 del Onboarding, que comparten el formulario.)
 
 **Cuando** llevo mi negocio desde el teléfono entre pedidos o en medio de un chat con un cliente, varias veces por día, **quiero** cada configuración del negocio en un solo lugar, **para** nunca preguntarme cuál de varias pantallas tiene lo que necesito. (Es el job de navegación, navigation.md: acá lo sirven los Bot settings en Settings → Integrations.)
 
@@ -24,6 +17,15 @@ Esto afina el paso de configuración del primer job (el Test send antes de que l
 **Cuando** un rediseño de una pantalla como Integrations está para aprobarse, **quiero** una comparación de antes y después de esa pantalla, capturada de la misma forma desde el código sin el cambio y con el cambio, **para** saber que cambió solo lo que se quería cambiar, y que lo que hace el vendedor ahí (token, chats, Find my chat, Test it, las líneas de ayuda y los motivos, el enlace a la pantalla del Catalog) se sigue leyendo y funcionando como antes, y aprobar con confianza.
 
 Esto afina los criterios "se ve como fue diseñado" (icon-and-text-rule.md criterio 6, la métrica de diseño de navigation.md); no es un job de producto nuevo. Su protagonista es quien aprueba el rediseño (el revisor y, al final, Zeta), no el vendedor. Su propósito es encontrar diferencias no buscadas, no juzgar si la pantalla se ve bien. Salió del rediseño de Integrations de GH-116, cuya aprobación se apoyó solo en una captura del "después".
+
+# Pinned catalog
+
+El bot de Telegram propio de cada **Business** entrega el texto del **Catalog** (catalog.md) en el chat del Business, en un solo mensaje que deja fijado, y lo mantiene al día por su cuenta. El vendedor ve primero un **Test send** en su propio chat. Lo ve solo su Business (ADR-0004). El texto sale del único autor del Catalog (ADR-0022). Esta capacidad lo envía y lo mantiene al día. El bot solo publica; nunca toma pedidos.
+
+Dónde viven sus partes (navigation.md):
+- los **Bot settings**, Find my chat y Test it están en Settings → Integrations, con un enlace simple a la pantalla del Catalog; el paso 4 del Onboarding usa el mismo formulario (onboarding.md);
+- el estado del **Pinned catalog** y **Publish** están en la pantalla del Catalog (catalog.md);
+- Home lleva el aviso de **Out of date**.
 
 Criterios de éxito:
 
@@ -44,26 +46,31 @@ Criterios de éxito:
     - un rediseño se aprueba sobre una comparación de antes y después: teléfono y computadora, claro y oscuro, capturados de la misma forma (ADR-0042);
     - cada diferencia se lista como buscada o arreglada;
     - no cambia nada de lo que el vendedor lee o hace ahí.
+12. **Saber qué pasa con el token antes de pegarlo** (GH-1070): sin token guardado, bajo "Bot token" se ve "Saved encrypted and never shown again.", atada al campo con `aria-describedby`, en Integrations y en el paso 4 del Onboarding; con un token guardado, solo "Saved on … · not shown again".
 
-La configuración (token, chats, Find my chat, primer Test it y Publish) se juzga con los criterios 3, 5, 6, 7, 8, 9 y 10. La Upkeep se juzga con los criterios 1, 2, 4 y 8. La Upkeep empieza solo después del primer Publish exitoso. Un rediseño de Integrations se juzga con el criterio 11.
+La configuración (token, chats, Find my chat, primer Test it y Publish) se juzga con los criterios 3, 5, 6, 7, 8, 9, 10 y 12. La Upkeep se juzga con los criterios 1, 2, 4 y 8. La Upkeep empieza solo después del primer Publish exitoso. Un rediseño de Integrations se juzga con el criterio 11.
 
 ## Comportamiento
 
 ### Bot settings, por negocio (Settings → Integrations)
 
+![Settings → Integrations en el teléfono](../assets/screens/ConfiguracionIntegraciones.webp)
+
 - Un token, un chat del canal y un chat propio por Business.
-- **Dónde**: el grupo Integrations de Settings, un formulario (navigation.md): "Close", y una confirmación al salir con algo tipeado y sin guardar. Es el único lugar donde se ven o se cambian; la pantalla del Catalog ya no los tiene.
+- **Dónde**: el grupo Integrations de Settings, un formulario (navigation.md): "Close", y una confirmación al salir con algo tipeado y sin guardar. Es el único lugar donde se ven o se cambian; la pantalla del Catalog ya no los tiene. El paso 4 del Onboarding usa el mismo formulario (`IntegrationsForm`), con las mismas reglas.
 - **Token**:
   - se guarda cifrado, con una clave derivada de `APOSTROPHE_SECRET_KEY`;
   - una vez guardado, ninguna ruta lo devuelve y nunca se registra en logs;
-  - en pantalla: "Saved on dd/mm · not shown again" con **Change**.
+  - **sin token guardado**: bajo "Bot token" la línea de ayuda fija "Saved encrypted and never shown again." (`campo__ayuda`, atada al campo con `aria-describedby`). Es la línea que dibuja `OnboardingBot.dc.html`; `ConfiguracionIntegraciones` no dibuja ese estado y la reusa tal cual (GH-1070);
+  - en pantalla, con un token guardado: "Saved on dd/mm · not shown again" con **Change**, que reemplaza a la línea de ayuda;
+  - cuando Test it se rechaza, la línea de ayuda queda en su lugar y el motivo se ve debajo, con su redacción y su lugar de siempre; el campo queda atado a los dos textos para los lectores de pantalla.
 - **Chat del canal y chat propio**:
   - texto libre, del que solo se revisa que no esté en blanco;
   - se muestran en texto plano y se editan en el lugar;
   - nunca van a los logs, la consola ni el almacenamiento del navegador;
   - cada campo tiene una línea de ayuda corta y fija.
 - **La línea de ayuda del chat propio**: "Tap Start in your bot; find your number with @userinfobot." (80 caracteres como máximo, GH-97; sacó "Open your bot in Telegram" y "or tap Find my chat", que ya dice el botón al lado del campo). Reemplazó a "Open your chat with the bot and write anything to see it here.", que prometía algo que la pantalla no hacía. La línea de ayuda del chat del canal no cambia. El cómo más largo (abrir el bot, tocar Iniciar, después Find my chat completa el número, o buscarlo con @userinfobot) está detrás de More info ("More info") en esa línea, cerrado en cada apertura.
-- **Todavía nada guardado**: campos vacíos y ninguna línea "Saved".
+- **Todavía nada guardado**: campos vacíos, ninguna línea "Saved" y, bajo "Bot token", la línea de ayuda del token.
 - **Se guardan solo con Test it**: la configuración se guarda solo cuando una prueba de los valores tipeados tiene éxito, así que la configuración guardada siempre fue probada.
 - **Cambiar cualquiera de los tres** vuelve a exigir un Test send antes de Publish. El Test it exitoso que guarda el cambio vuelve a cumplir ese requisito.
 - **Cambiar solo el chat propio** deja el canal y su Pinned catalog como estaban: la Upkeep sigue y el estado no cambia.
@@ -76,7 +83,7 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
 - **Token que usa**: el token que usaría Test it.
   - Es el token tipeado, si el vendedor tocó Change y tipeó uno.
   - Si no, es el guardado, que nunca sale del servidor y nunca se muestra, se registra en logs ni se devuelve.
-- **Sin token de ningún tipo**: el botón está desactivado y dice "Enter the token first" con palabras, nunca solo por color.
+- **Sin token de ningún tipo**: el botón está desactivado y dice "Enter the token first" con palabras, nunca solo por color. Esa línea no está en `OnboardingBot.dc.html`; queda como está hasta que el dueño decida.
 - **Qué lee**: solo los chats privados que le escribieron al bot.
   - Un chat privado cuenta como una persona, sea cual sea la cantidad de mensajes.
   - Los grupos y los canales nunca cuentan.
@@ -103,7 +110,7 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
 - Prueba los valores tipeados en la pantalla, no los guardados.
 - Necesita el token y el chat propio. El chat del canal puede estar en blanco, y Test it nunca lo revisa ni lo toca.
 - **Si tiene éxito**: los valores tipeados se guardan, la prueba cuenta para el requisito de Publish, y se muestra el toast "Test sent".
-- **Si falla**: no se guarda nada. Se muestra un motivo fijo en línea que nunca repite lo tipeado, y todo lo tipeado queda.
+- **Si falla**: no se guarda nada. Se muestra un motivo fijo en línea que nunca repite lo tipeado, y todo lo tipeado queda. La línea de ayuda del token, si se estaba viendo, sigue en su lugar.
 
 | Causa | Motivo |
 |---|---|
@@ -249,6 +256,7 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
   - el enlace a la pantalla del Catalog, ningún estado del Pinned catalog y ningún Publish;
   - campos vacíos y ninguna línea "Saved" sin nada guardado;
   - la línea "unpin it yourself in Telegram" después de un cambio de token o de canal.
+- **La línea de ayuda del token (criterio 12)**: una prueba del front del formulario compartido muestra, sin token guardado, "Saved encrypted and never shown again." bajo "Bot token" y atada con `aria-describedby`; con un token guardado, solo "Saved on … · not shown again"; y ante un Test it rechazado, la línea en su lugar con el motivo debajo. Capturas claro y oscuro, teléfono y computadora, de `ConfiguracionIntegraciones`, `OnboardingBot` y `OnboardingBotCompu`. Ninguna lista de infractores, tolerancia ni control se amplía. 100% de aprobación.
 - **Motivos de Test it (criterio 7)**: 100% de aprobación.
   - Hay una prueba por causa: 401; 403 (tanto "can't initiate conversation" como "blocked by the user"); 400 chat not found, que muestra "We could not find your chat: check the number and tap Start in your bot."; Telegram caído, 429 o sin conexión; demasiado largo; y cualquier otra falla.
   - Cada una muestra su texto fijo, no repite nada de lo tipeado, conserva el formulario y no guarda nada.
@@ -299,3 +307,4 @@ La configuración (token, chats, Find my chat, primer Test it y Publish) se juzg
 - Guardar un número encontrado por Find my chat sin un Test it exitoso.
 - Mostrar los nombres o nombres de usuario de las personas que le escribieron al bot, o dejar que el vendedor elija entre varias.
 - Un requisito o una política nueva para rediseños futuros; juzgar si Integrations se ve bien; comparar después del merge o en la revisión de diseño.
+- Separar el formulario para que solo el Onboarding muestre la línea de ayuda del token; cambiar la redacción o el lugar de los motivos de Test it; quitar "Enter the token first" (pendiente del dueño).

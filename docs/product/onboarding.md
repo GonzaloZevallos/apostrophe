@@ -4,11 +4,15 @@
 
 Antes, quien vendía caía en un Home vacío y abría Products, la pantalla del Catalog y Settings una por una. Antes de la app, hacía todo eso en la pestaña Ajustes de la planilla.
 
+**Cuando** acabo de aceptar mi Invitation y estoy armando mi Business nuevo desde el celular, **quiero** que el primer paso muestre solo lo que me pide (mi primer Product y su precio para hoy), **para** completarlo de una sin leer líneas sobre las que ahí no puedo hacer nada. (GH-1070: el paso 1 no muestra la marca ni una línea de moneda, y el bloque de título queda justo arriba de "Name".)
+
+**Cuando** estoy por pegar el token de mi bot de Telegram, **quiero** saber qué va a hacer la app con él antes de guardarlo, **para** pegarlo sin miedo a que se vuelva a mostrar o se filtre. (Se define en pinned-catalog.md; lo sirve acá el paso 4, que comparte el formulario de Integrations y muestra "Saved encrypted and never shown again." bajo "Bot token" mientras no hay token guardado.)
+
 **Cuando** manejo mi negocio desde el celular entre pedidos o en medio de un chat con un cliente, varias veces al día, **quiero** la app organizada según lo que de verdad hago y cada cuánto, **para** volver con el cliente en vez de buscar entre menús. (El job de navegación, navigation.md: lo sirve acá el Onboarding como el único camino guiado de un Business nuevo, abierto al aceptar su Invitation; Home no muestra ningún aviso de primer uso.)
 
 **Cuando** abro Home en el celular para ver cómo viene el día, **quiero** ver solo lo que vendí, lo que me deben y mi Stock por Product, **para** llevar el negocio de un vistazo sin avisos de configuración en el medio. (Se define en results.md; lo sirve acá que el Onboarding no ponga ningún aviso en Home: se entra solo al aceptar la Invitation o abriendo `/onboarding`.)
 
-**Cuando** un precio cambia en mitad del día y estoy con el celular entre pedidos o en medio de un chat con un cliente, **quiero** registrar el precio nuevo y el día desde el que rige en un formulario corto que se lea en pesos y arranque en hoy, sin salir del producto que estaba mirando, **para** volver con el cliente seguro de que rige el precio correcto, sin dudar del monto ni de la fecha. (Se define en varieties.md; lo sirve acá su situación secundaria: el paso 1 comparte los campos de precio, así que sus montos se leen en pesos con "$". El paso 1 siempre guarda un precio que rige desde hoy y no muestra fecha.)
+**Cuando** un precio cambia en mitad del día y estoy con el celular entre pedidos o en medio de un chat con un cliente, **quiero** registrar el precio nuevo y el día desde el que rige en un formulario corto que se lea en la moneda de mi negocio y arranque en hoy, sin salir del producto que estaba mirando, **para** volver con el cliente seguro de que rige el precio correcto, sin dudar del monto ni de la fecha. (Se define en varieties.md; lo sirve acá su situación secundaria: el paso 1 comparte los campos de precio, así que sus montos llevan el símbolo del Money format del Business. El paso 1 siempre guarda un precio que rige desde hoy y no muestra fecha.)
 
 **Cuando** reviso un cambio del Onboarding contra su diseño antes de aprobarlo, **quiero** que cada diferencia entre los pasos construidos (incluido el chip "Initial stock" del Opening stock) y el dibujo esté o bien corregida o bien registrada como decisión en este doc, y que las capturas de antes y después cubran cada pantalla que el cambio toca, **para** aprobar solo a partir de la evidencia del PR, sin revisar pantallas a mano ni arrastrar un hallazgo abierto a la próxima tarea.
 
@@ -36,6 +40,8 @@ Criterios de éxito:
    - la comparación nunca es un paso del **Gate** (ADR-0042, gate.md).
 7. **Ninguna palabra que elegir**: el Onboarding nunca muestra "What you sell" ni pide una Unit, y cada texto suyo dice "Product" / "Products", nunca "variety".
 8. **Home queda limpio**: ningún estado del Onboarding (sin empezar, a mitad de camino, con todo hecho o pasado sin "Done", terminado) pone un aviso, insignia ni recordatorio en Home ni en ningún otro lado.
+9. **El paso 1 muestra solo lo que pide** (GH-1070): en el celular (320 px incluidos) y en la computadora, el bloque de título queda justo arriba de "Name", sin la marca, sin línea de moneda y sin hueco; a 320 px el orden es el mismo y nada queda fuera de la pantalla. No se pierde nada que quien vende necesite: los campos de precio conservan el símbolo del Business como prefijo, y el símbolo y los decimales se siguen cambiando en Settings → Business → Currency and decimals.
+10. **Saber qué pasa con el token antes de pegarlo** (GH-1070): sin token guardado, el paso 4 muestra "Saved encrypted and never shown again." bajo "Bot token", atado al campo; con un token guardado, solo "Saved on … · not shown again" (pinned-catalog.md).
 
 ## Comportamiento
 
@@ -69,10 +75,11 @@ Criterios de éxito:
   - un título corto y una oración sobre por qué importa;
   - sus campos y una acción principal;
   - el avance en palabras además de forma ("Step 2 of 6"), nunca solo por color;
-  - "Back", al paso anterior, en cada paso salvo el paso 1. El paso 1 no tiene paso anterior: no muestra "Back", y "Close" es su salida;
+  - "Back", al paso anterior, en cada paso salvo el paso 1. El paso 1 no tiene paso anterior: no muestra "Back", y "Close" es su salida. El dibujo `OnboardingVariedad.dc.html` abre el paso 1 con "‹ Back / Close"; el dueño aceptó la diferencia (GH-1070, decisión 1): antes del paso 1 solo está la Invitation aceptada, que sirve una sola vez, así que un "Back" no llevaría a ningún lado;
   - "Skip", solo en los pasos opcionales;
   - "Skip the rest", solo en los pasos opcionales, solo una vez que los dos pasos obligatorios están hechos, y nunca en el último paso (paso 6), donde no pasaría nada que "Skip" no pase;
   - "Close", que lleva a Home y conserva todo lo guardado y el punto donde se retoma.
+- **Sin marca ni línea de moneda** (GH-1070): ningún paso muestra la Yerba mark ni el Wordmark (brand.md), y ninguno muestra una línea con el formato de dinero del Business. Los campos de precio ya llevan el símbolo del Business, y el formato se cambia solo en Settings → Business → Currency and decimals (money.md).
 - **Los controles para saltear**: "Skip" y, cuando se muestra, "Skip the rest" van juntos en una línea como links de texto, como los dibuja el diseño; ninguno es un botón.
 - **El marco del paso sigue el diseño dibujado** (`docs/product/design-system/pantallas/Onboarding*.dc.html`); una diferencia entre este archivo y el dibujo sobre lo que muestra un paso es un defecto del diseño. Un dibujo que todavía diga "variety" es un defecto conocido del dibujo, que diseño corrige en su propio trabajo.
 - **Cambios sin guardar**: salir de un paso con algo tipeado y sin guardar, por "Close", "Back" o "Skip", pregunta antes de descartar. Un paso sin tocar se sale de inmediato.
@@ -102,8 +109,11 @@ Criterios de éxito:
 
 ### Paso 1
 
+![Paso 1 del Onboarding en el teléfono](../assets/screens/OnboardingVariedad.webp)
+
+- **Cabecera y título** (GH-1070): la fila de cabecera tiene solo "Close", alineado a la derecha; después "Step 1 of 6" y el bloque de título (título y oración), que queda justo arriba de "Name", sin marca, sin línea de moneda y sin hueco entre la oración y el primer campo, como en el dibujo. En el celular y en la computadora es igual; a 320 px conserva el mismo orden y nada queda fuera de la pantalla.
 - **Un formulario, una acción principal**: el nombre del Product, su List price y los campos opcionales del formulario de precio tal como los muestra Products bajo los interruptores de precio (pricing-settings.md), guardados con una sola acción principal. No hay un guardado aparte para el nombre y para el precio.
-- **Montos en pesos**: los campos de precio son los que comparte el formulario de Price entry (varieties.md), así que el List price, el Bulk price y el **VIP price** muestran cada uno "$" antes del monto, y el **Bulk minimum**, en gramos, nunca.
+- **Montos en la moneda del Business**: los campos de precio son los que comparte el formulario de Price entry (varieties.md), así que el List price, el Bulk price y el **VIP price** muestran cada uno el símbolo del Money format del Business ("$" por defecto) antes del monto, y el **Bulk minimum**, en gramos, nunca.
 - **Sin fecha**: el paso 1 siempre guarda un precio que rige desde hoy. No muestra ningún campo de fecha ni chip de fecha; el chip "Effective from" del formulario de precio (varieties.md) no es parte de él.
 - **Sin Unit**: el paso 1 no pide ninguna Unit; cuando exista, la Unit se elige al crear el Product, fuera del Onboarding (#390).
 - **Dos escrituras a través de los dueños**: esa única acción puede guardar el Product y después su Price entry que rige desde hoy, cada uno por la ruta y los rechazos de su dueño (varieties.md). Acá no se repite nada.
@@ -115,6 +125,14 @@ Criterios de éxito:
   3. **Si no** (todavía no hay ningún Product): el formulario vacío.
 - En todos los casos el paso 1 cuenta como hecho solo a partir de los datos (un Product con precio para hoy): mostrar el formulario de precio de un Product sin precio nunca mueve el conteo de avance ni el punto donde se retoma, y "Close" sale de inmediato conservando todo.
 - Otro Product se agrega solo con "Add another product".
+
+### Paso 4 (bot)
+
+![Paso 4 del Onboarding en el teléfono](../assets/screens/OnboardingBot.webp)
+
+- Es el mismo formulario que Settings → Integrations (`IntegrationsForm`), con sus reglas, motivos y líneas de ayuda (pinned-catalog.md).
+- **La línea de ayuda del token** (GH-1070): mientras no hay token guardado, bajo "Bot token" se ve "Saved encrypted and never shown again.", como línea de ayuda del campo (`campo__ayuda`, atada con `aria-describedby`). Con un token guardado la reemplaza "Saved on … · not shown again". Cuando Test it se rechaza, la línea queda y el motivo se ve debajo, con su redacción y su lugar de siempre.
+- **"Enter the token first"**, el motivo del "Find my chat" desactivado, no está en `OnboardingBot.dc.html`; queda como está hasta que el dueño decida.
 
 ### Hecho y pasado
 
@@ -165,7 +183,8 @@ Criterios de éxito:
 
 - **La matriz de evidencia**: cada celda se captura en la base de la tarea (antes) y en el head (después) con `scripts/design/comparisons.mjs --strict`. Un solo script desde una sola instalación toma los dos lados, en el mismo día de Argentina, con las fuentes fijadas (ADR-0042). El PR registra la versión instalada de `@fontsource/plus-jakarta-sans`. Las celdas son:
   - cada paso del Onboarding y "Done", claro y oscuro, celular y computadora;
-  - cuando el cambio toca el chip del paso 2, el formulario de Stock entry abierto desde un Product sin Stock entries ("Initial stock" preseleccionado), claro y oscuro, celular y computadora.
+  - cuando el cambio toca el chip del paso 2, el formulario de Stock entry abierto desde un Product sin Stock entries ("Initial stock" preseleccionado), claro y oscuro, celular y computadora;
+  - cuando el cambio toca el formulario compartido del bot, también Settings → Integrations (`ConfiguracionIntegraciones`), claro y oscuro, celular y computadora.
 
   Las pantallas que el cambio no toca quedan afuera.
 - **Filas del registro**: una celda sin fila en `scripts/design/screens.json` recibe una bajo las reglas de design-capture.md:
@@ -173,7 +192,7 @@ Criterios de éxito:
   - captura la sección nombrada entera;
   - los dos tests del registro se declaran como costuras;
   - se conserva cada guard de esos tests.
-- **Cada diferencia se lista** en el PR como buscada, como un defecto conocido del diseño (como la etiqueta "Origin" del dibujo en el paso 2) o como un defecto.
+- **Cada diferencia se lista** en el PR como buscada, como un defecto conocido del diseño (como la etiqueta "Origin" del dibujo en el paso 2), como una diferencia aceptada por el dueño (como el "‹ Back" del dibujo en el paso 1) o como un defecto.
   - Una diferencia que el cambio introdujo respecto de la base de la tarea es una regresión, y se corrige en la misma tarea, salvo que sea la intención decidida del propio cambio.
   - Una diferencia ya presente en la base de la tarea se carga como un issue de seguimiento nuevo, que el PR enlaza, y no se corrige ahí.
   - No queda ninguna diferencia sin explicar.
@@ -189,6 +208,7 @@ Criterios de éxito:
 - Cada paso llama a los casos de uso y códigos de rechazo propios de su dueño (`contract.json`, ADR-0008); no hay copia de ninguna regla.
 - Nada sobre él va a los logs, la consola ni el almacenamiento del navegador (ADR-0005, ADR-0026). No se guarda ni se registra nada sobre el tiempo que llevó ni sobre dónde se fue quien vende.
 - No hay ninguna ruta, campo ni estado para una palabra de lo que vende el Business.
+- Quitar un elemento que la suite e2e usa como referencia migra en la misma tarea cada uso e2e de él, y el elemento nunca vuelve, visible ni oculto, para satisfacer un localizador (D-69509906).
 
 ## Métricas
 
@@ -216,7 +236,9 @@ No hay telemetría.
   - un precio rechazado que conserva todo lo tipeado, con el reintento que manda solo el precio y sin crear un segundo Product;
   - al volver al paso 1 después de que un Product tiene precio para hoy, ese Product marcado "Done", y pasar al paso 2 sin agregar ningún Product;
   - con un Product con precio para hoy y un segundo guardado sin precio, al volver al paso 1, el nombre del segundo conservado y solo su precio por completar, guardando solo el precio, con el conteo de avance sin cambios;
-  - el "$" antes del List price, el Bulk price y el VIP price y nunca antes del Bulk minimum, y ningún campo ni chip de fecha.
+  - el símbolo del Business antes del List price, el Bulk price y el VIP price y nunca antes del Bulk minimum, y ningún campo ni chip de fecha.
+- **El paso 1 muestra solo lo que pide (criterio 9)**: tests del front (`OnboardingStep.test.tsx`) muestran que ningún paso dibuja el lockup de la marca ni una línea de moneda, y que el paso 1 tiene solo "Close" en su cabecera; los estados del recorrido de `web/src/mobile-standard/statesRecords.ts` y cada uso e2e de los elementos quitados se migran en la misma tarea; `ONBOARDING_TEXT.currencyLine` y su entrada de `en.baseline.json` ya no existen. El Mobile check pasa sin ampliar ninguna lista de infractores, tolerancia ni control. Las capturas de `OnboardingVariedad` y `OnboardingVariedadCompu`, claro y oscuro, muestran el bloque de título justo arriba de "Name", también a 320 px.
+- **El token, antes de pegarlo (criterio 10)**: tests del front del formulario compartido muestran "Saved encrypted and never shown again." bajo "Bot token" y atada con `aria-describedby` sin token guardado, solo "Saved on … · not shown again" con un token guardado, y la línea en su lugar con el motivo debajo cuando Test it se rechaza. Capturas de `OnboardingBot` y `OnboardingBotCompu`, claro y oscuro.
 - **El chip del paso 2**: tests del front (`web/src/screens/StockEntryForm.test.tsx`) muestran:
   - ninguna etiqueta "Origin" sobre el chip fijo "Initial stock" del paso 2. La aserción de que estaba presente pasa a ausente en el mismo diff que este doc, y el PR la lista (icon-and-text-rule.md criterio 5);
   - la elección de origen del formulario completo de Stock entry sin cambios, con cada aserción sobre ella sin editar.
@@ -231,10 +253,10 @@ No hay telemetría.
 - **Marco**: el + de la barra, el "+ New sale" de la barra lateral y "Send catalog" se comportan como para cualquier Business mientras corre; el Onboarding no tiene barra ni +; New sale abierta desde "Done" vuelve a Home.
 - **Ninguna palabra que elegir (criterio 7)**: tests del front muestran que ningún paso ni "Done" muestra "What you sell", ningún campo de Unit ni la palabra "variety"; el barrido de palabras de varieties.md cubre los textos del Onboarding.
 - **Aislamiento**: las rutas están en el barrido de aislamiento y en el test de rutas protegidas; la Business removal deja 0 filas del estado y conteo exportado = conteo borrado.
-- **Diseño (criterio 5)**: cada pantalla en `screens.json`, `compare.sh` antes y después, y una pasada a ojo en celular y computadora en los dos temas; el marco del paso y el paso 1 coinciden con `OnboardingVariedad` (el paso del Product) y `OnboardingCategorias` (el paso de las Expense categories). El paso de precio del paso 1 está registrado en `screens.json` y capturado antes y después de que le llegue el "$" (varieties.md).
+- **Diseño (criterio 5)**: cada pantalla en `screens.json`, `compare.sh` antes y después, y una pasada a ojo en celular y computadora en los dos temas; el marco del paso y el paso 1 coinciden con `OnboardingVariedad` (el paso del Product) y `OnboardingCategorias` (el paso de las Expense categories), salvo el "‹ Back" del paso 1, que el dueño aceptó dejar afuera. El paso de precio del paso 1 está registrado en `screens.json` y capturado antes y después de que le llegue el símbolo (varieties.md).
 - **Aprobación con la evidencia (criterio 6)**, leída del PR:
   - se adjuntan capturas de antes y después para cada celda de la matriz: 0 celdas faltantes;
-  - cada diferencia se lista como buscada, defecto conocido del diseño o defecto: 0 sin listar;
+  - cada diferencia se lista como buscada, defecto conocido del diseño, diferencia aceptada por el dueño o defecto: 0 sin listar;
   - 0 regresiones en el head que se integra, y cada diferencia preexistente enlazada a un issue de seguimiento;
   - cada suite pasa, y los únicos tests editados son los tests del registro dentro de sus costuras declaradas y cualquier aserción cambiada en el mismo diff que el doc que la decide;
   - no se agrega ningún paso de captura ni de comparación a `.agentic/stack.yaml`, al CI ni al Gate.
@@ -261,6 +283,9 @@ No hay telemetría.
 - Esperar a que se sume un socio.
 - Editar o renombrar un Product guardado desde el paso 1: eso es la página del Product.
 - Un campo o chip de fecha en el paso 1: siempre guarda un precio que rige desde hoy.
+- Un "Back" en el paso 1, la marca en cualquier paso, o mostrar o cambiar el formato de dinero en el Onboarding (eso es Settings → Business → Currency and decimals).
+- Cambiar la redacción o el lugar de los motivos de Test it, o "Enter the token first" (pendiente del dueño).
+- Los pasos todavía no construidos de `Onboarding.dc.html` (#418, #329).
 - Una etiqueta "Origin" sobre el chip del paso 2; cualquier cambio en la elección de origen del formulario completo de Stock entry o en su etiqueta.
 - Corregir `Onboarding*.dc.html` como parte de la revisión de un cambio: diseño corrige sus propios dibujos.
 - Corregir, en el cambio en revisión, una diferencia de diseño ya presente en su base de tarea: va a un seguimiento.

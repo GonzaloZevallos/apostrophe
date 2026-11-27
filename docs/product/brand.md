@@ -1,6 +1,7 @@
 ## Jobs
 
 - When I reach for the app on my phone's home screen or in a browser tab, I want to spot it at once and have it look like one finished product, from the icon through Sign in to every screen, so I open it without hesitating, trust it with my customers' data and get on with recording the sale.
+- Cuando acabo de aceptar mi Invitation y estoy armando mi Business nuevo desde el celular, quiero que el primer paso muestre solo lo que me pide, para completarlo de una sin leer líneas sobre las que ahí no puedo hacer nada. (Se define en onboarding.md; lo sirve acá que la marca no aparezca en ningún paso del Onboarding, GH-1070: la identidad ya la dieron el ícono, Sign in y la aceptación de Invitation.)
 
 # Brand
 
@@ -31,22 +32,27 @@ La identidad del producto Apostrophe: la Yerba mark, el Wordmark, la tipografía
 
 | Lugar | Muestra |
 |---|---|
-| Sign in, las dos pantallas de aceptación de Invitation (Business nuevo y sumarse a un Business), primer paso del Onboarding | Yerba mark con Wordmark, arriba |
+| Sign in, las dos pantallas de aceptación de Invitation (Business nuevo y sumarse a un Business) | Yerba mark con Wordmark, arriba |
 | Barra lateral de la computadora (`InicioCompu`) | Yerba mark y Wordmark arriba, sobre "+ New sale", sin rediseño |
 
-La marca aparece en esos lugares y en ningún otro: ni en los Tab roots (Home, Analysis, Sales, Customers, Products), ni en tarjetas, detalles, Sheets, los pasos del Onboarding después del primero o Reset.
+La marca aparece en esos lugares y en ningún otro: ni en los Tab roots (Home, Analysis, Sales, Customers, Products), ni en tarjetas, detalles, Sheets, ningún paso del Onboarding (tampoco el primero) o Reset.
 
 **El encabezado de Home y Analysis en el teléfono no la muestra** (parte 2 de GH-723, decisión del dueño)
 
 - Desde GH-723, el encabezado compartido de Home y Analysis en el teléfono muestra la línea de fecha, el segmento Home | Analysis y el avatar "Settings" (navigation.md), sin la Yerba mark, sin el nombre del Business y sin título visible. Antes, la Yerba mark iba en línea al comienzo de la fila del nombre del Business en Home, solo cuando el nombre entraba entero a su lado.
 - Con eso, la forma de la Yerba mark sola (sin Wordmark) se quedó sin ninguna pantalla que la use. #736 borró la variante `'mark'` de `BrandMark`, `clipRoot`, `.brand-mark--mark`, `.inicio__cabecera-marca` y las reglas muertas de `.inicio__cabecera`, el token `--marca-tamano`, sus casos de test y la clave `brand.mark.label`. Lo que quede del lockup (sus tamaños, su recorte) sigue solo mientras lo use algún lugar de la tabla de arriba.
-- La identidad en el teléfono la sigue dando el ícono de la app en la pantalla de inicio y el lockup de Sign in, de la aceptación de Invitation y del primer paso del Onboarding.
+- La identidad en el teléfono la sigue dando el ícono de la app en la pantalla de inicio y el lockup de Sign in y de la aceptación de Invitation.
 
-**Sign in, aceptación de Invitation y primer paso del Onboarding**
+**Sign in y aceptación de Invitation**
 
 - Muestran la Yerba mark con el Wordmark arriba, nunca las dos formas a la vez. En Sign in reemplazan al texto "apostrophe’" anterior, en el mismo lugar.
 - Las dos pantallas de aceptación de Invitation la muestran: la que abre un Business nuevo y la que suma a una persona a un Business que ya existe. También la muestra el aviso de un link de Invitation que ya no sirve. Las pantallas que solo esperan o fallan (cargando, sin conexión, error) no la muestran.
-- En el Onboarding va solo en su primer paso (el Product), el que abre un Business recién creado, cada vez que se muestra ese paso, también al retomar. Va arriba de la cabecera del paso: "Atrás" y "Close" bajan un poco pero nunca se ocultan. Los demás pasos no la muestran, y no hay una pantalla de bienvenida propia.
+
+**El Onboarding no la muestra** (GH-1070)
+
+- Ningún paso del Onboarding muestra la Yerba mark ni el Wordmark, tampoco el primero. El dibujo `OnboardingVariedad.dc.html` no la tiene: el paso 1 abre con su cabecera (solo "Close") y "Step 1 of 6", y el bloque de título queda justo arriba de "Name" (onboarding.md).
+- Es decoración: la identidad ya la dieron el ícono, Sign in y la aceptación de Invitation, así que quien vende no pierde nada. No hay una pantalla de bienvenida propia.
+- `BrandMark` y los tokens `--marca-*` siguen mientras los usen Sign in, la aceptación de Invitation o la barra lateral; lo que deje sin uso quitarla del Onboarding se borra en el mismo diff.
 
 **Barra lateral de la computadora**
 
@@ -65,7 +71,7 @@ La marca aparece en esos lugares y en ningún otro: ni en los Tab roots (Home, A
 - La copia de docs conserva su `@import` de Google para Geist. Es documentación, y la app nunca la carga.
 - En las Design captures, `scripts/design/fonts.mjs` responde el pedido de Plus Jakarta Sans de los dibujos con los archivos de Geist alojados en la instalación (ADR-0042). Por eso el lado del dibujo ya sale en Geist.
 - Los dibujos de `pantallas/` no se editan. La Yerba mark y el Wordmark son las diferencias esperadas contra ellos, y no son hallazgos.
-- Las Design captures cubren Sign in, las dos pantallas de aceptación de Invitation, el primer paso del Onboarding e `InicioCompu`.
+- Las Design captures de la marca cubren Sign in, las dos pantallas de aceptación de Invitation e `InicioCompu`.
 
 ## Tabular figures
 
@@ -98,7 +104,8 @@ La marca aparece en esos lugares y en ningún otro: ni en los Tab roots (Home, A
 - **Geist sin red.** El e2e no hace ningún pedido de tipografía fuera de la instalación.
 - **Cifras alineadas.** La regla `tabular-figures` del Mobile check informa cero infracciones.
 - **Teléfono sin problemas nuevos.** El Mobile check imprime cero infractores nuevos, las listas de infractores solo se achican, la barra lateral muestra como mucho un elemento de marca visible, y registrar una Sale desde el teléfono sigue tomando menos de un minuto.
-- **Sin marca en el encabezado de Home y Analysis.** En el teléfono, en `/` y en `/analysis`, no hay ninguna imagen "apostrophe" ni nombre del Business en el encabezado (parte 2 de GH-723), y el lockup de Sign in, de la aceptación de Invitation, del primer paso del Onboarding y de la barra lateral sigue igual. Cuando #736 borre la variante de la marca sola, los tests de `BrandMark` dejan de tener sus casos de la marca sola y del recorte.
+- **Sin marca en el encabezado de Home y Analysis.** En el teléfono, en `/` y en `/analysis`, no hay ninguna imagen "apostrophe" ni nombre del Business en el encabezado (parte 2 de GH-723), y el lockup de Sign in, de la aceptación de Invitation y de la barra lateral sigue igual. Cuando #736 borre la variante de la marca sola, los tests de `BrandMark` dejan de tener sus casos de la marca sola y del recorte.
+- **Sin marca en el Onboarding** (GH-1070). `OnboardingStep.test.tsx` muestra que ningún paso, tampoco el primero, dibuja el lockup; cada uso e2e del lockup en el Onboarding se migra en la misma tarea y el lockup no vuelve, visible ni oculto, para satisfacer un localizador (D-69509906). Los tests de Sign in, de la aceptación de Invitation y de la barra lateral siguen viendo el lockup sin editarse.
 - **Misma app instalada.** El `id`, el `name` y el `short_name` del manifest no cambian.
 
 ## Reglas fijas

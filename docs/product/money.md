@@ -4,6 +4,7 @@
 - Cuando mi negocio cuenta la plata en otra moneda o con centavos, quiero elegir yo mismo, desde Settings, el símbolo de la moneda y la cantidad de decimales, para que cada pantalla muestre y acepte la plata como la contamos mis clientes y yo, sin que ningún monto que ya registré cambie de valor. (GH-318, parte 20.)
   - Disparadores: un Business en otra moneda quiere su propio símbolo; un Business que cobra con centavos sube los decimales; un vendedor que los subió por error, o que nunca usó centavos, los vuelve a bajar.
   - La parte 20 cumple los tres disparadores: cambia el símbolo, sube los decimales por el rescale (#402) y los baja de vuelta. Después de subir, las nueve rutas de escritura de dinero guardan y devuelven un monto con centavos exactamente (sección "Centavos en el dominio").
+- Cuando acabo de aceptar mi Invitation y estoy armando mi Business nuevo desde el celular, quiero que el primer paso muestre solo lo que me pide, para completarlo de una sin leer líneas sobre las que ahí no puedo hacer nada. (Se define en onboarding.md; lo sirve acá que el Onboarding no tenga línea de moneda, GH-1070: sus campos de precio ya llevan el símbolo del Business, y el formato se cambia solo en Settings → Business → Currency and decimals.)
 
 # Dinero
 
@@ -50,7 +51,7 @@ Antes de la parte 20, todo Business estaba fijo en "$" y 0 decimales: un vendedo
 - Una falla de red muestra el aviso de sin conexión y una falla del servidor el error genérico; en los dos casos el formulario conserva lo tipeado.
 - Un cambio guardado cuenta como un cambio que puede afectar el texto del Catalog: dispara la Upkeep del Pinned catalog, que solo edita en el lugar, nunca envía ni fija, y una falla muestra Out of date como hoy.
 - Cada User del Business ve el formato nuevo la próxima vez que carga una pantalla (lo lee de `/auth/me`). Nada se configura por User ni por dispositivo.
-- La línea de moneda del Onboarding lee el formato guardado.
+- El Onboarding no muestra el formato guardado en ninguna línea propia (GH-1070): sus campos de precio llevan el símbolo del Business como prefijo, igual que el formulario de Price entry.
 
 ### Cómo se escribe un monto
 
@@ -135,7 +136,7 @@ Algunas cifras dividen: el total de una Sale line, el costo por unidad que se to
 ## Fuera de alcance
 
 - El rescale en sí (#402).
-- Elegir la moneda en el Onboarding.
+- Elegir la moneda en el Onboarding, o mostrar ahí el formato guardado en una línea propia.
 - La posición del símbolo y una lista de monedas.
 - Un resumen del formato guardado en la fila de Settings.
 - Ayudar a encontrar los montos que frenan una bajada.
@@ -167,5 +168,6 @@ Algunas cifras dividen: el total de una Sale line, el costo por unidad que se to
 - **Bajar (criterio 3)**: con una lista de cada columna declarada con `money_column()` y un monto con centavos plantado en cada una, de a una por vez, en un Business de escala 2 con decimales en 2, bajar a 0 se rechaza en el 100% de las columnas, con el símbolo y los decimales guardados sin cambios; sin ninguno, la bajada se acepta: 100%. Una columna que admite NULL y lo tiene nunca frena. Los centavos de otro Business frenan una bajada: 0 casos.
 - **Los rechazos (criterio 3)**: la oración fija con el Attention icon se muestra y el formulario conserva lo tipeado (vitest): 100%.
 - **Para todos los Users (criterio 4)**: después de que un User guarda, la sesión de un segundo User del mismo Business lee el formato nuevo en su próxima carga: 100%.
+- **Las pantallas abiertas cambian sin navegar**: después de un guardado de Currency and decimals, una pantalla abierta que no es del Onboarding y escribe dinero con `useMoney()` se vuelve a dibujar con el formato nuevo (vitest): pasa. Desde GH-1070 ningún test lee una línea de moneda del Onboarding.
 - **Upkeep**: un cambio de formato guardado dispara la Upkeep del Pinned catalog una vez, y un Save sin cambios no la dispara: 100%.
 - Gate (pytest, vitest, e2e): pasa.
