@@ -5,6 +5,7 @@
 
 import { baselineArgs, FIXTURE } from './baselineArgs.ts'
 import type * as Self from './expenses.ts'
+import { STOCK_TEXT } from './stock.ts'
 import type { LimitedCopy } from './limits.ts'
 
 export const LANGUAGE: 'es' | 'en' = 'en'
@@ -23,6 +24,9 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'EXPENSES_TEXT.expenseCountIn': [[M, '3 categories']],
   'EXPENSES_TEXT.deleteTheExpenseOf': [[M, 'Rent', D]],
   'EXPENSES_TEXT.categoriesCount': [[0], [1], [2]],
+  'EXPENSES_TEXT.youSpentIn': [['November 2026']],
+  'EXPENSES_TEXT.barLabel': [['Rent 70%, Others 30%']],
+  'EXPENSES_TEXT.barSegment': [['Rent', 70]],
 })
 
 /** Every text a person reads in this area that is not a named message above, by key. */
@@ -54,4 +58,14 @@ export const EXPENSES_TEXT = {
   expenseDeleted: 'Expense deleted',
   categoryGone: 'That category is gone. Pick another.',
   expenseSaved: 'Expense saved',
+  youSpentIn: (month: string) => `You spent in ${month}`,
+  others: 'Others',
+  thousandSuffix: 'k',
+  millionSuffix: 'M',
+  barLabel: (segments: string) => `Spending by category: ${segments}`,
+  barSegment: (name: string, percent: string | number) => `${name} ${percent}%`,
+  today: 'today',
+  /** Short weekdays, index 0 = Monday (the order `relativeDay` returns). */
+  weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  delete: STOCK_TEXT.borrar,
 } as const
