@@ -228,7 +228,6 @@ En GH-1069 (decisión 1 del humano, 2026-11-26) el dueño aceptó otras cuatro d
 - Pedidos a la API agregados por `PaymentsGroup`: 0 (GH-1069).
 - Infracciones del Mobile check en el estado `ConfiguracionCategoriaNueva`: 0, sin ampliar ninguna lista de infractores, tolerancia ni control; la lista de `touch-action` solo se achicó (GH-1069).
 - Design captures adjuntas de ConfiguracionCategorias, ConfiguracionCategoriasCompu y ConfiguracionCobros, en celular de 375 px y computadora, claro y oscuro: todas (GH-1069).
-
 - Filas link que repiten otra fila del registro en las páginas Business y Prices: 0 (antes 3), según los tests de BusinessGroup y PricingGroup (GH-1068).
 - Toques desde un Tab root hasta la lista de Customer types con el interruptor ya activado: 2 (antes 3, pasando por Prices); en un Business nuevo, 4 hasta la lista y 7 para crear un tipo, sin contar encender el interruptor ni guardarlo (decisión 1 del humano en GH-1068). "‹ Settings" o Close desde la lista cae en Settings en el 100 % de los casos, se llegue desde la fila o por la dirección, según el test de rutas (padre `settings`), `SettingsNavigation.test.tsx` y `customerTypes.spec.ts` (GH-1068).
 - Caminos nombrados en el Copy module o en `docs/product/` que pasan por "Settings → Business →" hacia Currency and decimals o Withdrawal reasons, o por "Settings → Prices → Customer types": 0 (GH-1068).
