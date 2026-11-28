@@ -33,7 +33,7 @@ import {
 import { AUTH_TEXT } from '../copy/auth.ts'
 import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { REFUSAL_KEY } from '../i18n/refusalTable.ts'
-import { common, emptyState, products, refusal, settings } from './copy.ts'
+import { common, emptyState, expenses, products, refusal, settings } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
 import { SETTINGS_TEXT } from '../copy/settings.ts'
@@ -162,6 +162,21 @@ export const RECORDS_STATES: readonly WalkState[] = [
     steps: [{ press: `${common('common:category')} ${EXPENSES_TEXT.pickACategory}` }],
     visible: emptyState('emptyStates:selectorNoCategories'),
     reads: [{ path: /^\/expense-categories$/, status: 200, body: [] }],
+  },
+  {
+    // The How you paid list open over the Expense form: the form is inert beneath it. The business's default methods are Cash and Transfer.
+    screen: 'expense/method-selector-open',
+    route: EXPENSE_NEW,
+    // The button's name is the label then the value shown, which on a new expense is the empty wording.
+    steps: [{ press: `${expenses('expenses:form.paymentMethod')} ${expenses('expenses:form.paymentMethodNone')}` }],
+    visible: common('common:transfer'),
+  },
+  {
+    // A nine-digit amount typed: Save carries it in its label (`expenses:form.saveWithAmount`), and it must still fit the phone.
+    screen: 'expense/amount-nine-digits',
+    route: EXPENSE_NEW,
+    steps: [{ fill: { label: common('common:amount'), value: '123456789' } }],
+    visible: expenses('expenses:form.saveWithAmount', { amount: '$ 123.456.789' }),
   },
   {
     // A stored line on a Variety archived since: its 60-character name shows with the mark.
@@ -385,7 +400,7 @@ export const RECORDS_STATES: readonly WalkState[] = [
     screen: 'GastoDesdeGastos',
     route: EXPENSES,
     steps: [{ activate: common('common:addExpense') }],
-    visible: 'Save the expense',
+    visible: expenses('expenses:form.save'),
   },
   {
     screen: 'GastoEditar',

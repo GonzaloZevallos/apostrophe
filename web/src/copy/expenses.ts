@@ -47,8 +47,6 @@ export const EXPENSES_TEXT = {
   newCategoryName: 'New category name',
   createCategory: 'Create category',
   createANewCategory: 'Create a new category',
-  details: 'Details',
-  saveTheExpense: 'Save the expense',
   deleteExpense: 'Delete expense',
   discardTheExpense: 'Discard the expense?',
   saleStaysAsItIs: 'Your sale in progress stays as it is.',

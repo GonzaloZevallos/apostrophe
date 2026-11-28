@@ -39,15 +39,15 @@ test('a refused amount shows the whole-amounts copy under the field and keeps wh
 
   await chooseCategory('Packaging')
   await userEvent.type(screen.getByLabelText('Amount'), '1000')
-  await userEvent.type(screen.getByLabelText('Details'), 'Cinta')
-  await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+  await userEvent.type(screen.getByLabelText('Details (optional)'), 'Cinta')
+  await userEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
 
   const alert = await screen.findByRole('alert')
   expect(alert).toHaveTextContent(moneyTooManyDecimals(0))
   expect(alert).toHaveTextContent('Use whole amounts only.')
   expect(screen.queryByText(DETAIL_FROM_THE_SERVER)).not.toBeInTheDocument()
   expect(screen.getByLabelText(/^Amount/)).toHaveValue('1000')
-  expect(screen.getByLabelText('Details')).toHaveValue('Cinta')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Cinta')
 })
 
 test('the copy names the decimals the business allows when it allows any', () => {
@@ -61,8 +61,8 @@ test('a business with 2 decimals sees the up-to-2-decimals copy under the field'
 
   await chooseCategory('Packaging')
   await userEvent.type(screen.getByLabelText('Amount'), '1000')
-  await userEvent.type(screen.getByLabelText('Details'), 'Cinta')
-  await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+  await userEvent.type(screen.getByLabelText('Details (optional)'), 'Cinta')
+  await userEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
 
   const alert = await screen.findByRole('alert')
   expect(alert).toHaveTextContent('Use up to 2 decimals.')

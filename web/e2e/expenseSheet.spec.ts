@@ -27,7 +27,7 @@ async function recordBolsas(page: Page): Promise<void> {
 
 async function expectActionAtTheBottom(page: Page, dialogName: string): Promise<void> {
   const dialog = page.getByRole('dialog', { name: dialogName })
-  const save = dialog.getByRole('button', { name: 'Save the expense' })
+  const save = dialog.getByRole('button', { name: /^Save expense/ })
   await expect(save).toBeInViewport()
   // `.sheet__actions` ends at the sheet's bottom, and its own padding (one spacing step plus
   // `--inset-abajo`) is all that lies between the action and that edge.
@@ -41,21 +41,21 @@ async function expectActionAtTheBottom(page: Page, dialogName: string): Promise<
   expect(Math.abs(gap - padding)).toBeLessThanOrEqual(1)
 }
 
-test('a direct address to Add expense opens the sheet over Expenses, focus in Date', async ({ page }) => {
+test('a direct address to Add expense opens the sheet over Expenses, focus in Amount', async ({ page }) => {
   await signUpNewBusiness(page)
   await recordBolsas(page)
   await page.goto(EXPENSE_NEW)
 
   const dialog = page.getByRole('dialog', { name: 'Add expense' })
   await expect(dialog).toBeVisible()
-  await expect(page.getByLabel('Date', { exact: true })).toBeFocused()
+  await expect(page.getByLabel('Amount', { exact: true })).toBeFocused()
   await expect(dialog.getByRole('button', { name: 'Close' })).toBeVisible()
   await expect(page.locator('.behind-pane')).toHaveAttribute('inert', '')
   await expect(page.locator('.behind-pane')).toContainText('Bolsas')
   await expectActionAtTheBottom(page, 'Add expense')
 })
 
-test('editing an expense opens an in-page sheet, focus in Date, Delete above Save', async ({ page }) => {
+test('editing an expense opens an in-page sheet, focus in Amount, Delete above Save', async ({ page }) => {
   await signUpNewBusiness(page)
   await recordBolsas(page)
   await page.goto(EXPENSES)
@@ -64,10 +64,10 @@ test('editing an expense opens an in-page sheet, focus in Date, Delete above Sav
 
   const dialog = page.getByRole('dialog', { name: 'Edit expense' })
   await expect(dialog).toBeVisible()
-  await expect(page.getByLabel('Date', { exact: true })).toBeFocused()
+  await expect(page.getByLabel('Amount', { exact: true })).toBeFocused()
   await expect(page.locator('.behind-pane')).toHaveCount(0)
   const del = dialog.getByRole('button', { name: 'Delete expense' })
-  const save = dialog.getByRole('button', { name: 'Save the expense' })
+  const save = dialog.getByRole('button', { name: /^Save expense/ })
   const deleteBox = await del.boundingBox()
   const saveBox = await save.boundingBox()
   if (deleteBox === null || saveBox === null) throw new Error('no box')

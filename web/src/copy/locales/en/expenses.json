@@ -1,0 +1,10 @@
+{
+  "form": {
+    "detailsOptional": "Details (optional)",
+    "paymentMethod": "How you paid",
+    "paymentMethodNone": "None",
+    "paymentMethodEmpty": "No payment methods yet. Add one in Settings.",
+    "save": "Save expense",
+    "saveWithAmount": "Save expense · {{amount}}"
+  }
+}
