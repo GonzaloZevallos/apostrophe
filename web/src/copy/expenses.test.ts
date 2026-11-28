@@ -12,6 +12,7 @@ const NEW_TEXTS: readonly (readonly [key: string, english: string])[] = [
   ['millionSuffix', EXPENSES_TEXT.millionSuffix],
   ['barLabel', EXPENSES_TEXT.barLabel('Rent 70%, Others 30%')],
   ['barSegment', EXPENSES_TEXT.barSegment('Rent', 70)],
+  ['barSegmentSeparator', EXPENSES_TEXT.barSegmentSeparator],
   ['today', EXPENSES_TEXT.today],
   ...EXPENSES_TEXT.weekdaysShort.map((day, index) => [`weekdaysShort[${index}]`, day] as const),
   ['delete', EXPENSES_TEXT.delete],
