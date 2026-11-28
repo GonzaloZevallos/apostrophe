@@ -45,5 +45,8 @@
   "^src/screens/settings/settingsSearch\\.ts$",
   "^src/screens/settings/useSettingsSearchEntry\\.ts$",
   "^src/components/DateRow\\.tsx$",
-  "^src/screens/expenses/expensesSummary\\.ts$"
+  "^src/screens/expenses/expensesSummary\\.ts$",
+  "^src/components/charts/load\\.ts$",
+  "^src/components/charts/ChartsImpl\\.tsx$",
+  "^src/components/charts/ChartBox\\.tsx$"
 ]
