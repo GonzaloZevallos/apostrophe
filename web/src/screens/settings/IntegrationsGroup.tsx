@@ -15,8 +15,13 @@
 
 import { type FormEvent, type KeyboardEvent, useEffect, useId, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ApiError, NetworkError, get, post } from '../../api/client'
+import { ApiError, NetworkError, post } from '../../api/client'
 import { invalidateResource, keys } from '../../api/keys'
+import {
+  readPinnedCatalog,
+  type PinnedCatalog,
+  type PinnedCatalogSettings,
+} from '../../api/pinnedCatalog'
 import { PINNED_CATALOG_REFUSAL_OVERRIDES, resolveOverride } from '../../api/refusals'
 import AvisoExito, { type SuccessToast } from '../../components/AvisoExito'
 import ErrorGenerico from '../../components/ErrorGenerico'
@@ -49,12 +54,6 @@ const LEAVE: LeaveWording = {
   discardLabel: COMMON_TEXT.yesDiscard,
 }
 
-export interface PinnedCatalog {
-  token_saved_on: string | null
-  own_chat: string | null
-  channel_chat: string | null
-}
-
 interface PinnedCatalogTestResult extends PinnedCatalog {
   previous_pin_left: boolean
 }
@@ -69,7 +68,7 @@ interface Accepted {
   channelChat: string
 }
 
-function acceptedFrom(answer: PinnedCatalog): Accepted {
+function acceptedFrom(answer: PinnedCatalogSettings): Accepted {
   return {
     tokenSavedOn: answer.token_saved_on,
     ownChat: answer.own_chat ?? '',
@@ -83,7 +82,7 @@ function formatDate(iso: string): string {
 }
 
 interface IntegrationsFormProps {
-  initial: PinnedCatalog
+  initial: PinnedCatalogSettings
   /** Called after a successful Probarlo, the only save. */
   onSaved?: () => void
   /** Called whenever "something typed and not saved" changes. */
@@ -314,7 +313,7 @@ export default function IntegrationsGroup() {
   const [dirty, setDirty] = useState(false)
   const query = useQuery({
     queryKey: keys.pinnedCatalog(),
-    queryFn: () => get<PinnedCatalog>('/pinned-catalog'),
+    queryFn: readPinnedCatalog,
   })
 
   if (query.data !== undefined) {

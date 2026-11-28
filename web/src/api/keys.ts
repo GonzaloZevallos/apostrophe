@@ -115,6 +115,10 @@ export const keys = {
   // query in one call.
   pinnedCatalog: () => [PREFIX.pinnedCatalog] as const,
   pinnedCatalogStatus: () => [PREFIX.pinnedCatalog, 'status'] as const,
+  // The same endpoint as `pinnedCatalog()`, a second cache entry on purpose: the Products screen
+  // of a later GH-848 part reads readiness under it. It is kept in step with the first only by
+  // `invalidateResource(queryClient, 'pinnedCatalog')`, which this prefix sits under.
+  pinnedCatalogReadiness: () => [PREFIX.pinnedCatalog, 'readiness'] as const,
   // Read by `api/pricingSettings.ts` only (frozen the same way `catalog` is); Precios' own save
   // sets its data directly.
   pricingSettings: () => [PREFIX.pricingSettings] as const,

@@ -8,7 +8,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
-import { IntegrationsForm, type PinnedCatalog } from './IntegrationsGroup'
+import type { PinnedCatalogSettings } from '../../api/pinnedCatalog'
+import { IntegrationsForm } from './IntegrationsGroup'
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
@@ -17,12 +18,12 @@ function jsonResponse(status: number, body: unknown): Response {
   })
 }
 
-const EMPTY: PinnedCatalog = { token_saved_on: null, own_chat: null, channel_chat: null }
+const EMPTY: PinnedCatalogSettings = { token_saved_on: null, own_chat: null, channel_chat: null }
 const SAVED = { token_saved_on: '2026-08-12', own_chat: '555', channel_chat: null }
 
 function renderForm(
   testAnswer: Response = jsonResponse(200, { ...SAVED, previous_pin_left: false }),
-  initial: PinnedCatalog = EMPTY,
+  initial: PinnedCatalogSettings = EMPTY,
 ) {
   vi.stubGlobal(
     'fetch',
