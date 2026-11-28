@@ -7,6 +7,11 @@ One row per Sale and one row per later Payment, ordered by `ledger_key`:
 Settlement order: a Sale adds what it owes at its start (`opening_owed`) and a
 Payment subtracts its full amount, whatever Sales it settles.
 
+A Sale with a Deposit (a partial on-the-spot amount, ADR-20261125) adds its whole total
+and is followed at once by a `DepositRow` that subtracts the Deposit, carrying the
+Sale's own date. A `DepositRow` is not a Payment: it has no `payment_id`, is never an
+entry of the ledger and has no `ledger_key`; like a Payment row it carries `is_partial`.
+
 Every row carries its own `running_balance` and `standing`, read only from
 `standing_of`. A row can go below zero mid-ledger (a Payment dated before its Sale, or
 recorded before a same-day Sale): its `standing` is then `credit`, a point in the
@@ -34,7 +39,7 @@ from app.payments.domain.settlement import (
 )
 from app.shared.payment_method import PaymentMethodLabel
 
-HowPaid = Literal["paid", "owing", "none"]
+HowPaid = Literal["paid", "deposit", "owing", "none"]
 
 # A row's own `date` field shadows the `date` type for any field declared after it in
 # the same class body; every later annotation in `PaymentRow` (e.g.
@@ -44,6 +49,8 @@ RowDate = date
 
 
 def _how_paid(sale: OwedSale) -> HowPaid:
+    if sale.is_deposit:
+        return "deposit"
     if sale.on_the_spot_method is not None:
         return "paid"
     return "owing" if sale.total > 0 else "none"
@@ -78,7 +85,28 @@ class PaymentRow:
     kind: Literal["payment"] = "payment"
 
 
-AccountRow = SaleRow | PaymentRow
+@dataclass(frozen=True)
+class DepositRow:
+    """The Deposit of the Sale right before it: its own amount and whether the balance
+    after it is still above zero. Never a Payment, so it has no `payment_id`."""
+
+    date: RowDate
+    running_balance: int
+    standing: Standing
+    sale_id: int
+    amount: int
+    method: PaymentMethodLabel
+    is_partial: bool
+    kind: Literal["deposit"] = "deposit"
+
+
+AccountRow = SaleRow | PaymentRow | DepositRow
+
+
+def _sale_row_adds(sale: OwedSale) -> int:
+    """What a Sale row adds to the running balance: its whole total when a Deposit row
+    follows to subtract the Deposit, else what it owes at its start."""
+    return sale.total if sale.is_deposit else sale.opening_owed
 
 
 @dataclass(frozen=True)
@@ -116,7 +144,7 @@ def account_of(sales: Sequence[OwedSale], payments: Sequence[LaterPaymentEntry])
     running = 0
     for _, entry in entries:
         if isinstance(entry, OwedSale):
-            running += entry.opening_owed
+            running += _sale_row_adds(entry)
             rows.append(
                 SaleRow(
                     date=entry.date,
@@ -129,6 +157,21 @@ def account_of(sales: Sequence[OwedSale], payments: Sequence[LaterPaymentEntry])
                     payment_method=entry.on_the_spot_method,
                 )
             )
+            if entry.is_deposit:
+                deposit_method = entry.on_the_spot_method
+                assert deposit_method is not None, "a Deposit always names its payment method"
+                running -= entry.on_the_spot_amount
+                rows.append(
+                    DepositRow(
+                        date=entry.date,
+                        running_balance=running,
+                        standing=standing_of(running),
+                        sale_id=entry.id,
+                        amount=entry.on_the_spot_amount,
+                        method=deposit_method,
+                        is_partial=running > 0,
+                    )
+                )
             continue
         method = entry.method
         assert method is not None, "an account's own later payments always carry a method"
