@@ -16,7 +16,7 @@ import { type ReactElement, type ReactNode, StrictMode } from 'react'
 import { inAppState } from '../../components/inAppState'
 import { expectIconAndTextRule } from '../../test/iconAndTextRule'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { act, render as renderBare, screen, waitFor, within } from '@testing-library/react'
+import { act, cleanup, render as renderBare, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, Link, Outlet, RouterProvider, useLocation } from 'react-router'
 import FlashProvider from '../../flash/FlashProvider'
@@ -128,7 +128,7 @@ let api: ReturnType<typeof stubFetchWithSettings>
 
 /** Save waits for the Phone country list (the Selector is loading and Save off until it is in). */
 async function clickSave(): Promise<void> {
-  const button = screen.getByRole('button', { name: 'Save and use' })
+  const button = screen.getByRole('button', { name: 'Save' })
   await waitFor(() => expect(button).toBeEnabled())
   await userEvent.click(button)
 }
@@ -156,6 +156,19 @@ test('registers a customer and lands on its card', async () => {
     '/customers',
     expect.objectContaining({ method: 'POST' }),
   )
+})
+
+test('the submit reads Save on /customers/new and on the edit route', async () => {
+  renderForm(CUSTOMER_NEW)
+  expect(await screen.findByRole('button', { name: 'Save' })).toHaveAttribute('type', 'submit')
+  cleanup()
+
+  api.mockResolvedValueOnce(
+    jsonResponse(200, { id: 7, name: 'Tincho', phone: '+5491144861258', phone_display: '+5491144861258', vip: false }),
+  )
+  renderForm(pathTo(CUSTOMER_EDIT, { id: 7 }))
+  expect(await screen.findByLabelText('Name')).toHaveValue('Tincho')
+  expect(screen.getByRole('button', { name: 'Save' })).toHaveAttribute('type', 'submit')
 })
 
 test('only Nombre is marked required; Teléfono stays optional', () => {
@@ -597,7 +610,7 @@ test('the form follows the icon and text rule: its submit and its Cerrar are tex
   // Once the Phone country list is in: the rule reads a control's text, which a busy Selector has none of.
   await waitFor(async () => expect(await countryField()).toHaveTextContent('Argentina'))
 
-  expect(screen.getByRole('button', { name: 'Save and use' })).toHaveAttribute('type', 'submit')
+  expect(screen.getByRole('button', { name: 'Save' })).toHaveAttribute('type', 'submit')
   expectIconAndTextRule(document.body)
 })
 
@@ -982,9 +995,9 @@ describe('the Phone country', () => {
     renderForm(CUSTOMER_NEW)
 
     expect(await countryField()).toHaveAttribute('aria-busy', 'true')
-    expect(screen.getByRole('button', { name: 'Save and use' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
     release(jsonResponse(200, PHONE_COUNTRIES))
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Save and use' })).toBeEnabled())
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Save' })).toBeEnabled())
     expect(await countryField()).not.toHaveAttribute('aria-busy')
   })
 
@@ -994,7 +1007,7 @@ describe('the Phone country', () => {
 
     expect(await screen.findByRole('alert')).toBeInTheDocument()
     expect(await countryField()).toHaveAttribute('aria-busy', 'true')
-    expect(screen.getByRole('button', { name: 'Save and use' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Save' })).toBeDisabled()
   })
 
   test('Edit on a +598 number opens locked on Uruguay and an untouched Save sends neither phone nor country', async () => {

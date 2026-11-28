@@ -13,9 +13,10 @@
  *   ("‹ <parent>"). They accept no `icon`. Back is never close.
  * - **Icon only** (`variant="icon"`): an obvious action from the closed `ACTION_ICON`
  *   map (`botonVisual.tsx`: delete, search, close, edit, share, add), with a required `ariaLabel`
- *   (the exact current word, never a new one) and a 44 px target (`.boton-icono`; `add` is the
- *   round `.boton-icono` filled with `--boton` (`.boton-icono--lleno`), only the phone Products title row's
- *   "New product").
+ *   (the exact current word, never a new one) and a 44 px target (`.boton-icono`). `add` is the
+ *   one round `.boton-icono` with a `--linea` border (`.boton-icono--contorno`), the neutral look
+ *   of the phone title rows of Products and Customers and of New sale's computer results table;
+ *   never green. Its optional `tone` only says `neutral`, the one tone there is.
  * - `row`: a full-width, left-aligned, stacked-content button for a tappable list row,
  *   reset only through its own `boton--fila` class.
  *
@@ -50,6 +51,8 @@ interface BotonCommon {
   ariaControls?: string
   /** For a button whose action is waiting on data: it reads as busy to assistive technology. */
   ariaBusy?: boolean
+  /** For a control that must stay in the tab order and keep its look while it does nothing (a notice whose retry is in flight): never the native `disabled`. */
+  ariaDisabled?: boolean
 }
 
 interface BotonWithText extends BotonCommon {
@@ -98,16 +101,32 @@ export interface BotonNotice extends BotonCommon {
   type?: 'button'
 }
 
-export interface BotonIconOnly extends BotonCommon {
+interface BotonIconOnlyCommon extends BotonCommon {
   variant: 'icon'
-  action: IconOnlyAction
   /** The control's name: the exact current word of the action. */
   ariaLabel: string
+  /** `-1` for a control that is a mouse convenience and never a Tab stop (a result row's Add). */
+  tabIndex?: -1
+  /** For a control that must never take the focus from the field beside it (`preventDefault`). */
+  onMouseDown?: (event: MouseEvent<HTMLElement>) => void
   children?: undefined
   icon?: undefined
   textOnly?: undefined
   type?: 'button'
 }
+
+/** The round add: `tone` (only `neutral`, the default) exists only here, so no other icon-only action can be tinted. */
+export interface BotonIconAdd extends BotonIconOnlyCommon {
+  action: 'add'
+  tone?: 'neutral'
+}
+
+export interface BotonIconOther extends BotonIconOnlyCommon {
+  action: Exclude<IconOnlyAction, 'add'>
+  tone?: never
+}
+
+export type BotonIconOnly = BotonIconAdd | BotonIconOther
 
 /** Every shape but the submit, which a link cannot be. */
 export type BotonVisualProps = BotonIconText | BotonTextKind | BotonRow | BotonNotice | BotonIconOnly
@@ -124,12 +143,15 @@ export default function Boton(props: BotonProps) {
       type={props.type ?? 'button'}
       className={className}
       onClick={props.onClick}
+      onMouseDown={props.variant === 'icon' ? props.onMouseDown : undefined}
+      tabIndex={props.variant === 'icon' ? props.tabIndex : undefined}
       disabled={props.disabled ?? false}
       aria-label={ariaLabel}
       aria-describedby={props.ariaDescribedBy}
       aria-expanded={props.ariaExpanded}
       aria-controls={props.ariaControls}
       aria-busy={props.ariaBusy}
+      aria-disabled={props.ariaDisabled}
     >
       {content}
     </button>

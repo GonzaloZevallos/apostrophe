@@ -4,7 +4,7 @@
  * Phone country, the "+" and the country code. Through Nueva venta, Testing Library, `fetch` faked.
  */
 
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import App from '../../App'
@@ -107,4 +107,15 @@ test('with the Phone country list open, the customer sheet and the sale beneath 
   await act(() => router.navigate(-1))
   await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Phone country options' })).not.toBeInTheDocument())
   expect(covered()).toEqual([null, null])
+})
+
+test("New sale's new-customer sheet keeps its own Create customer label and has no Save button", async () => {
+  await refusePhoneWith('customer.phone_invalid')
+  await screen.findByRole('alert')
+
+  // The sheet is a plain element, not a role=dialog (NuevaVentaCliente.tsx): its form is the boundary.
+  const form = screen.getByRole('button', { name: 'Create customer' }).closest('form')
+  expect(form).not.toBeNull()
+  expect(within(form as HTMLElement).getByRole('button', { name: 'Create customer' })).toBeInTheDocument()
+  expect(within(form as HTMLElement).queryByRole('button', { name: 'Save' })).toBeNull()
 })

@@ -1,0 +1,423 @@
+import { describe, expect, test } from 'vitest'
+import { LIMITS, measure } from '../../copy/limits'
+import { testT } from '../../i18n/testing'
+import { ROUTE_REGISTRY } from '../../mobile-standard/registry'
+import {
+  EXPENSE_CATEGORIES,
+  SETTINGS,
+  SETTINGS_ACCOUNT,
+  SETTINGS_APPEARANCE,
+  SETTINGS_BUSINESS,
+  SETTINGS_CATALOG_MESSAGE,
+  SETTINGS_CURRENCY,
+  SETTINGS_CUSTOMER_TYPES,
+  SETTINGS_INTEGRATIONS,
+  SETTINGS_PAYMENT_METHODS,
+  SETTINGS_PAYMENT_METHODS_ARCHIVED,
+  SETTINGS_PAYMENTS,
+  SETTINGS_PRICES,
+  SETTINGS_USERS,
+  SETTINGS_WITHDRAWAL_REASONS,
+} from '../../routes'
+import {
+  activeSettingsRow,
+  NON_ROW_ROUTES,
+  SETTINGS_GROUP_LABEL_KEYS,
+  SETTINGS_GROUPS,
+  SETTINGS_ROWS,
+  SHARED_TO,
+  SHORTCUTS,
+  shortcutTarget,
+  shownRowsByGroup,
+  unaccountedSettingsRoutes,
+  type SettingsRow,
+  type SettingsRowContext,
+} from './settingsRows'
+
+// WRITING_STANDARDS.md, "Límites de largo por tipo de texto", Botón: 20 characters, 3 words.
+// A shortcut cell is one link whose accessible name is its visible label, so it counts as a Botón.
+const BUTTON_MAX_CHARS = 20
+const BUTTON_MAX_WORDS = 3
+
+const PATHS = ROUTE_REGISTRY.map((route) => route.path)
+
+const NO_CONTEXT: SettingsRowContext = { selectableLanguages: undefined, isCustomerTypesOn: undefined }
+
+function row(rowKey: SettingsRow['key']): SettingsRow {
+  const found = SETTINGS_ROWS.find((candidate) => candidate.key === rowKey)
+  if (found === undefined) throw new Error(`no row ${rowKey}`)
+  return found
+}
+
+describe('unaccountedSettingsRoutes', () => {
+  test('returns nothing over the registered paths', () => {
+    expect(unaccountedSettingsRoutes(PATHS, SETTINGS_ROWS, NON_ROW_ROUTES, SHARED_TO)).toEqual([])
+  })
+
+  test('reports an added settings path nobody accounts for', () => {
+    expect(unaccountedSettingsRoutes([...PATHS, `${SETTINGS}/x`], SETTINGS_ROWS, NON_ROW_ROUTES, SHARED_TO)).toEqual([
+      { kind: 'unlisted', to: `${SETTINGS}/x` },
+    ])
+  })
+
+  test('reports an added settings path with a parameter', () => {
+    expect(
+      unaccountedSettingsRoutes([...PATHS, `${SETTINGS}/x/:id`], SETTINGS_ROWS, NON_ROW_ROUTES, SHARED_TO),
+    ).toEqual([{ kind: 'unlisted', to: `${SETTINGS}/x/:id` }])
+  })
+
+  test('never reports the bare settings path or a path outside settings', () => {
+    expect(
+      unaccountedSettingsRoutes([...PATHS, SETTINGS, '/other'], SETTINGS_ROWS, NON_ROW_ROUTES, SHARED_TO),
+    ).toEqual([])
+  })
+
+  test('reports a path that is a row to and also a non-row route', () => {
+    const nonRows = [...NON_ROW_ROUTES, { to: SETTINGS_USERS, reason: 'tried twice' }]
+    expect(unaccountedSettingsRoutes(PATHS, SETTINGS_ROWS, nonRows, SHARED_TO)).toEqual([
+      { kind: 'both', to: SETTINGS_USERS },
+    ])
+  })
+
+  test('reports a row to that is not exactly a path, trailing slash included', () => {
+    const rows = SETTINGS_ROWS.map((candidate) =>
+      candidate.key === 'users' ? { ...candidate, to: `${SETTINGS_USERS}/` } : candidate,
+    )
+    expect(unaccountedSettingsRoutes(PATHS, rows, NON_ROW_ROUTES, SHARED_TO)).toEqual([
+      { kind: 'unlisted', to: SETTINGS_USERS },
+      { kind: 'notAPath', to: `${SETTINGS_USERS}/` },
+    ])
+  })
+
+  test('reports a second repeated to that the shared table does not name', () => {
+    const rows = SETTINGS_ROWS.map((candidate) =>
+      candidate.key === 'theme' ? { ...candidate, to: SETTINGS_ACCOUNT } : candidate,
+    )
+    expect(unaccountedSettingsRoutes(PATHS, rows, NON_ROW_ROUTES, SHARED_TO)).toEqual([
+      { kind: 'unlisted', to: SETTINGS_APPEARANCE },
+      { kind: 'sharedUnnamed', to: SETTINGS_ACCOUNT },
+    ])
+  })
+
+  test('reports the shared to when its named keys are not the rows that repeat it', () => {
+    const wrongNames = { [SETTINGS_BUSINESS]: ['businessName', 'users'] }
+    expect(unaccountedSettingsRoutes(PATHS, SETTINGS_ROWS, NON_ROW_ROUTES, wrongNames)).toEqual([
+      { kind: 'sharedUnnamed', to: SETTINGS_BUSINESS },
+    ])
+  })
+
+  test('reports each problem once and sorts by kind, then by to', () => {
+    const rows = SETTINGS_ROWS.map((candidate) =>
+      candidate.key === 'users' ? { ...candidate, to: `${SETTINGS_USERS}/` } : candidate,
+    )
+    const problems = unaccountedSettingsRoutes(
+      [...PATHS, `${SETTINGS}/z`, `${SETTINGS}/z`, `${SETTINGS}/a`],
+      rows,
+      NON_ROW_ROUTES,
+      SHARED_TO,
+    )
+    expect(problems).toEqual([
+      { kind: 'unlisted', to: `${SETTINGS}/a` },
+      { kind: 'unlisted', to: SETTINGS_USERS },
+      { kind: 'unlisted', to: `${SETTINGS}/z` },
+      { kind: 'notAPath', to: `${SETTINGS_USERS}/` },
+    ])
+  })
+
+  test('accounts for the routes of the plan, one shared to only', () => {
+    const accounted = new Map<string, string[]>()
+    for (const candidate of SETTINGS_ROWS) {
+      accounted.set(candidate.to, [...(accounted.get(candidate.to) ?? []), candidate.key])
+    }
+    expect(Object.fromEntries(accounted)).toEqual({
+      [SETTINGS_BUSINESS]: ['businessName', 'language'],
+      [SETTINGS_CURRENCY]: ['currency'],
+      [SETTINGS_PRICES]: ['prices'],
+      [SETTINGS_CUSTOMER_TYPES]: ['customerTypes'],
+      [SETTINGS_PAYMENT_METHODS]: ['paymentMethods'],
+      [EXPENSE_CATEGORIES]: ['expenseCategories'],
+      [SETTINGS_WITHDRAWAL_REASONS]: ['withdrawalReasons'],
+      [SETTINGS_INTEGRATIONS]: ['integrations'],
+      [SETTINGS_CATALOG_MESSAGE]: ['catalogMessage'],
+      [SETTINGS_USERS]: ['users'],
+      [SETTINGS_APPEARANCE]: ['theme'],
+      [SETTINGS_ACCOUNT]: ['account'],
+    })
+    expect(NON_ROW_ROUTES).toEqual([
+      { to: SETTINGS_PAYMENTS, reason: 'reached only from the computer list' },
+      { to: SETTINGS_PAYMENT_METHODS_ARCHIVED, reason: 'a sub-screen of Payment methods' },
+    ])
+  })
+})
+
+describe('SETTINGS_ROWS', () => {
+  test('keys are unique and icons are distinct', () => {
+    const keys = SETTINGS_ROWS.map((candidate) => candidate.key)
+    const icons = SETTINGS_ROWS.map((candidate) => candidate.icon)
+    expect(new Set(keys).size).toBe(keys.length)
+    expect(new Set(icons).size).toBe(icons.length)
+  })
+
+  test('the groups show in the order of the tuple and every row belongs to one', () => {
+    expect(SETTINGS_GROUPS).toEqual(['business', 'catalog', 'paymentsAndStock', 'channels', 'teamAndApp'])
+    for (const candidate of SETTINGS_ROWS) expect(SETTINGS_GROUPS).toContain(candidate.group)
+    expect(SETTINGS_ROWS.map((candidate) => [candidate.key, candidate.group])).toEqual([
+      ['businessName', 'business'],
+      ['currency', 'business'],
+      ['language', 'business'],
+      ['prices', 'catalog'],
+      ['customerTypes', 'catalog'],
+      ['paymentMethods', 'paymentsAndStock'],
+      ['expenseCategories', 'paymentsAndStock'],
+      ['withdrawalReasons', 'paymentsAndStock'],
+      ['integrations', 'channels'],
+      ['catalogMessage', 'channels'],
+      ['users', 'teamAndApp'],
+      ['theme', 'teamAndApp'],
+      ['account', 'teamAndApp'],
+    ])
+  })
+
+  test('the language row shows only with more than one selectable language', () => {
+    const { isShown } = row('language')
+    const ctx = (selectableLanguages: readonly string[] | undefined): SettingsRowContext => ({
+      ...NO_CONTEXT,
+      selectableLanguages,
+    })
+    expect(isShown(ctx(undefined))).toBe(false)
+    expect(isShown(ctx([]))).toBe(false)
+    expect(isShown(ctx(['en']))).toBe(false)
+    expect(isShown(ctx(['en', 'es']))).toBe(true)
+  })
+
+  test('the customer types row shows only while its switch is on', () => {
+    const { isShown } = row('customerTypes')
+    const ctx = (isCustomerTypesOn: boolean | undefined): SettingsRowContext => ({ ...NO_CONTEXT, isCustomerTypesOn })
+    expect(isShown(ctx(undefined))).toBe(false)
+    expect(isShown(ctx(false))).toBe(false)
+    expect(isShown(ctx(true))).toBe(true)
+  })
+
+  test('every other row shows in every context', () => {
+    const contexts: SettingsRowContext[] = [
+      NO_CONTEXT,
+      { selectableLanguages: [], isCustomerTypesOn: false },
+      { selectableLanguages: ['en', 'es'], isCustomerTypesOn: true },
+    ]
+    for (const candidate of SETTINGS_ROWS) {
+      if (candidate.key === 'language' || candidate.key === 'customerTypes') continue
+      for (const ctx of contexts) expect(candidate.isShown(ctx)).toBe(true)
+    }
+  })
+})
+
+describe('SHORTCUTS', () => {
+  const CONTEXTS: SettingsRowContext[] = [
+    NO_CONTEXT,
+    ...[true, false].flatMap((isCustomerTypesOn) =>
+      [['en'], ['en', 'es']].map((selectableLanguages) => ({ selectableLanguages, isCustomerTypesOn })),
+    ),
+  ]
+
+  test('names the three rows of the brief, in order, with their icons', () => {
+    expect(SHORTCUTS.map((shortcut) => [shortcut.row, shortcut.icon])).toEqual([
+      ['prices', 'precio'],
+      ['paymentMethods', 'tarjeta'],
+      ['integrations', 'telegram'],
+    ])
+  })
+
+  test('every shortcut names a row that exists, and no row twice', () => {
+    for (const shortcut of SHORTCUTS) expect(SETTINGS_ROWS.map((candidate) => candidate.key)).toContain(shortcut.row)
+    expect(new Set(SHORTCUTS.map((shortcut) => shortcut.row)).size).toBe(SHORTCUTS.length)
+  })
+
+  test('the three icons are distinct', () => {
+    expect(new Set(SHORTCUTS.map((shortcut) => shortcut.icon)).size).toBe(SHORTCUTS.length)
+  })
+
+  test('the label key is derived from the row key', () => {
+    for (const shortcut of SHORTCUTS) expect(shortcut.labelKey).toBe(`settings:shortcuts.${shortcut.row}`)
+  })
+
+  test('every label resolves to text that fits the button limit', () => {
+    expect(SHORTCUTS.map((shortcut) => testT(shortcut.labelKey))).toEqual([
+      'Prices',
+      'Payment methods',
+      'Telegram catalog',
+    ])
+    for (const shortcut of SHORTCUTS) {
+      const label = testT(shortcut.labelKey)
+      expect(label).not.toBe(shortcut.labelKey)
+      expect(measure(label)).toBeLessThanOrEqual(BUTTON_MAX_CHARS)
+      expect(label.split(/\s+/).filter((word) => word !== '').length).toBeLessThanOrEqual(BUTTON_MAX_WORDS)
+    }
+  })
+
+  test('the target is the row to, with no address of its own', () => {
+    expect(SHORTCUTS.map((shortcut) => shortcutTarget(shortcut))).toEqual([
+      SETTINGS_PRICES,
+      SETTINGS_PAYMENT_METHODS,
+      SETTINGS_INTEGRATIONS,
+    ])
+    for (const shortcut of SHORTCUTS) expect(shortcutTarget(shortcut)).toBe(row(shortcut.row).to)
+  })
+
+  test('refuses a shortcut whose row is not in the rows it is given', () => {
+    const [prices] = SHORTCUTS
+    const without = SETTINGS_ROWS.filter((candidate) => candidate.key !== prices.row)
+    expect(() => shortcutTarget(prices, without)).toThrow('no settings row prices')
+  })
+
+  test('every shortcut row shows under every context', () => {
+    for (const shortcut of SHORTCUTS) {
+      for (const ctx of CONTEXTS) expect(row(shortcut.row).isShown(ctx)).toBe(true)
+    }
+  })
+})
+
+describe('shownRowsByGroup', () => {
+  const ON_ONE: SettingsRowContext = { selectableLanguages: ['en'], isCustomerTypesOn: true }
+  const ON_TWO: SettingsRowContext = { selectableLanguages: ['en', 'es'], isCustomerTypesOn: true }
+
+  function keysOf(ctx: SettingsRowContext, rows?: readonly SettingsRow[]): string[] {
+    return shownRowsByGroup(ctx, rows).flatMap((entry) => entry.rows.map((candidate) => candidate.key))
+  }
+
+  test('with customer types on and one language: five groups, twelve rows', () => {
+    const groups = shownRowsByGroup(ON_ONE)
+    expect(groups.map((entry) => entry.group)).toEqual([...SETTINGS_GROUPS])
+    expect(groups.flatMap((entry) => entry.rows)).toHaveLength(12)
+    expect(keysOf(ON_ONE)).not.toContain('language')
+  })
+
+  test('with two languages: thirteen rows, the language in the business group', () => {
+    const groups = shownRowsByGroup(ON_TWO)
+    expect(groups.flatMap((entry) => entry.rows)).toHaveLength(13)
+    expect(groups.find((entry) => entry.group === 'business')?.rows.map((candidate) => candidate.key)).toEqual(['businessName', 'currency', 'language'])
+  })
+
+  test('customer types is missing while its switch is off or unknown', () => {
+    expect(keysOf({ ...ON_TWO, isCustomerTypesOn: false })).not.toContain('customerTypes')
+    expect(keysOf({ ...ON_TWO, isCustomerTypesOn: undefined })).not.toContain('customerTypes')
+  })
+
+  test('no language row while the selectable languages are unknown', () => {
+    expect(keysOf({ ...ON_TWO, selectableLanguages: undefined })).not.toContain('language')
+  })
+
+  test('keeps the registry order inside a group', () => {
+    const teamAndApp = shownRowsByGroup(ON_TWO).find((entry) => entry.group === 'teamAndApp')
+    expect(teamAndApp?.rows.map((candidate) => candidate.key)).toEqual(['users', 'theme', 'account'])
+  })
+
+  test('leaves out a group with no shown rows', () => {
+    const rows = SETTINGS_ROWS.filter((candidate) => candidate.group !== 'catalog')
+    expect(shownRowsByGroup(ON_TWO, rows).map((entry) => entry.group)).toEqual([
+      'business',
+      'paymentsAndStock',
+      'channels',
+      'teamAndApp',
+    ])
+  })
+
+  test('leaves out a group whose rows are all hidden by the context', () => {
+    const onlyCustomerTypes = SETTINGS_ROWS.filter((candidate) => candidate.key === 'customerTypes')
+    expect(shownRowsByGroup({ ...ON_TWO, isCustomerTypesOn: false }, onlyCustomerTypes)).toEqual([])
+  })
+
+  test('every group label key resolves to a non-empty English string', () => {
+    for (const group of SETTINGS_GROUPS) {
+      const labelKey = SETTINGS_GROUP_LABEL_KEYS[group]
+      const text = testT(labelKey)
+      expect(text).not.toBe('')
+      expect(text).not.toBe(labelKey)
+    }
+    expect(shownRowsByGroup(ON_TWO).map((entry) => entry.labelKey)).toEqual(
+      SETTINGS_GROUPS.map((group) => SETTINGS_GROUP_LABEL_KEYS[group]),
+    )
+  })
+})
+
+describe('activeSettingsRow', () => {
+  const BOTH_ON: SettingsRowContext = { selectableLanguages: ['en', 'es'], isCustomerTypesOn: true }
+  const ONE_LANGUAGE: SettingsRowContext = { selectableLanguages: ['en'], isCustomerTypesOn: true }
+
+  test('the business address is Business name, never Language, even with two languages', () => {
+    expect(activeSettingsRow(SETTINGS_BUSINESS, BOTH_ON)).toBe('businessName')
+    expect(activeSettingsRow(SETTINGS_BUSINESS, ONE_LANGUAGE)).toBe('businessName')
+  })
+
+  test('Payment methods and its archived sub-screen mark Payment methods', () => {
+    expect(activeSettingsRow(SETTINGS_PAYMENT_METHODS, BOTH_ON)).toBe('paymentMethods')
+    expect(activeSettingsRow(SETTINGS_PAYMENT_METHODS_ARCHIVED, BOTH_ON)).toBe('paymentMethods')
+  })
+
+  test('Expense categories marks itself', () => {
+    expect(activeSettingsRow(EXPENSE_CATEGORIES, BOTH_ON)).toBe('expenseCategories')
+  })
+
+  test('Customer types marks itself when on and nothing when off or unknown, never Prices', () => {
+    expect(activeSettingsRow(SETTINGS_CUSTOMER_TYPES, BOTH_ON)).toBe('customerTypes')
+    expect(activeSettingsRow(SETTINGS_CUSTOMER_TYPES, { ...BOTH_ON, isCustomerTypesOn: false })).toBeUndefined()
+    expect(activeSettingsRow(SETTINGS_CUSTOMER_TYPES, NO_CONTEXT)).toBeUndefined()
+  })
+
+  test('the Payments page and bare Settings mark nothing', () => {
+    expect(activeSettingsRow(SETTINGS_PAYMENTS, BOTH_ON)).toBeUndefined()
+    expect(activeSettingsRow(SETTINGS, BOTH_ON)).toBeUndefined()
+  })
+
+  test('a trailing slash does not change the answer', () => {
+    expect(activeSettingsRow(`${SETTINGS_PAYMENT_METHODS}/`, BOTH_ON)).toBe('paymentMethods')
+  })
+
+  test('an unknown address marks nothing, and so does a prefix of a row address', () => {
+    expect(activeSettingsRow('/nowhere/at/all', BOTH_ON)).toBeUndefined()
+    expect(activeSettingsRow(`${SETTINGS}/payments/methods/unknown`, BOTH_ON)).toBeUndefined()
+  })
+
+  test('a list holding only Language marks it with two languages and nothing otherwise', () => {
+    const onlyLanguage = SETTINGS_ROWS.filter((candidate) => candidate.key === 'language')
+    expect(activeSettingsRow(SETTINGS_BUSINESS, BOTH_ON, onlyLanguage)).toBe('language')
+    expect(activeSettingsRow(SETTINGS_BUSINESS, ONE_LANGUAGE, onlyLanguage)).toBeUndefined()
+  })
+
+  test('the nearest row wins over a row further up, and a hidden nearest row does not hand over', () => {
+    const rows = SETTINGS_ROWS.filter((candidate) => ['paymentMethods', 'expenseCategories'].includes(candidate.key))
+    const hiddenNearest: readonly SettingsRow[] = [
+      ...rows,
+      { ...row('users'), to: SETTINGS_PAYMENT_METHODS_ARCHIVED, isShown: () => false },
+    ]
+    expect(activeSettingsRow(SETTINGS_PAYMENT_METHODS_ARCHIVED, BOTH_ON, rows)).toBe('paymentMethods')
+    expect(activeSettingsRow(SETTINGS_PAYMENT_METHODS_ARCHIVED, BOTH_ON, hiddenNearest)).toBeUndefined()
+  })
+})
+
+describe('settings copy', () => {
+  test('every label and description resolves to text and a description fits the help limit', () => {
+    for (const candidate of SETTINGS_ROWS) {
+      const label = testT(candidate.labelKey)
+      const description = testT(candidate.descriptionKey)
+      expect(label).not.toBe(candidate.labelKey)
+      expect(description).not.toBe(candidate.descriptionKey)
+      expect(measure(description)).toBeLessThanOrEqual(LIMITS.help)
+    }
+  })
+
+  test('the title and every group heading resolve', () => {
+    expect(testT('settings:home.title')).toBe('Settings')
+    expect(SETTINGS_GROUPS.map((group) => testT(`settings:groups.${group}`))).toEqual([
+      'Business',
+      'Catalog',
+      'Payments and stock',
+      'Channels',
+      'Team and app',
+    ])
+  })
+
+  test('the card counts one user and many users', () => {
+    expect(testT('settings:card.users', { count: 1 })).toBe('1 user')
+    expect(testT('settings:card.users', { count: 2 })).toBe('2 users')
+  })
+})

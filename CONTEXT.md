@@ -121,7 +121,7 @@ _Avoid_: collection, settlement, receipt, abono
 _In the app_: Payment
 
 **Payment method**:
-Una forma en que le pagan a un Business, de su lista propia: un nombre único en el Business (sin importar mayúsculas ni espacios, archivados incluidos, hasta 60 caracteres), un ícono de un conjunto fijo y neutro y una posición. Todo Business arranca con "Cash" y "Transfer", medios comunes que se renombran, reordenan, archivan o eliminan como cualquiera; uno con Payments solo se archiva, y el último ofrecido no se puede sacar. Un Payment apunta a su medio por id, así que muestra su nombre actual (ADR-20261111-payment-methods-by-id). _In the app_: Payment method.
+Una forma en que le pagan a un Business, de su lista propia: un nombre único en el Business (sin importar mayúsculas ni espacios, archivados incluidos, hasta 60 caracteres), un ícono de un conjunto fijo y neutro y una posición. Todo Business arranca con "Cash" y "Transfer", medios comunes que se renombran, reordenan, archivan o eliminan como cualquiera; uno con Payments o con Expenses solo se archiva, y el último ofrecido no se puede sacar. Un Payment o una Expense (opcional, GH-837) apunta a su medio por id, así que muestra su nombre actual aunque el medio se archive después (ADR-20261111-payment-methods-by-id); elegir un medio archivado se rechaza, conservar el que ya tiene no. _In the app_: Payment method.
 _Avoid_: payment type, channel, Owing, paid later
 
 **Balance**:
@@ -184,7 +184,7 @@ _In the app_: Cost of goods sold
 _Avoid_: COGS, average cost, cost per gram
 
 **Expense**:
-Dinero que sale por algo que no es una Purchase, archivado bajo una Expense category. Lo que se compra para el Stock es una Purchase, nunca una Expense.
+Dinero que sale por algo que no es una Purchase, archivado bajo una Expense category, con un detalle opcional (uno en blanco se guarda vacío) y, opcionalmente, uno de los Payment methods del Business, guardado por id para mostrar siempre su nombre actual. Lo que se compra para el Stock es una Purchase, nunca una Expense, y su medio no cambia ningún total. _In the app_: Expense.
 _Avoid_: cost, outflow, bill
 _In the app_: Expense
 
@@ -281,11 +281,11 @@ Un Balance menor que cero, que queda solo cuando se elimina una Sale que unos Pa
 _Avoid_: refund, saldo a favor, overpayment
 
 **Sales still owing**:
-Toda Sale de un Business que no está pagada por completo una vez que se aplica el Settlement, las pagadas en parte incluidas, cada una contada una sola vez. _In the app_: owes you (en Sales) y la línea del conteo de la sección "Owed to you" de Customers y del bloque "Owed to you" de Home.
-_Avoid_: unpaid orders, pending sales, open invoices
+Toda Sale de un Business que no está pagada por completo una vez que se aplica el Settlement, las pagadas en parte incluidas, cada una contada una sola vez. Su conteo se muestra solo en el bloque "Owed to you" de Home: desde #1020 la lista de Sales ya no muestra la marca "owes you", y Customers no lo muestra desde la parte 1 de GH-831. _In the app_: la línea del conteo del bloque "Owed to you" de Home.
+_Avoid_: unpaid orders, pending sales, open invoices, owes you
 
 **Total owed**:
-La suma del Balance de cada Customer mayor que $0 en un Business; los Credits nunca la restan. _In the app_: el título de la sección "Owed to you" de Customers y del bloque "Owed to you" de Home.
+La suma del Balance de cada Customer mayor que $0 en un Business; los Credits nunca la restan. Se muestra en la vista "Owed to you" de Customers cuando alguien debe, y en el bloque "Owed to you" de Home. _In the app_: la cifra de la vista "Owed to you" de Customers y el título del bloque "Owed to you" de Home.
 _Avoid_: receivables, outstanding
 
 **Margin**:
@@ -295,6 +295,10 @@ _Avoid_: profit, earnings, markup, ganancia
 **Margin percentage**:
 El Margin de un Product sobre sus Sales de gramos con costo en el período. No hay ninguno cuando esas Sales son $0, como en un Product solo regalado o con todos los gramos pendientes. _In the app_: Margin %.
 _Avoid_: markup, rentabilidad, return
+
+**Cost and margins**:
+El costo por unidad de la última Purchase de un Product con costo mayor que 0 y cantidad mayor que 0, con fecha del día o anterior (en un empate de fecha gana la registrada después), redondeado la mitad hacia arriba a los decimales del Money format del Business, y su margen en porcentaje entero contra cada precio vigente de una regla activada (lista, mayorista y VIP solo para el VIP type con Customer types activado), calculado desde el costo exacto y redondeado la mitad hacia arriba, así que un -2,5 es -2. Es un costo de reposición, no el Lot order ni el Cost of goods sold, y nunca se guarda; un Product sin Purchase con costo no tiene costo ni márgenes, uno sin precio hoy no tiene márgenes y uno archivado no tiene ninguno. En el código: `LatestCostedPurchase` (el puerto de productos que implementa stock), `CostedPurchase`, `PriceRule` y `CostAndMargins`; _In the app_: lo expone `GET /api/products/{id}` como `cost`, y todavía ninguna pantalla lo muestra.
+_Avoid_: markup, ganancia, average cost, COGS
 
 **Average margin**:
 El Margin total de un mes en todos sus Products sobre las Sales de gramos con costo del mes, marcado cuando algún Product tiene gramos pendientes. _In the app_: Average margin.
@@ -345,7 +349,7 @@ La persona que maneja la instalación desde afuera de la app. Ejecuta scripts/in
 _Avoid_: admin, administrator, superuser, owner, PM
 
 **Business export**:
-Un archivo JSON con cada dato registrado de un Business tal como está guardado, cada registro con el nombre de aquello a lo que se refiere, sin ninguna cifra calculada, hash de contraseña, secreto ni Invitation. Sus montos van a la Money scale del Business, con `money {scale, decimals}` al lado para leerlos. Se escribe solo como primer paso de la Business removal.
+Un archivo JSON con cada dato registrado de un Business tal como está guardado, cada registro con el nombre de aquello a lo que se refiere, sin ninguna cifra calculada, hash de contraseña, secreto ni Invitation. Sus montos van a la Money scale del Business, con `money {scale, decimals}` al lado para leerlos. Los bytes de una columna binaria van en base64 estándar bajo la clave `<columna>_base64`, tal como están guardados. Se escribe solo como primer paso de la Business removal.
 _Avoid_: backup, dump, archive
 
 **Business removal**:
@@ -391,8 +395,8 @@ Una pantalla principal de una pestaña: Home, Sales, Customers, Products y Analy
 _Avoid_: home, main screen, section, More
 
 **Settings**:
-El único lugar que reúne cada configuración de todo el Business, en grupos: Business (con sus Withdrawal reasons y su Currency and decimals), Users, Prices, Payments and expenses (con sus Payment methods y, debajo, sus Expense categories), Integrations, Catalog message, Appearance y Your account. La configuración de un solo Product vive en el Product, nunca acá, y nada del Operator está acá. _In the app_: Settings.
-_Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group)
+El único lugar que reúne cada configuración de todo el Business. Sus filas y sus atajos salen solo del registro `settingsRows.ts`. En el celular abre con una tarjeta de solo lectura del Business (inicial, nombre y cantidad de Users) y tres atajos (Prices, Payment methods, Integrations), y sigue con cinco grupos con encabezado: Business, Catalog, Payments and stock, Channels, y Team and app. En la computadora conserva su lista de siempre, y la configuración de un solo Product vive en el Product, nunca acá. _In the app_: Settings.
+_Avoid_: Ajustes (in the spreadsheet that held prices), preferences, admin, Negocio (that is one group), menu
 
 **Onboarding**:
 La configuración paso a paso por la que se guía a un Business recién creado una vez que se acepta su Invitation de Business nuevo. Tiene dos pasos obligatorios (un Product con precio para hoy, su Opening stock) y otros opcionales (Catalog header and footer, bot de Telegram, un socio, Expense categories); nunca pregunta cómo se llama lo que vende el Business ni pide una Unit, y no pone ningún aviso en Home. Retoma donde quedó solo cuando se vuelve por su propia entrada (el aterrizaje tras la Invitation o la dirección `/onboarding`), termina para siempre al llegar a su pantalla "Done" o cuando un Spreadsheet import carga el Business, y nunca se ofrece en el Business de un User que se sumó ni en uno que existía antes de que saliera.
@@ -415,7 +419,7 @@ Cuáles de Bulk price y Customer types usa un Business: dos interruptores indepe
 _Avoid_: price config, pricing mode, plan, tariff settings
 
 **Money format**:
-El símbolo de la moneda (de 1 a 4 code points de caracteres visibles, sin dos asteriscos seguidos, siempre antes del monto) y los decimales (de 0 a 2) con que un Business muestra y acepta su dinero, "$" y 0 por defecto. Cualquier User cambia el símbolo en Settings → Business → Currency and decimals; subir los decimales por encima de 0 llama al rescale cuando la escala todavía es 0, bajarlos se rechaza mientras algún monto registrado tenga más, y un cambio nunca cambia el valor de un monto. Se guarda en una fila de money_format por Business, junto con la Money scale (ADR-0058).
+El símbolo de la moneda (de 1 a 4 code points de caracteres visibles, sin dos asteriscos seguidos, siempre antes del monto) y los decimales (de 0 a 2) con que un Business muestra y acepta su dinero, "$" y 0 por defecto. Cualquier User cambia el símbolo en Settings → Currency and decimals; subir los decimales por encima de 0 llama al rescale cuando la escala todavía es 0, bajarlos se rechaza mientras algún monto registrado tenga más, y un cambio nunca cambia el valor de un monto. Se guarda en una fila de money_format por Business, junto con la Money scale (ADR-0058).
 _Avoid_: currency settings, locale, number format
 
 **Money scale**:
@@ -526,6 +530,18 @@ _Avoid_: invoice, receipt, statement, ticket
 El idioma en que se escribe la documentación funcional y técnica del producto, `docs/product/` y las definiciones de `CONTEXT.md` incluidas: español rioplatense, con identificadores, nombres de clases, nombres UML, términos del glosario y palabras de pantalla en inglés. No es el Product language, que sigue en inglés, y no cambia nada de lo que muestra la app. En la app: no tiene palabra propia.
 _Avoid_: Product language, locale, idioma de la app, traducción
 
+## Planned in GH-1063 (not yet in the code)
+
+Estos términos no forman parte del glosario actual. El código, los tests y las pantallas conservan los términos actuales hasta que se entregue la parte que registra un Deposit; la definición de On-the-spot payment de arriba no cambia hasta entonces. Cada línea da el término y el ADR que lo decide.
+
+**Deposit**:
+Un On-the-spot payment parcial: un monto mayor que $0 y menor que el total de la Sale, con uno de los Payment methods del Business, que salda solo su propia Sale. Existe solo como el de un Order. El Settlement arranca esa Sale en su total menos el Deposit; la cuenta del Customer la muestra con su total completo seguida de una fila de Deposit. Decidido en docs/adr/20261125-an-on-the-spot-payment-may-be-partial-only-as-an-orders-deposit-and-settlement-starts-its-sale-at-total-minus-it.md.
+_Avoid_: down payment, advance, anticipo
+
+**Order**:
+Un pedido de un Customer que se registra como una Sale y puede llevar un Deposit. Decidido en docs/adr/20261125-an-on-the-spot-payment-may-be-partial-only-as-an-orders-deposit-and-settlement-starts-its-sale-at-total-minus-it.md.
+_Avoid_: reservation, preorder
+
 ## Planned in GH-318 (not yet in the code)
 
 Estos términos no forman parte del glosario actual. El código, los tests y las pantallas conservan los términos actuales hasta que se entregue la parte nombrada en cada línea; solo esa parte pasa su término al glosario propiamente dicho y corrige la definición que reemplaza. Cada línea da el término, el ADR que lo decide y la parte a cargo, nombrada por capacidad.
@@ -577,7 +593,7 @@ Un Product que quien vende eligió dejar fuera del Catalog, sin importar su prec
 _Avoid_: hidden variety, inactive, disabled, archived
 
 **Withdrawal reason**:
-Uno de los motivos de la lista propia de un Business bajo el que se registra cada Stock withdrawal, con un nombre único en el Business (sin importar mayúsculas, minúsculas ni espacios, de hasta 60 caracteres) y una posición. Un Business nuevo arranca con "Marketing" y "Own use" en su Stored language, que un cambio de idioma nunca renombra. La lista se edita solo en Settings → Business → Withdrawal reasons, nunca queda vacía, y un motivo con retiros no se puede eliminar; nunca registra Stock perdido, que es un Adjustment negativo. _In the app_: Withdrawal reasons (la lista), Reason (en el formulario), y cada motivo por su nombre.
+Uno de los motivos de la lista propia de un Business bajo el que se registra cada Stock withdrawal, con un nombre único en el Business (sin importar mayúsculas, minúsculas ni espacios, de hasta 60 caracteres) y una posición. Un Business nuevo arranca con "Marketing" y "Own use" en su Stored language, que un cambio de idioma nunca renombra. La lista se edita solo en Settings → Withdrawal reasons, nunca queda vacía, y un motivo con retiros no se puede eliminar; nunca registra Stock perdido, que es un Adjustment negativo. _In the app_: Withdrawal reasons (la lista), Reason (en el formulario), y cada motivo por su nombre.
 _Avoid_: category, type, tag, cause, Promotion (old name of one default reason)
 
 **VIP type**:
@@ -617,7 +633,7 @@ Las reglas de redacción del texto que la app muestra en pantalla: límites de l
 _Avoid_: style guide, copy guide, UI guidelines
 
 **New sale suggestions**:
-Los ids que la lectura de ventas le ofrece a New sale para acortar elecciones: hasta 8 Customers a los que se les vendió más recientemente, hasta 8 Products más vendidos en los 30 días que terminan en la fecha de la venta (sin Gifts ni Archived products) y el Payment method de la última Sale pagada en el momento, o ninguno si ese medio está archivado. Solo acortan elecciones: nunca fijan un precio, un monto ni una cantidad, y salen solo del propio Business. En la app: todavía no tiene palabra propia.
+Los ids que la lectura de ventas le ofrece a New sale para acortar elecciones: hasta 8 Customers a los que se les vendió más recientemente, hasta 8 Products más vendidos en los 30 días que terminan en la fecha de la venta (sin Gifts ni Archived products) y el Payment method de la última Sale pagada por completo en el momento (su On-the-spot payment igual a sus líneas más el Shipping charged, así que un pago parcial en el momento nunca cuenta), o ninguno si ese medio está archivado. Solo acortan elecciones: nunca fijan un precio, un monto ni una cantidad, y salen solo del propio Business.
 _Avoid_: recommendations, favorites, shortcuts, defaults, quick picks
 
 **So far**:
@@ -625,7 +641,7 @@ Las ventas de un día registradas en su propia fecha hasta la hora local del dí
 _Avoid_: to date, running total, pace, progress, hasta ahora
 
 **Sale in progress**:
-La Sale que se está armando en New sale antes de guardarla: cliente, líneas (a lo sumo una por Product), fecha, Shipping charged, Note y cómo se paga, con el Payment method propuesto por las New sale suggestions. Vive solo en memoria durante una apertura de New sale, nunca se guarda en el dispositivo y cuenta como sin guardar solo con al menos una línea; en el código es `useSaleDraft`. En la app: Sale in progress.
+La Sale que se está armando en New sale antes de guardarla: cliente, líneas (a lo sumo una por Product, cada una con su cantidad y, opcionalmente, un Gift o un Special price, nunca los dos), fecha (un día real no posterior al día del Business), Shipping charged, Note y cómo se paga, con el Payment method propuesto por las New sale suggestions. Vive solo en memoria durante una apertura de New sale, nunca se guarda en el dispositivo y cuenta como sin guardar solo con al menos una línea; en el código es `useSaleDraft`. En la app: Sale in progress.
 _Avoid_: cart, basket, order, pending sale, borrador guardado
 
 **Money in**:
@@ -633,8 +649,8 @@ Los Payments con fecha de hoy de un Business, On-the-spot payments y posteriores
 _Avoid_: income, revenue, collections, takings, cobrado, Cash, cash in hand
 
 **Payment state**:
-Cómo está pagada una Sale: pagada (paid), pagada en parte (part_paid) o sin pagar (unpaid), junto con lo que todavía se debe de ella (`still_owed`), exactamente lo que da el Settlement. Se calcula en el momento con una sola regla de dominio, `payment_state`, y nunca se guarda; una Sale de $0, pagada en el momento o saldada por un Credit está pagada, y una cuyos hechos de pago no se pueden conciliar no tiene ninguno. En la app: todavía no tiene palabra propia (la muestran partes posteriores de GH-500).
-_Avoid_: status, payment status, settled, paid flag, estado de cobro
+Cómo está pagada una Sale: pagada (paid), pagada en parte (part_paid) o sin pagar (unpaid), junto con lo que todavía se debe de ella (`still_owed`), exactamente lo que da el Settlement. Lo calcula una sola regla de dominio, `payment_state`, y nunca se guarda; una Sale cuyos hechos de pago no se pueden conciliar no tiene ninguno. Lo muestra el chip de pago de cada tarjeta de la lista de Sales desde #1020 (payment-state.md), que nunca lo vuelve a calcular y muestra "Payment can't be shown" cuando falta o cuando una pagada en parte no tiene un monto adeudado mayor que 0. _In the app_: Paid, Unpaid, Part-paid · {amount} owed, Payment can't be shown.
+_Avoid_: status, payment status, settled, paid flag, estado de cobro, owes you
 
 **Best sellers**:
 Hasta 4 Products de un Business con más plata cobrada en las Sales con fecha desde el lunes de la semana en curso hasta hoy: la suma de los totales guardados de sus Sale lines, sin envío y con los Gifts en $0. Se dejan afuera los de $0, los empates van por nombre, entran los Archived y los Hidden products, y nunca se completa con otra semana. En la app: todavía no tiene palabra propia (la muestran partes posteriores de GH-497).
@@ -647,3 +663,11 @@ _Avoid_: tendered, cash given, amount paid, pago, Payment
 **Change**:
 El vuelto que la vendedora devuelve: Received menos el total de la Sale, calculado solo por `changeFor` a los decimales del Money format y mostrado solo cuando Received alcanza el total (0 si son iguales). Es una ayuda para la entrega: nunca se guarda, nunca se manda y no es un Credit ni un Payment. _In the app_: Change.
 _Avoid_: refund, Credit, vuelto, balance, difference
+
+**Undo**:
+Eliminar con un toque, sin confirmación, la última Sale guardada desde New sale, durante los 5 segundos de su aviso "Sale to {name} saved". Es la misma eliminación que se hace desde el detalle de la Sale, y siempre muestra cómo terminó; un Home que ya está en pantalla conserva sus cifras. _In the app_: Undo.
+_Avoid_: revert, rollback, cancel sale, void, anular, deshacer venta
+
+**Recorder**:
+El User que registró un Payment, guardado como sus iniciales copiadas al registrarlo (la marca de quien registró, docs/product/initials.md) junto con una referencia al User que se anula cuando el User se va, mientras que las iniciales quedan. En el código es el valor `Recorder` (`app_user_id`, `initials`) que da `CurrentRecorder` a partir de la Session; todavía ningún router lo usa ni ninguna pantalla lo muestra (partes posteriores de GH-1057). En la app: todavía no tiene palabra propia.
+_Avoid_: author, creator, cashier, collector, owner, recorded by user

@@ -7,12 +7,14 @@ standing are computed (the plan's invariant): no other module, SQL query or fron
 walks or sums sales against payments to show a figure, the guarded insert's backstop
 aside.
 
-An on-the-spot payment settles its own sale alone and never enters this walk: a sale
-paid on the spot is excluded before matching starts (CONTEXT.md: On-the-spot payment).
-Owed sales are matched against later payments oldest debt first, plain FIFO by amount,
-whatever a payment's own date — never limited to sales dated on or before it (PRD
-round-1, Q1). Whatever a payment has left over every debt is a credit, never floored
-to $0 (CONTEXT.md: Credit).
+An on-the-spot payment settles its own sale alone and never covers another: a sale paid
+on the spot in full is excluded before matching starts (CONTEXT.md: On-the-spot payment).
+A partial on-the-spot amount (a Deposit, GH-1063) is the one exception: that sale joins
+the walk and starts at `opening_owed`, its total minus the amount, so a later payment
+never reaches it for more than what is still owed on it. Owed sales are matched against
+later payments oldest debt first, plain FIFO by amount, whatever a payment's own date,
+never limited to sales dated on or before it (PRD round-1, Q1). Whatever a payment has
+left over every debt is a credit, never floored to $0 (CONTEXT.md: Credit).
 """
 
 from __future__ import annotations
@@ -40,8 +42,12 @@ def standing_of(balance: int) -> Standing:
 class OwedSale:
     """One sale of a customer's ledger. `number` is the Sale number the business
     sees (per Business, ADR-0073), never the row `id`. `on_the_spot_method` is the
-    method it was paid in on the spot, or `None` for a sale left owing;
-    `paid_on_the_spot` is derived from it, never stored twice."""
+    method it was paid in on the spot, or `None` for a sale left owing, and
+    `on_the_spot_amount` is what was paid then, in the same unit as `total`: `0` for a
+    sale left owing, `total` for a sale paid in full, in between for a Deposit.
+
+    The comparison of that amount with the total is written here and only here:
+    `opening_owed` and `is_deposit` answer it for every reader."""
 
     id: int
     date: date
@@ -49,10 +55,30 @@ class OwedSale:
     total: int
     number: int
     on_the_spot_method: PaymentMethodLabel | None = None
+    on_the_spot_amount: int = 0
+
+    def __post_init__(self) -> None:
+        if self.on_the_spot_amount < 0:
+            raise ValueError("an on-the-spot amount is never below zero")
+        if self.on_the_spot_amount > self.total:
+            raise ValueError("an on-the-spot amount never exceeds the sale's total")
+        if self.on_the_spot_amount > 0 and self.on_the_spot_method is None:
+            raise ValueError("an on-the-spot amount always names its payment method")
+        if self.on_the_spot_method is not None and self.on_the_spot_amount == 0 and self.total > 0:
+            raise ValueError(
+                "an on-the-spot method on a sale with a total always carries an amount"
+            )
 
     @property
-    def paid_on_the_spot(self) -> bool:
-        return self.on_the_spot_method is not None
+    def opening_owed(self) -> int:
+        """What the sale owes when it starts: its total minus what was paid on the spot."""
+        return self.total - self.on_the_spot_amount
+
+    @property
+    def is_deposit(self) -> bool:
+        """A partial on-the-spot payment: a method and an amount strictly between `0` and
+        the total."""
+        return self.on_the_spot_method is not None and 0 < self.on_the_spot_amount < self.total
 
 
 @dataclass(frozen=True)
@@ -121,17 +147,20 @@ class SettleResult:
 def settle(ledger: Ledger) -> SettleResult:
     """The one pure walk (ADR-0012): owed sales oldest debt first `(date,
     recorded_at, id)`, later payments oldest first `(paid_on, recorded_at, id)`,
-    matched by amount alone. Sorts its own inputs, so the result never depends on
-    the order sales or payments were recorded in."""
+    matched by amount alone. Each walked sale starts at its `opening_owed`, and the
+    balance is the sum of those openings minus the later payments. A sale left owing
+    and a Deposit sale are walked; a sale paid in full on the spot never is. Sorts its
+    own inputs, so the result never depends on the order sales or payments were
+    recorded in."""
     owed_sales = sorted(
-        (sale for sale in ledger.sales if not sale.paid_on_the_spot),
+        (sale for sale in ledger.sales if sale.on_the_spot_method is None or sale.is_deposit),
         key=lambda sale: (sale.date, sale.recorded_at, sale.id),
     )
     later_payments = sorted(
         ledger.payments, key=lambda payment: (payment.paid_on, payment.recorded_at, payment.id)
     )
 
-    remaining: dict[int, int] = {sale.id: sale.total for sale in owed_sales}
+    remaining: dict[int, int] = {sale.id: sale.opening_owed for sale in owed_sales}
     order = [sale.id for sale in owed_sales]
     date_by_id = {sale.id: sale.date for sale in owed_sales}
     number_by_id = {sale.id: sale.number for sale in owed_sales}
@@ -157,7 +186,7 @@ def settle(ledger: Ledger) -> SettleResult:
 
     still_owing = frozenset(sale_id for sale_id in order if remaining[sale_id] > 0)
     owing_since = next((date_by_id[sale_id] for sale_id in order if remaining[sale_id] > 0), None)
-    balance = sum(sale.total for sale in owed_sales) - sum(
+    balance = sum(sale.opening_owed for sale in owed_sales) - sum(
         payment.amount for payment in later_payments
     )
 

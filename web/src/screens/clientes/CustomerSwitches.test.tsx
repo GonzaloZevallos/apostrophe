@@ -5,6 +5,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import userEvent from '@testing-library/user-event'
 import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { SheetRouterProvider } from '../../components/useSheetStack'
@@ -104,13 +105,14 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-test('Ventas shows a row\'s VIP badge only while Clientes VIP is on', async () => {
+test('Ventas shows no VIP badge on a card, even while Clientes VIP is on', async () => {
   stub(true, { 'GET /sales?date_from=2026-10-03&date_to=2026-10-03': [SALE] })
   renderAt(SALES)
-  expect(await screen.findByText('VIP')).toBeInTheDocument()
+  expect(await screen.findByText('Nico')).toBeInTheDocument()
+  expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })
 
-test('Ventas hides a row\'s VIP badge while Clientes VIP is off', async () => {
+test('Ventas shows no VIP badge on a card while Clientes VIP is off', async () => {
   stub(false, { 'GET /sales?date_from=2026-10-03&date_to=2026-10-03': [SALE] })
   renderAt(SALES)
   expect(await screen.findByText('Nico')).toBeInTheDocument()
@@ -154,6 +156,7 @@ const LIST_ANSWERS = { 'GET /customers': [LIST_FER], 'GET /payments/debtors': NO
 test('the Clientes list shows a VIP customer\'s mark only while Clientes VIP is on', async () => {
   stub(true, LIST_ANSWERS)
   renderAt(CUSTOMERS)
+  await userEvent.click(await screen.findByRole('radio', { name: 'All' }))
   expect(await screen.findByText('Fer')).toBeInTheDocument()
   expect(screen.getByText('VIP')).toBeInTheDocument()
 })
@@ -161,6 +164,7 @@ test('the Clientes list shows a VIP customer\'s mark only while Clientes VIP is 
 test('the Clientes list hides a VIP customer\'s mark while Clientes VIP is off', async () => {
   stub(false, LIST_ANSWERS)
   renderAt(CUSTOMERS)
+  await userEvent.click(await screen.findByRole('radio', { name: 'All' }))
   expect(await screen.findByText('Fer')).toBeInTheDocument()
   expect(screen.queryByText('VIP')).not.toBeInTheDocument()
 })

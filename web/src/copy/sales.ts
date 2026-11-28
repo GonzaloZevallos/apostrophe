@@ -60,19 +60,55 @@ export const SALE_BILL_TEXT = {
 /** The Collect Sheet's Received field: a help line, never a refusal. */
 const RECEIVED_HELP = "Type what they hand over to see the change. It isn't saved."
 
+/** The line detail Sheet: its fixed Done, the Remove line that sits apart from it, and the quantity
+ * field's neutral label and refusal (no unit word: `enterGrams` stays with the live New sale). Their
+ * `en.baseline.json` entries are inserted in sorted order: the baseline script never adds one. */
+const LINE_DETAIL_TEXT = {
+  lineDetailDone: COMMON_TEXT.done,
+  removeLineButton: 'Remove line',
+  lineQuantityLabel: 'Quantity',
+  lineQuantityInvalid: 'Enter a quantity above 0, with up to two decimals.',
+} as const
+
 /** New sale's Product list. `stock` is already formatted; the step names carry the Product's own name. */
 const NEW_SALE_TEXT = {
   productsInSale: (n: number) => `In the sale · ${n}`,
   productsMostSold: 'Most sold',
   productStock: (stock: string) => `${stock} in stock`,
   productNoPrice: 'No price',
+  lineNoPrice: 'No price',
+  lineOpenDetail: (name: string) => `Edit ${name}`,
   productAdd: (name: string) => `Add ${name}`,
   productIncrease: (name: string) => `Add one ${name}`,
   productDecrease: (name: string) => `Remove one ${name}`,
   productsResults: (n: number) => `Results · ${n}`,
   productSearchLabel: 'Search products',
   productSearchPlaceholder: 'Search by name',
+  listPrices: 'List prices',
+  pricesFor: (type: string) => `Prices for ${type}`,
+  itemsCount: (n: number) => (n === 1 ? '1 item' : `${n} items`),
+  itemsTotal: (n: number, total: string) => (n === 1 ? `1 item · ${total}` : `${n} items · ${total}`),
+  addProductToCollect: 'Add a product to collect',
 }
+
+/** The computer register's Product results table (`ProductResultsTable.tsx`). The Add header
+ * is visually hidden; the Add buttons and the Stock, failure and empty lines come with GH-1034. */
+export const SALE_PRODUCT_TABLE_TEXT = {
+  searchLabel: 'Search products',
+  searchPlaceholder: 'Search products',
+  columnProduct: COMMON_TEXT.variety,
+  columnStock: 'Stock',
+  columnPrice: 'Price',
+  columnAdd: 'Add',
+  addProduct: (name: string) => `Add ${name}`,
+  noPrice: 'No price',
+  helpLine: '↑ ↓ to move, Enter to add.',
+  loading: 'Loading products…',
+  failed: 'The products could not load. Reload this screen to try again.',
+  statusNoEntries: STOCK_TEXT.statusNoEntries,
+  statusSoldOut: STOCK_TEXT.statusSoldOut,
+  statusLow: STOCK_TEXT.statusLow,
+} as const
 
 export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'help', text: OWING_HINT },
@@ -82,18 +118,26 @@ export const LIMITED_COPY: readonly LimitedCopy[] = [
   { kind: 'notice', text: SALE_BILL_TEXT.shareFailed },
   { kind: 'notice', text: SALE_BILL_TEXT.copyFailed },
   { kind: 'notice', text: SALE_NOT_SAVED },
+  { kind: 'notice', text: SALE_PRODUCT_TABLE_TEXT.failed },
   { kind: 'notice', text: OWING_NEEDS_CUSTOMER },
   { kind: 'help', text: NEW_SALE_TEXT.productsInSale(Number(SAMPLES.count)) },
   { kind: 'help', text: NEW_SALE_TEXT.productsMostSold },
   { kind: 'help', text: NEW_SALE_TEXT.productStock(SAMPLES.grams) },
   { kind: 'help', text: NEW_SALE_TEXT.productNoPrice },
+  { kind: 'help', text: NEW_SALE_TEXT.lineNoPrice },
+  { kind: 'help', text: NEW_SALE_TEXT.lineOpenDetail(SAMPLES.name) },
   { kind: 'help', text: NEW_SALE_TEXT.productAdd(SAMPLES.name) },
   { kind: 'help', text: NEW_SALE_TEXT.productIncrease(SAMPLES.name) },
   { kind: 'help', text: NEW_SALE_TEXT.productDecrease(SAMPLES.name) },
   { kind: 'help', text: NEW_SALE_TEXT.productsResults(Number(SAMPLES.count)) },
   { kind: 'help', text: NEW_SALE_TEXT.productSearchLabel },
   { kind: 'help', text: NEW_SALE_TEXT.productSearchPlaceholder },
+  { kind: 'help', text: NEW_SALE_TEXT.addProductToCollect },
   { kind: 'help', text: RECEIVED_HELP },
+  { kind: 'help', text: LINE_DETAIL_TEXT.lineDetailDone },
+  { kind: 'help', text: LINE_DETAIL_TEXT.removeLineButton },
+  { kind: 'help', text: LINE_DETAIL_TEXT.lineQuantityLabel },
+  { kind: 'help', text: LINE_DETAIL_TEXT.lineQuantityInvalid },
 ]
 
 /** Nothing here is over 80 characters. */
@@ -105,6 +149,7 @@ const { money: M, attachedZero: AZ, date: D, grams: G } = FIXTURE
 /** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   noPriceMessage: [['Rosa']],
+  'SALE_PRODUCT_TABLE_TEXT.addProduct': [['Rosa']],
   'SALES_TEXT.giftGrams': [[G]],
   'SALES_TEXT.lineLabel': [['2', 'Rosa']],
   'SALES_TEXT.withUnit': [['3,5']],
@@ -128,8 +173,12 @@ export const BASELINE_ARGS = baselineArgs<typeof Self>()({
   'SALES_TEXT.newSale.productAdd': [['Rosa']],
   'SALES_TEXT.newSale.productIncrease': [['Rosa']],
   'SALES_TEXT.newSale.productDecrease': [['Rosa']],
+  'SALES_TEXT.newSale.lineOpenDetail': [['Rosa']],
   // A new key's en.baseline.json entry is inserted in sorted order: `i18n:baseline --update` never adds one.
   'SALES_TEXT.newSale.productsResults': [[2]],
+  'SALES_TEXT.newSale.pricesFor': [['Regulars']],
+  'SALES_TEXT.newSale.itemsCount': counted((n) => [n]),
+  'SALES_TEXT.newSale.itemsTotal': counted((n) => [n, M]),
   'SALE_BILL_TEXT.header': [['Flores Test', 'Sale #1284', D]],
   'SALE_BILL_TEXT.item': [['Rosa', '3,5', 'g', M]],
   'SALE_BILL_TEXT.bulk': [['Rosa', '10', 'g', M, M]],
@@ -167,16 +216,15 @@ export const SALES_TEXT = {
   lineSpecialPrice: (n: string | number) => `Line ${n} special price`,
   specialPrice: 'Special price',
   removeLine: (n: string | number) => `Remove line ${n}`,
+  ...LINE_DETAIL_TEXT,
   saleNumber: (n: number) => `Sale #${n}`,
   undo: 'Undo',
   lines: 'Lines',
   perGram: VARIETIES_TEXT.elGramo,
   customerAssigned: 'Customer assigned',
   assignCustomer: 'Assign customer',
-  deleteSale: 'Delete sale',
   from: 'From',
   to: 'To',
-  owesYou: 'owes you',
   addAtLeastOne: 'Add at least one product.',
   pickHowPaid: 'Pick how it was paid, or leave the sale owing',
   /** `zero` is the business's zero amount written attached to its symbol (`useMoney().attached(0)`). */

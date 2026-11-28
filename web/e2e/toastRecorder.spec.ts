@@ -140,7 +140,7 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
   await page.getByLabel(VARIETY_NAME_LABEL, { exact: true }).fill('Rosa')
   await expectToast(page, 'Product saved', () => page.getByRole('button', { name: 'Add the product' }).click())
   await page.goto(VARIETIES)
-  await page.getByRole('link', { name: '+ Stock entry' }).click()
+  await openStockSegment(page); await page.getByRole('link', { name: '+ Stock entry' }).click()
   await page.getByLabel('Grams', { exact: true }).fill('50')
   await pickStockVariety(page, 'Rosa')
   await page.getByLabel(STOCK_COST_LABEL, { exact: true }).fill('20000')
@@ -158,11 +158,12 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
   // ClienteFicha: the toast comes in history state, with no timer.
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name', { exact: true }).fill('Noe Registro')
-  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save', exact: true }).click())
   await expectPath(page, CUSTOMER)
   // No product timer on this one (history state): the page check stays next to the recorder's.
   await expect(page.getByText('Customer saved')).toBeVisible()
 })
 
 import { pickStockVariety } from './helpers/stockVariety.js'
+import { openStockSegment } from './helpers/stockSegment.js'
 import { STOCK_COST_LABEL, VARIETY_NAME_LABEL } from './helpers/labels.js'

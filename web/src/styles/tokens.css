@@ -31,6 +31,7 @@
   --deuda-fondo: #fbf1e3; /* derivado */
   --deuda2: #8a5a1f; /* derivado */
   --deuda-linea: #ecdcc3; /* derivado */
+  --deuda-reciente: #8dbba1;
 
   --critico: #26332b; /* derivado */
   --critico-texto: #f6f7f5; /* derivado */
@@ -47,6 +48,10 @@
   --serie3: #4c7fd0;
   --serie4: #b8457a;
   --serie5: #b9c2bc;
+  --gasto1: #1e6b47;
+  --gasto2: #a85a06;
+  --gasto3: #1c6fa8;
+  --gasto-otros: #7e8c84;
 
   /* Tipografía */
   --fuente: 'Geist', system-ui, -apple-system, sans-serif;
@@ -113,6 +118,7 @@
   --deuda-fondo: #2b2110; /* derivado */
   --deuda2: #c9944a; /* derivado */
   --deuda-linea: #3d2e17; /* derivado */
+  --deuda-reciente: #3d7a5c; /* derivado */
 
   --critico: #f0bb68; /* derivado */
   --critico-texto: #0e1411; /* derivado */
@@ -129,6 +135,10 @@
   --serie3: #7fa8e8;
   --serie4: #e07aa8;
   --serie5: #7f8c85;
+  --gasto1: #5cc594;
+  --gasto2: #e8a54b;
+  --gasto3: #5aa9e6;
+  --gasto-otros: #7e8c84;
 }
 
 html,

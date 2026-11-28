@@ -7,6 +7,7 @@
 
 import { del, get, patch, post, put } from './client.ts'
 import { keys } from './keys.ts'
+import type { PaymentMethodLabel } from './payments.ts'
 
 export interface ExpenseCategory {
   id: number
@@ -19,6 +20,7 @@ export interface Expense {
   category_id: number
   amount: number
   detail: string
+  payment_method: PaymentMethodLabel | null
 }
 
 export interface CategorySubtotal {
@@ -39,6 +41,8 @@ export interface ExpenseInput {
   category_id: number
   amount: number
   detail: string
+  /** The method the expense was paid with, `null` for none. Every save carries it. */
+  payment_method_id: number | null
 }
 
 export function listCategories(): Promise<ExpenseCategory[]> {

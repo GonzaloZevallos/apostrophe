@@ -43,6 +43,7 @@
   "expense_category.name_invalid": "refusals:generic",
   "expense.not_found": "refusals:goneNotice",
   "expense.rule_broken": "refusals:generic",
+  "expense.payment_method_mismatch": "refusals:generic",
   "expense.date_invalid": "refusals:generic",
   "expense.amount_invalid": "refusals:generic",
   "expense.detail_invalid": "refusals:generic",

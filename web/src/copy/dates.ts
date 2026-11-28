@@ -11,14 +11,11 @@ export const LONG_REFUSALS: readonly string[] = []
 
 /** The fixture arguments of this file's functions, for `en.baseline.json` (`./baselineArgs.ts`). */
 export const BASELINE_ARGS = baselineArgs<typeof Self>()({
-  'DATES_TEXT.salesN': [[0], [1], [2]],
   'DATES_TEXT.owingSuffix': [['3 sales']],
 })
 
 /** Every text a person reads in this area that is not a named message above, by key. */
 export const DATES_TEXT = {
-  oneSale: '1 sale',
-  salesN: (n: number) => `${n} sales`,
   owingSuffix: (sales: string) => `${sales} owing`,
   enero: 'January',
   febrero: 'February',

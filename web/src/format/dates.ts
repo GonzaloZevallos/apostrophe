@@ -5,7 +5,7 @@ import { DATES_TEXT } from '../copy/dates'
  * months (`"YYYY-MM"`). The front never reads the device's clock, zone or locale here, and
  * never passes an API date to `Date.parse` (plan, invariants): "today" always comes in as a
  * parameter, read from `GET /auth/me`. Every function works on the string's digits alone,
- * except `formatTodayLong`, the one that builds a UTC instant from those digits and formats
+ * except `formatTodayLong` and `formatWeekdayDay` (`relativeDay` is digits only), the ones that build a UTC instant from those digits and formats
  * it only in UTC, in the language the screen is shown in (ADR-0049, amendment GH-748).
  */
 
@@ -45,23 +45,57 @@ interface LongDateFormatter {
   resolvedOptions(): { locale: string }
 }
 
+type DateShape = 'long' | 'weekdayDay'
+
 const formatters = new Map<string, LongDateFormatter>()
 
-/** The long-date formatter of a language tag, cached per tag. An unusable tag (`''`,
+/** The formatter of a language tag and shape, cached per both. An unusable tag (`''`,
  * `'en_US'`) gets the English one. The only place a formatter is built. */
-function formatterFor(tag: string): LongDateFormatter {
+function formatterFor(tag: string, shape: DateShape): LongDateFormatter {
   const key = tag.toLowerCase() === 'en-xa' ? ENGLISH : tag
-  const cached = formatters.get(key)
+  const cacheKey = `${key}|${shape}`
+  const cached = formatters.get(cacheKey)
   if (cached !== undefined) return cached
   let formatter: LongDateFormatter
   try {
-    formatter = new Intl.DateTimeFormat(key, { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' })
+    formatter = new Intl.DateTimeFormat(key, {
+      weekday: 'long',
+      day: 'numeric',
+      month: shape === 'long' ? 'long' : undefined,
+      timeZone: 'UTC',
+    })
   } catch (error) {
     if (!(error instanceof RangeError)) throw error
-    formatter = formatterFor(ENGLISH)
+    formatter = formatterFor(ENGLISH, shape)
   }
-  formatters.set(key, formatter)
+  formatters.set(cacheKey, formatter)
   return formatter
+}
+
+type DatePart = { type: string; value: string }
+
+/** The parts of a date's UTC instant, built from its digits, in `language` and `shape`. */
+function partsOf(iso: string, language: string, shape: DateShape): { parts: DatePart[]; spanish: boolean } {
+  const { year, month, day } = parseDate(iso)
+  const formatter = formatterFor(language, shape)
+  const instant = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)))
+  return {
+    parts: formatter.formatToParts(instant),
+    spanish: formatter.resolvedOptions().locale.split('-')[0]?.toLowerCase() === 'es',
+  }
+}
+
+function capitalise(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}
+
+/** Spanish writes the weekday in lower case and joins it to the date with a comma or a
+ * non-breaking space: one plain space after the weekday, and a capital first letter. */
+function spanishText(parts: DatePart[]): string {
+  const text = parts
+    .map((part, index) => (part.type === 'literal' && parts[index - 1]?.type === 'weekday' ? ' ' : part.value))
+    .join('')
+  return capitalise(text)
 }
 
 /** `"2026-10-29"` → `"Jueves 29 de octubre"` in Spanish, `"Thursday, October 29"` in English,
@@ -69,17 +103,18 @@ function formatterFor(tag: string): LongDateFormatter {
  * names come from `Intl` in `language`, over a UTC instant built from the date's digits, so
  * neither the device's zone nor its locale can move it. */
 export function formatTodayLong(iso: string, language: string): string {
-  const { year, month, day } = parseDate(iso)
-  const formatter = formatterFor(language)
-  const instant = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)))
-  const parts = formatter.formatToParts(instant)
-  if (formatter.resolvedOptions().locale.split('-')[0]?.toLowerCase() !== 'es') {
-    return parts.map((part) => part.value).join('')
-  }
-  const text = parts
-    .map((part, index) => (part.type === 'literal' && parts[index - 1]?.type === 'weekday' ? ' ' : part.value))
-    .join('')
-  return text.charAt(0).toUpperCase() + text.slice(1)
+  const { parts, spanish } = partsOf(iso, language, 'long')
+  return spanish ? spanishText(parts) : parts.map((part) => part.value).join('')
+}
+
+/** `"2026-11-24"` → `"Tuesday 24"` in English, `"Martes 24"` in Spanish: the weekday and the
+ * day, no month, always in that order. Same `Intl` and UTC instant as `formatTodayLong`. */
+export function formatWeekdayDay(iso: string, language: string): string {
+  const { parts, spanish } = partsOf(iso, language, 'weekdayDay')
+  const weekday = parts.find((part) => part.type === 'weekday')?.value ?? ''
+  const day = parts.find((part) => part.type === 'day')?.value ?? ''
+  const text = `${weekday} ${day}`
+  return spanish ? capitalise(text) : text
 }
 
 /** `"2026-10-09"` → `"09/10"`, with no "today" to compare against: for a footer
@@ -194,12 +229,25 @@ function addDays(iso: string, delta: number): string {
   return formatIso(civil.year, civil.month, civil.day)
 }
 
+type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6
+
 /** Monday = 0 .. Sunday = 6, from an API date's digits, with no `Date`. */
-function weekday(iso: string): number {
+function weekday(iso: string): Weekday {
   const { year, month, day } = parseDate(iso)
   const days = daysFromCivil(Number(year), Number(month), Number(day))
   // 1970-01-01 (days = 0) was a Thursday, index 3 in a Monday-first week.
-  return (((days + 3) % 7) + 7) % 7
+  // The double modulo leaves exactly 0..6.
+  return ((((days + 3) % 7) + 7) % 7) as Weekday
+}
+
+/** A date as the Expenses list names it: `today`, or its short weekday (0 = Monday .. 6 = Sunday)
+ * with `dd/mm`. There is no "yesterday": it is a weekday like any other. */
+export type RelativeDay = { kind: 'today' } | { kind: 'weekday'; weekday: Weekday; date: string }
+
+/** `spentOn` relative to `todayIso`, on the digits of both, with no `Date`. */
+export function relativeDay(spentOn: string, todayIso: string): RelativeDay {
+  if (spentOn === todayIso) return { kind: 'today' }
+  return { kind: 'weekday', weekday: weekday(spentOn), date: formatDateShort(spentOn) }
 }
 
 /** "Hoy": today to today. */
@@ -232,4 +280,17 @@ export function monthRange(todayIso: string): DateRange {
  * be dated in the future). */
 export function maxSaleDate(todayIso: string): string {
   return todayIso
+}
+
+/** Whether `text` is a real calendar day written `YYYY-MM-DD`: the year is at least 1 (the API's
+ * `date` has no year 0) and the civil-day arithmetic gives back the same year, month and day, so
+ * `2026-02-30` is refused. It never builds a `Date`. */
+export function isIsoDate(text: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return false
+  const year = Number(text.slice(0, 4))
+  const month = Number(text.slice(5, 7))
+  const day = Number(text.slice(8, 10))
+  if (year < 1) return false
+  const civil = civilFromDays(daysFromCivil(year, month, day))
+  return civil.year === year && civil.month === month && civil.day === day
 }

@@ -21,10 +21,12 @@ from app.accounts.application.ports import AccountsMoneyFormat, BusinessOpening
 from app.accounts.application.sign_in import SignedIn, open_session
 from app.accounts.domain.address import address_key
 from app.accounts.domain.password import PasswordHasher
+from app.accounts.domain.recorder import recorder_initials
 from app.accounts.domain.session_token import SessionSigner
 from app.clock import Clock, get_clock
 from app.db import get_session
 from app.settings import Settings
+from app.shared.recorder import Recorder
 
 SESSION_COOKIE = "apostrophe_session"
 
@@ -94,6 +96,15 @@ def current_business_id(signed_in: CurrentSession) -> int:
 
 
 CurrentBusinessId = Annotated[int, Depends(current_business_id)]
+
+
+def current_recorder(signed_in: CurrentSession) -> Recorder:
+    user = signed_in.user
+    assert user.id is not None
+    return Recorder(user.id, recorder_initials(user.email))
+
+
+CurrentRecorder = Annotated[Recorder, Depends(current_recorder)]
 
 
 def get_money_format(

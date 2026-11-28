@@ -3,13 +3,15 @@
  * expense form opens in two taps from Home (the Analysis segment, then "Record expense") and three
  * from Sales, Customers and Products, one from Gastos; Settings in one from each phone Tab root
  * (the avatar; phone Gastos is a detail screen with no avatar and no figure, owner's decision on
- * #724); a stock withdrawal in two (Products, then "Take from stock"). A computer never takes more taps than
- * the phone. A tap is a click this spec makes through `tap()`, so the count is of what a seller
+ * #724); a stock entry and a stock withdrawal in three on the phone (Products, Stock, then the action; two
+ * from Products itself) and in two on a computer, which has no segment; Send catalog in two. A
+ * computer never takes more taps than the phone. A tap is a click this spec makes through `tap()`, so the count is of what a seller
  * does, not of what the code calls. One expense is also recorded from the Expenses card on
  * Analysis, and the form's exit goes back by history to the screen that opened it.
  */
 
 import { expectPath } from './helpers/url.js'
+import { openStockSegment } from './helpers/stockSegment.js'
 import { expensesCard } from './helpers/openScreens.js'
 import {
   ANALYSIS,
@@ -23,6 +25,9 @@ import {
   SALES,
   SALE_NEW,
   SETTINGS,
+  SETTINGS_INTEGRATIONS,
+  SETTINGS_PAYMENT_METHODS,
+  SETTINGS_PRICES,
   STOCK_ENTRY_NEW,
   VARIETIES,
   VARIETY,
@@ -38,7 +43,8 @@ import { watchConsole } from './console.js'
 import { seedRecords, signUp } from './helpers/seed.js'
 import { uniqueTag } from './helpers/unique.js'
 import { servedCountry } from './helpers/phoneCountries.js'
-import { bottomBar, newSaleEntry, railSettingsLink } from './helpers/chrome.js'
+import { bottomBar, newSaleEntry, railSettingsLink, settingsEntry } from './helpers/chrome.js'
+import { settingsShortcut } from './helpers/settingsHome.js'
 
 
 const PHONE = { width: 390, height: 844 }
@@ -144,9 +150,9 @@ test('a seller records an expense from the Expenses card and Close goes back to 
   await page.getByRole('button', { name: /^Category/ }).click()
   await page.getByRole('button', { name: 'Packaging', exact: true }).click()
   await page.getByLabel('Amount', { exact: true }).fill('3200')
-  await page.getByLabel('Details', { exact: true }).fill('Cajas de cartón')
+  await page.getByLabel('Details (optional)', { exact: true }).fill('Cajas de cartón')
   await expectToast(page, 'Expense saved', async () => {
-    await page.getByRole('button', { name: 'Save the expense' }).click()
+    await page.getByRole('button', { name: /^Save expense/ }).click()
     await expectPath(page, ANALYSIS)
   })
 
@@ -166,6 +172,19 @@ async function viaTab(page: Page, counter: Counter, computer: boolean, label: st
  * a tap on a link of the list is never overtaken by the automatic replace. */
 async function settled(page: Page, computer: boolean): Promise<void> {
   if (computer) await expectPath(page, VARIETY)
+}
+
+/** The phone's Stock segment, one tap; a computer has no segment and takes none. */
+async function viaStock(page: Page, counter: Counter, computer: boolean): Promise<void> {
+  if (computer) return
+  counter.taps += 1
+  await openStockSegment(page)
+}
+
+/** The most taps a seller needs for each action on the phone; the computer's are never more. */
+function phoneBudget(key: string): number {
+  if (key.startsWith('sale') || key.startsWith('payment') || key.startsWith('settings')) return 1
+  return key.startsWith('stock entry') || key.startsWith('withdrawal') ? 3 : 2
 }
 
 test('the sale form, Registrar cobro, the catalog and a stock entry open within the tap budget', async ({ page }) => {
@@ -242,6 +261,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       counter = { taps: 0 }
       if (root !== VARIETIES) await viaTab(page, counter, computer, 'Products')
       await settled(page, computer)
+      await viaStock(page, counter, computer)
       await tap(counter, page.getByRole('link', { name: '+ Stock entry' }))
       await expectPath(page, STOCK_ENTRY_NEW)
       measure(`stock entry ${root}`, device, counter.taps)
@@ -270,6 +290,7 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       counter = { taps: 0 }
       if (root !== VARIETIES) await viaTab(page, counter, computer, 'Products')
       await settled(page, computer)
+      await viaStock(page, counter, computer)
       const takeFromStock = page.getByRole('link', { name: 'Take from stock' }).first()
       if (!computer) await expect(takeFromStock, label).toBeInViewport()
       await tap(counter, takeFromStock)
@@ -287,16 +308,55 @@ test('the sale form, Registrar cobro, the catalog and a stock entry open within 
       continue
     }
     expect(phone, `phone: ${key}`).toBeGreaterThan(0)
-    expect(phone, `phone: ${key}`).toBeLessThanOrEqual(
-      key.startsWith('sale') || key.startsWith('payment') || key.startsWith('settings') ? 1 : 2,
-    )
+    expect(phone, `phone: ${key}`).toBeLessThanOrEqual(phoneBudget(key))
     expect(computer, `computer: ${key}`).toBeLessThanOrEqual(phone)
+  }
+  // Stock entry and withdrawal: Products, Stock, the action from every other root; two from Products.
+  for (const action of ['stock entry', 'withdrawal']) {
+    for (const root of ROOTS) {
+      const measured = taps[`${action} ${root}`]
+      expect(measured?.phone, `phone: ${action} ${root}`).toBe(root === VARIETIES ? 2 : 3)
+      expect(measured?.computer, `computer: ${action} ${root}`).toBeLessThanOrEqual(2)
+    }
   }
   expect(consoleMessages).toEqual([])
 })
 
 /** What a seller taps to give a new customer a phone number in the country the device detected: the form's
  * own two buttons and nothing for the Phone country (customers.md, success criterion 5). */
+const SHORTCUT_TAPS = 1
+
+/** Settings home's three shortcuts, each opening its row's page: one tap from Settings, two from a Tab root. */
+const SHORTCUTS = [
+  ['Prices', SETTINGS_PRICES],
+  ['Payment methods', SETTINGS_PAYMENT_METHODS],
+  ['Telegram catalog', SETTINGS_INTEGRATIONS],
+] as const
+
+test('on the phone each Settings shortcut opens its page in one tap from Settings and two from a Tab root', async ({
+  page,
+}) => {
+  const consoleMessages: string[] = []
+  watchConsole(page, consoleMessages)
+  await page.setViewportSize(PHONE)
+  await signUpNewBusiness(page, { businessName: `Flores de Atajos ${uniqueTag()}`, email: `duena-atajos-${uniqueTag()}@example.com` })
+
+  for (const [label, path] of SHORTCUTS) {
+    await page.goto(SETTINGS)
+    const counter: Counter = { taps: 0 }
+    await tap(counter, settingsShortcut(page, label))
+    await expectPath(page, path)
+    expect(counter.taps, `${label} from Settings`).toBeLessThanOrEqual(SHORTCUT_TAPS)
+
+    await page.goto(HOME)
+    const fromRoot: Counter = { taps: 0 }
+    await tap(fromRoot, settingsEntry(page))
+    await tap(fromRoot, settingsShortcut(page, label))
+    await expectPath(page, path)
+    expect(fromRoot.taps, `${label} from a Tab root`).toBeLessThanOrEqual(SHORTCUT_TAPS + 1)
+  }
+})
+
 const NEW_CUSTOMER_TAPS = 2
 const NEW_CUSTOMER_IN_SALE_TAPS = 3
 /** Picking another country: the field, then the option. */
@@ -337,7 +397,7 @@ test('a new customer, alone or from Pick a customer, with a local number in the 
     await awaitDetected()
     if (other) await pickUruguay(counter)
     await phone.fill(distinct(other ? uruguay.example : argentina.example, other ? 2 : 1))
-    await tap(counter, page.getByRole('button', { name: 'Save and use' }))
+    await tap(counter, page.getByRole('button', { name: 'Save', exact: true }))
     await expectPath(page, CUSTOMER)
     measured[`customer ${key}`] = counter.taps
   }

@@ -24,7 +24,7 @@ const VIEW = {
       id: 1,
       name: 'Packaging',
       subtotal: 4500,
-      expenses: [{ id: 9, spent_on: '2026-10-01', category_id: 1, amount: 4500, detail: 'Bolsas' }],
+      expenses: [{ id: 9, spent_on: '2026-10-01', category_id: 1, amount: 4500, detail: 'Bolsas', payment_method: null }],
     },
   ],
 }
@@ -47,11 +47,11 @@ test('a direct address to the new expense shows the sheet over Expenses, focus i
 
   const dialog = await screen.findByRole('dialog', { name: COMMON_TEXT.addExpense })
   expect(dialog).toHaveAttribute('aria-modal', 'true')
-  await waitFor(() => expect(screen.getByLabelText(COMMON_TEXT.date)).toHaveFocus())
+  await waitFor(() => expect(screen.getByLabelText(COMMON_TEXT.amount)).toHaveFocus())
   expect(screen.getAllByRole('button', { name: COMMON_TEXT.close })).toHaveLength(1)
   expect(within(dialog).getByRole('button', { name: COMMON_TEXT.close })).toBeInTheDocument()
   expect(document.querySelector('.sheet__actions')).toContainElement(
-    screen.getByRole('button', { name: EXPENSES_TEXT.saveTheExpense }),
+    screen.getByRole('button', { name: /^Save expense/ }),
   )
 
   const pane = behindPane()
@@ -84,13 +84,13 @@ test('editing an expense opens an in-page sheet with Delete above Save, focus in
   await userEvent.click(await screen.findByRole('button', { name: /Bolsas/ }))
 
   const dialog = await screen.findByRole('dialog', { name: EXPENSES_TEXT.editExpense })
-  await waitFor(() => expect(within(dialog).getByLabelText(COMMON_TEXT.date)).toHaveFocus())
+  await waitFor(() => expect(within(dialog).getByLabelText(COMMON_TEXT.amount)).toHaveFocus())
   expect(screen.getAllByRole('button', { name: COMMON_TEXT.close })).toHaveLength(1)
   expect(document.querySelector('.behind-pane')).toBeNull()
 
   const actions = document.querySelector('.sheet__actions')
   const buttons = Array.from(actions?.querySelectorAll('button') ?? []).map((button) => button.getAttribute('aria-label') ?? button.textContent)
-  expect(buttons).toEqual([EXPENSES_TEXT.deleteExpense, EXPENSES_TEXT.saveTheExpense])
+  expect(buttons).toEqual([EXPENSES_TEXT.deleteExpense, expect.stringMatching(/^Save expense/)])
 })
 
 test('on a computer the edit keeps its frame: .capa presentation, and the discard question inside .capa__contenido', async () => {
@@ -98,7 +98,7 @@ test('on a computer the edit keeps its frame: .capa presentation, and the discar
   renderExpenses([EXPENSES], api())
 
   await userEvent.click(await screen.findByRole('button', { name: /Bolsas/ }))
-  await userEvent.type(await screen.findByLabelText('Details'), ' x')
+  await userEvent.type(await screen.findByLabelText('Details (optional)'), ' x')
   await userEvent.click(screen.getByRole('button', { name: COMMON_TEXT.close }))
 
   const question = await screen.findByText(COMMON_TEXT.discardTheChanges)

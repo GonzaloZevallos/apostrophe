@@ -27,7 +27,14 @@ class ExpenseIn(BaseModel):
     spent_on: date
     category_id: int
     amount: MoneyAmount
-    detail: str
+    detail: str = ""
+    payment_method_id: int | None = None
+
+
+class ExpensePaymentMethodOut(BaseModel):
+    id: int
+    name: str
+    icon: str
 
 
 class ExpenseOut(BaseModel):
@@ -36,16 +43,23 @@ class ExpenseOut(BaseModel):
     category_id: int
     amount: MoneyOut
     detail: str
+    payment_method: ExpensePaymentMethodOut | None
 
     @classmethod
     def of(cls, expense: Expense) -> "ExpenseOut":
         assert expense.id is not None, "only stored expenses go out"
+        label = expense.payment_method_label
         return cls(
             id=expense.id,
             spent_on=expense.spent_on,
             category_id=expense.category_id,
             amount=Decimal(expense.amount),
             detail=expense.detail,
+            payment_method=(
+                None
+                if label is None
+                else ExpensePaymentMethodOut(id=label.id, name=label.name, icon=label.icon)
+            ),
         )
 
 

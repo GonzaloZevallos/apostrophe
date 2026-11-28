@@ -95,6 +95,15 @@ class RecordsChanged(Exception):
     and no row, and holds no text: the operator's line is `words.records_changed()`."""
 
 
+class ExportNotFaithful(Exception):
+    """The document read back from the export file is not the document that was built.
+    The message is fixed and names no data: the operator's line is the generic
+    `words.failed()`, and nothing has been deleted yet."""
+
+    def __init__(self) -> None:
+        super().__init__("the export file read back is not the document that was built")
+
+
 def dry_run(schema_rows: SchemaRows, output: Output, words: OperatorWords, email: str) -> int:
     """Names the business found from `email` and counts, by table, what a real run
     would export and delete. Writes nothing, asks nothing. Nothing this function
@@ -140,9 +149,9 @@ def remove_business(
 ) -> int:
     """Exports the business found from `email`, asks the operator to type its name
     back, then deletes every row in one transaction -- only once the file has been
-    written, fsynced and read back, and only if what was read back names exactly the
-    ids the delete returns. Any failure before the commit leaves the business whole
-    and removes whatever file this run created; nothing after the commit ever
+    written, fsynced and read back equal to the document built, and only if it names
+    exactly the ids the delete returns. Any failure before the commit leaves the
+    business whole and removes whatever file this run created; nothing after the commit ever
     touches that file again. Everything, from the first read of the schema onward,
     runs inside the one try below: no exception, from any port, leaves a traceback
     on the way out (the plan's invariant)."""
@@ -195,6 +204,8 @@ def remove_business(
         output.line(words.export_written(str(path)))
 
         read_back = export_file.read_back(path)
+        if read_back != document:
+            raise ExportNotFaithful()
         # `id_sets` only covers the "kinds" (the owned tables other than `business`
         # itself, which the document carries as a header, not a list); the business
         # row is still one exported id, read back from the same file.

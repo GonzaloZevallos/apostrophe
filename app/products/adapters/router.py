@@ -13,6 +13,7 @@ from app.money_route import MoneyJsonRoute
 from app.products.adapters.schemas import (
     PriceEntryIn,
     PriceEntryOut,
+    ProductCostOut,
     ProductDetailOut,
     ProductIn,
     ProductOut,
@@ -20,6 +21,7 @@ from app.products.adapters.schemas import (
 from app.products.adapters.sql_products import SqlProducts
 from app.products.adapters.vip_type_prices import SqlVipTypePrices
 from app.products.application import manage_prices, manage_products
+from app.products.application.cost_and_margins import cost_and_margins_of
 from app.products.application.errors import (
     NameHeldByArchived,
     NameTaken,
@@ -27,6 +29,7 @@ from app.products.application.errors import (
     ProductNotFound,
 )
 from app.products.application.ports import (
+    LatestCostedPurchase,
     MoneyFormatReader,
     PricingSettingsReader,
     ProductLeaving,
@@ -85,6 +88,18 @@ def get_leaving(
     return factory(session, business_id)
 
 
+def get_latest_costed_purchase(
+    request: Request, session: SessionDep, business_id: CurrentBusinessId
+) -> LatestCostedPurchase:
+    # Products never imports `app.stock`: `app/main.py` hangs the stock reader of the latest
+    # costed Purchase on `app.state` as a `(Session, business_id)` factory.
+    factory = cast(
+        Callable[[Session, int], LatestCostedPurchase],
+        request.app.state.products_latest_costed_purchase,
+    )
+    return factory(session, business_id)
+
+
 def get_vip_type_prices(session: SessionDep, business_id: CurrentBusinessId) -> VipTypePrices:
     return SqlVipTypePrices(session, business_id)
 
@@ -101,6 +116,7 @@ VipTypeIdDep = Annotated[int | None, Depends(get_vip_type_id)]
 SettingsDep = Annotated[PricingSettingsReader, Depends(get_pricing_settings)]
 MoneyFormatDep = Annotated[MoneyFormatReader, Depends(get_money_format)]
 LeavingDep = Annotated[ProductLeaving, Depends(get_leaving)]
+LatestCostedPurchaseDep = Annotated[LatestCostedPurchase, Depends(get_latest_costed_purchase)]
 TodayDep = Annotated[date, Depends(get_today)]
 ClockDep = Annotated[Clock, Depends(get_clock)]
 
@@ -144,13 +160,21 @@ def register_product(
 
 @router.get("/{product_id}")
 def get_product(
-    product_id: int, products: ProductsDep, today: TodayDep, vip_type_id: VipTypeIdDep
+    product_id: int,
+    products: ProductsDep,
+    today: TodayDep,
+    vip_type_id: VipTypeIdDep,
+    settings: SettingsDep,
+    purchases: LatestCostedPurchaseDep,
 ) -> ProductDetailOut:
     with as_http:
         product = manage_products.get_product(products, product_id=product_id)
         removal = manage_products.removal_offered(products, product)
+        cost = cost_and_margins_of(product, settings.current(), purchases, today)
         return ProductDetailOut(
-            **ProductOut.of(product, today, vip_type_id).model_dump(), removal=removal
+            **ProductOut.of(product, today, vip_type_id).model_dump(),
+            removal=removal,
+            cost=ProductCostOut.of(cost),
         )
 
 

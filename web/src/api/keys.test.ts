@@ -35,6 +35,10 @@ describe('keys', () => {
     expect(keys.debtors()).toEqual(['payments', 'debtors'])
   })
 
+  test('the customer search Sheet\'s list keys outside every resource prefix', () => {
+    expect(keys.saleFormCustomers()).toEqual(['sale-form', 'customers'])
+  })
+
   test('the Registrar cobro preview keys outside the payments resource, by its inputs', () => {
     expect(keys.paymentPreview('1', '2026-10-02', 5000)).toEqual([
       'payment-form',
@@ -84,6 +88,33 @@ describe('invalidateResource and the catalog', () => {
 
     expect(isInvalidated(queryClient, keys.stock())).toBe(false)
     expect(isInvalidated(queryClient, keys.varieties())).toBe(false)
+  })
+})
+
+describe('invalidateResource and the Global search', () => {
+  test('keys under its own prefix, by the query', () => {
+    expect(keys.search('José')).toEqual(['search', { q: 'José' }])
+  })
+
+  test.each(['sales', 'payments', 'customers', 'stock', 'varieties'] as const)(
+    'a %s write also invalidates the search',
+    (resource) => {
+      const queryClient = clientWithData()
+      queryClient.setQueryData(keys.search('x'), { sales: [], customers: [], products: [] })
+
+      invalidateResource(queryClient, resource)
+
+      expect(isInvalidated(queryClient, keys.search('x'))).toBe(true)
+    },
+  )
+
+  test('a withdrawal reasons write reaches stock but leaves the search valid', () => {
+    const queryClient = clientWithData()
+    queryClient.setQueryData(keys.search('x'), { sales: [], customers: [], products: [] })
+
+    invalidateResource(queryClient, 'withdrawalReasons')
+
+    expect(isInvalidated(queryClient, keys.search('x'))).toBe(false)
   })
 })
 

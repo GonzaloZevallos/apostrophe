@@ -111,7 +111,7 @@ const EXPECTED: Record<ScreenId, Expected> = {
   "settings-business": expectation("form", "settings", SETTINGS_PLACE),
   "settings-users": expectation("form", "settings", SETTINGS_PLACE),
   "settings-prices": expectation("form", "settings", SETTINGS_PLACE),
-  "settings-customer-types": expectation("form", "settings-prices", SETTINGS_PLACE),
+  "settings-customer-types": expectation("form", "settings", SETTINGS_PLACE),
   "settings-payments": expectation("form", "settings", SETTINGS_PLACE),
   "settings-payment-methods": expectation("card", "settings-payments", SETTINGS_PLACE),
   "settings-payment-methods-archived": expectation("form", "settings-payment-methods", SETTINGS_PLACE),
@@ -1060,6 +1060,17 @@ function entryParentViolations(table: Readonly<Record<string, string>>): string[
   }
   return found;
 }
+
+describe("Customer types, opened from its Settings row", () => {
+  test.each(["phone", "computer"] as const)("has Settings as its parent on the %s, with no entry-parent override", (viewport) => {
+    expect(parentOf("settings-customer-types", viewport)).toMatchObject({ id: "settings", path: routes.SETTINGS });
+    expect(Object.keys(ENTRY_PARENTS)).not.toContain("settings-customer-types");
+  });
+
+  test("keeps its address, with no redirect", () => {
+    expect(screenOf("settings-customer-types").path).toBe("/settings/prices/customer-types");
+  });
+});
 
 describe("the entry parents", () => {
   test("the real table has no violation", () => {

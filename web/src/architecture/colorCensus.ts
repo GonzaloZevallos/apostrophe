@@ -1,8 +1,8 @@
 /**
  * The never-by-color census (design README: no state told by color alone). `stateColorRules`
  * reads CSS text and returns each rule, by its normalised selector list, whose declarations use
- * a state color: `--deuda*`, `--critico*`, `--acento-calido*`, `--positivo`, `--negativo` or a
- * chart series. `checkColorCensus` compares that to the list of entries below.
+ * a state color: `--deuda*`, `--critico*`, `--acento-calido*`, `--positivo`, `--negativo`, a
+ * chart series (`--serie1..5`) or an Expenses series (`--gasto*`). `checkColorCensus` compares that to the list of entries below.
  */
 
 export interface CensusEntry {
@@ -16,7 +16,7 @@ export interface CensusEntry {
   tests: readonly string[]
 }
 
-const STATE_COLOR = /--(?:(?:deuda|critico|acento-calido)[\w-]*|positivo|negativo|serie[1-5])(?![\w-])/
+const STATE_COLOR = /--(?:(?:deuda|critico|acento-calido)[\w-]*|positivo|negativo|serie[1-5]|gasto[\w-]*)(?![\w-])/
 const GAIN_OR_LOSS = /--(?:positivo|negativo)(?![\w-])/
 
 const normalise = (selectors: string): string =>
@@ -113,10 +113,11 @@ const at = (...paths: string[]): string[] => paths.map((path) => `src/${path}`)
  * the word, sign, arrow or shape that component shows, so the state reads without color. The
  * `tests` assert it through what the user sees.
  *
- * `--positivo` and `--negativo`: no entry, no screen shows a gain today. The rule for the first
- * gain figure: the sign and direction come from the API value and the text from the format
- * module, in one non-breaking unit, with the arrow `aria-hidden` and "up"/"down" in its accessible
- * name. Its rule is listed here with its component and the test that asserts the sign or arrow.
+ * `--positivo` and `--negativo`: one entry, the sale detail's Void button (its label is the word,
+ * the red is only the owner's chosen text colour, Decision 1 of GH-1115); no screen shows a gain
+ * today. The rule for the first gain figure: the sign and direction come from the API value and
+ * the text from the format module, in one non-breaking unit, with the arrow `aria-hidden` and
+ * "up"/"down" in its accessible name. Its rule is listed here with its component and the test that asserts the sign or arrow.
  *
  * FINDINGS (a rule that needs more than a missing word, sign or arrow): none. Every rule below
  * sits beside a word its component already shows; the only gap was that the phone "behind pane"
@@ -139,17 +140,20 @@ export const COLOR_CENSUS: readonly CensusEntry[] = [
   { selector: '.bloque-deben__datos > .pie, .bloque-deben__cuenta, .bloque-deben__desde', component: 'InicioPanel debt block', carries: '"since dd/mm" and the count of sales owing', tests: at('screens/inicio/InicioPanel.test.tsx') },
   {
     selector: '.monto-deuda',
-    component: 'InicioPanel, ClienteFila, TeDeben, CustomersBehind, ClienteFicha, CustomerCardBehind, Ventas',
+    component: 'InicioPanel, ClienteFila, ClienteFicha, CustomerCardBehind, Ventas',
     carries: '"Owed to you", "owes you since dd/mm", "Owes you" or "owes you" beside the figure',
     tests: at(
       'screens/inicio/InicioPanel.test.tsx',
       'screens/clientes/Clientes.test.tsx',
-      'screens/clientes/TeDeben.test.tsx',
       'screens/clientes/ClienteFicha.test.tsx',
       'screens/clientes/ClienteSheet.test.tsx',
       'screens/ventas/Ventas.test.tsx',
     ),
   },
+  { selector: '.owed-summary__part--recent', component: 'OwedSummary bar', carries: 'decorative: the aria-hidden bar part, named by its legend line "This week" with its amount', tests: at('screens/clientes/OwedSummary.test.tsx') },
+  { selector: '.owed-summary__part--middle', component: 'OwedSummary bar', carries: 'decorative: the aria-hidden bar part, named by its legend line "8–30 days" with its amount', tests: at('screens/clientes/OwedSummary.test.tsx') },
+  { selector: '.owed-summary__part--old', component: 'OwedSummary bar', carries: 'decorative: the aria-hidden bar part, named by its legend line "Over 30 days" with its amount', tests: at('screens/clientes/OwedSummary.test.tsx') },
+  { selector: '.owed-summary__amount--old', component: 'OwedSummary legend', carries: 'the word "Over 30 days" naming the line that holds the amount', tests: at('screens/clientes/OwedSummary.test.tsx') },
   { selector: '.cuenta-cliente__fila', component: 'AccountRowLine', carries: 'decorative: the line between account rows, each row names what happened', tests: at('screens/clientes/ClienteFicha.test.tsx') },
   { selector: '.cuenta-cliente__saldo.monto-deuda', component: 'AccountRowLine', carries: 'the word "balance" before the figure (below zero the row reads "In your favor")', tests: at('screens/clientes/ClienteFicha.test.tsx') },
   { selector: '.marca-estado--sold_out .marca-estado__forma', component: 'MarcaEstado', carries: 'a square and the word "sold out"', tests: at('components/MarcaEstado.test.tsx') },
@@ -159,4 +163,9 @@ export const COLOR_CENSUS: readonly CensusEntry[] = [
   { selector: '.catalogo__publicar--desactualizado .catalogo__publicar-detalle', component: 'PinPublish', carries: 'the reason sentence under "Out of date"', tests: at('screens/PinPublish.test.tsx') },
   { selector: '.seccion-variedad__valor--aviso', component: 'VarietyThresholdSection', carries: '"Warning: 18 g left"', tests: at('screens/varieties/VarietyPage.test.tsx') },
   { selector: '.ficha-deuda', component: 'ClienteFicha, CustomerCardBehind', carries: '"Owes you" and "since dd/mm"', tests: at('screens/clientes/ClienteFicha.test.tsx', 'screens/clientes/ClienteSheet.test.tsx') },
+  { selector: '.payment-chip--unpaid', component: 'SalePaymentChip', carries: 'the word "Unpaid"', tests: at('screens/ventas/SalePaymentChip.test.tsx') },
+  { selector: '.payment-chip--part-paid', component: 'SalePaymentChip', carries: 'the word "Part-paid" and the half-filled circle', tests: at('screens/ventas/SalePaymentChip.test.tsx') },
+  { selector: '.payment-chip--unknown', component: 'SalePaymentChip', carries: `the Attention icon and the sentence "Payment can't be shown"`, tests: at('screens/ventas/SalePaymentChip.test.tsx') },
+  { selector: '.venta-detalle__botones .boton', component: 'VentaDetalle (the Void button)', carries: 'the word "Void" and, in its confirmation, "Yes, void"', tests: at('screens/ventas/VentaDetalle.test.tsx') },
+  { selector: '.payment-chip__half', component: 'SalePaymentChip', carries: 'the half-filled circle beside the word "Part-paid"', tests: at('screens/ventas/SalePaymentChip.test.tsx') },
 ]

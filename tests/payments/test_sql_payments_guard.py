@@ -14,8 +14,9 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
@@ -191,3 +192,53 @@ def test_a_stale_read_is_refused_by_the_second_insert(client: TestClient, engine
         session.rollback()
 
     assert refused, "the stale amount must be refused once the first insert has spent it"
+
+
+def test_insert_later_accepts_exactly_the_remainder_of_a_hand_lowered_deposit(
+    client: TestClient, engine: Engine, money_scale: int
+) -> None:
+    """The guard's own sum reads the sale's total minus its stored on-the-spot amount, a
+    deliberate second sum (ADR 20261125): it accepts exactly the remainder and refuses one
+    smallest unit more, at both money scales."""
+    product = client.post("/api/products", json={"name": "Guard deposit"}).json()
+    client.post(
+        f"/api/products/{product['id']}/prices",
+        json={"effective_from": "2026-01-01", "list_price": 1_000},
+    )
+    customer = client.post(
+        "/customers",
+        json={"name": "Deposit customer", "phone": "11 2222-4444", "phone_country": "AR"},
+    ).json()
+    customer_id: int = customer["id"]
+    sold = client.post(
+        "/sales",
+        json={
+            "customer_id": customer_id,
+            "payment": {"kind": "paid", "payment_method_id": 1},
+            "lines": [{"product_id": product["id"], "quantity": "1"}],
+        },
+    )
+    assert sold.status_code == 201, sold.text
+    with engine.begin() as connection:
+        connection.execute(
+            text("UPDATE payment SET amount = :amount WHERE sale_id IS NOT NULL"),
+            {"amount": 400 * 10**money_scale},
+        )
+    business_id = _business_id_of_customer(engine, customer_id)
+    remainder = 600
+
+    with Session(engine) as session:
+        payments = SqlPayments(session, business_id)
+        with pytest.raises(PaymentAboveBalance):
+            payments.insert_later(
+                customer_id, RECORDED_AT.date(), remainder + 1, PaymentMethodId(1), RECORDED_AT
+            )
+        session.rollback()
+    assert _payment_count(engine, business_id) == 1
+
+    with Session(engine) as session:
+        SqlPayments(session, business_id).insert_later(
+            customer_id, RECORDED_AT.date(), remainder, PaymentMethodId(1), RECORDED_AT
+        )
+        session.commit()
+    assert _payment_count(engine, business_id) == 2

@@ -6,7 +6,7 @@
  * the form's refusals, and inline category creation.
  */
 
-import { screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, expect, test, vi } from 'vitest'
 import { ERROR_GENERICO_MENSAJE } from '../components/ErrorGenerico'
@@ -23,6 +23,7 @@ interface Row {
   category_id: number
   amount: number
   detail: string
+  payment_method: null
 }
 
 const CATEGORIES = [
@@ -31,8 +32,8 @@ const CATEGORIES = [
 ]
 
 const SEED: Row[] = [
-  { id: 9, spent_on: '2026-10-01', category_id: 1, amount: 4500, detail: 'Bolsas' },
-  { id: 8, spent_on: '2026-09-28', category_id: 1, amount: 1200, detail: 'Cinta vieja' },
+  { id: 9, spent_on: '2026-10-01', category_id: 1, amount: 4500, detail: 'Bolsas', payment_method: null },
+  { id: 8, spent_on: '2026-09-28', category_id: 1, amount: 1200, detail: 'Cinta vieja', payment_method: null },
 ]
 
 /** A stand-in for the expenses API: the month's view is always computed from `rows`. */
@@ -77,7 +78,7 @@ function store(rows: Row[], overrides?: FetchImpl) {
     }
     if (url === EXPENSES && method === 'POST') {
       const body = JSON.parse(String(init?.body)) as Omit<Row, 'id'>
-      const row = { id: 100 + rows.length, ...body }
+      const row = { id: 100 + rows.length, ...body, payment_method: null }
       rows.push(row)
       return jsonResponse(201, row)
     }
@@ -85,7 +86,7 @@ function store(rows: Row[], overrides?: FetchImpl) {
     if (one !== null && method === 'PUT') {
       const index = rows.findIndex((row) => row.id === Number(one[1]))
       const body = JSON.parse(String(init?.body)) as Omit<Row, 'id'>
-      rows[index] = { id: Number(one[1]), ...body }
+      rows[index] = { id: Number(one[1]), ...body, payment_method: null }
       return jsonResponse(200, rows[index])
     }
     if (one !== null && method === 'DELETE') {
@@ -111,8 +112,8 @@ function failing(match: (url: string, method: string) => boolean, make: () => Re
 async function fillAndSave(detail: string, amount: string): Promise<void> {
   await chooseCategory('Packaging')
   await userEvent.type(screen.getByLabelText('Amount'), amount)
-  await userEvent.type(screen.getByLabelText('Details'), detail)
-  await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+  await userEvent.type(screen.getByLabelText('Details (optional)'), detail)
+  await userEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
 }
 
 function subtotalOf(category: string): string {
@@ -132,9 +133,9 @@ function totalNumber(): number {
 
 /** October, two expenses in Packaging and one in Otros, so a subtotal is not the total. */
 const MULTI: Row[] = [
-  { id: 1, spent_on: '2026-10-01', category_id: 1, amount: 4500, detail: 'Bolsas' },
-  { id: 2, spent_on: '2026-10-02', category_id: 1, amount: 1500, detail: 'Cinta' },
-  { id: 3, spent_on: '2026-10-02', category_id: 2, amount: 700, detail: 'Varios' },
+  { id: 1, spent_on: '2026-10-01', category_id: 1, amount: 4500, detail: 'Bolsas', payment_method: null },
+  { id: 2, spent_on: '2026-10-02', category_id: 1, amount: 1500, detail: 'Cinta', payment_method: null },
+  { id: 3, spent_on: '2026-10-02', category_id: 2, amount: 700, detail: 'Varios', payment_method: null },
 ]
 
 function expectTotalIsSumOfSubtotals(): void {
@@ -204,8 +205,7 @@ test('records from Gastos on a past month: back to that month with the expense s
   // The form's date is today (October), so the new expense lands in October;
   // move it into September to show the month the screen came from.
   const date = await screen.findByLabelText('Date')
-  await userEvent.clear(date)
-  await userEvent.type(date, '2026-09-30')
+  fireEvent.change(date, { target: { value: '2026-09-30' } })
   await fillAndSave('Cinta nueva', '1000')
 
   expect(await screen.findByText('Cinta nueva')).toBeInTheDocument()
@@ -232,7 +232,7 @@ test('editing an expense sends a PUT, toasts in place and the totals follow', as
   const amount = await screen.findByLabelText('Amount')
   await userEvent.clear(amount)
   await userEvent.type(amount, '5000')
-  await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+  await userEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
 
   expect(await screen.findAllByText('Expense saved')).toHaveLength(1)
   expect(fetch).toHaveBeenCalledWith('/expenses/9', expect.objectContaining({ method: 'PUT' }))
@@ -249,14 +249,14 @@ test('closing the edit with changes asks before discarding; an untouched close i
   expect(screen.queryByLabelText('Amount')).not.toBeInTheDocument()
 
   await userEvent.click(screen.getByText('Bolsas'))
-  await userEvent.type(await screen.findByLabelText('Details'), ' x')
+  await userEvent.type(await screen.findByLabelText('Details (optional)'), ' x')
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   expect(await screen.findByText('Discard the changes?')).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
-  expect(screen.getByLabelText('Details')).toHaveValue('Bolsas x')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Bolsas x')
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   await userEvent.click(screen.getByRole('button', { name: 'Yes, discard them' }))
-  expect(screen.queryByLabelText('Details')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Details (optional)')).not.toBeInTheDocument()
   expect(fetch).not.toHaveBeenCalledWith('/expenses/9', expect.objectContaining({ method: 'PUT' }))
 })
 
@@ -304,7 +304,7 @@ test('editing an expense that is already gone shows the gone notice and closes t
   )
 
   await userEvent.click(await screen.findByText('Bolsas'))
-  await userEvent.click(await screen.findByRole('button', { name: 'Save the expense' }))
+  await userEvent.click(await screen.findByRole('button', { name: /^Save expense/ }))
 
   const notice = await screen.findByText('That is gone. The list is up to date.')
   expect(screen.queryByLabelText('Amount')).not.toBeInTheDocument()
@@ -371,7 +371,7 @@ test('a category removed mid-form keeps what was typed and empties Categoría', 
 
   expect(await screen.findByText(CATEGORY_GONE)).toBeInTheDocument()
   expect(await categoryField()).toHaveTextContent('Pick a category')
-  expect(screen.getByLabelText('Details')).toHaveValue('Cinta para embalar')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Cinta para embalar')
 })
 
 test('the gone refusal is tied to the field, and an inline-created category that is gone is not offered afterwards', async () => {
@@ -397,8 +397,8 @@ test('the gone refusal is tied to the field, and an inline-created category that
   await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
   await waitFor(async () => expect(await categoryField()).toHaveTextContent('Insumos'))
   await userEvent.type(screen.getByLabelText('Amount'), '1000')
-  await userEvent.type(screen.getByLabelText('Details'), 'Cinta')
-  await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+  await userEvent.type(screen.getByLabelText('Details (optional)'), 'Cinta')
+  await userEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
 
   const refusal = await screen.findByText(CATEGORY_GONE)
   const field = await categoryField()
@@ -462,7 +462,7 @@ test('creating a category inside the expense form keeps what was typed and selec
   renderExpenses([EXPENSES], store([...SEED]))
 
   await userEvent.click(await screen.findByRole('link', { name: 'Add expense' }))
-  await userEvent.type(await screen.findByLabelText('Details'), 'Sustrato nuevo')
+  await userEvent.type(await screen.findByLabelText('Details (optional)'), 'Sustrato nuevo')
   await userEvent.click(screen.getByRole('button', { name: 'Create a new category' }))
   await userEvent.type(screen.getByLabelText('New category name'), 'Insumos')
   await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
@@ -470,7 +470,7 @@ test('creating a category inside the expense form keeps what was typed and selec
   await waitFor(async () => {
     expect(await categoryField()).toHaveTextContent('Insumos')
   })
-  expect(screen.getByLabelText('Details')).toHaveValue('Sustrato nuevo')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Sustrato nuevo')
 })
 
 test('links to the expense categories, now a Configuración group, from its foot', async () => {
@@ -506,7 +506,7 @@ test('subtotals and the total stay equal to the sum shown after create, edit and
   const amount = await screen.findByLabelText('Amount')
   await userEvent.clear(amount)
   await userEvent.type(amount, '5000')
-  await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+  await userEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
   await waitFor(() => expect(subtotalOf('Packaging')).toBe('$ 6.800'))
   expect(subtotalOf('Otros')).toBe('$ 700')
   expect(totalShown()).toBe('$ 7.500')
@@ -536,14 +536,14 @@ test('a duplicate category name inside the form is refused, keeping what was typ
   )
 
   await userEvent.click(await screen.findByRole('link', { name: 'Add expense' }))
-  await userEvent.type(await screen.findByLabelText('Details'), 'Sustrato nuevo')
+  await userEvent.type(await screen.findByLabelText('Details (optional)'), 'Sustrato nuevo')
   await userEvent.click(screen.getByRole('button', { name: 'Create a new category' }))
   await userEvent.type(screen.getByLabelText('New category name'), 'Packaging')
   await userEvent.click(screen.getByRole('button', { name: 'Create category' }))
 
   expect(await screen.findByText('Check the details and try again.')).toBeInTheDocument()
   expect(screen.getByLabelText('New category name')).toHaveValue('Packaging')
-  expect(screen.getByLabelText('Details')).toHaveValue('Sustrato nuevo')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Sustrato nuevo')
   expect(await categoryField()).toHaveTextContent('Pick a category')
 })
 
@@ -568,9 +568,9 @@ test('if the categories cannot load, the edit overlay still has "Close"', async 
 test('the Latest section lists the newest date first and, on the same date, the higher id first', async () => {
   // Fed in the category order the store answers (Otros, then Packaging), which is not the Latest order.
   const latestRows: Row[] = [
-    { id: 1, spent_on: '2026-10-01', category_id: 2, amount: 4500, detail: 'Bolsas' },
-    { id: 2, spent_on: '2026-10-02', category_id: 2, amount: 1500, detail: 'Cinta' },
-    { id: 3, spent_on: '2026-10-02', category_id: 1, amount: 700, detail: 'Varios' },
+    { id: 1, spent_on: '2026-10-01', category_id: 2, amount: 4500, detail: 'Bolsas', payment_method: null },
+    { id: 2, spent_on: '2026-10-02', category_id: 2, amount: 1500, detail: 'Cinta', payment_method: null },
+    { id: 3, spent_on: '2026-10-02', category_id: 1, amount: 700, detail: 'Varios', payment_method: null },
   ]
   renderExpenses([EXPENSES], store([...latestRows]))
 

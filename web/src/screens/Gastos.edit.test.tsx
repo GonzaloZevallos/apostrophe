@@ -19,8 +19,8 @@ const CATEGORIES = [
 
 function fetchFake(): FetchImpl {
   const rows = [
-    { id: 9, spent_on: '2026-09-28', category_id: 1, amount: 4500, detail: 'Bolsas' },
-    { id: 8, spent_on: '2026-10-01', category_id: 1, amount: 1200, detail: 'Cinta' },
+    { id: 9, spent_on: '2026-09-28', category_id: 1, amount: 4500, detail: 'Bolsas', payment_method: null },
+    { id: 8, spent_on: '2026-10-01', category_id: 1, amount: 1200, detail: 'Cinta', payment_method: null },
   ]
   return async (url, init) => {
     const method = init?.method ?? 'GET'
@@ -40,7 +40,7 @@ function fetchFake(): FetchImpl {
     if (url === '/expense-categories' && method === 'GET') return jsonResponse(200, CATEGORIES)
     const one = /^\/expenses\/(\d+)$/.exec(url)
     if (one !== null && method === 'PUT') {
-      return jsonResponse(200, { id: Number(one[1]), ...JSON.parse(String(init?.body)) })
+      return jsonResponse(200, { id: Number(one[1]), payment_method: null, ...JSON.parse(String(init?.body)) })
     }
     if (one !== null && method === 'DELETE') return new Response(null, { status: 204 })
     throw new Error(`unexpected ${method} ${url}`)
@@ -51,11 +51,11 @@ const SEPTEMBER = `${EXPENSES}?month=2026-09`
 
 async function openEdit(): Promise<void> {
   await userEvent.click(await screen.findByText('Bolsas'))
-  await screen.findByLabelText('Details')
+  await screen.findByLabelText('Details (optional)')
 }
 
 async function makeDirty(): Promise<void> {
-  await userEvent.type(screen.getByLabelText('Details'), ' x')
+  await userEvent.type(screen.getByLabelText('Details (optional)'), ' x')
 }
 
 const DISCARD = 'Discard the changes?'
@@ -72,7 +72,7 @@ test('phone: opening the edit is one history entry, and back from a clean edit c
 
   await act(() => router.navigate(-1))
 
-  expect(screen.queryByLabelText('Details')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Details (optional)')).not.toBeInTheDocument()
   expect(router.state.location.pathname).toBe(EXPENSES)
   expect(router.state.location.search).toBe('?month=2026-09')
   expect(screen.getByText('September 2026')).toBeInTheDocument()
@@ -90,13 +90,13 @@ test('phone: back from a dirty edit asks once; keeping stays, discarding returns
   expect(screen.getAllByRole('alertdialog')).toHaveLength(1)
 
   await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
-  expect(screen.getByLabelText('Details')).toHaveValue('Bolsas x')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Bolsas x')
   expect(sheetDepth(router.state.location.state)).toBe(1)
 
   await act(() => router.navigate(-1))
   await userEvent.click(await screen.findByRole('button', { name: 'Yes, discard them' }))
 
-  await waitFor(() => expect(screen.queryByLabelText('Details')).not.toBeInTheDocument())
+  await waitFor(() => expect(screen.queryByLabelText('Details (optional)')).not.toBeInTheDocument())
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   expect(router.state.location.search).toBe('?month=2026-09')
   expect(sheetDepth(router.state.location.state)).toBe(0)
@@ -131,7 +131,7 @@ test('phone: Close and back in the same tick show a single dialog', async () => 
   expect(await screen.findByText(DISCARD)).toBeInTheDocument()
   expect(screen.getAllByRole('alertdialog')).toHaveLength(1)
   await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
-  expect(screen.getByLabelText('Details')).toHaveValue('Bolsas x')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Bolsas x')
   expect(sheetDepth(router.state.location.state)).toBe(1)
 })
 
@@ -141,10 +141,10 @@ test('phone: a save returns to Expenses with the toast and leaves no entry behin
   await openEdit()
   await makeDirty()
 
-  await userEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+  await userEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
 
   expect(await screen.findAllByText('Expense saved')).toHaveLength(1)
-  expect(screen.queryByLabelText('Details')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Details (optional)')).not.toBeInTheDocument()
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
   await waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(0))
   expect(router.state.location.search).toBe('?month=2026-09')
@@ -163,7 +163,7 @@ test('phone: deleting from a dirty edit opens the delete confirmation on the mon
   expect(screen.queryByText(DISCARD)).not.toBeInTheDocument()
   await waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(0))
   expect(router.state.location.search).toBe('?month=2026-09')
-  expect(screen.queryByLabelText('Details')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Details (optional)')).not.toBeInTheDocument()
 })
 
 test('resize: phone to computer with a dirty edit keeps what was typed and drops the entry', async () => {
@@ -175,7 +175,7 @@ test('resize: phone to computer with a dirty edit keeps what was typed and drops
   flipViewport('computer')
 
   await waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(0))
-  expect(screen.getByLabelText('Details')).toHaveValue('Bolsas x')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Bolsas x')
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 })
 
@@ -190,7 +190,7 @@ test('resize: phone to computer with the leave dialog up resets it and keeps the
   flipViewport('computer')
 
   await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument())
-  expect(screen.getByLabelText('Details')).toHaveValue('Bolsas x')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Bolsas x')
 })
 
 test('resize: after turning computer, a tab-bar navigation with a dirty edit asks nothing', async () => {
@@ -217,7 +217,7 @@ test('resize: computer to phone, then back closes a clean edit', async () => {
   await waitFor(() => expect(sheetDepth(router.state.location.state)).toBe(1))
   await act(() => router.navigate(-1))
 
-  expect(screen.queryByLabelText('Details')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Details (optional)')).not.toBeInTheDocument()
   expect(router.state.location.search).toBe('?month=2026-09')
 })
 
@@ -232,7 +232,7 @@ test('resize: computer to phone, then back from a dirty edit asks', async () => 
   await act(() => router.navigate(-1))
 
   expect(await screen.findByText(DISCARD)).toBeInTheDocument()
-  expect(screen.getByLabelText('Details')).toHaveValue('Bolsas x')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Bolsas x')
 })
 
 test('phone: with the Category list open back closes only the list and the edit stays; a second back asks', async () => {
@@ -248,7 +248,7 @@ test('phone: with the Category list open back closes only the list and the edit 
 
   await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Category options' })).toBeNull())
   expect(sheetDepth(router.state.location.state)).toBe(1)
-  expect(screen.getByLabelText('Details')).toHaveValue('Bolsas x')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Bolsas x')
   expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
 
   await act(() => router.navigate(-1))
@@ -265,7 +265,7 @@ test('computer: Escape with the Category dropdown open closes only the dropdown'
   await userEvent.keyboard('{Escape}')
 
   await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull())
-  expect(screen.getByLabelText('Details')).toBeInTheDocument()
+  expect(screen.getByLabelText('Details (optional)')).toBeInTheDocument()
   expect(screen.queryByText(DISCARD)).not.toBeInTheDocument()
 })
 
@@ -279,12 +279,12 @@ test('computer: Close on a dirty edit asks as before and never touches the histo
   expect(await screen.findByText(DISCARD)).toBeInTheDocument()
   expect(sheetDepth(router.state.location.state)).toBe(0)
   await userEvent.click(screen.getByRole('button', { name: 'No, keep editing' }))
-  expect(screen.getByLabelText('Details')).toHaveValue('Bolsas x')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Bolsas x')
 
   await userEvent.click(screen.getByRole('button', { name: 'Close' }))
   await userEvent.click(screen.getByRole('button', { name: 'Yes, discard them' }))
 
-  expect(screen.queryByLabelText('Details')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Details (optional)')).not.toBeInTheDocument()
   expect(router.state.location.search).toBe('?month=2026-09')
   expect(sheetDepth(router.state.location.state)).toBe(0)
 })

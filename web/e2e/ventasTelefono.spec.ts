@@ -165,7 +165,7 @@ test.describe('phone sales sweep', () => {
       }))
       const page = await context.newPage()
       await page.goto(SALES)
-      await expect(page.locator('.fila-venta').first()).toBeVisible()
+      await expect(page.locator('.sale-card').first()).toBeVisible()
       await settled(page)
       return { context, page }
     }
@@ -244,7 +244,7 @@ async function sweep(page: Page, { name, scale }: PhoneCase): Promise<void> {
   await page.getByRole('button', { name: 'Yes, discard it' }).click()
 
   await page.goto(SALES)
-  await expect(page.locator('.fila-venta').first()).toBeVisible()
+  await expect(page.locator('.sale-card').first()).toBeVisible()
   await settled(page)
   const tabs = page.getByRole('group', { name: 'Period' })
   await expect(tabs.getByRole('button')).toHaveCount(4)
@@ -255,12 +255,12 @@ async function sweep(page: Page, { name, scale }: PhoneCase): Promise<void> {
   await expectNoSidewaysOverflow(page, `${name}: Ventas`, scale)
   await expectThumbSized(page, `${name}: Ventas`, scale)
 
-  await page.locator('.fila-venta').first().click()
-  await expect(page.getByRole('button', { name: 'Delete sale' })).toBeVisible()
+  await page.locator('.sale-card').first().click()
+  await expect(page.getByRole('button', { name: 'Void' })).toBeVisible()
   await settled(page)
   await expectNoSidewaysOverflow(page, `${name}: the detail`, scale)
   await expectThumbSized(page, `${name}: the detail`, scale)
-  await page.getByRole('button', { name: 'Delete sale' }).click()
+  await page.getByRole('button', { name: 'Void' }).click()
   await expect(page.getByRole('alertdialog')).toBeVisible()
   await settled(page)
   await expectThumbSized(page, `${name}: the delete dialog`, scale)

@@ -1,5 +1,5 @@
 """`SqlNewSaleSuggestions.last_paid_method` over a real database (docs/product/sales.md,
-New sale suggestions): the Sale paid on the spot with the highest Sale number is picked
+New sale suggestions): the Sale paid in full on the spot with the highest Sale number is picked
 first and its method judged after, never filtered. Sales, methods and customers come
 from the `client` and `other_client` fixtures over HTTP (CODING_STANDARDS section 5);
 only the adapter, the seam under test, is built and called directly."""
@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
+from app.payments.adapters.tables import PaymentRow
 from app.products.adapters.tables import ProductRow
 from app.sales.adapters.sql_suggestions import SqlNewSaleSuggestions
 from app.sales.application.ports import LastPaidMethod
@@ -132,6 +133,55 @@ def test_another_business_never_changes_the_answer(
     assert _last(engine, foreign_product) == LastPaidMethod(
         payment_method_id=foreign_method, is_archived=True
     )
+
+
+def _lower_payment_by_one_unit(engine: Engine, sale_id: int) -> None:
+    """What a Deposit looks like to the read: the payment holds one stored unit less than
+    the Sale's full total."""
+    with Session(engine) as session:
+        payment = session.scalars(select(PaymentRow).where(PaymentRow.sale_id == sale_id)).one()
+        payment.amount = payment.amount - 1
+        session.commit()
+
+
+def _two_paid_sales(client: TestClient, product: int) -> tuple[int, int, dict[str, Any]]:
+    older_method, newer_method = _new_method(client, "Older"), _new_method(client, "Newer")
+    _sell(client, product, _paid(older_method))
+    newer = _sell(client, product, _paid(newer_method), shipping_charged=1_250)
+    return older_method, newer_method, newer
+
+
+def test_a_newer_sale_whose_payment_falls_short_of_its_total_yields_to_the_older_one(
+    client: TestClient, engine: Engine
+) -> None:
+    product = _product(client)
+    older_method, _, newer = _two_paid_sales(client, product)
+    _lower_payment_by_one_unit(engine, newer["id"])
+
+    assert _last(engine, product) == LastPaidMethod(
+        payment_method_id=older_method, is_archived=False
+    )
+
+
+def test_a_newer_sale_paid_in_full_with_shipping_charged_is_picked(
+    client: TestClient, engine: Engine
+) -> None:
+    product = _product(client)
+    _, newer_method, _ = _two_paid_sales(client, product)
+
+    assert _last(engine, product) == LastPaidMethod(
+        payment_method_id=newer_method, is_archived=False
+    )
+
+
+def test_a_single_sale_whose_payment_falls_short_of_its_total_is_none(
+    client: TestClient, engine: Engine
+) -> None:
+    product = _product(client)
+    sale = _sell(client, product, _paid(_new_method(client, "Live")))
+    _lower_payment_by_one_unit(engine, sale["id"])
+
+    assert _last(engine, product) is None
 
 
 def test_no_paid_sale_at_all_is_none(client: TestClient, engine: Engine) -> None:

@@ -31,6 +31,11 @@ export function looseT(key: string, options?: LooseOptions): string {
  */
 export const testT: TFunction = i18n.t
 
+/** `testT` pinned to one language, for a test that reads a fixture bundle added with `addFixtureNamespace`. */
+export function testTIn(language: string): TFunction {
+  return i18n.cloneInstance({ lng: language }).t
+}
+
 /** The language the instance shows now, for a test outside `i18n/` that asserts on a switch. */
 export function shownLanguage(): string {
   return i18n.language

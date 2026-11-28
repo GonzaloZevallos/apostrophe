@@ -15,11 +15,11 @@ from app.payments.domain.customer_sales import CustomerSales, customer_sales
 from app.payments.domain.debt_age import (
     DebtAgeBucket,
     DebtAgeBuckets,
-    age_in_days,
     bucket_of,
     buckets,
 )
 from app.payments.domain.settlement import SaleSettlement, SettleResult, Standing, settle
+from app.shared.debt_age import age_in_days
 from app.shared.names import fold
 
 

@@ -19,8 +19,13 @@ export const PLACEHOLDERS: Record<string, keyof typeof SAMPLES> = {
   date: 'date',
   fromDate: 'date',
   grams: 'grams',
+  items: 'items',
+  method: 'name',
   name: 'name',
   negativeAmount: 'negativeAmount',
   parent: 'name',
+  payment: 'payment',
+  quantity: 'quantity',
   toDate: 'date',
+  total: 'amount',
 }

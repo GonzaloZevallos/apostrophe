@@ -34,6 +34,7 @@ from app.stock.domain.errors import (
     WithdrawalReasonNotFound,
     WithdrawalVarietyNotFound,
 )
+from app.stock.domain.movement_order import ENTRY_RANK, WITHDRAWAL_RANK, MovementKey
 from app.stock.domain.withdrawal import Withdrawal, WithdrawalLine
 
 # A line as the request carries it: the variety and its grams, not yet validated.
@@ -178,24 +179,21 @@ def read_withdrawal(
     return _viewed(catalog, reasons, _stored(withdrawals, withdrawal_id))
 
 
-def _newest_first(movement: Movement) -> tuple[int, float, int, int]:
-    """(day desc, recorded_at desc, kind, id desc) as one ascending key."""
+def _newest_first(movement: Movement) -> tuple[int, int, int, int]:
+    """The movement order's sort key (`movement_order.py`): an entry ranks before a
+    withdrawal that ties it."""
     match movement:
         case StockEntry():
             assert movement.id is not None
-            return (
-                -movement.entry_date.toordinal(),
-                -movement.recorded_at.timestamp(),
-                0,
-                -movement.id,
-            )
+            key = MovementKey(movement.entry_date, movement.recorded_at, ENTRY_RANK, movement.id)
         case WithdrawalMovement():
-            return (
-                -movement.withdrawn_on.toordinal(),
-                -movement.recorded_at.timestamp(),
-                1,
-                -movement.withdrawal_id,
+            key = MovementKey(
+                movement.withdrawn_on,
+                movement.recorded_at,
+                WITHDRAWAL_RANK,
+                movement.withdrawal_id,
             )
+    return key.newest_first()
 
 
 def read_movements(

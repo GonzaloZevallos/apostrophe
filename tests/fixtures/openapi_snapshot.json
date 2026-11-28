@@ -1863,8 +1863,20 @@
             "type": "integer"
           },
           "detail": {
+            "default": "",
             "title": "Detail",
             "type": "string"
+          },
+          "payment_method_id": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Method Id"
           },
           "spent_on": {
             "format": "date",
@@ -1875,8 +1887,7 @@
         "required": [
           "spent_on",
           "category_id",
-          "amount",
-          "detail"
+          "amount"
         ],
         "title": "ExpenseIn",
         "type": "object"
@@ -1906,6 +1917,16 @@
             "title": "Id",
             "type": "integer"
           },
+          "payment_method": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExpensePaymentMethodOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "spent_on": {
             "format": "date",
             "title": "Spent On",
@@ -1917,9 +1938,33 @@
           "spent_on",
           "category_id",
           "amount",
-          "detail"
+          "detail",
+          "payment_method"
         ],
         "title": "ExpenseOut",
+        "type": "object"
+      },
+      "ExpensePaymentMethodOut": {
+        "properties": {
+          "icon": {
+            "title": "Icon",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon"
+        ],
+        "title": "ExpensePaymentMethodOut",
         "type": "object"
       },
       "FirstRunKind": {
@@ -2654,6 +2699,109 @@
         ],
         "title": "Origin",
         "type": "string"
+      },
+      "OwedDebtorOut": {
+        "description": "One of the oldest debtors on the panel: the only schema that carries a Customer's\nstored `phone` (`null` when it has none).",
+        "properties": {
+          "age_days": {
+            "title": "Age Days",
+            "type": "integer"
+          },
+          "age_level": {
+            "enum": [
+              "none",
+              "warning",
+              "overdue"
+            ],
+            "title": "Age Level",
+            "type": "string"
+          },
+          "balance": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Balance"
+          },
+          "customer_id": {
+            "title": "Customer Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "owing_since": {
+            "format": "date",
+            "title": "Owing Since",
+            "type": "string"
+          },
+          "phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phone"
+          }
+        },
+        "required": [
+          "customer_id",
+          "name",
+          "balance",
+          "owing_since",
+          "age_days",
+          "age_level",
+          "phone"
+        ],
+        "title": "OwedDebtorOut",
+        "type": "object"
+      },
+      "OwedOut": {
+        "description": "What the debts block already reports (`total_owed`, `sales_owing_count`), the\nnumber of Customers owing and the oldest few of them, never `null`.",
+        "properties": {
+          "debtor_count": {
+            "title": "Debtor Count",
+            "type": "integer"
+          },
+          "debtors": {
+            "items": {
+              "$ref": "#/components/schemas/OwedDebtorOut"
+            },
+            "title": "Debtors",
+            "type": "array"
+          },
+          "sales_owing_count": {
+            "title": "Sales Owing Count",
+            "type": "integer"
+          },
+          "total_owed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Total Owed"
+          }
+        },
+        "required": [
+          "total_owed",
+          "debtor_count",
+          "sales_owing_count",
+          "debtors"
+        ],
+        "title": "OwedOut",
+        "type": "object"
       },
       "OwingIn": {
         "properties": {
@@ -3673,6 +3821,29 @@
         "title": "PriceEntryOut",
         "type": "object"
       },
+      "PriceMarginOut": {
+        "properties": {
+          "percent": {
+            "title": "Percent",
+            "type": "integer"
+          },
+          "rule": {
+            "enum": [
+              "list",
+              "bulk",
+              "vip"
+            ],
+            "title": "Rule",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rule",
+          "percent"
+        ],
+        "title": "PriceMarginOut",
+        "type": "object"
+      },
       "PricingRule": {
         "enum": [
           "list",
@@ -3704,12 +3875,54 @@
         "title": "PricingSettingsBody",
         "type": "object"
       },
+      "ProductCostOut": {
+        "description": "What the latest costed Purchase cost per unit, in the unit of the business's decimals\nand sent in currency units (docs/adr/0058), and the margin against each price in use.\n`amount` is `null` while the cost is pending.",
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "margins": {
+            "items": {
+              "$ref": "#/components/schemas/PriceMarginOut"
+            },
+            "title": "Margins",
+            "type": "array"
+          }
+        },
+        "required": [
+          "amount",
+          "margins"
+        ],
+        "title": "ProductCostOut",
+        "type": "object"
+      },
       "ProductDetailOut": {
         "description": "One product's page: also the one removal action it offers, worked out from history\nwhen it is read (`null` for an archived product).",
         "properties": {
           "archived": {
             "title": "Archived",
             "type": "boolean"
+          },
+          "cost": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ProductCostOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "current_price": {
             "anyOf": [
@@ -3750,7 +3963,8 @@
           "name",
           "current_price",
           "archived",
-          "removal"
+          "removal",
+          "cost"
         ],
         "title": "ProductDetailOut",
         "type": "object"
@@ -4033,7 +4247,7 @@
         "type": "object"
       },
       "ReasonCostOut": {
-        "description": "One withdrawal reason's cost line, in the list order `period_figures` answered\nit: Home's Week, Month and Today and every Análisis row serialise it through here\nand nowhere else. `amount` is `null` when every gram is pending, never 0.",
+        "description": "One withdrawal reason's cost line, in the list order `period_figures` answered\nit: Home's Week, Month and Today and every An\u00e1lisis row serialise it through here\nand nowhere else. `amount` is `null` when every gram is pending, never 0.",
         "properties": {
           "amount": {
             "anyOf": [
@@ -4180,7 +4394,7 @@
         "type": "object"
       },
       "RowCostOut": {
-        "description": "One Análisis cost line (cost of goods or stock shortfall): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
+        "description": "One An\u00e1lisis cost line (cost of goods or stock shortfall): its\ncosted `amount` and its own `pending_quantity` (a positive magnitude). `all_pending` is\nthe domain's answer (`row_cost`) that every gram behind the line is pending, so the\nscreen says \"N g sin costo\" and never \"$ 0\".",
         "properties": {
           "all_pending": {
             "title": "All Pending",
@@ -4424,7 +4638,7 @@
         "type": "object"
       },
       "SaleDetailOut": {
-        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` — used by the list and by every write — never\nallocates.",
+        "description": "`GET /sales/{id}`'s own shape, never the list's: the same labelled read shape as\n`SaleOut` (docs/adr/0011), plus each line's cost of goods, allocated fresh on this\none read (ADR-0009), so `SaleOut` \u2014 used by the list and by every write \u2014 never\nallocates.",
         "properties": {
           "bill": {
             "anyOf": [
@@ -5299,6 +5513,9 @@
           "month_profit": {
             "$ref": "#/components/schemas/AmountWithPendingOut"
           },
+          "owed": {
+            "$ref": "#/components/schemas/OwedOut"
+          },
           "sales": {
             "anyOf": [
               {
@@ -5339,7 +5556,8 @@
           "money_in",
           "low_stock",
           "best_sellers",
-          "month_profit"
+          "month_profit",
+          "owed"
         ],
         "title": "TodayOut",
         "type": "object"

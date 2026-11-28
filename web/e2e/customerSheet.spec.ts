@@ -9,6 +9,7 @@ import { CUSTOMER, CUSTOMER_EDIT, CUSTOMER_NEW, CUSTOMERS, pathTo } from '../src
 import { expect, test } from './fixtures.js'
 import { signUpNewBusiness } from './helpers/signup.js'
 import { expectPath } from './helpers/url.js'
+import { openAllCustomers } from './helpers/openScreens.js'
 
 test.use({ viewport: { width: 390, height: 844 } })
 
@@ -17,7 +18,7 @@ async function makeCustomer(page: Page): Promise<string> {
   await signUpNewBusiness(page)
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name', { exact: true }).fill('Carla Cobrar')
-  await page.getByRole('button', { name: 'Save and use' }).click()
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
   await expectPath(page, CUSTOMER)
   const id = /\/customers\/(\d+)/.exec(page.url())?.[1]
   if (id === undefined) throw new Error('no customer id in the URL')
@@ -26,7 +27,7 @@ async function makeCustomer(page: Page): Promise<string> {
 
 async function expectActionAtTheBottom(page: Page, dialogName: string): Promise<void> {
   const dialog = page.getByRole('dialog', { name: dialogName })
-  const save = dialog.getByRole('button', { name: 'Save and use' })
+  const save = dialog.getByRole('button', { name: 'Save', exact: true })
   await expect(save).toBeInViewport()
   // `.sheet__actions` ends at the sheet's bottom, and its own padding (one spacing step plus
   // `--inset-abajo`) is all that lies between the action and that edge.
@@ -72,6 +73,7 @@ test('Close from a scrolled Customers list returns to it at the same scroll posi
     expect(created.ok()).toBe(true)
   }
   await page.goto(CUSTOMERS)
+  await openAllCustomers(page)
   await expect(page.getByRole('link', { name: /Zeta 30/ })).toBeVisible()
   await page.evaluate(() => window.scrollTo(0, 700))
   const before = await page.evaluate(() => window.scrollY)

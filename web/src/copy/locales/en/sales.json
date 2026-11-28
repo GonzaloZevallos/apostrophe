@@ -1,0 +1,32 @@
+{
+  "card": {
+    "noCustomer": "No customer",
+    "item": "{{name}} × {{quantity}}",
+    "more_one": "+{{count}} more",
+    "more_other": "+{{count}} more",
+    "name": "{{customer}}, {{items}}, {{payment}}, total {{total}}",
+    "payment": {
+      "paid": "Paid",
+      "paidWith": "Paid · {{method}}",
+      "unpaid": "Unpaid",
+      "partPaid": "Part-paid · {{amount}} owed",
+      "unknown": "Payment can't be shown"
+    }
+  },
+  "section": {
+    "count_one": "{{count}} sale",
+    "count_other": "{{count}} sales",
+    "label": "Sales summary"
+  },
+  "loading": {
+    "label": "Loading sales"
+  },
+  "detail": {
+    "void": "Void",
+    "yesVoid": "Yes, void",
+    "heading": "Detail",
+    "total": "Total",
+    "shipping": "Shipping charged",
+    "assignCustomer": "Assign customer"
+  }
+}

@@ -107,3 +107,12 @@ test('two entries with the same selector fail', () => {
     '.a: listed twice in the color census',
   ])
 })
+
+test('a rule using an Expenses series token with no entry fails, whatever its suffix', () => {
+  expect(checkColorCensus('.a { background: var(--gasto-otros) }', [], tests)).toEqual([
+    '.a: uses a state color and is not listed in the color census',
+  ])
+  expect(checkColorCensus('.b { fill: var(--gasto2) }', [], tests)).toEqual([
+    '.b: uses a state color and is not listed in the color census',
+  ])
+})

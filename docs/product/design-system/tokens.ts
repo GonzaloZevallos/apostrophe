@@ -46,6 +46,8 @@ export interface Paleta {
   deuda2: string;
   /** Línea fina dentro del panel de deuda. */
   deudaLinea: string;
+  /** Relleno de la deuda reciente en la barra de lo adeudado; nunca texto. */
+  deudaReciente: string;
 
   /** Estado crítico (agotada): se resuelve invirtiendo, siempre con su palabra. */
   critico: string;
@@ -68,6 +70,10 @@ export interface Paleta {
   serie3: string;
   serie4: string;
   serie5: string;
+  gasto1: string;
+  gasto2: string;
+  gasto3: string;
+  gastoOtros: string;
 }
 
 export const claro: Paleta = {
@@ -88,6 +94,7 @@ export const claro: Paleta = {
   deudaFondo: '#fbf1e3',
   deuda2: '#8a5a1f',
   deudaLinea: '#ecdcc3',
+  deudaReciente: '#8dbba1',
 
   critico: '#26332b',
   criticoTexto: '#f6f7f5',
@@ -104,6 +111,10 @@ export const claro: Paleta = {
   serie3: '#4c7fd0',
   serie4: '#b8457a',
   serie5: '#b9c2bc',
+  gasto1: '#1e6b47',
+  gasto2: '#a85a06',
+  gasto3: '#1c6fa8',
+  gastoOtros: '#7e8c84',
 };
 
 export const oscuro: Paleta = {
@@ -124,6 +135,7 @@ export const oscuro: Paleta = {
   deudaFondo: '#2b2110',
   deuda2: '#c9944a',
   deudaLinea: '#3d2e17',
+  deudaReciente: '#3d7a5c',
 
   critico: '#f0bb68',
   criticoTexto: '#0e1411',
@@ -140,6 +152,10 @@ export const oscuro: Paleta = {
   serie3: '#7fa8e8',
   serie4: '#e07aa8',
   serie5: '#7f8c85',
+  gasto1: '#5cc594',
+  gasto2: '#e8a54b',
+  gasto3: '#5aa9e6',
+  gastoOtros: '#7e8c84',
 };
 
 export const paletas: Record<Tema, Paleta> = { claro, oscuro };

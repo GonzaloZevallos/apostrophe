@@ -149,8 +149,13 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 | `--serie3` | ícono | — | — | — | |
 | `--serie4` | ícono | — | — | — | |
 | `--serie5` | ícono | — | — | — | |
+| `--gasto1` | ícono | — | — | — | |
+| `--gasto2` | ícono | — | — | — | |
+| `--gasto3` | ícono | — | — | — | |
+| `--gasto-otros` | ícono | — | — | — | |
 | `--linea` | ícono | — | — | — | |
 | `--deuda-linea` | ícono | — | — | — | |
+| `--deuda-reciente` | ícono | — | — | — | |
 <!-- contraste:fin -->
 
 ### La paleta Yerba
@@ -168,10 +173,16 @@ cada fila de arriba que los usa lo hace en los dos temas): `--tenue`, `--deuda-f
 oscuro: `#2b2110`, `#c9944a`, `#3d2e17`, `#f0bb68` con `#0e1411`, y `#66756c`. "Agotada" se
 resuelve invirtiendo, no con un color nuevo.
 
+`--deuda-reciente` no entra en esa lista: en claro `#8dbba1` es el valor de la dueña, y en
+oscuro `#3d7a5c` es un verde elegido en el matiz de `--acento` (`#5cc594`) para llegar a 3:1
+sobre `--superficie` y sobre `--deuda-fondo`.
+
 **Tokens nuevos.** `--positivo` (`#1e7a45` claro, `#6bd39a` oscuro) y `--negativo`
 (`#c0352b`, `#f07a6e`) son texto general en la tabla; ninguna regla de `app.css` los usa
 mientras ninguna pantalla muestre una ganancia. `--acento-oscuro` (`#14532f`) no es texto y
-aún no lo usa ninguna regla. `--acento-calido` (`#e3a23b` en los dos temas) es un relleno con
+aún no lo usa ninguna regla. Tampoco `--deuda-reciente` (`#8dbba1` claro, `#3d7a5c` oscuro):
+ninguna regla de `app.css` lo usa hasta que lo use la tarjeta "Lo que te deben" de Clientes.
+`--acento-calido` (`#e3a23b` en los dos temas) es un relleno con
 un solo texto, la tinta: `--acento-calido-texto` (token agregado, no es de la dueña; `#15201a` en los dos temas, el valor de la
 tinta clara), fila `par` de arriba. No se usa `--tinta` para esto porque en oscuro es
 clara, y porque la guarda trata cada token como general o par, nunca los dos.
@@ -185,6 +196,16 @@ token, entero, al valor más cercano que pasa; es la única):
 **Bordes decorativos** (`--linea`, `--deuda-linea`). Sólo se usan como `border` o
 `background-color` de una línea, nunca como `color` de texto ni de un ícono con significado:
 están exentos de los 4,5:1 y por eso llevan fila `ícono` sin selectores, igual que las series.
+
+`--deuda-reciente` es sólo el `background` de un tramo de la barra de lo adeudado, nunca el
+`color` de un texto ni el de un ícono con significado; el tramo siempre lleva sus propias
+palabras, así que nunca se lee sólo por el color. En claro queda debajo de 3:1 sobre blanco
+(2,15:1) por elección de la dueña, igual que `--serie2` y `--serie5`.
+
+| Relleno | Fondo | Claro | Relación | Oscuro | Relación |
+|---|---|---|---|---|---|
+| `--deuda-reciente` | `--superficie` | `#8dbba1` | 2,15 | `#3d7a5c` | 3,25 |
+| `--deuda-reciente` | `--deuda-fondo` | `#8dbba1` | 1,93 | `#3d7a5c` | 3,12 |
 
 Ningún otro valor de la dueña se movió. `--deuda-fondo` en claro no es de la dueña: se
 aclaró de `#f6e8d4` a `#fbf1e3` para que `--deuda`, `--positivo` y `--negativo` lleguen a
@@ -206,6 +227,19 @@ cinco de la dueña. Oscuro: variantes más claras de los mismos cinco tonos, ele
 En claro `--serie2` y `--serie5` quedan bajo 3:1 sobre `--superficie` porque son los valores
 de la dueña; no se movieron porque nunca se leen por el color solo: la etiqueta directa
 dice cuál es cuál.
+
+**Series de Gastos** (`--gasto1` a `--gasto-otros`). Son marcas, no texto: van siempre
+rotuladas directamente y apuntan a 3:1 contra la `--superficie` de su tema. Los dos temas
+llevan los rellenos dibujados en `Gastos.dc.html` y `GastosOscuro.dc.html`. `--gasto2` en
+claro (`#a85a06`) es un relleno de gráfico, no texto, así que el cambio a 4,5:1 que llevó
+`--deuda` a `#a35706` no le aplica. Filas `ícono`, sin selectores.
+
+| Serie | Claro | Relación | Oscuro | Relación |
+|---|---|---|---|---|
+| `--gasto1` | `#1e6b47` | 6,46 | `#5cc594` | 7,75 |
+| `--gasto2` | `#a85a06` | 5,08 | `#e8a54b` | 7,79 |
+| `--gasto3` | `#1c6fa8` | 5,40 | `#5aa9e6` | 6,48 |
+| `--gasto-otros` | `#7e8c84` | 3,52 | `#7e8c84` | 4,69 |
 
 ### El logo
 

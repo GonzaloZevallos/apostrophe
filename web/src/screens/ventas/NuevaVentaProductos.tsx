@@ -30,7 +30,7 @@ import { NetworkError } from '../../api/client'
 import Boton from '../../components/Boton'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import Icono from '../../components/Icono'
-import { foldForSearch, matchesQuery, matchRange } from '../../components/selectorSearch'
+import { byFoldedName, matchesQuery, matchRange } from '../../components/selectorSearch'
 import Loading, { LoadingWhile } from '../../components/Loading'
 import SinConexion from '../../components/SinConexion'
 import { formatQuantity } from '../../format/money'
@@ -59,10 +59,12 @@ interface NuevaVentaProductosProps extends Pick<NewSaleReads, 'status' | 'produc
   /** The sale's one price result: `notReady` while a figure cannot be priced, else the `priceSale` the
    * parent made. The list prices no line itself. */
   pricing: NewSalePricing
+  /** The name and price of a line was tapped: the host opens that line's detail. */
+  onOpenLine: (productId: number) => void
 }
 
 export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
-  const { status, products, settings, mostSoldIds, stock, failed, customerTypeId, draft, pricing } = props
+  const { status, products, settings, mostSoldIds, stock, failed, customerTypeId, draft, pricing, onOpenLine } = props
   const { t } = useTranslation()
   const money = useMoney()
   const lines = draft.state.lines
@@ -125,12 +127,7 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
     if (!listed || !searching) return []
     return products
       .filter((product) => matchesQuery(product.name, query))
-      .sort((a, b) => {
-        const [x, y] = [foldForSearch(a.name), foldForSearch(b.name)]
-        if (x !== y) return x < y ? -1 : 1
-        if (a.name !== b.name) return a.name < b.name ? -1 : 1
-        return a.id - b.id
-      })
+      .sort(byFoldedName)
   }, [listed, searching, products, query])
 
   const matchPrices = useMemo(
@@ -251,13 +248,30 @@ export default function NuevaVentaProductos(props: NuevaVentaProductosProps) {
     if (line === undefined) return null
     const name = product === undefined ? t('common:noLongerAvailable') : product.name
     const linePricing = pricedLines.get(String(productId))
-    // While the figures come, the "+" stays: the stepper keeps working and the read decides
-    // afterwards whether the line still has a price.
-    const unpriced = pricing.kind === 'priced' && (linePricing === null || linePricing === undefined)
+    // "No price" exactly when the sale is priced and this line's result is `null`. While the figures come
+    // (`notReady`, or no result for the line yet) the price is the Loading mark and the "+" stays.
+    const unpriced = pricing.kind === 'priced' && linePricing === null
     return (
       <li key={productId} ref={rowRef(productId)} className="nv-productos__fila">
-        {datos(name, productId, product !== undefined)}
-        {priceCell(linePricing)}
+        <span className="nv-productos__abrir">
+          <Boton variant="row" ariaLabel={TEXT.lineOpenDetail(name)} onClick={() => onOpenLine(productId)}>
+            {datos(name, productId, product !== undefined)}
+            {unpriced ? (
+              <span className="nv-productos__precio nv-productos__precio--sin cifra-n">
+                <span className="aviso-ambar__icono">
+                  <Icono nombre="atencion" />
+                </span>
+                {TEXT.lineNoPrice}
+              </span>
+            ) : linePricing === undefined ? (
+              <span className="nv-productos__precio cifra-n">
+                <Loading compacto />
+              </span>
+            ) : (
+              priceCell(linePricing)
+            )}
+          </Boton>
+        </span>
         <div role="group" aria-label={name} className="nv-productos__pasos">
           <span className="nv-productos__paso">
             <Boton variant="row" ariaLabel={TEXT.productDecrease(name)} onClick={() => draft.stepDown(productId)}>

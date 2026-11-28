@@ -8,7 +8,6 @@ Only edges between files inside `sales/` are drawn; edges between folders are in
 flowchart LR
 subgraph src["src"]
   subgraph src_sales["sales"]
-    src_sales_grams_ts["grams.ts"]
     src_sales_nothingSellable_ts["nothingSellable.ts"]
     src_sales_otherRecords_ts["otherRecords.ts"]
     src_sales_paymentMethods_ts["paymentMethods.ts"]
@@ -18,11 +17,12 @@ subgraph src["src"]
     src_sales_saleFormQueries_ts["saleFormQueries.ts"]
     src_sales_saleRefusal_ts["saleRefusal.ts"]
     src_sales_shipping_ts["shipping.ts"]
+    src_sales_useSaleBillShare_ts["useSaleBillShare.ts"]
   end
 end
-src_sales_grams_ts-->src_sales_pricing_ts
 src_sales_paymentMethods_ts-->src_sales_pricing_ts
 src_sales_saleBill_ts-->src_sales_pricing_ts
 src_sales_saleBody_ts-->src_sales_pricing_ts
 src_sales_saleFormQueries_ts-->src_sales_pricing_ts
+src_sales_useSaleBillShare_ts-->src_sales_saleBill_ts
 ```

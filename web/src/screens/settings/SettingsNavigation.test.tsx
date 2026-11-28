@@ -18,11 +18,13 @@ import {
   SETTINGS_PAYMENTS,
   SETTINGS_PAYMENT_METHODS,
   SETTINGS_PAYMENT_METHODS_ARCHIVED,
-  SETTINGS_PRICES,
+  type Viewport,
 } from '../../routes'
 import { stubViewport } from '../../test-viewport'
 
 const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
+
+const BUSINESS = { name: 'La Huerta', language: 'en', selectable_languages: ['en'], users: [] }
 
 function json(body: unknown): Response {
   return new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
@@ -34,14 +36,15 @@ function serve() {
     vi.fn().mockImplementation((input: RequestInfo | URL) => {
       const path = String(input)
       if (path.includes('/auth/me')) return Promise.resolve(json(ME))
+      if (path.endsWith('/business')) return Promise.resolve(json(BUSINESS))
       return Promise.resolve(json([]))
     }),
   )
 }
 
-async function open(path: string) {
+async function open(path: string, viewport: Viewport = 'phone') {
   serve()
-  stubViewport('phone')
+  stubViewport(viewport)
   await act(() => router.navigate(path))
   render(<App />)
   await screen.findByRole('main')
@@ -54,8 +57,8 @@ afterEach(async () => {
   await act(() => router.navigate(HOME))
 })
 
-test('the Settings list has no Expense categories row', async () => {
-  await open(SETTINGS)
+test("the computer's Settings list has no Expense categories row", async () => {
+  await open(SETTINGS, 'computer')
 
   const list = await screen.findByRole('navigation', { name: 'Settings' })
   expect(within(list).getByRole('link', { name: 'Payments and expenses' })).toBeInTheDocument()
@@ -93,12 +96,12 @@ test('Close on Expense categories, opened from the group, goes back through hist
   await waitFor(() => expect(router.state.location.pathname).toBe(SETTINGS_PAYMENTS))
 })
 
-test('Close on Customer types, with nothing in history, lands on Prices', async () => {
+test('Close on Customer types, with nothing in history, lands on Settings', async () => {
   await open(SETTINGS_CUSTOMER_TYPES)
 
   await userEvent.click(await screen.findByRole('button', { name: 'Close' }))
 
-  await waitFor(() => expect(router.state.location.pathname).toBe(SETTINGS_PRICES))
+  await waitFor(() => expect(router.state.location.pathname).toBe(SETTINGS))
 })
 
 test('Close on Archived payment methods, with nothing in history, lands on Payment methods', async () => {

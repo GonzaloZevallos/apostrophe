@@ -65,6 +65,13 @@ export function SheetRouterProvider({
   return createElement(RouterContext.Provider, { value: router }, children)
 }
 
+/** The router `SheetRouterProvider` handed over, for a hook that reads the current location at call time. */
+export function useRouterHandle(): RouterHandle {
+  const router = useContext(RouterContext)
+  if (router === null) throw new Error('useRouterHandle needs a SheetRouterProvider')
+  return router
+}
+
 interface Book {
   keys: Record<string, number>
   pending: number | null
@@ -94,6 +101,7 @@ interface SheetStack {
   push: () => void
   pop: () => void
   popAll: () => void
+  readDepth: () => number
 }
 
 const StackContext = createContext<SheetStack | null>(null)
@@ -159,7 +167,10 @@ export function SheetStackProvider({ children }: { children: ReactNode }) {
     if (current > 0) void navigate(-current)
   }, [readDepth, navigate])
 
-  const value = useMemo(() => ({ depth, push, pop, popAll }), [depth, push, pop, popAll])
+  const value = useMemo(
+    () => ({ depth, push, pop, popAll, readDepth }),
+    [depth, push, pop, popAll, readDepth],
+  )
   return createElement(StackContext.Provider, { value }, children)
 }
 
@@ -184,4 +195,11 @@ export function useSheet(level: number): Sheet {
   if (stack === null) throw new Error('useSheet needs a SheetStackProvider')
   const { depth, push, pop, popAll } = stack
   return { isOpen: depth >= level, open: push, close: pop, closeAll: popAll }
+}
+
+/** The router's current sheet depth, read when the function is called (never a captured value). */
+export function useSheetDepthReader(): () => number {
+  const stack = useContext(StackContext)
+  if (stack === null) throw new Error('useSheetDepthReader needs a SheetStackProvider')
+  return stack.readDepth
 }

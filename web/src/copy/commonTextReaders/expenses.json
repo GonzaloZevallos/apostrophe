@@ -4,5 +4,6 @@
   "web/src/screens/expenses/ExpenseForm.tsx",
   "web/src/screens/expenses/ExpenseNewSheet.tsx",
   "web/src/screens/expenses/ExpenseSheet.test.tsx",
-  "web/src/screens/expenses/ExpensesBehind.tsx"
+  "web/src/screens/expenses/ExpensesTitleRow.test.tsx",
+  "web/src/screens/expenses/ExpensesTitleRow.tsx"
 ]

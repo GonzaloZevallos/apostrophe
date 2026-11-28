@@ -1,0 +1,28 @@
+/* The Sale detail's customer card: avatar, name and date, the payment chip and Assign. Tokens only. */
+
+.sale-customer-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: var(--espacio-lg);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+}
+
+.sale-customer-card__text {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sale-customer-card__name {
+  overflow-wrap: anywhere;
+  color: var(--tinta);
+}
+
+.sale-customer-card__date {
+  color: var(--tinta2);
+}

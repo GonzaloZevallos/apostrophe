@@ -18,6 +18,7 @@
 import { CUSTOMER, CUSTOMERS, CUSTOMER_NEW, SALE, SALE_NEW, VARIETIES } from '../src/routes.js'
 import type { Locator, Page } from '@playwright/test'
 import { expectPath } from './helpers/url.js'
+import { openAllCustomers } from './helpers/openScreens.js'
 import { choosePaymentMethod, expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
 import { signUpNewBusiness } from './helpers/signup.js'
@@ -59,11 +60,13 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Registered with no phone number at all.
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name', { exact: true }).fill('Noe Sinnumero')
-  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save', exact: true }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
   await page.goto(CUSTOMERS)
+  // Nobody owes yet: she is on the full list.
+  await openAllCustomers(page)
   // Found by name, in the list: no phone line, no dash, no placeholder.
   const row = page.getByRole('link', { name: /Noe Sinnumero/ })
   await expect(row).toBeVisible()
@@ -80,7 +83,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // the phone field while it stays usable.
   await page.getByRole('link', { name: 'Edit' }).click()
   await expect(page.getByLabel('Phone', { exact: true })).toHaveValue('')
-  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save', exact: true }).click())
   await expect(page.getByText('Customer saved')).toBeVisible()
   await expect(page.getByText('Phone')).toHaveCount(0)
 

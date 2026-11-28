@@ -139,7 +139,7 @@ function TeDebenBlock({ debts }: { debts: PanelDebts }) {
         {COMMON_TEXT.owedToYou}
       </InAppLink>
       <span className="cifra-xl">{money.money(debts.total_owed)}</span>
-      <span className="pie bloque-deben__cuenta">{salesOwingCount(debts.sales_owing_count)}</span>
+      <span className="pie bloque-deben__cuenta">{salesOwingCount(t, debts.sales_owing_count)}</span>
       <span className="pie bloque-deben__desde">{INICIO_TEXT.desde0(formatDateShort(debts.oldest))}</span>
       {debts.teaser.map((row) => (
         <div key={row.customer_id} className="bloque-deben__fila">

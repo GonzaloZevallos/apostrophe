@@ -137,8 +137,11 @@ class SaleViews(Protocol):
 @dataclass(frozen=True)
 class CustomerSettlement:
     """One customer's settlement as sales reads it: the signed `balance` and, per sale
-    id, the amount still owed. `still_owed` holds exactly the sales `settle()` reports
-    (every sale not paid on the spot, a paid one at 0) and is read-only."""
+    id, the amount still owed. `still_owed` holds exactly the sales `settle()` reports:
+    every sale with a customer not paid on the spot in full, a paid one at 0, and a
+    Deposit sale (paid in part on the spot) at what is still owed on it. Sales paid on
+    the spot in full and sales with no customer are absent. It is read-only. No Deposit
+    is recorded before GH-1083 part 3, which makes `settle()` report one."""
 
     balance: int
     still_owed: Mapping[int, int]
@@ -166,16 +169,20 @@ class OwingSales(Protocol):
 
     def owed_of(self, customer_ids: Collection[int]) -> Mapping[int, int]:
         """The amount still owed on each sale of these customers that settlement
-        reports: every sale not paid on the spot, a paid one at 0, from one read of
-        their ledgers. Sales paid on the spot and sales with no customer are absent.
+        reports, from one read of their ledgers: a sale not paid on the spot, a paid
+        one at 0, and a Deposit sale (paid in part on the spot) at what is still owed
+        on it. Sales paid on the spot in full and sales with no customer are absent. No
+        Deposit is recorded before GH-1083 part 3, which makes `settle()` report one.
         `still_owing` is exactly the ids of this mapping above 0."""
         ...
 
     def settlement_of(self, customer_id: int) -> CustomerSettlement:
         """The customer's balance and the amount still owed per sale for every sale
-        `settle()` reports: every sale not paid on the spot, a paid one at 0; sales
-        paid on the spot are absent. A customer with no ledger answers a balance of 0
-        and an empty mapping."""
+        `settle()` reports: a sale not paid on the spot, a paid one at 0, and a Deposit
+        sale (paid in part on the spot) at what is still owed on it. Sales paid on the
+        spot in full and sales with no customer are absent. No Deposit is recorded
+        before GH-1083 part 3, which makes `settle()` report one. A customer with no
+        ledger answers a balance of 0 and an empty mapping."""
         ...
 
 

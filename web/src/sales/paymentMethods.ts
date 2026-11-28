@@ -27,7 +27,6 @@ export interface PaymentMethodOption extends SelectorOption {
 export interface PaymentMethodOptions {
   /** What a `Selector` takes as props. */
   selector: {
-    required: true
     options: readonly PaymentMethodOption[]
     loading: boolean
     emptySetMessage: string
@@ -54,7 +53,6 @@ export function usePaymentMethodOptions(): PaymentMethodOptions {
   const failed = failure !== null
   return {
     selector: {
-      required: true,
       options: (query.data ?? []).map((method) => ({ value: String(method.id), label: method.name })),
       loading: query.isPending && !failed,
       emptySetMessage: t(failed ? 'emptyStates:selectorPaymentMethodsFailed' : 'emptyStates:selectorNoPaymentMethods'),
@@ -150,6 +148,77 @@ export function howTheyPayView({
     return { options, value: OWING_VALUE, selected: { value: OWING_VALUE, label: owesItLabel } }
   }
   return { options, value: shownRefused ? null : shown, selected: undefined }
+}
+
+export interface HowYouPaidView {
+  options: readonly PaymentMethodOption[]
+  value: string | null
+  /** The entry the Selector marks as no longer available, or `undefined` when there is none to mark. */
+  selected: { value: string; label: string } | undefined
+  loading: boolean
+}
+
+/**
+ * What the Add expense "How you paid" Selector shows, in one place: the one decision on whether the
+ * expense's stored Payment method is offered as an extra option or marked no longer available. No other code
+ * compares the offered ids to the stored id. The rules apply in this order:
+ *
+ * 1. Options are built first. Once the list is read (`offeredIds` is not `null`) they are the real
+ *    `methodOptions`. While it is pending or failed they are the stored method followed by
+ *    `methodOptions`, with the stored method only when there is one. Adding it depends on `storedMethod`
+ *    and the list state alone, never on `value`.
+ * 2. `methodGone` (a method the server refused) is filtered out of the options, always, whatever the list
+ *    state and whatever the stored method is. Then `value` is its id and `selected` is the method.
+ * 3. `loading`: with no stored method, the hook's `loading` passes through. With one, `loading` is `false`
+ *    while the list is pending or failed and at least one option remains after the filter; with no option
+ *    left, the hook's `loading` passes through (a pending list stays loading, a failed one shows its own
+ *    "could not load" message).
+ * 4. Once the list is read, the stored id is not offered and `value` is still the stored id: `selected` is
+ *    the stored method (the "no longer available" mark).
+ * 5. Anything else (offered, a cleared `value`, another id) has no `selected`.
+ *
+ * `value` is never derived: it comes back as given, except under `methodGone`. `failure` is part of the
+ * input the form reads from the hook; a failed list and a pending one both have no `offeredIds`, so the
+ * options and the mark come out the same and only the hook's own `loading` tells them apart.
+ */
+export function howYouPaidView({
+  storedMethod,
+  value,
+  offeredIds,
+  methodOptions,
+  loading,
+  methodGone,
+}: {
+  storedMethod: { id: number; name: string } | null
+  value: string | null
+  offeredIds: readonly number[] | null
+  methodOptions: readonly PaymentMethodOption[]
+  loading: boolean
+  failure: 'offline' | 'server' | null
+  methodGone: { id: number; name: string } | null
+}): HowYouPaidView {
+  const listRead = offeredIds !== null
+  const withStored: readonly PaymentMethodOption[] =
+    !listRead && storedMethod !== null
+      ? [{ value: String(storedMethod.id), label: storedMethod.name }, ...methodOptions]
+      : methodOptions
+  const options = methodGone === null ? withStored : withStored.filter((option) => option.value !== String(methodGone.id))
+  const storedShown = storedMethod !== null && !listRead && options.length > 0
+  const shownLoading = storedShown ? false : loading
+  if (methodGone !== null) {
+    return {
+      options,
+      value: String(methodGone.id),
+      selected: { value: String(methodGone.id), label: methodGone.name },
+      loading: shownLoading,
+    }
+  }
+  const notOffered = storedMethod !== null && offeredIds !== null && !offeredIds.includes(storedMethod.id)
+  const selected =
+    storedMethod !== null && notOffered && value === String(storedMethod.id)
+      ? { value: String(storedMethod.id), label: storedMethod.name }
+      : undefined
+  return { options, value, selected, loading: shownLoading }
 }
 
 /** The name the list showed for a method id, read before the list is read again (never a guess). */

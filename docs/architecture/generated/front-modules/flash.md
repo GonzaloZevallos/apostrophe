@@ -9,12 +9,16 @@ flowchart LR
 subgraph src["src"]
   subgraph src_flash["flash"]
     src_flash_FlashProvider_tsx["FlashProvider.tsx"]
+    src_flash_UndoResultToast_tsx["UndoResultToast.tsx"]
     src_flash_flashContext_ts["flashContext.ts"]
     src_flash_flashReducer_ts["flashReducer.ts"]
     src_flash_useFlash_ts["useFlash.ts"]
   end
 end
+src_flash_FlashProvider_tsx-->src_flash_UndoResultToast_tsx
 src_flash_FlashProvider_tsx-->src_flash_flashContext_ts
 src_flash_FlashProvider_tsx-->src_flash_flashReducer_ts
+src_flash_UndoResultToast_tsx-->src_flash_flashReducer_ts
+src_flash_flashContext_ts-->src_flash_flashReducer_ts
 src_flash_useFlash_ts-->src_flash_flashContext_ts
 ```

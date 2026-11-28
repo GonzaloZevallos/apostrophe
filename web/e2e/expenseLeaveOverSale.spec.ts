@@ -205,3 +205,33 @@ test('leaving New sale by the browser\'s Back asks "Discard the sale?" once; "No
   await expect(page).not.toHaveURL(new RegExp(`${SALE_NEW}$`))
   await expect(page.getByRole('alertdialog')).toHaveCount(0)
 })
+
+test('the How you paid list is its own history entry: Back closes only the list, with no question, and the sale is intact', async ({
+  page,
+}) => {
+  await touchedSale(page)
+  const saleTotal = (await total(page).textContent()) ?? ''
+  await openExpense(page)
+
+  await page.getByRole('button', { name: /^How you paid/ }).click()
+  await expect(page.getByRole('dialog', { name: 'How you paid options' })).toBeVisible()
+  await page.goBack()
+  await expect(page.getByRole('dialog', { name: 'How you paid options' })).toHaveCount(0)
+  await expect(page.getByRole('dialog', { name: 'Add expense' })).toBeVisible()
+  await expect(page.getByRole('alertdialog')).toHaveCount(0)
+  await expectSaleIntact(page, saleTotal)
+})
+
+test('picking a payment method counts as a change: Close asks "Discard the expense?"', async ({ page }) => {
+  await touchedSale(page)
+  const saleTotal = (await total(page).textContent()) ?? ''
+  await openExpense(page)
+
+  await page.getByRole('button', { name: /^How you paid/ }).click()
+  await page.getByRole('dialog', { name: 'How you paid options' }).getByRole('button', { name: 'Cash' }).click()
+  await page.getByRole('dialog', { name: 'Add expense' }).getByRole('button', { name: 'Close' }).click()
+  await expectOneQuestion(page, EXPENSE_Q)
+  await answer(page, 'Yes, discard it')
+  await expect(page.getByRole('dialog', { name: 'Add expense' })).toHaveCount(0)
+  await expectSaleIntact(page, saleTotal)
+})

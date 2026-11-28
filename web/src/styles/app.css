@@ -128,6 +128,11 @@ body {
   color: var(--tinta2);
 }
 
+/* The Customers no-match line carries what was typed: a long query wraps, it is never cut. */
+.campo__rotulo--consulta {
+  overflow-wrap: anywhere;
+}
+
 /* The Customer's number on the card and the card behind: whole, on one line, never cut. */
 .campo__valor-telefono {
   white-space: nowrap;
@@ -411,6 +416,69 @@ body {
   font-size: 15px;
   font-weight: 600;
   color: var(--acento);
+}
+
+/* The sale-saved toast: one row that takes the panel look, the status sentence inside it, then a
+ * separator and the Undo button, which sit outside the status. The sentence's three spans are
+ * flex items (no meaning rides on the whitespace between them): "Sale to" and "saved" never
+ * shrink, the name takes what is left and ends in an ellipsis. */
+.aviso-exito__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-sm);
+  background: var(--acento-suave);
+  border-radius: var(--radio-panel-grande);
+  padding: var(--espacio-xs) var(--espacio-sm) var(--espacio-xs) var(--espacio-lg);
+  color: var(--acento);
+}
+
+.aviso-exito__fila > .aviso-exito {
+  display: flex;
+  flex: 1 1 auto;
+  gap: var(--espacio-xs);
+  min-width: 0;
+  padding: 0;
+  background: none;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--acento);
+}
+
+.aviso-exito__inicio,
+.aviso-exito__fin {
+  flex: none;
+}
+
+.aviso-exito__nombre {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.aviso-exito__separador {
+  flex: none;
+  font-weight: 600;
+}
+
+/* Text only, on the toast's own fill. The layer it floats in has no pointer events, so the button
+ * asks for them back. At least 44 x 44 from its padding and min-height. */
+.aviso-exito__deshacer {
+  flex: none;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 var(--espacio-md);
+  border: 0;
+  border-radius: var(--radio-panel-grande);
+  background: var(--acento-suave);
+  color: var(--acento);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  pointer-events: auto;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ayuda-fija {
@@ -697,6 +765,24 @@ body {
   min-height: var(--alto-tocable);
   margin-block: calc((19px - var(--alto-tocable)) / 2);
   touch-action: manipulation;
+}
+
+/* The round look of the same arrow, for a card that draws it in its own title row (ADR
+ * 20261125): the row owns the padding, so the box is the 44 px touch target alone. The press
+ * cue is the global `.boton--enlace:active` --superficie fill. The chevron is hidden until the
+ * row's narrow step shows it in place of the text (the expenses title row's `@container`). */
+.flecha-atras--redonda .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-xs);
+  min-height: var(--alto-tocable);
+  border-radius: var(--radio-pildora);
+  touch-action: manipulation;
+}
+
+.flecha-atras--redonda .boton--enlace > svg {
+  display: none;
 }
 
 .riel-lateral {
@@ -1670,6 +1756,90 @@ a.ajustes-tema__opcion {
   font-weight: 600;
 }
 
+/* Expenses' phone title row (ADR 20261125, `ExpensesTitleRow`): the round back, the title and
+ * Add expense on one line that never wraps, with the month line as its own line below. The title
+ * is the one fixed thing: never wrapped, shrunk, clipped or ellipsised. The row is the size
+ * container, so its two steps follow the room the row itself has, in its own `em`, which grows
+ * with the text size: below 24em the labelled pill is the 44 x 44 round icon (its `aria-label`
+ * keeps the name), below 19em the back is the round chevron (its text is clipped, never removed,
+ * so the accessible name stays). Only the two thresholds may move; their number and order may not. */
+.gastos__encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+.gastos__encabezado > .gastos__mes {
+  flex: none;
+}
+
+.gastos__fila-titulo {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--espacio-sm);
+  container-type: inline-size;
+  container-name: fila-titulo-gastos;
+}
+
+.gastos__fila-titulo > .flecha-atras--redonda {
+  flex: 0 0 auto;
+}
+
+.gastos__fila-titulo > .gastos__titulo {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.gastos__fila-titulo > .gastos__cargar {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  width: auto;
+  height: var(--alto-tocable);
+  padding: 0 18px;
+  background: var(--boton);
+  color: var(--boton-texto);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.gastos__fila-titulo > .gastos__cargar .gastos__cargar-texto {
+  display: inline;
+}
+
+@container fila-titulo-gastos (max-width: 24em) {
+  .gastos__fila-titulo > .gastos__cargar {
+    width: var(--alto-tocable);
+    padding: 0;
+    background: var(--superficie);
+    color: var(--tinta);
+  }
+
+  .gastos__fila-titulo > .gastos__cargar .gastos__cargar-texto {
+    display: none;
+  }
+}
+
+@container fila-titulo-gastos (max-width: 19em) {
+  .flecha-atras--redonda .boton--enlace {
+    width: var(--alto-tocable);
+    padding: 0;
+    box-shadow: inset 0 0 0 1px var(--linea);
+  }
+
+  .flecha-atras--redonda .flecha-atras__texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .flecha-atras--redonda .boton--enlace > svg {
+    display: block;
+  }
+}
+
 .gastos__resumen,
 .gastos__ultimos {
   display: flex;
@@ -1790,8 +1960,31 @@ a.ajustes-tema__opcion {
 }
 
 .fila-gasto__texto {
+  display: flex;
+  min-width: 0;
   font-size: 13px;
   color: var(--tinta2);
+  white-space: nowrap;
+}
+
+.fila-gasto__detalle,
+.fila-gasto__metodo {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fila-gasto__separador {
+  flex-shrink: 0;
+  margin-inline: var(--espacio-xs);
+}
+
+/* Next to a detail, only the detail gives up space until the name reaches its cap. */
+.fila-gasto__detalle ~ .fila-gasto__metodo {
+  flex-shrink: 0;
+  max-width: 60%;
 }
 
 .fila-gasto__monto {
@@ -1823,6 +2016,21 @@ a.ajustes-tema__opcion {
 
 .gasto-form .boton--enlace {
   align-self: flex-start;
+}
+
+/* Save carries its amount: it may wrap onto a second line and is never cut, 44 px tall at least.
+ * The amount itself stays in one piece. */
+.gasto-form .boton[type="submit"] {
+  height: auto;
+  min-height: max(44px, var(--alto-boton));
+  padding-block: var(--espacio-sm);
+  text-align: center;
+  flex-wrap: wrap;
+  white-space: normal;
+}
+
+.gasto-form__monto {
+  white-space: nowrap;
 }
 
 .nueva-venta .nueva-venta__cerrar .boton--enlace,
@@ -2106,10 +2314,8 @@ a.ajustes-tema__opcion {
 }
 
 /* `Ventas` (`Ventas.dc.html`/`VentasCompu.dc.html`, plan "sales-list"): the
- * header's title/tabs/range-and-total, and each sale's stacked row. `.fila-venta`
- * is a tappable row: date, name/VIP/varieties, a chevron (`Icono`), and the
- * amount with "te debe" under it only when the API's `still_owing` says so
- * (never derived here). */
+ * header's title/tabs/range-and-total; each sale is a `SaleCard` (`.sale-card`,
+ * below, after the payment chip). */
 .ventas__cabecera {
   display: flex;
   flex-direction: column;
@@ -2193,91 +2399,6 @@ a.ajustes-tema__opcion {
   font-size: 30px;
   font-weight: 600;
   letter-spacing: -0.04em;
-}
-
-.lista-ventas {
-  display: flex;
-  flex-direction: column;
-}
-
-.fila-venta {
-  display: flex;
-  align-items: center;
-  gap: var(--espacio-md);
-  min-height: var(--alto-tocable);
-  padding: var(--espacio-sm) 0;
-  border-bottom: 1px solid var(--linea);
-  color: var(--tinta);
-  text-decoration: none;
-}
-
-.fila-venta:last-child {
-  border-bottom: 0;
-}
-
-.fila-venta__fecha {
-  width: 42px;
-  font-size: 13px;
-  color: var(--tinta2);
-}
-
-.fila-venta__cuerpo {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.fila-venta__nombre {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.fila-venta__sin-cliente {
-  color: var(--tinta2);
-  font-weight: 400;
-}
-
-.fila-venta__detalle {
-  font-size: 13px;
-  color: var(--tinta2);
-}
-
-/* Phone (`Ventas.dc.html`): name and grams share one line. Computer
- * (`VentasCompu.dc.html`, 900px+ below): grams move into their own column, so
- * this line becomes names only — both text nodes stay in the DOM; only the
- * breakpoint decides which one shows, never a second grams sum. */
-.fila-venta__detalle--nombre {
-  display: none;
-}
-
-.fila-venta__gramos {
-  display: none;
-}
-
-.fila-venta__monto {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 1px;
-}
-
-.fila-venta__cifra {
-  font-size: 17px;
-  font-weight: 600;
-}
-
-.fila-venta__te-debe {
-  font-size: 12px;
-}
-
-.fila-venta > svg {
-  flex-shrink: 0;
-  color: var(--tenue);
 }
 
 /* `VentaDetalle` (`VentaDetalle.dc.html`): the total's own label and the summary
@@ -2400,6 +2521,29 @@ a.ajustes-tema__opcion {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* The bottom row of the sale detail: one column per button ("Void" alone today; "Edit sale"
+ * (issue 561) goes in before it), each taking an equal share of the row. */
+.venta-detalle__botones {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--espacio-sm);
+}
+
+.venta-detalle__botones .boton {
+  color: var(--negativo);
+  min-height: var(--alto-tocable);
+}
+
+/* No tap delay and no text selection on the sale detail's Void button and its confirm dialog.
+ * Scoped to `.venta-detalle`, not on `.boton` or `.confirmacion`, so no other screen's listed
+ * touch-action offender changes. */
+.venta-detalle .venta-detalle__botones .boton,
+.venta-detalle > .confirmacion button {
+  touch-action: manipulation;
+  user-select: none;
 }
 
 /* The sale bill's own wrapper (`SaleBillButton`): it lays its children out as the actions row
@@ -4075,23 +4219,6 @@ a.ajustes-tema__opcion {
     letter-spacing: -0.035em;
   }
 
-  /* `VentasCompu.dc.html`'s row: grams in their own right-aligned column,
-   * the variety-names line without them. */
-  .fila-venta__detalle--combinada {
-    display: none;
-  }
-
-  .fila-venta__detalle--nombre {
-    display: block;
-  }
-
-  .fila-venta__gramos {
-    display: block;
-    width: 56px;
-    text-align: right;
-    font-size: 15px;
-    color: var(--tinta2);
-  }
 }
 
 /* ===== Loading ===== */
@@ -4503,8 +4630,10 @@ a.ajustes-tema__opcion {
 /* The Products phone title block (`ProductsPhone`): a plain div that scrolls with the screen, one
  * nowrap row. The heading takes what is left; the 44 px "New product" button and the avatar keep
  * their size. 12 px between the targets leaves 8 px between the button and the avatar's 44 px
- * box, whose -4 px margins eat 4 px of the gap. The button is `.boton-icono` (44 x 44, round) filled
- * with --boton-texto on --boton; its own class sets no colour. */
+ * box, whose -4 px margins eat 4 px of the gap. The button is `.boton-icono` (44 x 44, round) with
+ * the `.boton-icono--contorno` border: --superficie, --tinta and --linea, the neutral round "+" of
+ * Clientes.dc.html, never green (green is the avatar's). The same look at every phone width: the
+ * labelled pill does not fit the row at 246 px, so nothing here switches by width. */
 .productos-cabecera {
   display: flex;
   flex-wrap: nowrap;
@@ -4517,9 +4646,15 @@ a.ajustes-tema__opcion {
   min-width: 0;
 }
 
-.boton-icono--lleno {
-  background: var(--boton);
-  color: var(--boton-texto);
+/* The neutral round add (Products' and Customers' phone title rows, New sale's results table): the
+ * plain `.boton-icono` surface and ink (--superficie, --tinta) with a --linea ring, never --boton.
+ * The ring is inside the 44 px target: a link is content-box by default, so without border-box it
+ * grows to 46. */
+.boton-icono--contorno {
+  box-sizing: border-box;
+  border: 1px solid var(--linea);
+  user-select: none;
+  touch-action: manipulation;
 }
 
 .productos-cabecera__nueva {
@@ -4777,6 +4912,50 @@ a.ajustes-tema__opcion {
 @container (min-inline-size: calc(26ch + 56px)) {
   .pestanas__celdas {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* `Pestanas ajuste="pastilla"`: the opt-in pill look. The button is at least 44 px each way
+ * (`.boton--enlace` and `.pestanas__opcion` keep their own resets and colours; nothing is
+ * re-reset here), the pill inside is 32 px tall. The selected pill is filled and heavier, so
+ * the state is never colour alone, and the underline of the plain list is off. */
+.pestanas--pastilla {
+  align-items: center;
+  gap: var(--espacio-xs);
+}
+
+.pestanas--pastilla .pestanas__opcion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--alto-tocable);
+  min-height: var(--alto-tocable);
+  box-shadow: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.pestanas--pastilla .pestanas__pastilla {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 var(--espacio-lg);
+  border-radius: var(--radio-pildora);
+  white-space: nowrap;
+  color: var(--tinta2);
+  font-weight: 400;
+}
+
+.pestanas--pastilla .pestanas__opcion[aria-pressed="true"] .pestanas__pastilla {
+  background: var(--acento-suave);
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+@media (forced-colors: active) {
+  .pestanas--pastilla .pestanas__opcion[aria-pressed="true"] .pestanas__pastilla {
+    border: 2px solid CanvasText;
   }
 }
 
@@ -5451,9 +5630,267 @@ a.ajustes-tema__opcion {
   font-size: 20px;
 }
 
+/* A line's name and price are one tappable `Boton` row beside the stepper, with no mark of their own:
+ * reshaped here into a side-by-side, at least 44 px target that keeps the name's ellipsis. */
+.nv-productos__abrir {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.nv-productos__abrir .boton--fila {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  padding: 0;
+  border-bottom: 0;
+}
+
+.nv-productos__precio {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.nv-productos__precio--sin {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+}
+
 .nv-productos__paso-vacio {
   width: var(--alto-tocable);
   height: var(--alto-tocable);
+}
+
+/* ===== Owed summary ===== */
+/* `OwedSummary` (`Clientes.dc.html`, the card over "Owed to you"): the Total owed, an age bar and a
+ * three-line legend. Tokens only, and every layout switch below follows content or `ch`, never a
+ * width threshold. The only number TypeScript hands over is `--figure-ch`, the width in `ch` that a
+ * nine-digit amount takes in the Money format; each bar part's width is its API amount (`--amount`)
+ * read here and nowhere else. Every `ch` the legend uses is resolved on the legend itself, which
+ * carries the bold figure weight, so it measures the bold digits the amounts are written in: the
+ * registered lengths below resolve there and the lines read the pixels. */
+@property --owed-figure-w {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --owed-word-w {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --owed-line-min {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+@property --owed-legend-min {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 0px;
+}
+
+.owed-summary {
+  --owed-gap: var(--espacio-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-block-end: var(--espacio-md);
+  padding: 14px;
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+}
+
+.owed-summary__total {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  column-gap: var(--espacio-md);
+}
+
+.owed-summary__label {
+  font-size: 13px;
+}
+
+.owed-summary__figure {
+  white-space: nowrap;
+}
+
+.owed-summary__bar {
+  display: flex;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+/* A part's weight is its amount: the `* 100` keeps the bar full for a total under 1 at two
+ * decimals, and a $0 part takes no width and no floor. */
+.owed-summary__part {
+  flex: calc(var(--amount) * 100) 1 0;
+  min-width: 0;
+}
+
+.owed-summary__part + .owed-summary__part {
+  box-shadow: inset 2px 0 0 var(--superficie);
+}
+
+.owed-summary__part--recent {
+  background: var(--deuda-reciente);
+}
+
+.owed-summary__part--middle {
+  background: var(--acento-calido);
+}
+
+.owed-summary__part--old {
+  background: var(--deuda);
+}
+
+/* Three columns while three nine-digit amounts fit; else one line each. */
+.owed-summary__legend {
+  --owed-figure-w: calc(var(--figure-ch) * 1ch);
+  --owed-word-w: 13ch;
+  --owed-legend-min: calc(3 * var(--owed-figure-w) + 2 * var(--owed-gap));
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-xs) var(--owed-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.owed-summary__legend > li {
+  --owed-line-min: calc(var(--owed-figure-w) + var(--owed-word-w) + var(--owed-gap));
+  display: flex;
+  flex: 1 1 calc((var(--owed-legend-min) - 100%) * 999);
+  flex-wrap: wrap-reverse;
+  justify-content: space-between;
+  column-gap: var(--owed-gap);
+  min-width: 0;
+}
+
+/* Inside a line: word left and amount right while both fit, else the amount over its word. */
+.owed-summary__legend > li > * {
+  flex: 0 1 calc((var(--owed-line-min) - 100%) * 999);
+}
+
+/* The word takes what the amount leaves, so it never wraps while there is room beside the amount. */
+.owed-summary__legend > li > .owed-summary__word {
+  flex-grow: 1;
+}
+
+.owed-summary__word {
+  font-weight: 400;
+  color: var(--tinta2);
+}
+
+.owed-summary__amount {
+  white-space: nowrap;
+}
+
+.owed-summary__amount--old {
+  color: var(--deuda);
+}
+
+/* The skeleton: the card's own classes, a block one line high wherever a text goes. */
+.owed-summary__block {
+  display: block;
+  height: 1lh;
+  border-radius: var(--radio-pildora);
+  background: var(--linea);
+}
+
+.owed-summary--skeleton .owed-summary__total > .owed-summary__label {
+  width: 8em;
+}
+
+.owed-summary--skeleton .owed-summary__total > .owed-summary__figure {
+  width: 6ch;
+}
+
+.owed-summary--skeleton .owed-summary__bar {
+  background: var(--linea);
+}
+
+.owed-summary--skeleton .owed-summary__legend .owed-summary__word {
+  min-width: var(--owed-word-w);
+  max-width: var(--owed-word-w);
+}
+
+.owed-summary--skeleton .owed-summary__legend .owed-summary__amount {
+  min-width: var(--owed-figure-w);
+  max-width: var(--owed-figure-w);
+}
+/* ===== end Owed summary ===== */
+
+/* `DateRow`: one row of at least 44 px, the label and the day. The native date input is transparent and
+ * covers the whole row, so the tap lands on it (never `pointer-events: none`); 16 px keeps the phone from
+ * zooming on focus. The row's pressed cue is its fill alone. */
+.date-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  box-sizing: border-box;
+  padding: 0 var(--espacio-lg);
+  border-radius: var(--radio-campo);
+  background: var(--superficie);
+  color: var(--tinta);
+  font-size: 16px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.date-row:active {
+  background: var(--linea);
+  transition: none;
+}
+
+.date-row__label {
+  color: var(--tinta2);
+}
+
+.date-row__value {
+  color: var(--tinta);
+}
+
+/* The input is painted invisible by its text fill, not by `opacity: 0`, as `.fecha-fila__input` is: its
+ * `color` and `background` stay real tokens, so the contrast check reads a readable value in claro and
+ * oscuro, and it stays a visible, 44 px-tall control to assistive technology. */
+.date-row__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  -webkit-text-fill-color: transparent;
+  cursor: inherit;
+  font-size: 16px;
+}
+
+.date-row__input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
 }
 
 /* pressed */
@@ -5469,10 +5906,10 @@ a.ajustes-tema__opcion {
  *   filled, so a --papel ring is the fill cue (it differs from the resting fill in both
  *   themes): .boton (with .boton--suave, .boton--destructivo and .boton-nueva-venta),
  *   .boton-icono, .pildora, .gastos__cargar, .aviso-ambar,
- *   .cobrar, .interruptor, .boton-aviso;
+ *   .cobrar, .interruptor, .boton-aviso, .aviso-exito__deshacer (the sale-saved toast's Undo);
  *   transparent, so --superficie is the fill cue: .boton--enlace,
  *   .boton--fila, .enlace-texto, .bar-inferior__item, .riel-lateral__item,
- *   .riel-lateral__ajustes, .mas__item, .ajustes__item, .mas-info__boton, .fila-venta,
+ *   .riel-lateral__ajustes, .mas__item, .ajustes__item, .mas-info__boton, .sale-card,
  *   .fila-gasto, .fila-entrada, .fila-entrada__enlace, .lista-clientes__fila,
  *   .bloque-deben__titulo, .bloque-deben__fila, .bloque-deben__datos, .fila-stock--enlace, .variedad-item,
  *   .variedad-fila, .variedades__todas, .catalogo__fila-nombre, .pestanas__opcion,
@@ -5496,7 +5933,8 @@ a.ajustes-tema__opcion {
     .aviso-ambar,
     .cobrar,
     .interruptor,
-    .boton-aviso
+    .boton-aviso,
+    .aviso-exito__deshacer
   ):active:not(:disabled):not([aria-disabled='true']) {
   transform: scale(0.98);
   box-shadow: inset 0 0 0 3px var(--papel);
@@ -5531,7 +5969,7 @@ a.ajustes-tema__opcion {
     .mas__item,
     .ajustes__item,
     .mas-info__boton,
-    .fila-venta,
+    .sale-card,
     .fila-gasto,
     .fila-entrada,
     .fila-entrada__enlace,
@@ -5603,7 +6041,7 @@ a.ajustes-tema__opcion {
 
 /* A tap on a button, tab or the bar selects no text; text in lists and fields stays
  * selectable, since only these classes opt out. Rows whose text is the business's data
- * (.fila-venta, .variedad-fila and the like) are in the test's SELECTABLE table instead. */
+ * (.sale-card, .variedad-fila and the like) are in the test's SELECTABLE table instead. */
 :is(
     .boton,
     .boton-icono,
@@ -5613,6 +6051,7 @@ a.ajustes-tema__opcion {
     .cobrar,
     .interruptor,
     .boton-aviso,
+    .aviso-exito__deshacer,
     .boton--enlace,
     .boton--fila,
     .enlace-texto,
@@ -5705,6 +6144,18 @@ a.ajustes-tema__opcion {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--espacio-md);
+}
+
+/* On the phone the row is one line: the title is cut by `.cabecera-fila`, the round add and the
+ * avatar keep their 44 px. */
+@media (max-width: 899.98px) {
+  .clientes__encabezado {
+    flex-wrap: nowrap;
+  }
+
+  .clientes__encabezado > .boton-icono {
+    flex-shrink: 0;
+  }
 }
 
 .clientes__encabezado > .boton {
@@ -6072,6 +6523,34 @@ a.ajustes-tema__opcion {
   text-align: left;
   text-decoration: none;
   cursor: pointer;
+}
+
+/* A tappable notice whose action is in flight keeps its card, icon and sentence and takes the
+ * app's disabled look (`.boton:disabled`), with no native `disabled`, so focus stays on it. */
+.boton-aviso[aria-disabled='true'] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* The always-mounted polite slot of Customers' debtors notice (`DebtorsSlot`). Empty, it cancels
+ * the one flex gap its own box adds to `.cuerpo`, so no Customers state moves; drawn, it reserves
+ * the notice's 44 px in the commit the rows arrive, so the notice never pushes them down. */
+.clientes__sin-cifras {
+  margin-top: calc(-1 * var(--espacio-xl));
+}
+
+.clientes__sin-cifras--reservado {
+  margin-top: 0;
+  min-height: var(--alto-tocable);
+}
+
+.clientes__sin-cifras .boton-aviso {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espacio-xs);
+  /* Scoped to this notice, so no other screen's listed touch-action offender changes: the retry
+   * takes no tap delay or double-tap zoom. */
+  touch-action: manipulation;
 }
 
 /* On a computer the card stops at 560px (GH-188; the drawing that showed it left with the
@@ -6587,60 +7066,6 @@ a.ajustes-tema__opcion {
   .bar-inferior a {
     touch-action: manipulation;
   }
-
-  .fila-venta__texto {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .fila-venta__nombre > :not(.fila-venta__texto) {
-    flex-shrink: 0;
-  }
-
-  .fila-venta__detalle {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .fila-venta__cifra {
-    white-space: nowrap;
-  }
-
-  .fila-venta__monto {
-    flex-shrink: 0;
-  }
-}
-
-/* Under 360 px the amount and the date share the first line and the name takes the second, so
- * a long name and a nine-digit amount both fit. */
-@media (max-width: 359.98px) {
-  .fila-venta {
-    flex-wrap: wrap;
-    row-gap: 0;
-  }
-
-  .fila-venta__fecha {
-    flex: 1 1 0;
-    width: auto;
-    min-width: 0;
-    white-space: nowrap;
-  }
-
-  .fila-venta__monto {
-    order: 2;
-  }
-
-  .fila-venta > svg {
-    order: 2;
-  }
-
-  .fila-venta__cuerpo {
-    order: 3;
-    flex: 1 0 100%;
-  }
 }
 
 /* Fit on Customers, Expenses, Varieties, entries, Settings and the invitation (GH-319): a long
@@ -6691,7 +7116,8 @@ a.ajustes-tema__opcion {
   .fila-entrada__linea1,
   .fila-entrada__linea2,
   .fila-gasto__categoria,
-  .fila-gasto__texto,
+  .fila-gasto__detalle,
+  .fila-gasto__metodo,
   .catalogo__fila-detalle {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -6727,6 +7153,14 @@ a.ajustes-tema__opcion {
   .clientes__te-deben .cifra-xl {
     font-size: min(54px, 13cqw);
     white-space: nowrap;
+  }
+
+  /* Expenses' month total fits the viewport at larger text too (GH-1127, Human Decision 2): where
+   * the fit above is not enough (130 % text from 320 px up) the figure breaks inside itself
+   * rather than push the page sideways. When it fits, nothing breaks and the render is as before. */
+  .gastos__total .cifra-xl {
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 
   .gastos__categoria .gastos__categoria-cabecera {
@@ -6801,10 +7235,23 @@ a.ajustes-tema__opcion {
     height: var(--alto-tocable);
   }
 
-  /* Scoped to Expenses' header: Analysis reuses the month pill and its arrows (part 2). */
-  .gastos__cabecera .gastos__mes-boton {
+  /* Scoped to Expenses' header (the computer's `gastos__cabecera` and the phone's title block
+   * `gastos__encabezado`): Analysis reuses the month pill and its arrows (part 2). */
+  .gastos__cabecera .gastos__mes-boton,
+  .gastos__encabezado .gastos__mes-boton {
+    flex: none;
     width: var(--alto-tocable);
     height: var(--alto-tocable);
+  }
+}
+
+/* The narrowest phone (320 px at 130 % text is 246 CSS px): the month line has 198 px, so with
+ * the arrows kept at 44 the month name ("September", the longest word) needs the pill's gap and
+ * padding closed to 4 px; the arrows never shrink below the touch target. */
+@media (max-width: 280px) {
+  .gastos__encabezado > .gastos__mes {
+    gap: var(--espacio-xs);
+    padding-inline: var(--espacio-xs);
   }
 }
 
@@ -7214,6 +7661,11 @@ a.ajustes-tema__opcion {
   color: var(--tinta2);
 }
 
+.ajustes-cobros__gastos-mes {
+  align-self: flex-start;
+  margin: var(--espacio-sm) var(--espacio-xs) 0;
+}
+
 .ajustes-cobros__seccion {
   display: flex;
   flex-direction: column;
@@ -7368,6 +7820,140 @@ button:has(> .venta-en-curso) {
 }
 /* ===== end venta-gasto-telefono ===== */
 
+/* The Sale payment chip: the word says the state, never the colour alone (part-paid also draws a
+ * half-filled circle, the unknown line the Attention icon). Tokens only. It wraps onto a second
+ * line on a narrow phone and never cuts, shortens or hides the amount. Each modifier sits on its
+ * own class so the colour census can key it; the modifiers win over `.rotulo`'s colour because
+ * this file loads after tokens.css and both are single-class selectors. */
+.payment-chip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4em;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.payment-chip--paid {
+  color: var(--tinta2);
+  background: var(--superficie);
+}
+
+.payment-chip--unpaid {
+  color: var(--deuda);
+  background: var(--deuda-fondo);
+}
+
+.payment-chip--part-paid {
+  color: var(--deuda2);
+  background: var(--deuda-fondo);
+}
+
+.payment-chip__half {
+  flex: none;
+  width: 0.8em;
+  height: 0.8em;
+  border-radius: 50%;
+  border: 1px solid var(--deuda);
+  background: linear-gradient(90deg, var(--deuda) 50%, transparent 50%);
+}
+
+.payment-chip--unknown {
+  color: var(--critico);
+  background: var(--superficie);
+}
+
+/* `Ventas`'s list: one `SaleCard` per sale (`Pedidos.dc.html`, the GH-928 drawing decisions), the
+ * same card at every width. Tokens only; the card's text uses the pairs the design README already
+ * lists (--tinta, --tinta2 on --papel). Two columns: the text (name, product line, date) takes what
+ * the right column leaves, the total and the chip. The right column sizes to its content up to 60%,
+ * so the chip may wrap between words but the total and the chip never shrink and an amount is never
+ * cut: each money figure is its own nowrap element. */
+.sale-card-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.sale-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) fit-content(60%);
+  grid-template-areas:
+    "name total"
+    "items chip"
+    "date chip";
+  align-items: center;
+  column-gap: var(--espacio-md);
+  row-gap: 2px;
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-sm) 0;
+  border-bottom: 1px solid var(--linea);
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.sale-card:last-child {
+  border-bottom: 0;
+}
+
+.sale-card__name {
+  grid-area: name;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.sale-card__items {
+  grid-area: items;
+  display: flex;
+  gap: var(--espacio-xs);
+  min-width: 0;
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
+.sale-card__item {
+  flex: 0 10 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sale-card__more {
+  flex: none;
+  white-space: nowrap;
+}
+
+.sale-card__total {
+  grid-area: total;
+  justify-self: end;
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.sale-card .payment-chip {
+  grid-area: chip;
+  justify-self: end;
+  align-self: start;
+  flex-shrink: 0;
+  max-width: 100%;
+}
+
+.sale-card .payment-chip .cifra-n {
+  white-space: nowrap;
+}
+
+.sale-card__date {
+  grid-area: date;
+  font-size: 13px;
+  color: var(--tinta2);
+}
+
 /* Customers segmented control: the wrapper sizes the shared option, which splits the width
  * equally and may wrap its label and count (no nowrap, no ellipsis) and grow past 44 px. */
 .segmentos-clientes .selector-pago__opcion {
@@ -7384,4 +7970,289 @@ button:has(> .venta-en-curso) {
 /* A count's dot and figure stay one unit; the colour is the option's own. */
 .selector-pago__cuenta {
   display: inline-block;
+}
+
+/* New sale's Sheet (`NuevaVentaSheet`, drawings NuevaVenta and NuevaVentaOscuro): the Customer row and the
+ * sale bar. The text column may shrink (`min-width: 0`) and each line is one line with an ellipsis; Change
+ * keeps its label and a thumb-sized target. The bar sits in `.sheet__actions` (sticky on a phone only):
+ * a static row at the end of the form on a computer. */
+.nv-cliente {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  padding: var(--espacio-md) 0;
+}
+
+.nv-cliente__texto {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.nv-cliente__nombre,
+.nv-cliente__linea {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.nv-cliente__nombre {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.nv-cliente__linea {
+  font-size: 14px;
+  color: var(--tinta2);
+}
+
+.nv-cliente > .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: var(--alto-tocable);
+  min-height: var(--alto-tocable);
+  white-space: nowrap;
+}
+
+.sale-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+}
+
+.sale-bar__estado {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 15px;
+  color: var(--tinta);
+}
+
+.sale-bar__cifra {
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.sale-bar > button {
+  flex: none;
+  min-width: var(--alto-tocable);
+  min-height: var(--alto-tocable);
+}
+
+/* ===== ajustes-inicio ===== */
+/* Settings home list (`SettingsNav`): a strip of three shortcuts, then each group's rows in one card.
+ * Tokens only, so light and dark follow the theme. Pressed state, no hover-only behaviour. */
+.ajustes-inicio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xl);
+}
+
+.ajustes-inicio ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ajustes-inicio__atajos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: var(--espacio-sm);
+}
+
+.ajustes-inicio__atajo-celda {
+  display: flex;
+}
+
+.ajustes-inicio__atajo {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--espacio-sm);
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-md) var(--espacio-sm);
+  border-bottom: 0;
+  background-color: var(--superficie);
+  border-radius: var(--radio-panel);
+  color: var(--tinta);
+  text-decoration: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.ajustes-inicio__ficha {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radio-campo);
+  background: var(--acento-suave);
+  color: var(--acento);
+}
+
+.ajustes-inicio__atajo-rotulo {
+  font-size: 13px;
+  text-align: center;
+  color: var(--tinta);
+}
+
+.ajustes-inicio__grupo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-sm);
+}
+
+.ajustes-inicio__titulo {
+  margin: 0;
+  padding: 0 var(--espacio-xs);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tinta2);
+}
+
+.ajustes-inicio__tarjeta {
+  background-color: var(--superficie);
+  border-radius: var(--radio-panel);
+  overflow: hidden;
+}
+
+.ajustes-inicio__fila-celda + .ajustes-inicio__fila-celda {
+  border-top: 1px solid var(--linea);
+}
+
+.ajustes-inicio__fila {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  padding: var(--espacio-md) var(--espacio-lg);
+  border-bottom: 0;
+  background-color: var(--superficie);
+  color: var(--tinta);
+  text-decoration: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.ajustes-inicio__icono,
+.ajustes-inicio__flecha {
+  display: flex;
+  flex: none;
+  color: var(--tinta2);
+}
+
+.ajustes-inicio__textos {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--espacio-xs);
+  min-width: 0;
+}
+
+.ajustes-inicio__rotulo {
+  color: var(--tinta);
+}
+
+.ajustes-inicio__detalle {
+  font-size: 13px;
+  color: var(--tinta2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ajustes-inicio__atajo:active {
+  background-color: var(--papel);
+  transition: none;
+}
+
+.ajustes-inicio__fila:active {
+  background-color: var(--papel);
+  transition: none;
+}
+
+/* They also wear `.ajustes__item`, whose shared pressed rule fills with --superficie (the card's own
+ * colour here): the pressed fill of this list stays --papel, named with a stronger selector. */
+.ajustes-inicio__atajo.ajustes__item:active:not(:disabled):not([aria-disabled='true']),
+.ajustes-inicio__fila.ajustes__item:active:not(:disabled):not([aria-disabled='true']) {
+  background-color: var(--papel);
+}
+/* The row of the page being read (`activeKey`): not colour alone, a bar and a heavier label. The
+ * bar is an inset shadow, so the row's box does not change; the `:active` rules above write
+ * background-color only. Tokens only. */
+.ajustes-inicio__fila.ajustes-inicio__fila--actual {
+  box-shadow: inset var(--espacio-xs) 0 0 var(--acento);
+}
+
+.ajustes-inicio__fila--actual .ajustes-inicio__rotulo {
+  font-weight: 600;
+}
+/* ===== end ajustes-inicio ===== */
+
+/* ===== ajustes-inicio: frame and Business card (`SettingsHome`) ===== */
+/* The card is read-only: no pressed state, no chevron. Its count slot has a fixed height so the
+ * card does not move when the count arrives. Tokens only. */
+.ajustes-inicio__marco {
+  min-width: 0;
+}
+
+.ajustes-inicio__encabezado {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.ajustes-inicio-tarjeta__tarjeta {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-md);
+  min-width: 0;
+  padding: var(--espacio-lg);
+  background-color: var(--superficie);
+  border-radius: var(--radio-panel);
+}
+
+.ajustes-inicio-tarjeta__inicial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radio-campo);
+  background: var(--acento-suave);
+  color: var(--acento);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.ajustes-inicio-tarjeta__textos {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.ajustes-inicio-tarjeta__nombre {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.ajustes-inicio-tarjeta__cantidad {
+  min-height: 20px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--tinta2);
 }

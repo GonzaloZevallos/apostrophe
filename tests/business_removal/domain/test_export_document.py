@@ -2,10 +2,19 @@
 references including the composite expense foreign key and variety-following
 labels, and that no password hash, invitation or digest ever reaches the document."""
 
+import base64
 from datetime import date, datetime
 from typing import Any
 
-from app.business_removal.domain.export_document import Business, build_document, id_sets
+import pytest
+
+from app.business_removal.domain.export_document import (
+    Business,
+    ExportKeyCollision,
+    UnencodableBinary,
+    build_document,
+    id_sets,
+)
 from app.business_removal.domain.schema import Column, ColumnType, ForeignKey, Schema, Table
 
 
@@ -204,6 +213,65 @@ def test_the_composite_expense_foreign_key_references_the_category_by_id_alone()
     assert "business_id" not in category
 
 
+def test_an_expense_with_no_payment_method_exports_none_and_no_business_id() -> None:
+    schema = Schema(
+        (
+            Table(
+                "expense_category",
+                (_col("id", primary_key=True), _col("business_id"), _col("name")),
+                (),
+            ),
+            Table(
+                "payment_method",
+                (_col("id", primary_key=True), _col("business_id"), _col("name")),
+                (),
+            ),
+            Table(
+                "expense",
+                (
+                    _col("id", primary_key=True),
+                    _col("business_id"),
+                    _col("expense_category_id"),
+                    _col("amount"),
+                    _col("payment_method_id"),
+                ),
+                (
+                    ForeignKey(
+                        ("business_id", "expense_category_id"),
+                        "expense_category",
+                        ("business_id", "id"),
+                    ),
+                    ForeignKey(
+                        ("business_id", "payment_method_id"),
+                        "payment_method",
+                        ("business_id", "id"),
+                    ),
+                ),
+            ),
+        )
+    )
+    rows: dict[str, list[dict[str, Any]]] = {
+        "expense_category": [{"id": 1, "business_id": 1, "name": "Insumos"}],
+        "payment_method": [{"id": 1, "business_id": 1, "name": "Efectivo"}],
+        "expense": [
+            {
+                "id": 1,
+                "business_id": 1,
+                "expense_category_id": 1,
+                "amount": 500,
+                "payment_method_id": None,
+            },
+        ],
+    }
+
+    document = build_document(BUSINESS, schema, rows, EXPORTED_AT)
+
+    expense = document["kinds"]["expense"][0]
+    assert expense["payment_method_id"] is None
+    assert expense["expense_category_id"] == {"id": 1, "name": "Insumos"}
+    assert "business_id" not in expense
+
+
 def test_a_table_with_no_name_column_is_labelled_by_its_variety() -> None:
     rows: dict[str, list[dict[str, Any]]] = {
         "app_user": [],
@@ -310,3 +378,89 @@ def test_a_business_with_no_phone_country_exports_a_null() -> None:
     )
 
     assert document["business"]["default_phone_country"] is None
+
+
+def _binary_schema(*extra: Column, table_name: str = "logo", binary: str = "image") -> Schema:
+    return Schema(
+        (
+            Table(
+                table_name,
+                (
+                    Column("id", ColumnType.INTEGER, nullable=False, primary_key=True),
+                    Column("business_id", ColumnType.INTEGER, nullable=False, primary_key=False),
+                    Column("name", ColumnType.TEXT, nullable=False, primary_key=False),
+                    Column(binary, ColumnType.BINARY, nullable=True, primary_key=False),
+                    *extra,
+                ),
+                (),
+            ),
+        )
+    )
+
+
+def _binary_record(value: object, schema: Schema | None = None) -> dict[str, Any]:
+    rows = {"logo": [{"id": 1, "business_id": 1, "name": "x", "image": value}]}
+    document = build_document(BUSINESS, schema or _binary_schema(), rows, EXPORTED_AT)
+    record: dict[str, Any] = document["kinds"]["logo"][0]
+    return record
+
+
+@pytest.mark.parametrize("wrap", [bytes, bytearray, memoryview])
+def test_a_binary_value_is_standard_padded_base64_under_the_base64_key(wrap: Any) -> None:
+    stored = b"\x89PNG\r\n\x1a\n\x00\xff\xfe"
+
+    record = _binary_record(wrap(stored))
+
+    assert "image" not in record
+    assert record["image_base64"] == base64.b64encode(stored).decode("ascii")
+    assert base64.b64decode(record["image_base64"], validate=True) == stored
+    assert record["image_base64"].endswith("=")
+
+
+def test_a_null_binary_value_is_null_under_the_base64_key() -> None:
+    record = _binary_record(None)
+
+    assert record["image_base64"] is None
+    assert "image" not in record
+
+
+@pytest.mark.parametrize("value", [12345, "secret-text-value", 1.5, ["a"], True])
+def test_a_non_bytes_value_in_a_binary_column_raises_without_naming_it(value: object) -> None:
+    with pytest.raises(UnencodableBinary) as raised:
+        _binary_record(value)
+
+    message = str(raised.value)
+    assert message == "table 'logo' column 'image' holds a value that is not bytes"
+    assert "secret-text-value" not in message
+
+
+def test_a_binary_column_named_like_a_hundredths_column_is_still_base64() -> None:
+    schema = _binary_schema(binary="x_hundredths")
+    rows = {"logo": [{"id": 1, "business_id": 1, "name": "x", "x_hundredths": b"\x00\x01"}]}
+
+    record = build_document(BUSINESS, schema, rows, EXPORTED_AT)["kinds"]["logo"][0]
+
+    assert record["x_hundredths_base64"] == "AAE="
+    assert "x" not in record
+
+
+def test_an_excluded_binary_column_is_never_written() -> None:
+    schema = _binary_schema(table_name="pinned_catalog", binary="token_ciphertext")
+    rows = {
+        "pinned_catalog": [
+            {"id": 1, "business_id": 1, "name": "x", "token_ciphertext": "not-even-bytes"}
+        ]
+    }
+
+    record = build_document(BUSINESS, schema, rows, EXPORTED_AT)["kinds"]["pinned_catalog"][0]
+
+    assert record == {"id": 1, "name": "x"}
+
+
+def test_a_binary_column_beside_its_own_base64_key_raises_a_collision() -> None:
+    schema = _binary_schema(Column("image_base64", ColumnType.TEXT, True, False))
+
+    with pytest.raises(ExportKeyCollision) as raised:
+        build_document(BUSINESS, schema, {"logo": []}, EXPORTED_AT)
+
+    assert str(raised.value) == "table 'logo' column 'image' collides with its own base64 key"

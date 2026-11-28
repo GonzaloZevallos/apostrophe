@@ -7,6 +7,7 @@ them and `GET /stock` reads `stock_entry` once (GH-125).
 
 from __future__ import annotations
 
+from collections.abc import Collection
 from dataclasses import dataclass
 from datetime import date
 
@@ -20,6 +21,7 @@ from app.stock.application.ports import (
     WithdrawalDraws,
 )
 from app.stock.domain.entry import StockEntry
+from app.stock.domain.movement_order import ENTRY_RANK, MovementKey
 from app.stock.domain.stock_level import StockLevel, stock_level
 from app.stock.domain.threshold import Threshold
 
@@ -70,12 +72,39 @@ def read_stock(
         for variety_id in sorted(catalog.archived_ids() if archived else catalog.listed_ids())
     ]
 
-    sorted_entries = sorted(
-        business.entries,
-        key=lambda entry: (entry.entry_date, entry.recorded_at, entry.id),
-        reverse=True,
-    )
+    sorted_entries = sorted(business.entries, key=_newest_first)
     return StockView(Quantity(total), varieties, sorted_entries)
+
+
+def _newest_first(entry: StockEntry) -> tuple[int, int, int, int]:
+    assert entry.id is not None
+    return MovementKey(entry.entry_date, entry.recorded_at, ENTRY_RANK, entry.id).newest_first()
+
+
+def read_varieties_stock(
+    entries: StockEntries,
+    draws: Draws,
+    withdrawals: WithdrawalDraws,
+    variety_ids: Collection[int],
+    today: date,
+    *,
+    thresholds: Thresholds | None = None,
+) -> dict[int, VarietyStock]:
+    """The same computation as `read_stock`, narrowed to `variety_ids`: one `history`
+    over all of them, so N varieties cost three statements, not 3N. Every requested id
+    gets an entry; one with no movements has quantity 0. Without `thresholds` no
+    variety has a threshold."""
+    wanted = set(variety_ids)
+    if not wanted:
+        return {}
+    grouped = history(entries, draws, withdrawals, wanted)
+    result: dict[int, VarietyStock] = {}
+    for variety_id in wanted:
+        lots, variety_draws = grouped.get(variety_id, ([], []))
+        threshold = thresholds.get(variety_id) if thresholds is not None else None
+        level = stock_level(lots, variety_draws, threshold, today)
+        result[variety_id] = VarietyStock(variety_id, level, threshold)
+    return result
 
 
 def read_variety_stock(
@@ -89,9 +118,6 @@ def read_variety_stock(
     """The same computation as `read_stock`, narrowed to one variety: used after
     `set_threshold` writes, so the route can answer that variety's own row without a
     second full sweep."""
-    narrowed = {variety_id}
-    grouped = history(entries, draws, withdrawals, narrowed)
-    lots, variety_draws = grouped.get(variety_id, ([], []))
-    threshold = thresholds.get(variety_id)
-    level = stock_level(lots, variety_draws, threshold, today)
-    return VarietyStock(variety_id, level, threshold)
+    return read_varieties_stock(
+        entries, draws, withdrawals, {variety_id}, today, thresholds=thresholds
+    )[variety_id]

@@ -1,7 +1,7 @@
 /** Sales and collections (`sales.md`, `payments.md`): the forms, sheets and dialogs the walk visits. Nothing here reaches the backend: a save is answered by its stub. */
 
 import { CUSTOMER, CUSTOMERS, HOME, SALE, SALE_NEW, SALES } from '../routes.ts'
-import { common, emptyState } from './copy.ts'
+import { common, emptyState, expenses, sales } from './copy.ts'
 import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
@@ -24,6 +24,7 @@ export const RECORDED_EXPENSE_BODY = {
   category_id: 1,
   amount: 1500,
   detail: 'Cinta',
+  payment_method: null,
 } satisfies Expense
 
 /** Line 1 with a Product and its grams, then the Expense tile: the strip is over the form. The first tap is a click on the text, as the registry rows say it (a row's step text must be a copy value). */
@@ -41,6 +42,115 @@ const TWELVE_PRODUCTS = Array.from({ length: 12 }, (_unused, index) => ({
   archived: false,
   current_price: null,
 }))
+
+/**
+ * The shape of one `GET /sales` row, as `Sale` (`api/sales.ts`) spells it. Not imported: this core
+ * is compiled under `tsconfig.node.json`, whose `nodenext` resolution refuses `api/sales.ts`'s own
+ * extensionless imports (`npm --prefix web run typecheck` with the import in place: `src/api/sales.ts(11,31):
+ * error TS2835 ... Did you mean './client.js'?`, and once those are fixed the same error spreads through
+ * `sales/pricing.ts` to `screens/Variedades`). The real `Sale` check is `UNKNOWN_PAYMENT_SALES satisfies readonly Sale[]` in `states.test.ts`, which tsconfig.app compiles.
+ */
+interface StubSale {
+  id: number
+  number: number
+  date: string
+  customer: { id: number; name: string; vip: boolean } | null
+  shipping_charged: number
+  note: string | null
+  payment: 'paid' | 'owing' | 'none'
+  total: number
+  lines: {
+    product_id: number
+    product_name: string
+    quantity: number
+    pricing_rule: 'list'
+    customer_type_name: string | null
+    price_per_gram: number
+    line_total: number
+  }[]
+  still_owing: boolean
+  payment_state: 'paid' | 'unpaid' | 'part_paid' | null
+  still_owed: number | null
+  payment_method: { id: number; name: string; icon: string } | null
+}
+
+/** One ordinary line every stub sale below carries. */
+const ORDINARY_LINE: StubSale['lines'][number] = {
+  product_id: 1,
+  product_name: 'Golden Cookies',
+  quantity: 1000,
+  pricing_rule: 'list',
+  customer_type_name: null,
+  price_per_gram: 10,
+  line_total: 10000,
+}
+
+/** The sale whose payment facts cannot be reconciled: both fields null, so its card draws the degraded chip line. */
+export const UNKNOWN_PAYMENT_ROW = {
+  id: 9004,
+  number: 4,
+  date: '2026-09-16',
+  customer: { id: 9004, name: 'Dora Vega', vip: false },
+  shipping_charged: 0,
+  note: null,
+  payment: 'owing',
+  total: 10000,
+  lines: [ORDINARY_LINE],
+  still_owing: true,
+  payment_state: null,
+  still_owed: null,
+  payment_method: null,
+} satisfies StubSale
+
+/** `GET /sales` for the unknown-payment state: a paid, an unpaid, a part-paid and an unknown-payment sale, each for its own customer. */
+export const UNKNOWN_PAYMENT_SALES = [
+  {
+    id: 9001,
+    number: 1,
+    date: '2026-09-16',
+    customer: { id: 9001, name: 'Ana Ruiz', vip: false },
+    shipping_charged: 0,
+    note: null,
+    payment: 'paid',
+    total: 10000,
+    lines: [ORDINARY_LINE],
+    still_owing: false,
+    payment_state: 'paid',
+    still_owed: 0,
+    payment_method: { id: 1, name: 'Cash', icon: 'banknote' },
+  },
+  {
+    id: 9002,
+    number: 2,
+    date: '2026-09-16',
+    customer: { id: 9002, name: 'Beto Sosa', vip: false },
+    shipping_charged: 0,
+    note: null,
+    payment: 'owing',
+    total: 10000,
+    lines: [ORDINARY_LINE],
+    still_owing: true,
+    payment_state: 'unpaid',
+    still_owed: 10000,
+    payment_method: null,
+  },
+  {
+    id: 9003,
+    number: 3,
+    date: '2026-09-16',
+    customer: { id: 9003, name: 'Caro Paz', vip: false },
+    shipping_charged: 0,
+    note: null,
+    payment: 'owing',
+    total: 10000,
+    lines: [ORDINARY_LINE],
+    still_owing: true,
+    payment_state: 'part_paid',
+    still_owed: 4000,
+    payment_method: null,
+  },
+  UNKNOWN_PAYMENT_ROW,
+] satisfies readonly StubSale[]
 
 export const SALES_STATES: readonly WalkState[] = [
   {
@@ -179,7 +289,7 @@ export const SALES_STATES: readonly WalkState[] = [
     route: SALE_NEW,
     steps: [
       { click: SALES_TEXT.expense },
-      { fill: { label: EXPENSES_TEXT.details, value: 'Cinta' } },
+      { fill: { label: expenses('expenses:form.detailsOptional'), value: 'Cinta' } },
       { activate: common('common:close') },
     ],
     visible: EXPENSES_TEXT.discardTheExpense,
@@ -210,8 +320,9 @@ export const SALES_STATES: readonly WalkState[] = [
   },
   {
     // The same sale, an Expense saved and the way back: New sale with the toast and line 1 still there.
-    // The required fields of the expense form (`ExpenseForm`): Category (`common:category`, a Selector), Amount
-    // (`common:amount`) and Details (`EXPENSES_TEXT.details`); Date starts at today. Save is `EXPENSES_TEXT.saveTheExpense`.
+    // The required fields of the expense form (`ExpenseForm`): Category (`common:category`, a Selector) and Amount
+    // (`common:amount`); Details is optional (`expenses:form.detailsOptional`) and Date starts at today. Save carries
+    // the amount (`expenses:form.saveWithAmount`).
     screen: 'sale/expense-returned',
     route: SALE_NEW,
     steps: [
@@ -219,8 +330,8 @@ export const SALES_STATES: readonly WalkState[] = [
       { click: EXPENSES_TEXT.pickACategory },
       { press: 'Packaging' },
       { fill: { label: common('common:amount'), value: '1500' } },
-      { fill: { label: EXPENSES_TEXT.details, value: 'Cinta' } },
-      { click: EXPENSES_TEXT.saveTheExpense },
+      { fill: { label: expenses('expenses:form.detailsOptional'), value: 'Cinta' } },
+      { click: expenses('expenses:form.saveWithAmount', { amount: '$ 1.500' }) },
       // Line 1's total is on New sale again: the sale is intact.
       { wait: SALE_IN_PROGRESS_LINE.total },
     ],
@@ -238,8 +349,8 @@ export const SALES_STATES: readonly WalkState[] = [
   {
     screen: 'VentaBorrar',
     route: SALE.replace(':id', '{owing_sale}'),
-    steps: [{ click: SALES_TEXT.deleteSale }],
-    visible: common('common:yesDelete'),
+    steps: [{ click: sales('sales:detail.void') }],
+    visible: sales('sales:detail.yesVoid'),
   },
   {
     screen: 'CobroDesdeClientes',
@@ -308,5 +419,15 @@ export const SALES_STATES: readonly WalkState[] = [
     route: SALES,
     steps: [{ click: SALES_TEXT.dates }],
     visible: SALES_TEXT.to,
+  },
+  {
+    // The Sales list with a sale whose payment cannot be shown, so the walk visits the degraded chip line beside the other three.
+    // The stub answers `/sales` for any date range. The wait is the sale's own customer: the degraded sentence lives in the `sales:` namespace the browserless core cannot load.
+    screen: 'sales/unknown-payment',
+    route: SALES,
+    steps: [],
+    visible: UNKNOWN_PAYMENT_ROW.customer.name,
+    reads: [{ path: /^\/sales$/, status: 200, body: UNKNOWN_PAYMENT_SALES }],
+    offendersAs: 'Ventas',
   },
 ]

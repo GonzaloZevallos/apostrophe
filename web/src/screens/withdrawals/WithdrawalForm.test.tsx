@@ -11,6 +11,7 @@ import { stubViewport } from '../../test-viewport'
 import contract from '../../api/contract.json'
 import WITHDRAWAL from '../../api/fixtures/withdrawal.json'
 import { VARIETIES as VARIETIES_PATH, WITHDRAWAL as WITHDRAWAL_PATH, WITHDRAWAL_EDIT, WITHDRAWAL_NEW, pathTo, withdrawalNewFor } from '../../routes'
+import { tapStock } from '../varieties/renderVarieties'
 import { REASONS, jsonResponse, pickReason, pickVariety, reasonField, renderWithdrawals, varietyField } from './renderWithdrawals'
 import { LIMITS } from '../../copy/limits'
 import emptyStates from '../../copy/locales/en/emptyStates.json'
@@ -22,6 +23,7 @@ afterEach(() => {
 
 async function openFromVariedades() {
   const view = renderWithdrawals([VARIETIES_PATH], async () => jsonResponse(404, {}))
+  await tapStock()
   await userEvent.click(await screen.findByRole('link', { name: 'Take from stock' }))
   await varietyField(1)
   return view
@@ -242,6 +244,7 @@ test('saves with every line, a trimmed note, then shows "Withdrawal saved" where
     }
     return jsonResponse(404, {})
   })
+  await tapStock()
   await userEvent.click(await screen.findByRole('link', { name: 'Take from stock' }))
   await pickReason('Marketing')
   await pickVariety(1, 'Zkittlez')
@@ -279,6 +282,7 @@ test('a refusal shows inline by its code and keeps everything typed', async () =
     }
     return jsonResponse(404, {})
   })
+  await tapStock()
   await userEvent.click(await screen.findByRole('link', { name: 'Take from stock' }))
   await pickReason('Own use')
   await pickVariety(1, 'Gelato')
@@ -462,7 +466,7 @@ test.each([
 })
 
 test.each([
-  ['reasons', 'No reasons yet. Add them in Settings → Business → Withdrawal reasons.'],
+  ['reasons', 'No reasons yet. Add them in Settings → Withdrawal reasons.'],
   ['Varieties', 'No products yet. Add them in the Products tab.'],
 ] as const)('an empty successful load of the %s names the place where they are made', async (which, wording) => {
   renderWithdrawals(

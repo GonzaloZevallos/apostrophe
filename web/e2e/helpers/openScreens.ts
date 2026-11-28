@@ -1,5 +1,6 @@
 import { ANALYSIS, CATALOG, EXPENSES, HOME, WITHDRAWAL_NEW } from '../../src/routes.js'
 import { expectPath } from './url.js'
+import { openStockSegment } from './stockSegment.js'
 import { expect } from '../fixtures.js'
 import type { Page } from '@playwright/test'
 
@@ -54,6 +55,7 @@ export async function openGastos(page: Page): Promise<void> {
 export async function openTakeFromStock(page: Page): Promise<void> {
   await onPhone(page, async () => {
     await page.getByRole('link', { name: 'Products', exact: true }).click()
+    await openStockSegment(page)
     await page.getByRole('link', { name: 'Take from stock' }).click()
     await expectPath(page, WITHDRAWAL_NEW)
     await expect(page.getByRole('button', { name: 'Close' })).toBeVisible()
@@ -70,4 +72,13 @@ export async function openCatalog(page: Page): Promise<void> {
     await expectPath(page, CATALOG)
     await expect(page.getByRole('heading', { name: 'Catalog', level: 1 })).toBeVisible()
   })
+}
+
+/** Customers' "All" segment: the screen opens on "Owed to you", and a customer who owes nothing, or has
+ * credit, is only on the full list. Call it once the screen is reached; it waits for the segment to
+ * be the chosen one. */
+export async function openAllCustomers(page: Page): Promise<void> {
+  const all = page.getByRole('radiogroup', { name: 'Customers view' }).getByRole('radio', { name: 'All', exact: true })
+  await all.click()
+  await expect(all).toBeChecked()
 }

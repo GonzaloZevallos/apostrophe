@@ -1,10 +1,11 @@
 /**
- * `feedback.ts` is the only reader and writer of navigation (`location.state`)
- * in the app (plan, "Shape"; invariants): every screen gets to history state
- * through the functions here, never by building or reading an object literal
- * itself — so the closed set below is the whole of what can ever ride in it,
- * and a stray name, note, amount or phone number can't sneak in through a
- * screen's own `navigate(..., { state: {...} })`.
+ * `feedback.ts` holds the closed set of feedback markers that ride in navigation
+ * (`location.state`) (plan, "Shape"; invariants): every screen gets to those
+ * markers through the functions here, never by building or reading an object
+ * literal itself — so a stray name, note, amount or phone number can't sneak in
+ * through a screen's own `navigate(..., { state: {...} })`. `inAppState.ts`
+ * (`inApp`, `from`) and `screens/varieties/productsSegment.ts` (the Products
+ * segment) are sibling history-state writers, each the only writer of its own keys.
  *
  * Three kinds of marker live here:
  * - a success toast key from `TOAST_MESSAGES`, written through `toast(key)`,

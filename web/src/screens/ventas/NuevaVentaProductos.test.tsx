@@ -29,8 +29,8 @@ const price = (list: number, bulk: number | null = null, minimum: number | null 
 const product = (id: number, name: string, current_price: Price | null) => ({ id, name, archived: false, current_price })
 
 const TODAY = '2026-10-02'
-const LATER = '2026-10-05'
-const THIRD = '2026-10-09'
+const OTHER_DAY = '2026-09-28'
+const THIRD_DAY = '2026-09-25'
 const PRODUCTS = [
   product(1, 'Rosa', price(1000, 800, 10)),
   product(2, 'Árbol', price(500)),
@@ -134,8 +134,8 @@ function Harness({ initialCustomer = null, format = { symbol: '$', decimals: 0 }
   const pricing = pricedSaleOf({ ...reads, customerTypeId: customer, lines: draft.state.lines, shipping: '0', format })
   return (
     <MoneyFormatProvider format={format}>
-      <button type="button" onClick={() => draft.setDate(LATER)}>change date</button>
-      <button type="button" onClick={() => draft.setDate(THIRD)}>change to third date</button>
+      <button type="button" onClick={() => draft.setDate(OTHER_DAY)}>change date</button>
+      <button type="button" onClick={() => draft.setDate(THIRD_DAY)}>change to third date</button>
       <button type="button" onClick={() => draft.typeQuantity(1, '0.35')}>type 0.35</button>
       <button type="button" onClick={() => draft.typeQuantity(1, '2.5')}>type 2.5</button>
       <button type="button" onClick={() => draft.typeQuantity(1, 'abc')}>type bad</button>
@@ -146,7 +146,7 @@ function Harness({ initialCustomer = null, format = { symbol: '$', decimals: 0 }
       {second ? <SecondObserver date={draft.state.date} /> : null}
       <output aria-label="totals">{JSON.stringify(draft.state.lines)}</output>
       <ContentArea as="main" aria-label="list under test">
-        <NuevaVentaProductos {...reads} customerTypeId={customer} draft={draft} pricing={pricing} />
+        <NuevaVentaProductos {...reads} customerTypeId={customer} draft={draft} pricing={pricing} onOpenLine={() => undefined} />
       </ContentArea>
     </MoneyFormatProvider>
   )
@@ -268,12 +268,12 @@ test('a pending Customer keeps the names, stock and steppers, marks the prices a
 })
 
 test('a date change re-prices without asking for suggestions again; a line that loses its price stays', async () => {
-  productsByDate.set(LATER, [product(1, 'Rosa', null), product(2, 'Árbol', price(700)), product(4, 'Tulipán', price(300))])
+  productsByDate.set(OTHER_DAY, [product(1, 'Rosa', null), product(2, 'Árbol', price(700)), product(4, 'Tulipán', price(300))])
   renderList()
   await click('Add Rosa')
   await click('Add Árbol')
   await userEvent.click(screen.getByRole('button', { name: 'change date' }))
-  await waitFor(() => expect(requests).toContain(`/api/products?on=${LATER}`))
+  await waitFor(() => expect(requests).toContain(`/api/products?on=${OTHER_DAY}`))
   const line = within(await row('Rosa'))
   expect(await line.findByText('No price')).toBeInTheDocument()
   expect(line.queryByRole('button', { name: 'Add one Rosa' })).toBeNull()
@@ -284,7 +284,7 @@ test('a date change re-prices without asking for suggestions again; a line that 
 })
 
 test('a line whose Product the answer omits is "no longer available", priced "No price" and removable', async () => {
-  productsByDate.set(LATER, [product(2, 'Árbol', price(700))])
+  productsByDate.set(OTHER_DAY, [product(2, 'Árbol', price(700))])
   renderList()
   await click('Add Rosa')
   await userEvent.click(screen.getByRole('button', { name: 'change date' }))
@@ -297,7 +297,7 @@ test('a line whose Product the answer omits is "no longer available", priced "No
 
 test('the hint shows for both kinds and follows the date', async () => {
   productsByDate.set(TODAY, [])
-  productsByDate.set(LATER, [product(1, 'Rosa', null)])
+  productsByDate.set(OTHER_DAY, [product(1, 'Rosa', null)])
   renderList()
   expect(await screen.findByText('No products yet. Add them in the Products tab.')).toBeInTheDocument()
   await userEvent.click(screen.getByRole('button', { name: 'change date' }))
@@ -405,7 +405,7 @@ test('a line above its Stock leaves the stock text unchanged', async () => {
 
 test('the hint is hidden while the list loads or refreshes, and back when the figures are in', async () => {
   productsByDate.set(TODAY, [product(1, 'Rosa', null)])
-  productsByDate.set(LATER, [])
+  productsByDate.set(OTHER_DAY, [])
   held = new Set(['products'])
   renderList()
   await waitFor(() => expect(gates.has('products')).toBe(true))
@@ -426,7 +426,7 @@ test('the hint is hidden while the list loads or refreshes, and back when the fi
 })
 
 test('a date change keeps the lines and their steppers, marks the prices and lets a "+" raise the quantity', async () => {
-  productsByDate.set(LATER, [product(1, 'Rosa', price(1200, 900, 10)), product(2, 'Árbol', price(700))])
+  productsByDate.set(OTHER_DAY, [product(1, 'Rosa', price(1200, 900, 10)), product(2, 'Árbol', price(700))])
   renderList()
   await click('Add Rosa')
   held = new Set(['products'])
@@ -525,7 +525,7 @@ test('a read after a failure shows the skeleton again, then the list, never the 
   expect(await within(area()).findByRole('alert')).toBeInTheDocument()
   expect(isBusy()).toBe(false)
   held = new Set(['products'])
-  productsByDate.set(THIRD, [product(1, 'Rosa', price(1111))])
+  productsByDate.set(THIRD_DAY, [product(1, 'Rosa', price(1111))])
   await userEvent.click(screen.getByRole('button', { name: 'change to third date' }))
   await waitFor(() => expect(gates.has('products')).toBe(true))
   await waitFor(() => expect(isBusy()).toBe(true))
@@ -542,7 +542,7 @@ test('after a failure, a reconnect reads again and the list replaces the notice 
   renderList()
   await click('Add Árbol')
   await userEvent.click(screen.getByRole('button', { name: 'Add one Árbol' }))
-  productsByDate.set(LATER, [product(2, 'Árbol', price(700))])
+  productsByDate.set(OTHER_DAY, [product(2, 'Árbol', price(700))])
   broken.set('products', 'server')
   await userEvent.click(screen.getByRole('button', { name: 'change date' }))
   expect(await within(area()).findByRole('alert')).toBeInTheDocument()
@@ -561,7 +561,7 @@ test('after a failure, a reconnect reads again and the list replaces the notice 
 test('after a failure, a focus event reads again and the list replaces the notice with the entered quantities', async () => {
   renderList()
   await click('Add Árbol')
-  productsByDate.set(LATER, [product(2, 'Árbol', price(700))])
+  productsByDate.set(OTHER_DAY, [product(2, 'Árbol', price(700))])
   broken.set('products', 'server')
   await userEvent.click(screen.getByRole('button', { name: 'change date' }))
   expect(await within(area()).findByRole('alert')).toBeInTheDocument()
@@ -809,7 +809,7 @@ test('typing leaves the Sale in progress unchanged', async () => {
 })
 
 test('a line whose Product is gone never matches and comes back once the search is cleared', async () => {
-  productsByDate.set(LATER, [product(2, 'Árbol', price(700))])
+  productsByDate.set(OTHER_DAY, [product(2, 'Árbol', price(700))])
   renderList()
   await click('Add Rosa')
   await userEvent.click(screen.getByRole('button', { name: 'change date' }))
@@ -835,7 +835,7 @@ test('while the reads are held the field shows and keeps its text, and no result
 })
 
 test('searching while a date change refreshes shows the matches with price marks and no "+", then the prices', async () => {
-  productsByDate.set(LATER, [product(1, 'Rosa', price(1200)), product(2, 'Árbol', price(700))])
+  productsByDate.set(OTHER_DAY, [product(1, 'Rosa', price(1200)), product(2, 'Árbol', price(700))])
   renderList()
   await click('Add Rosa')
   await userEvent.type(field(), 'ár')
