@@ -100,8 +100,12 @@ El chip dibuja esa oración y la tarjeta la lleva en su nombre accesible, así q
 - **Lo que se fue, para siempre**: las filas `.lista-ventas`/`.fila-venta*`, la marca "owes you" con su total ámbar (`SALES_TEXT.owesYou`, sacado del Copy module y de `en.baseline.json`), la insignia VIP y los gramos de cada venta. Ninguno vuelve, ni visible ni oculto (D-69509906). La lista ya no lee la configuración de precios para la insignia VIP, así que abrir Sales hace un pedido menos. El conteo de **Sales still owing** ya no se muestra en Sales: se ve solo en el bloque "Owed to you" de Home.
 - **En la computadora**: las mismas tarjetas, más anchas, sin pulido dedicado (**Phone first**). `Ventas.dc.html` y `VentasCompu.dc.html` quedan reemplazados para la lista (decisiones 1 y 2 del humano en GH-928).
 - **Sin filtro ni orden por estado**: la lista no filtra ni ordena por Payment state.
-- **Salida ante "Payment can't be shown"**: abrir la venta. El detalle de la Sale muestra cómo se pagó, no el `payment_state` ni el `still_owed`; lo que se debe se lee en la cuenta del Customer.
+- **Salida ante "Payment can't be shown"**: abrir la venta no lo resuelve, porque el detalle muestra el mismo chip con la misma regla (GH-1201); lo que se debe se lee en la cuenta del Customer.
 - **e2e**: los localizadores de la lista son `.sale-card`; `payments.spec.ts` encuentra la tarjeta por `.sale-card__total` y espera que su `.payment-chip` diga `Unpaid`.
+
+### En pantalla: el detalle de la Sale
+
+Desde GH-1201, el detalle de la Sale (`/sales/:id`, sale-detail.md) muestra el mismo `SalePaymentChip`, dentro de `SaleCustomerCard`, con la misma regla: Paid, Part-paid con lo que se debe, Unpaid, o "Payment can't be shown" con el Attention icon, nunca recalculado. Solo el detalle le pasa un Payment method, y solo para una Sale pagada cuyo medio no es null, así que lee "Paid · <método>" (el nombre actual del medio); `SaleCard` nunca le pasa uno.
 
 ### Textos
 
@@ -145,6 +149,6 @@ Son las palabras exactas de la tabla del Tech Writer que el humano pegó en la d
 
 - Confirmar con la **Design capture** de `/sales` contra `Pedidos.dc.html`, que ningún líder pudo ver antes del merge, que Paid, neutro, se sigue leyendo como parte de la misma familia de chips.
 - Que un chip pagado en parte y uno desconocido se vean en un navegador en el teléfono: el negocio de muestra fijado solo tiene ventas pagadas, y cambiarlo cambia todas las listas de infractores.
-- Decidir si "Payment can't be shown" necesita una forma de resolverlo ahí mismo. Hoy la salida es abrir la Sale.
+- Decidir si "Payment can't be shown" necesita una forma de resolverlo ahí mismo. Hoy la salida es la cuenta del Customer.
 - Volver a tomar `Ventas.webp` después del merge de #1020.
 - Los comentarios de cabecera de `SaleCard.tsx` y `SalePaymentChip.tsx` todavía dicen que no están en ninguna pantalla; ya no es cierto.
