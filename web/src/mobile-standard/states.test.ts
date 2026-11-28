@@ -5,7 +5,7 @@ import { GONE_NOTICE } from '../api/refusals.ts'
 import { recordExpense } from '../api/expenses.ts'
 import { HOME, SALE_NEW } from '../routes.ts'
 import { STATE_NAMES, WALKABLE } from './registry.ts'
-import { common, emptyState, refusal } from './copy.ts'
+import { common, emptyState, expenses, refusal } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { PENDING_TAPS } from './pending.ts'
 import { offendersAsProblems, stateNameProblems, type WalkState } from './states.ts'
@@ -231,8 +231,8 @@ describe('the walked states of an expense over a sale in progress', () => {
       { click: EXPENSES_TEXT.pickACategory },
       { press: 'Packaging' },
       { fill: { label: 'Amount', value: '1500' } },
-      { fill: { label: EXPENSES_TEXT.details, value: 'Cinta' } },
-      { click: EXPENSES_TEXT.saveTheExpense },
+      { fill: { label: expenses('expenses:form.detailsOptional'), value: 'Cinta' } },
+      { click: expenses('expenses:form.saveWithAmount', { amount: '$ 1.500' }) },
       { wait: SALE_IN_PROGRESS_LINE.total },
     ])
     expect(returned.visible).toBe(SALES_TEXT.expenseRecorded)
@@ -249,7 +249,7 @@ describe('the walked states of an expense over a sale in progress', () => {
         return Promise.resolve(new Response('{}', { status: 201 }))
       }),
     )
-    await recordExpense({ spent_on: '2026-01-01', category_id: 1, amount: 1, detail: 'x' })
+    await recordExpense({ spent_on: '2026-01-01', category_id: 1, amount: 1, detail: 'x', payment_method_id: null })
     const sentPath = new URL(sent[0] ?? '', 'http://api.test').pathname
     const stubs = state('sale/expense-returned').writes ?? []
     expect(stubs).toHaveLength(1)
@@ -297,5 +297,26 @@ describe('the walked state sales/unknown-payment', () => {
     const money = moneyFormatter({ symbol: '$', decimals: 0 })
     expect(paymentView('part_paid', null, money).variant).toBe('unknown')
     expect(paymentView('part_paid', 0, money).variant).toBe('unknown')
+  })
+})
+
+describe('the walked states of the expense form', () => {
+  const state = (screen: string): WalkState => {
+    const found = STATES.find((candidate) => candidate.screen === screen)
+    if (found === undefined) throw new Error(`${screen} is not walked`)
+    return found
+  }
+
+  it('opens the How you paid list over the form and ends on a method in it', () => {
+    expect(state('expense/method-selector-open').steps).toEqual([
+      // The button is named by the label then the value shown (the empty wording on a new expense), never the label alone.
+      { press: `${expenses('expenses:form.paymentMethod')} ${expenses('expenses:form.paymentMethodNone')}` },
+    ])
+    expect(state('expense/method-selector-open').visible).toBe(common('common:transfer'))
+  })
+
+  it('types a nine-digit amount and ends on the Save label that carries it', () => {
+    expect(state('expense/amount-nine-digits').steps).toEqual([{ fill: { label: common('common:amount'), value: '123456789' } }])
+    expect(state('expense/amount-nine-digits').visible).toBe('Save expense · $ 123.456.789')
   })
 })

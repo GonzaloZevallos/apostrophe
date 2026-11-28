@@ -18,7 +18,7 @@
  * "Editar", form or removal; its one action is "Restaurar".
  */
 
-import { type ReactNode, useCallback, useEffect, useState } from 'react'
+import { type ReactNode, useCallback, useEffect, useId, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useLocation, useNavigate, useOutletContext } from 'react-router'
 import { ApiError, NetworkError, get } from '../../api/client'
@@ -33,16 +33,12 @@ import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
 import BotonLink from '../../components/BotonLink'
 import Boton from '../../components/Boton'
-import Insignia from '../../components/Insignia'
 import LeaveConfirm from '../../components/LeaveConfirm'
 import Loading from '../../components/Loading'
-import MarcaEstado from '../../components/MarcaEstado'
 import SinConexion from '../../components/SinConexion'
 import Sheet from '../../components/Sheet'
 import { type LeaveGuard, useLeaveGuard } from '../../components/useLeaveGuard'
 import { useFlash } from '../../flash/useFlash'
-import { formatGrams } from '../../format/money'
-import { useMoney } from '../../format/moneyContext'
 import {
   CATALOG_SECTION_ID,
   STOCK_ENTRY_NEW,
@@ -51,11 +47,12 @@ import {
   pathTo,
   withdrawalNewFor,
 } from '../../routes'
-import { NO_PRICE_TODAY, type Variety } from '../Variedades'
+import type { Variety } from '../Variedades'
 import type { PriceRow } from './PriceRows'
 import CatalogAttributesForm from './CatalogAttributesForm'
 import RenameForm from './RenameForm'
 import ThresholdForm from './ThresholdForm'
+import { ProductStateBlock, ProductStateBlockLoading, type ProductState } from './ProductStateBlock'
 import VarietyCatalogSection from './VarietyCatalogSection'
 import { readForm, useOpenForm } from './varietyForms'
 import VarietyRemoval from './VarietyRemoval'
@@ -67,7 +64,6 @@ import VarietyThresholdSection from './VarietyThresholdSection'
 import { useRestore } from './useRestore'
 import { COMMON_TEXT } from '../../copy/common'
 import { VARIETIES_TEXT } from '../../copy/varieties'
-import { OUT_OF_DATE_JOINER } from '../../copy/pinnedCatalog'
 import { DISCARD_DETAIL } from '../../copy/onboarding'
 import ContentArea from '../../components/ContentArea'
 
@@ -108,8 +104,8 @@ function VarietyPageView({
   /** The routed page tells the shell's arrow about its variety; the copy behind the modal has no arrow. */
   publishRecord: boolean
 }) {
-  const money = useMoney()
   const id = String(varietyId)
+  const titleId = useId()
   const me = useOutletContext<Me>()
   const location = useLocation()
   const navigate = useNavigate()
@@ -153,7 +149,7 @@ function VarietyPageView({
     document.getElementById(CATALOG_SECTION_ID)?.scrollIntoView()
   }, [anchored, location.hash])
 
-  const failure = varietyQuery.error ?? pricesQuery.error ?? stockQuery.error ?? archivedCatalogQuery.error
+  const failure = varietyQuery.error ?? pricesQuery.error ?? stockQuery.error
   if (gone || (failure instanceof ApiError && isGone(failure.code))) {
     return <GoneScreen label={COMMON_TEXT.varieties} to={VARIETIES} />
   }
@@ -163,8 +159,7 @@ function VarietyPageView({
   if (
     varietyQuery.data === undefined ||
     pricesQuery.data === undefined ||
-    stockQuery.data === undefined ||
-    (archived && archivedCatalogQuery.data === undefined)
+    stockQuery.data === undefined
   ) {
     return (
       <Card>
@@ -177,6 +172,31 @@ function VarietyPageView({
   const stock = stockQuery.data
   const row = stock.products.find((candidate) => candidate.product_id === varietyId)
   const form = readForm(location.state)
+
+  // The block is built only once the catalog source of this kind has settled: an unknown is
+  // `hidden: null`, never "not shown".
+  const source = archived ? archivedCatalogQuery : catalogQuery
+  const sourceError: Error | null = source.isError ? source.error : null
+  let stateBlock: ReactNode = null
+  if (row !== undefined) {
+    if (source.isPending) {
+      stateBlock = <ProductStateBlockLoading labelledBy={titleId} />
+    } else {
+      const shown = archived ? archivedAttributes?.shown : catalogRow?.shown
+      const hidden = sourceError !== null || shown === undefined ? null : !shown
+      const state: ProductState = archived
+        ? { kind: 'archived', quantity: row.quantity, price: variety.current_price, hidden }
+        : {
+            kind: 'active',
+            quantity: row.quantity,
+            status: row.status,
+            daysLeft: row.days_left,
+            price: variety.current_price,
+            hidden,
+          }
+      stateBlock = <ProductStateBlock labelledBy={titleId} state={state} />
+    }
+  }
 
   function leaveForm(): void {
     void navigate(-1)
@@ -265,33 +285,12 @@ function VarietyPageView({
     <ContentArea as="main" className="pantalla">
       <div className="cuerpo">
         <div className="encabezado-fila">
-          <h1 className="encabezado__titulo">{variety.name}</h1>
+          <h1 id={titleId} className="encabezado__titulo">{variety.name}</h1>
           {!archived && (
             <Boton variant="icon" action="edit" ariaLabel={VARIETIES_TEXT.editarNombre} onClick={() => openForm('rename')} />
           )}
         </div>
-        {row !== undefined && archived && (
-          <>
-            <p className="variedad-resumen variedad-resumen--archivada">
-              <span className="cifra-n">{formatGrams(row.quantity)}</span>
-              {' · '}
-              {variety.current_price === null ? NO_PRICE_TODAY : money.keepTogether(COMMON_TEXT.pricePerGram(money.money(variety.current_price.list_price)))}
-            </p>
-            <div className="variedad-marcas">
-              <Insignia>{VARIETIES_TEXT.archivada}</Insignia>
-              {archivedAttributes !== null && !archivedAttributes.shown && <span className="variedad-resumen__oculta">{VARIETIES_TEXT.oculta}</span>}
-            </div>
-          </>
-        )}
-        {row !== undefined && !archived && (
-          <p className="variedad-resumen">
-            <span className="cifra-n">{formatGrams(row.quantity)}</span>{OUT_OF_DATE_JOINER}<MarcaEstado estado={row.status} />
-            {catalogRow !== null && !catalogRow.shown && <>{OUT_OF_DATE_JOINER}<span className="variedad-resumen__oculta">{VARIETIES_TEXT.oculta}</span></>}
-            {row.days_left !== null && <>{OUT_OF_DATE_JOINER}<span className="cifra-n">{row.days_left}{VARIETIES_TEXT.dias}</span></>}
-            {' · '}
-            {variety.current_price === null ? NO_PRICE_TODAY : money.keepTogether(COMMON_TEXT.pricePerGram(money.money(variety.current_price.list_price)))}
-          </p>
-        )}
+        {stateBlock}
 
         {formSheet}
 
@@ -318,13 +317,18 @@ function VarietyPageView({
           </div>
         )}
 
-        <VarietyStockSection stock={stock} movements={movementsQuery.data} varietyId={varietyId} today={me.today} />
         <VarietyPricesSection
           varietyId={varietyId}
           history={pricesQuery.data}
           currentPriceId={variety.current_price?.id ?? null}
           readOnly={archived}
         />
+        {archived ? (
+          archivedAttributes !== null && <VarietyCatalogSection row={archivedAttributes} readOnly />
+        ) : (
+          catalogRow !== null && <VarietyCatalogSection row={catalogRow} />
+        )}
+        <VarietyStockSection stock={stock} movements={movementsQuery.data} varietyId={varietyId} today={me.today} />
         {row !== undefined && (
           <VarietyThresholdSection
             varietyId={varietyId}
@@ -334,12 +338,7 @@ function VarietyPageView({
             readOnly={archived}
           />
         )}
-        {archived ? (
-          archivedAttributes !== null && <VarietyCatalogSection row={archivedAttributes} readOnly />
-        ) : (
-          catalogRow !== null && <VarietyCatalogSection row={catalogRow} />
-        )}
-        {catalogQuery.isError && (catalogQuery.error instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
+        {sourceError !== null && (sourceError instanceof NetworkError ? <SinConexion /> : <ErrorGenerico />)}
         {!archived && <VarietyRemoval varietyId={varietyId} removal={variety.removal} grams={row?.quantity ?? null} />}
       </div>
       {open === null && leaveConfirm}

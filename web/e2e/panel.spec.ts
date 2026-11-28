@@ -205,7 +205,7 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Phone', { exact: true }).fill('+5491155550077')
   await page.getByLabel('Name', { exact: true }).fill('Carla Pérez')
-  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save', exact: true }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
@@ -272,8 +272,8 @@ test('a seller sees the panel agree with GET /panel, across periods, from the fr
   await page.getByRole('button', { name: /^Category/ }).click()
   await page.getByRole('option', { name: 'Other' }).or(page.getByRole('button', { name: 'Other', exact: true })).click()
   await page.getByLabel('Amount', { exact: true }).fill('1500')
-  await page.getByLabel('Details', { exact: true }).fill('Bolsas de regalo')
-  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
+  await page.getByLabel('Details (optional)', { exact: true }).fill('Bolsas de regalo')
+  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: /^Save expense/ }).click())
 
   // `GET /panel`, read in this same run: the one answer Inicio must agree with,
   // figure for figure, never recomputed here (plan invariant).

@@ -11,13 +11,11 @@
  */
 
 import { useQuery } from '@tanstack/react-query'
-import BotonLink from '../../components/BotonLink'
-import { CUSTOMER_NEW } from '../../routes'
 import { listCustomers } from '../../api/customers'
 import { keys } from '../../api/keys'
 import { useIsVipCustomers } from '../../api/pricingSettings'
-import { COMMON_TEXT } from '../../copy/common'
 import ClienteFila from './ClienteFila'
+import CustomersTitleRow from './CustomersTitleRow'
 import OwedSummary from './OwedSummary'
 import {
   customersListState,
@@ -61,12 +59,7 @@ export default function CustomersBehind() {
   return (
     <div className="pantalla">
       <div className="cuerpo">
-        <div className="clientes__encabezado">
-          <span className="encabezado__titulo">{COMMON_TEXT.customers}</span>
-          <BotonLink to={CUSTOMER_NEW} variant="secondary" icon="agregar">
-            {COMMON_TEXT.newCustomer}
-          </BotonLink>
-        </div>
+        <CustomersTitleRow avatar={false} />
         <div className="campo">
           <span className="campo__input" />
         </div>

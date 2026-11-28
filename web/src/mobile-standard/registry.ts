@@ -105,6 +105,8 @@ export const STATE_NAMES: readonly string[] = [
   'stock-entry/edit-archived-variety-failed',
   'withdrawal/reason-selector-open',
   'expense/category-selector-empty',
+  'expense/method-selector-open',
+  'expense/amount-nine-digits',
   'withdrawal/line-archived-variety',
   'customer/type-selector-open',
   'customer/country-selector-open',

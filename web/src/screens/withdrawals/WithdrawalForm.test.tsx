@@ -466,7 +466,7 @@ test.each([
 })
 
 test.each([
-  ['reasons', 'No reasons yet. Add them in Settings → Business → Withdrawal reasons.'],
+  ['reasons', 'No reasons yet. Add them in Settings → Withdrawal reasons.'],
   ['Varieties', 'No products yet. Add them in the Products tab.'],
 ] as const)('an empty successful load of the %s names the place where they are made', async (which, wording) => {
   renderWithdrawals(

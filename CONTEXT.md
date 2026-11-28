@@ -349,7 +349,7 @@ La persona que maneja la instalación desde afuera de la app. Ejecuta scripts/in
 _Avoid_: admin, administrator, superuser, owner, PM
 
 **Business export**:
-Un archivo JSON con cada dato registrado de un Business tal como está guardado, cada registro con el nombre de aquello a lo que se refiere, sin ninguna cifra calculada, hash de contraseña, secreto ni Invitation. Sus montos van a la Money scale del Business, con `money {scale, decimals}` al lado para leerlos. Se escribe solo como primer paso de la Business removal.
+Un archivo JSON con cada dato registrado de un Business tal como está guardado, cada registro con el nombre de aquello a lo que se refiere, sin ninguna cifra calculada, hash de contraseña, secreto ni Invitation. Sus montos van a la Money scale del Business, con `money {scale, decimals}` al lado para leerlos. Los bytes de una columna binaria van en base64 estándar bajo la clave `<columna>_base64`, tal como están guardados. Se escribe solo como primer paso de la Business removal.
 _Avoid_: backup, dump, archive
 
 **Business removal**:
@@ -419,7 +419,7 @@ Cuáles de Bulk price y Customer types usa un Business: dos interruptores indepe
 _Avoid_: price config, pricing mode, plan, tariff settings
 
 **Money format**:
-El símbolo de la moneda (de 1 a 4 code points de caracteres visibles, sin dos asteriscos seguidos, siempre antes del monto) y los decimales (de 0 a 2) con que un Business muestra y acepta su dinero, "$" y 0 por defecto. Cualquier User cambia el símbolo en Settings → Business → Currency and decimals; subir los decimales por encima de 0 llama al rescale cuando la escala todavía es 0, bajarlos se rechaza mientras algún monto registrado tenga más, y un cambio nunca cambia el valor de un monto. Se guarda en una fila de money_format por Business, junto con la Money scale (ADR-0058).
+El símbolo de la moneda (de 1 a 4 code points de caracteres visibles, sin dos asteriscos seguidos, siempre antes del monto) y los decimales (de 0 a 2) con que un Business muestra y acepta su dinero, "$" y 0 por defecto. Cualquier User cambia el símbolo en Settings → Currency and decimals; subir los decimales por encima de 0 llama al rescale cuando la escala todavía es 0, bajarlos se rechaza mientras algún monto registrado tenga más, y un cambio nunca cambia el valor de un monto. Se guarda en una fila de money_format por Business, junto con la Money scale (ADR-0058).
 _Avoid_: currency settings, locale, number format
 
 **Money scale**:
@@ -593,7 +593,7 @@ Un Product que quien vende eligió dejar fuera del Catalog, sin importar su prec
 _Avoid_: hidden variety, inactive, disabled, archived
 
 **Withdrawal reason**:
-Uno de los motivos de la lista propia de un Business bajo el que se registra cada Stock withdrawal, con un nombre único en el Business (sin importar mayúsculas, minúsculas ni espacios, de hasta 60 caracteres) y una posición. Un Business nuevo arranca con "Marketing" y "Own use" en su Stored language, que un cambio de idioma nunca renombra. La lista se edita solo en Settings → Business → Withdrawal reasons, nunca queda vacía, y un motivo con retiros no se puede eliminar; nunca registra Stock perdido, que es un Adjustment negativo. _In the app_: Withdrawal reasons (la lista), Reason (en el formulario), y cada motivo por su nombre.
+Uno de los motivos de la lista propia de un Business bajo el que se registra cada Stock withdrawal, con un nombre único en el Business (sin importar mayúsculas, minúsculas ni espacios, de hasta 60 caracteres) y una posición. Un Business nuevo arranca con "Marketing" y "Own use" en su Stored language, que un cambio de idioma nunca renombra. La lista se edita solo en Settings → Withdrawal reasons, nunca queda vacía, y un motivo con retiros no se puede eliminar; nunca registra Stock perdido, que es un Adjustment negativo. _In the app_: Withdrawal reasons (la lista), Reason (en el formulario), y cada motivo por su nombre.
 _Avoid_: category, type, tag, cause, Promotion (old name of one default reason)
 
 **VIP type**:

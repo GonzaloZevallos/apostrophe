@@ -26,6 +26,10 @@ Su protagonista es quien mantiene la app, o quien revisa en su nombre, al estilo
 
 Este es el job de navegación aplicado a la pestaña Products en el celular (GH-903), no un job nuevo. Lo sirve el bloque de título del celular. Antes, "New product" era un link dentro del cuerpo de la lista y su lugar cambiaba con la lista (vacía, con Products o solo archivados).
 
+**Cuando** estoy en Products en el celular y necesito agregar algo nuevo que vendo, **quiero** ver la acción de agregar de inmediato y no confundirla nunca con mi avatar de Settings, **para** abrir New product de un toque sin abrir Settings por error.
+
+Este afina el job del bloque de título de arriba (GH-1182), no es un job nuevo. Lo sirve la forma de la acción "New product" del bloque de título: el botón redondo neutro, porque la píldora con palabra no entra en la fila. Antes, un botón redondo verde "New product" quedaba junto al avatar verde de Settings y los dos se leían como dos círculos iguales; el dolor era confundir el avatar con la acción de agregar, no la falta de un camino.
+
 **Cuando** abro Products en el celular para hacer una sola cosa, revisar y mandar el Catalog o registrar lo que entró o salió del Stock, **quiero** ver solo lo que necesita esa tarea y que esa vista se mantenga mientras trabajo, **para** llegar a la acción en una cantidad de toques fija y chica, sin pasar nunca por encima de la otra tarea.
 
 Este es el job de navegación aplicado a la pestaña Products en el celular (GH-898, parte 2 de GH-845), no un job nuevo: sirve al job 3 del BRIEF (el Stock por Product queda bien) y al job 5 (los clientes nunca ven un precio viejo). Son dos situaciones distintas en la misma pestaña, ninguna más importante que la otra; Catalog se abre por defecto solo porque una visita nueva tiene que abrir en algún lado. "Mantener la vista mientras trabajo" es parte del job: volver de un formulario, de la página de un Product, de All entries o de Archived a la otra vista lo rompería. Lo sirve el segmento Catalog · Stock. Antes, "Send catalog", la línea de resumen y las acciones de Stock compartían una sola pantalla larga en el celular: una acción de Stock llevaba 2 toques pero quien vendía pasaba por encima de los bloques de la otra tarea. El toque de más para el Stock se acepta a propósito (**Phone first**).
@@ -37,6 +41,10 @@ Este es el job de navegación aplicado a la pestaña Products en el celular (GH-
 Este es el job de navegación aplicado a los productos, el stock y el Catalog, no un
 job nuevo; su situación principal es en medio de un chat, entre pedidos. Los jobs de stock y de Catalog siguen
 en `stock.md` y `catalog.md`; la computadora es el mismo job en dos paneles.
+
+**Cuando** abro uno de mis Products, casi siempre desde el celular entre otras cosas, **quiero** ver de un vistazo cómo está: cuánto tengo y si está ok, bajo o agotado, su precio de hoy, cuántos días me dura al ritmo actual y si mis clientes lo ven en el Catalog, y tener justo debajo lo que puedo hacer al respecto (registrar una Entry, poner un New price o Take from stock, o Restore cuando está archivado), **para** saber qué puedo ofrecer y qué hacer después sin buscar por toda la página.
+
+Este afina el job de arriba para la página de un Product (GH-850, parte 1); no es un job nuevo. Sale del job de stock del BRIEF ("saber qué puedo ofrecer y cuándo un producto se está por acabar") y del job del Catalog, y sirve a cualquier Business, venda lo que venda. El bloque muestra solo términos del glosario: Stock, **Stock status**, Current price, **Days left** y **Hidden product**. Antes, el resumen estaba repartido en párrafos sueltos más una fila de marcas aparte, lejos de las acciones.
 
 **Cuando** un producto que cargué por error, o uno con el que ya no trabajo, sigue apareciendo en mis
 listas y selectores, **quiero** sacarlo desde el celular en pocos toques, eliminándolo si
@@ -134,7 +142,7 @@ Criterios de éxito:
 17. **Un precio desde hoy en la menor cantidad de toques**: registrar una Price entry que rige desde hoy nunca exige abrir un selector de fecha. Elegir otra fecha sigue siendo posible.
 18. **Un mensaje, una fuente**: cada mensaje que se muestra en más de una pantalla ("Check the grams entered" en los formularios de precio, de Stock entry y de Stock withdrawal) tiene una sola fuente, y también la tiene el toast "Price saved". Lo que lee quien vende no cambia en ningún lado.
 19. **Se lee como archivado, nada oculto**: la página de un Archived product dice "Archived" en
-    palabras, y "Hidden" cuando el Product está oculto. Muestra su resumen, precios, Stock y
+    palabras, y "Hidden" cuando el Product está oculto. Muestra su bloque de estado, precios, Stock y
     movimientos, aviso de Stock bajo y Catalog attributes, todo de solo lectura, sin ninguna acción salvo
     Restore. Ningún estado se dice solo por color, en ninguno de los dos temas. Restaurar sigue cumpliendo
     los criterios 10 y 11.
@@ -150,7 +158,7 @@ Criterios de éxito:
 24. **Los Businesses existentes cambian sin hacer nada**: el del dueño incluido, ven "Product" / "Products" sin ninguna acción de su parte, y ninguno de sus datos cambia (nombres de los Products, Notes, Catalog header and footer guardados, **Expense category**s).
 25. **El flujo del celular no paga nada**: registrar una venta sigue llevando menos de un minuto y cada pantalla conserva su lugar en la **Navigation**. Solo cambia la palabra.
 26. **El VIP price no cambia para quien vende** (parte customer-type prices): en un Business con su VIP type, el campo "VIP price", su rechazo, la sección Prices y el historial de precios se leen igual que antes, aunque el VIP price ahora se guarda como el Customer-type price del VIP type; y a cada VIP customer se le cobra lo mismo que antes (pricing-settings.md, criterio 3).
-27. **Una fila de título en el celular** (GH-903): a 320 y 246 px, en claro y oscuro, "Products", el botón "New product" (solo el ícono `agregar`, por decisión del dueño) y el avatar de Settings van en una sola línea; cada objetivo mide al menos 44×44 px, cada separación al menos 8 px, y nada envuelve, se superpone, se recorta ni se desplaza de costado.
+27. **Una fila de título en el celular** (GH-903, GH-1182): a 320 y 246 px, en claro y oscuro (y a 320 px con el texto al 130 %), "Products", la acción "New product" y el avatar de Settings van en una sola línea; cada objetivo mide al menos 44×44 px, cada separación al menos 8 px, y nada envuelve, se achica, se superpone, se recorta ni se desplaza de costado. La acción es el botón redondo neutro solo con ícono, porque la píldora con la palabra "Product" no entra; lo decidió una sola medición y la forma sale igual en todo ancho de celular.
 28. **Uno de cada uno en cada ancho**: la pantalla muestra exactamente un título "Products" y una sola acción "New product". En el celular esa acción está en el bloque de título en todo estado de la lista y nunca en el cuerpo; a 900 px y más, Products dibuja los mismos elementos que antes.
 29. **Se ve como el dibujo**: la **Design capture** de `Productos` y `ProductosOscuro` a 414×844 se lee bien contra el dibujo, y el **Mobile check** no suma ningún infractor.
 30. **Cruzar 900 px no pierde nada**: con New product abierto, cruzar 900 px en cualquier sentido deja el formulario abierto con lo tipeado.
@@ -158,6 +166,13 @@ Criterios de éxito:
 32. **La vista se mantiene mientras trabajo** (GH-898): volver de un formulario, de la página de un Product, de All entries o de Archived deja a quien vende en la vista que dejó; después de guardar una Stock entry sigue en Stock con "Entry saved". Una recarga conserva la vista. Una visita nueva, la pestaña Products, Delete y el Restore del último Archived product abren Catalog. Pasar de Stock en el celular a la computadora y volver al celular sigue en Stock.
 33. **El segmento se toca y se lee bien** (GH-898): cada opción es una píldora de 32 px dentro de un botón de 44 px; la marcada es rellena y de peso mayor, con `aria-pressed`, nunca solo por color; el grupo se llama "Products view" y las opciones "Catalog" y "Stock". Cambiar de vista no agrega una entrada al historial y la vista nueva empieza arriba.
 34. **La computadora no cambia** (GH-898): a 900 px y más, el marcado, las clases y el comportamiento de Products son los de antes, y la disposición de la computadora nunca importa `productsSegment.ts`. Ninguna lista de infractores, tolerancia, `CONTENT_SHIFT_PX` ni control se agranda, y ninguna fila del registro se marca not-captured.
+35. **Dos círculos nunca iguales** (GH-1182, regla del dueño del 2026-11-26, Q34): en el bloque de título del celular, el verde está solo en el avatar de Settings. La medición de `web/e2e/productsHeader.spec.ts` con la píldora "Product" puesta dio que no entra (necesita 247,8 px y hay 198 a 246 px, 49,8 px de menos; a 320 px con el texto al 130 % necesita 292,8 px y hay 272, 20,8 px de menos), así que salió el botón redondo neutro, que es el dibujado en Clientes.dc.html (superficie con borde, ícono en tinta), nunca verde, en los dos temas y en todo ancho de celular. Se distingue del avatar por color, por su borde y por mostrar un ícono en lugar de iniciales.
+36. **Misma acción, mismo nombre** (GH-1182): la acción abre New product y su nombre accesible sigue siendo "New product"; todo texto sale del Copy module en inglés, ningún texto en español del dibujo se publica y no se agregó ninguna clave.
+37. **Medido, no supuesto** (GH-1182): el PR registra qué forma eligió la medición, con el ancho necesario y el disponible de cada celda, y adjunta las Design captures, claras y oscuras, a 320, 375 y 430 px contra `Productos` / `ProductosOscuro`; las tres muestran el mismo bloque de título.
+38. **Cómo está, de un vistazo** (GH-850): en el viewport del celular, la cabecera, el bloque de estado y las acciones se ven sin desplazarse, en la página activa y en la archivada. En el bloque, el Stock y su Stock status se leen por palabra y forma, nunca solo por color; el precio de hoy o "No price" siempre; Days left cuando corresponde (no con Stock en cero o menos, ni cuando no salió nada en 30 días); y Hidden cuando se sabe.
+39. **Todo sigue ahí, en el orden nuevo** (GH-850): cada acción y sección de antes sigue en la página, en el orden cabecera, bloque de estado, acciones, Prices, In the catalog, Stock and entries, Low stock warning y la acción de quitar. No se agrega ni se pierde nada; se ve exactamente una de "Delete product" o "Archive product", y un Archived product ofrece solo Restore.
+40. **El bloque no salta** (GH-850): mientras carga no muestra ningún dígito, símbolo de moneda ni "Hidden", y al asentarse el contenido se mueve alrededor de 0 px. Cuando no se sabe si el Product está oculto, no muestra ninguna marca que no pueda respaldar.
+41. **Ninguna palabra cambia** (GH-850): cada texto del bloque y de la página ya existía, en inglés; no se agrega ninguna clave del Copy module. La computadora conserva la misma página sin pulido dedicado (**Phone first**).
 
 ## Comportamiento
 
@@ -281,10 +296,12 @@ Criterios de éxito:
 - **Dos disposiciones, un solo cuerpo**: la pantalla elige con el único valor `computer` de `useViewport()`, el mismo que pasa al cuerpo como `view.computer`, así que cruzar 900 px nunca muestra las dos disposiciones ni ninguna.
   - **En la computadora** (900 px y más), la misma de antes: el título "Products" y el avatar "Settings" arriba, "New product" como link en las acciones de la lista, y en un solo cuerpo "Send catalog", la línea de resumen, "+ Stock entry", "Take from stock", las filas, "All entries" y "Archived (N)", sin segmento. Las filas abren un Product reemplazando el paso del historial de navegación.
   - **En el celular** (menos de 900 px), el bloque de título de abajo, el segmento Catalog · Stock, los avisos y, debajo, el cuerpo de la vista elegida, sin ningún link "New product". Las filas agregan un paso al historial de navegación.
-- **El bloque de título del celular** (GH-903): un `div` que se desplaza con la pantalla, nunca un `header` y nunca fijo ni pegajoso, con una sola fila que no envuelve. En orden:
+- **El bloque de título del celular** (GH-903, GH-1182): un `div` que se desplaza con la pantalla, nunca un `header` y nunca fijo ni pegajoso, con una sola fila que no envuelve. En orden:
   - el título "Products" (`h1`), que toma el ancho libre;
   - nada para "Publish catalog": ningún elemento ni espacio; el lugar queda reservado para una parte posterior;
-  - el botón "New product": redondo, solo con el ícono `agregar`, un objetivo de 44×44 px relleno con --boton y --boton-texto (texto oscuro sobre el verde en oscuro), con nombre accesible "New product", que abre New product. No muestra la palabra porque no cabe en la fila a 320 y 246 px: por regla del dueño (D-8ecb8c1d), una acción con palabra que no cabe en una fila de título del celular pasa a ser un botón redondo solo ícono con nombre accesible (icon-and-text-rule.md). No deja seleccionar texto, no espera un doble toque y tiene su estado presionado;
+  - el botón "New product": redondo y neutro, solo con el ícono `agregar`, el dibujado en Clientes.dc.html: superficie con un borde de 1 px e ícono en tinta, en los dos temas, nunca verde. Tiene un objetivo de 44×44 px (el borde va por dentro y no lo achica), nombre accesible "New product" y abre New product. No deja seleccionar texto, no espera un doble toque y tiene el estado presionado compartido de los botones redondos solo ícono.
+    - Por qué esta forma: la regla del dueño del 2026-11-24 (icon-and-text-rule.md) pide la píldora con palabra dibujada en Productos.dc.html / ProductosOscuro.dc.html (el ícono `agregar` y la palabra "Product", verde) cuando entra en la fila a 320 y 246 px en los dos temas, sin achicar el título ni el avatar, sin bajar las separaciones de 8 px ni el objetivo de 44 px; la medición de GH-1182 dio que no entra, así que sale el botón redondo (D-8ecb8c1d), y por la regla del dueño del 2026-11-26 (Q34) ese botón es el neutro. La medición se hizo una sola vez y la forma es la misma en todo ancho de celular, sin cambiar en vivo según el ancho.
+    - En este bloque el verde está solo en el avatar de Settings, así que dos botones redondos nunca se ven iguales: el botón se distingue del avatar por color, por su borde y por mostrar un ícono en lugar de iniciales. Antes (GH-903) era un botón redondo verde relleno con --boton, que se leía igual que el avatar;
   - el avatar "Settings", un disco de 36 px dentro de un objetivo de 44 px; es la entrada a Settings desde el celular.
 
   Se ve igual en todo estado de la lista (Loading, vacía, con Products, solo archivados, falla). Ningún texto es nuevo: reusa "Products", "New product" y "Settings".
@@ -320,7 +337,7 @@ Criterios de éxito:
   que abre el formulario de Stock entry con el Product por elegir (`stock.md`).
 - **"Take from stock"**, un botón secundario junto a "+ Stock entry", en celular (en la vista Stock) y
   computadora, que abre el formulario de Stock withdrawal sin ningún Product elegido (`stock.md`).
-- **"New product"**: en la computadora, un link en las acciones de arriba de la lista; en el celular, el botón redondo solo con el ícono `agregar` (44×44 px, nombre accesible "New product") del bloque de título, entre el título y el avatar de Settings, y ningún link en el cuerpo de la lista. Agrega un Product (un formulario; en el celular, una **Sheet** dibujada por el único `Sheet` compartido, sobre Products, según "Disposición en el celular" de navigation.md). Se ve en todo estado de la lista (en el celular, el bloque de título se ve siempre). Con New product abierto, cruzar 900 px en cualquier sentido deja el formulario abierto con lo tipeado.
+- **"New product"**: en la computadora, un link en las acciones de arriba de la lista; en el celular, el botón redondo neutro solo con el ícono `agregar` (44×44 px, nombre accesible "New product") del bloque de título, entre el título y el avatar de Settings, y ningún link en el cuerpo de la lista. Agrega un Product (un formulario; en el celular, una **Sheet** dibujada por el único `Sheet` compartido, sobre Products, según "Disposición en el celular" de navigation.md). Se ve en todo estado de la lista (en el celular, el bloque de título se ve siempre). Con New product abierto, cruzar 900 px en cualquier sentido deja el formulario abierto con lo tipeado.
 - **El aviso, el aviso de "That is gone", la falla ("No connection" o el reintento genérico) y Loading** se muestran una sola vez cada uno, en el cuerpo de la lista (en el celular, debajo del segmento y arriba del cuerpo de la vista, una sola vez a través de un cambio de vista).
 - **"All entries"** abajo de todo (`stock.md`; en el celular, en la vista Stock), en `/varieties/entries`. Lista solo Stock entries.
 - **"Archived (N)"** abajo de todo, junto a "All entries" (en el celular, en la vista Stock), que abre la tarjeta
@@ -345,13 +362,42 @@ Criterios de éxito:
 ### En pantalla: la página de un Product (`VariedadDetalle`)
 
 - **Un detalle** (navigation.md): la barra con su + en el celular, o la barra lateral en la computadora, y "‹ Products".
-- **La línea de resumen** arriba: gramos, estado, Days left y el List price de hoy (p. ej.
-  "64 g · ok · 21 days · $ 11.000 x g"), con "Hidden" cuando está oculto.
-- **Tres acciones**: "+ Entry" (el formulario de Stock entry con este Product elegido, y
+- **Orden, de arriba abajo** (GH-850, parte 1), igual en la página activa y en la archivada salvo lo que se dice abajo:
+  1. **la cabecera**: el nombre del Product (`h1`) y, a continuación, el botón solo ícono "Edit name" (el renombre se hace acá; la página archivada no lo tiene);
+  2. **el bloque de estado**;
+  3. **las acciones**: "+ Entry", "New price" y "Take from stock"; en un Archived product, solo "Restore";
+  4. **las secciones**, en este orden: Prices, In the catalog, Stock and entries y Low stock warning;
+  5. si falló la lectura del Catalog, "No connection" o el reintento genérico;
+  6. **la acción de quitar**, última y sin título (solo en la página activa).
+
+  En el celular, la cabecera, el bloque de estado y las acciones se ven sin desplazarse con el tamaño de texto por defecto.
+- **El bloque de estado** (`ProductStateBlock`) reemplaza a la vieja línea de resumen y a la fila de marcas aparte. Es siempre una lista, nombrada por el título del Product, de exactamente tres filas:
+  1. el Stock en gramos y su Stock status (`MarcaEstado`), por palabra y forma, nunca solo por color;
+  2. el Current price de hoy, o "No price" cuando no tiene;
+  3. Days left y "Hidden" juntos. Days left se muestra solo cuando corresponde (no con Stock en cero o menos, ni cuando no salió nada en 30 días) y "Hidden" solo cuando el Product está oculto. "Hidden" nunca reemplaza al Stock status. La fila conserva su alto de línea aunque falten los dos, y entonces queda vacía.
+  - **Oculto sin saber**: cuando no se pudo leer el Catalog, no se sabe si el Product está oculto y la marca se deja afuera; nunca se muestra como "no oculto".
+  - **Texto grande o pantalla angosta**: Days left y "Hidden" pasan a una segunda línea cuando no caben uno al lado del otro; ninguno se recorta ni se deja afuera, y la página nunca se desplaza de costado. Con el tamaño normal, la fila mantiene una sola línea.
+  - **Mientras carga**: mientras el Product, sus precios o su Stock no llegaron, la página muestra su Loading de siempre. Después, hasta que se asienta la fuente del Catalog que corresponde a su tipo (la del Catalog para un Product activo, la de Archived para uno archivado), el bloque muestra las mismas tres filas como barras neutras, marcado como ocupado (`aria-busy`), sin ningún dígito, símbolo de moneda ni "Hidden". Sus altos salen de los altos de línea de los tokens, así que al asentarse el contenido se mueve alrededor de 0 px.
+  - **Sin fila de Stock**: cuando la lista de Stock no trae una fila para este Product, no se dibuja el bloque, ni sus filas ni su forma de carga, como antes.
+  - **Fallas**:
+    - si falla la lectura del Catalog, el bloque se muestra sin marca de Hidden, el Stock, el precio y las acciones siguen funcionando, y "No connection" o el reintento genérico se muestra debajo de las secciones, antes de la acción de quitar;
+    - si falla el Product, sus precios o su fila de Stock, "No connection" o el reintento genérico reemplaza a toda la página, y la forma de carga no queda en pantalla;
+    - un Product que ya no existe sigue con "That is gone." y "Back to Products" (accounts.md);
+    - el bloque nunca muestra una cifra de relleno como "0 g" o "$0".
+- **Tres acciones**, justo debajo del bloque de estado: "+ Entry" (el formulario de Stock entry con este Product elegido, y
   "Initial stock" preseleccionado solo cuando no tiene Stock entries, `stock.md`), "New price"
   (el formulario de Price entry) y "Take from stock" (el formulario de Stock withdrawal con este
-  Product elegido, `stock.md`).
-- **Secciones**:
+  Product elegido, `stock.md`). Cada una es un link a su formulario, mide al menos 44×44 px, no deja seleccionar texto y no espera un doble toque.
+- **Secciones**, en este orden:
+  - **Prices**: las últimas 3 Price entries con "Effective from", primero la más nueva, cada fila con
+    su acción de eliminar, y "See all" (`/varieties/{low}/prices`) para el historial completo.
+    - Cada fila muestra el List price.
+    - Muestra el Bulk price y el Bulk minimum solo mientras Bulk price está activado, y el VIP price ("VIP price", leído de la fila del VIP type) solo mientras Customer types está activado y el Business tiene su VIP type, cada uno solo cuando la Price entry lo tiene;
+  - **In the catalog**: los Catalog attributes del Product, de solo lectura (mostrado u oculto, emoji, % indica, aroma/sabor), con un link "Edit", y nada más (sin "See all"). Es el único lugar donde se editan (`catalog.md`):
+    - "Edit" abre un solo formulario con "Show in the catalog", Emoji, % indica y Aroma/flavor, que termina en "Save the catalog";
+    - cada rechazo (por ejemplo un Aroma de más de 200 caracteres) se muestra bajo su propio campo y conserva todo lo tipeado;
+    - salir con algo tipeado y sin guardar pregunta antes de descartar;
+    - un guardado muestra el toast "Catalog saved";
   - **Stock and entries**: los últimos 3 movimientos del Product (sus Stock entries y los
     Stock withdrawals que lo tocan, primero la fecha más nueva, después lo registrado más recientemente) y
     "See all", que abre `/varieties/{low}/entries`: la misma lista que "All
@@ -359,23 +405,14 @@ Criterios de éxito:
     editar o eliminar (`stock.md`). Una fila de Stock withdrawal muestra su fecha, "Promotion" u
     "Own use" y los gramos de este Product con signo menos, y abre el
     detalle del Stock withdrawal;
-  - **Prices**: las últimas 3 Price entries con "Effective from", primero la más nueva, cada fila con
-    su acción de eliminar, y "See all" (`/varieties/{low}/prices`) para el historial completo.
-    - Cada fila muestra el List price.
-    - Muestra el Bulk price y el Bulk minimum solo mientras Bulk price está activado, y el VIP price ("VIP price", leído de la fila del VIP type) solo mientras Customer types está activado y el Business tiene su VIP type, cada uno solo cuando la Price entry lo tiene;
   - **Low stock warning**: el aviso actual, de solo lectura, con un interruptor de encendido y apagado y un
     link "Edit", y nada más (sin "See all"):
     - dice "Warn me below 15 g", "Warning: 18,5 g left" o "Warning off";
     - "Edit" abre un formulario chico: "Warn when below" en gramos, "Save the warning" y "Close". Un monto rechazado se muestra bajo el campo y conserva lo tipeado;
     - activar el interruptor abre ese mismo formulario (un aviso desactivado no conserva ningún monto); cerrarlo sin guardar deja el aviso desactivado;
     - desactivar el interruptor guarda de inmediato;
-    - cada guardado, incluido el de desactivar, muestra el toast "Warning saved";
-  - **In the catalog**: los Catalog attributes del Product, de solo lectura (mostrado u oculto, emoji, % indica, aroma/sabor), con un link "Edit", y nada más (sin "See all"). Es el único lugar donde se editan (`catalog.md`):
-    - "Edit" abre un solo formulario con "Show in the catalog", Emoji, % indica y Aroma/flavor, que termina en "Save the catalog";
-    - cada rechazo (por ejemplo un Aroma de más de 200 caracteres) se muestra bajo su propio campo y conserva todo lo tipeado;
-    - salir con algo tipeado y sin guardar pregunta antes de descartar;
-    - un guardado muestra el toast "Catalog saved".
-- **Una sola acción de quitar**, calculada a partir del historial cuando se lee la página:
+    - cada guardado, incluido el de desactivar, muestra el toast "Warning saved".
+- **Una sola acción de quitar**, calculada a partir del historial cuando se lee la página, última en la página, debajo de las secciones y sin título (su nombre accesible dice lo que hace). El dibujo `ProductoDetalle` no la muestra; el dueño aceptó esa diferencia (GH-850, "Drawing 1: accept") y conserva su tratamiento de siempre:
   - sin historial: "Delete product", a través de un ConfirmDialog destructivo, después el
     toast "Product deleted" y de vuelta a Products (en el celular, en la vista Catalog).
     - El disparador en la página se dibuja como una acción visiblemente crítica: ícono + texto con el
@@ -393,27 +430,31 @@ Criterios de éxito:
     UI nunca ofrece una eliminación que sabe que va a ser rechazada.
   - **Página vieja, archivar**: si el historial desapareció después de que cargó la página, "Archive
     product" igual lo archiva, sin rechazo.
+
+![La página de un Product en el teléfono](../assets/screens/VariedadDetalle.webp)
+
 - **La página de un Archived product** es la misma página, de solo lectura, con la flecha de regreso
   "‹ Archived" (sin historial de navegación, volver lleva a Archived):
-  - **Su línea de resumen**: sus gramos, como cifra aunque sean negativos; el List price de hoy,
-    o "No price"; "Archived" como un badge neutro (una palabra, sin que ningún color lleve
-    el estado, en los dos temas); y "Hidden", en su propio estilo de texto al lado, cuando el
-    Product está oculto. No muestra marca de Stock status ni Days left: esos avisan sobre
-    vender y reponer, y un Archived product está afuera de toda lista, selector y de
-    Home.
+  - **Su cabecera** es solo el nombre, sin "Edit name".
+  - **Su bloque de estado**, también de tres filas:
+    1. sus gramos, como cifra aunque sean negativos, con "Archived" como un badge neutro (`Insignia`: una palabra, sin que ningún color lleve el estado, en los dos temas) en el lugar del Stock status;
+    2. el Current price de hoy, o "No price";
+    3. "Hidden", en su propio estilo de texto, cuando se sabe que el Product está oculto; si no, una fila vacía que conserva su alto.
+
+    No muestra marca de Stock status ni Days left: esos avisan sobre vender y reponer, y un Archived product está afuera de toda lista, selector y de Home. Las reglas de carga y de fallas son las del bloque activo, con la fuente de Archived: si falla su lectura, la página igual se muestra, sin marca de Hidden y con la falla debajo de las secciones.
   - **"Restore"** es su única acción: una acción primaria de ícono + texto, en el lugar de las tres
-    acciones de la página activa, justo debajo de la línea de resumen y sus marcas, así en el celular
+    acciones de la página activa, justo debajo del bloque de estado, así en el celular
     se alcanza sin desplazarse más allá de ninguna sección. No hay nada al lado. Su ícono
     es un nombre de `NombreIcono`; si ninguno encaja, diseño dibuja uno bajo la Icon and text rule.
-  - **Sus secciones, todas de solo lectura**:
-    - **Stock and entries**: los últimos 3 movimientos, con "See all";
+  - **Sus secciones, todas de solo lectura**, en el mismo orden que la página activa:
     - **Prices**: las últimas 3 Price entries, con "See all", siguiendo la misma regla de
       interruptores que la sección Prices activa (sin VIP price mientras Customer types está desactivado o sin VIP type);
-    - **Low stock warning**: solo la configuración guardada, "Warn me below N g" o "Warning
-      off"; nunca el "Warning: N g left" en vivo; sin interruptor y sin "Edit";
     - **In the catalog**: los cuatro atributos guardados (mostrado u oculto en palabras, emoji,
       % indica, aroma/sabor), dejando afuera un atributo que nunca se fijó; sin "Edit" y sin nota
-      sobre el Catalog público.
+      sobre el Catalog público;
+    - **Stock and entries**: los últimos 3 movimientos, con "See all";
+    - **Low stock warning**: solo la configuración guardada, "Warn me below N g" o "Warning
+      off"; nunca el "Warning: N g left" en vivo; sin interruptor y sin "Edit".
   - **"See all" desde ahí** abre listas de solo lectura: la lista de precios no tiene eliminación de precio;
     en la lista de movimientos, las filas de Stock entry no tienen edición ni eliminación y no abren nada, mientras que
     las filas de Stock withdrawal siguen abriendo el detalle propio del Stock withdrawal (su regreso sigue el historial de navegación hasta
@@ -429,10 +470,13 @@ Criterios de éxito:
     de navegación. Sin ningún Archived product restante, va a Products (en el celular, en la vista Catalog), así nunca se muestra un Archived vacío. El Product vuelve exactamente como estaba;
   - para eliminar un Archived product sin historial, quien vende primero lo restaura y después
     lo elimina. No hay un segundo camino.
+
+![La página de un Archived product en el teléfono](../assets/screens/VariedadArchivada.webp)
+
 - **Las listas "See all"** son tarjetas (navigation.md): la barra o la barra lateral y "‹ <product>",
   con el + de la barra en el celular; volver sin historial de navegación lleva a la página del Product. El historial completo
   de precios sigue la misma regla de interruptores que la sección Prices.
-- **Renombrar** el Product se hace acá.
+- **Renombrar** el Product se hace acá, con el botón "Edit name" de la cabecera.
 - **Los formularios** que se abren desde acá (New price, + Entry, Take from stock, renombrar, el aviso de Stock bajo, los
   Catalog attributes) tienen "Close" y una confirmación al salir con algo tipeado;
   uno sin tocar se cierra de inmediato.
@@ -485,6 +529,18 @@ Criterios de éxito:
   - Mientras el modal está abierto, no se puede usar la lista de Products de atrás.
 - **Un Product archivado o que ya no existe** mientras el formulario está abierto sigue la regla "That is gone" de accounts.md, como antes.
 
+### Rediseño de la página según ProductoDetalle
+
+GH-850 lleva el marco de la página de un Product (activa y archivada) hacia `docs/product/design-system/pantallas/ProductoDetalle.dc.html` y su gemelo `ProductoDetalleOscuro.dc.html`. Esta definición escrita gana sobre el dibujo (**Drawing as guide**).
+
+- **Parte 1, el marco** (esta sección): la cabecera con el nombre y "Edit name", el bloque de estado de tres filas, las acciones justo debajo, el orden nuevo de las secciones y la acción de quitar al final, todo descrito en "En pantalla: la página de un Product". No agrega comportamiento, ruta, campo de la API ni clave del Copy module: cada texto ya existía, en inglés.
+- **Lo que el dibujo tiene y la página no** (Decisión 1 del dueño): la categoría, la unidad de venta, el bloque de costo y margen, el Save de toda la página, el recuadro de foto y los chips de atributos libres. No se pone nada en su lugar: ni un marcador, ni un sustituto deshabilitado, ni un "coming soon". No son diferencias a levantar: ya las decidió el dueño.
+- **Lo que la página tiene y el dibujo no**: la acción de quitar ("Delete product" o "Archive product"). El dueño aceptó la diferencia ("Drawing 1: accept"): queda última, sin título y con su tratamiento de siempre, sin ningún estilo visual nuevo.
+- **Estilo**: el CSS del marco usa solo tokens, en claro y oscuro; el alto mínimo de cada fila del bloque y de su barra de carga sale de los tokens de fila (`--interlineado-fila`, `--tamano-fila`). Cada botón rediseñado mide al menos 44×44 px, no deja seleccionar texto y no espera un doble toque (`touch-action: manipulation`, `user-select: none`).
+- **Lo que la parte 1 deja como está**: el bloque de estado se dibuja como una lista sobre el fondo de la página, sin la tarjeta del dibujo, y la cifra de Stock va al tamaño de la fila, no en grande. Ninguna de las dos cambia lo que quien vende lee o hace (**Drawing as guide**).
+- **La computadora** conserva la misma página, sin pulido dedicado (**Phone first**).
+- **Partes posteriores de GH-850**: el rediseño propio de cada sección (parte 2) y el registro y la evidencia de la página archivada (parte 3). La Design capture no es criterio de la parte 1.
+
 ### Evidencia de diseño de las páginas archivadas
 
 - **Dibujos**: `docs/product/design-system/pantallas/` dibuja la página del Archived product
@@ -509,9 +565,9 @@ Criterios de éxito:
 
 ### Evidencia de diseño del bloque de título del celular
 
-- **Registro** (`scripts/design/screens.json`): las filas `Productos` y `ProductosOscuro` apuntan a la pantalla viva del celular, con `route` y `path` `/varieties` (el path dejó de ser `/products` porque `routes.test.ts` exige que route y path coincidan) y `design_viewport` [414, 844]. La fila `Variedades` sigue. Las tres recorren la misma pantalla viva, así que un infractor futuro de esa pantalla se lista bajo cada nombre que lo informe.
-- **Diferencias con el dibujo, ya decididas**: el botón redondo de Publish del dibujo es un hueco vacío (una parte posterior); la píldora "Producto" de 36 px del dibujo es el botón solo ícono "New product" de 44×44 px (decisión del dueño); el disco del avatar sigue en 36 px, dentro de un objetivo de 44 px. El segmento llegó con GH-898; la búsqueda, el "···", Promos y los filtros del dibujo siguen afuera.
-- **Medición**: la tabla de 320 y 246 px, claro y oscuro, antes de construir y sobre `/varieties` viva, está en docs/evidence/GH-548-design-capture.md.
+- **Registro** (`scripts/design/screens.json`): las filas `Productos` y `ProductosOscuro` apuntan a la pantalla viva del celular, con `route` y `path` `/varieties` (el path dejó de ser `/products` porque `routes.test.ts` exige que route y path coincidan) y `design_viewport` [414, 844]. La fila `Variedades` sigue. Las tres recorren la misma pantalla viva, así que un infractor futuro de esa pantalla se lista bajo cada nombre que lo informe. GH-1182 no cambió estas filas ni su WalkState: el recorrido encuentra la acción por su nombre accesible, que no cambió.
+- **Diferencias con el dibujo, ya decididas**: el botón redondo de Publish del dibujo es un hueco vacío (una parte posterior); la píldora "Producto" de 36 px del dibujo es el botón redondo neutro solo con ícono "New product" de 44×44 px, el dibujado en Clientes.dc.html, porque la píldora no entra en la fila (decisiones del dueño del 2026-11-24 y del 2026-11-26; ninguna de las dos formas se aparta de un dibujo aprobado). El disco del avatar sigue en 36 px, dentro de un objetivo de 44 px. El segmento llegó con GH-898; la búsqueda, el "···" ("compartir lista de precios", nunca construido), Promos y los filtros del dibujo siguen afuera.
+- **Medición**: la tabla de 320 y 246 px, claro y oscuro, antes de construir y sobre `/varieties` viva, está en docs/evidence/GH-548-design-capture.md para GH-903 (con la palabra "New product"). La medición de GH-1182, con la píldora "Product" (a 246 px necesita 247,8 px y hay 198; a 320 px con el texto al 130 % necesita 292,8 px y hay 272), y la forma que eligió se registran en su PR, junto con las Design captures claras y oscuras a 320, 375 y 430 px contra `Productos` / `ProductosOscuro`.
 
 ### Evidencia de diseño del segmento Catalog · Stock (GH-898)
 
@@ -537,8 +593,11 @@ Criterios de éxito:
 - **La redirección de la computadora conserva el estado** (GH-898, decisión 2 del humano): la redirección de `web/src/screens/varieties/VarietiesIndex.tsx` conserva cada clave del estado de la entrada del historial y solo agrega su marca de redirección seguida (`followedRedirectState`, junto a `FOLLOWED_REDIRECT`), así que pasar de Stock en el celular a la computadora y volver sigue en Stock; `VarietiesIndex.tsx` no importa `productsSegment.ts`.
 - **El aspecto de píldora de Pestanas** es opcional (`ajuste="pastilla"`), con CSS en `web/src/styles/app.css` solo con tokens (el radio de píldora, `--acento-suave`, `--tinta`, `--tinta2`); cada uso existente de Pestanas queda igual.
 - **Textos del segmento**: el namespace `products` de `web/src/copy/locales/en/` (`segment.catalog`, `segment.stock`, `segment.label`), registrado como los demás, con su en-XA y sus tipos generados.
-- **El botón "New product" del celular** es `BotonLink variant="icon" action="add"` (clase `boton-icono boton-icono--lleno`, más `productos-cabecera__nueva`), con sus colores de --boton y --boton-texto; nunca la clase del botón de New sale, el componente de la barra ni la clave "Vender". Su clase propia no fija ningún color.
-- **Landmarks del e2e** (D-69509906): el paso de clic del recorrido móvil (`web/e2e/mobile/walk.ts`) encuentra un link solo ícono por su nombre accesible, así que los pasos que tocan "New product" siguen funcionando sin volver a poner la palabra ni el link viejo. Desde GH-898, el helper `openStockSegment(page)` de `web/e2e/helpers/` (un clic real en "Stock" dentro del grupo "Products view", que espera `aria-pressed`; en la computadora no hace nada) es el camino de todo spec del celular que llega a "+ Stock entry", "Take from stock", "All entries", "Archived (" o la línea de resumen; ninguno se vuelve a poner en la vista Catalog para satisfacer un localizador. En vitest, los tests del celular tocan "Stock" primero con el helper de `renderVarieties.tsx`.
+- **El botón "New product" del celular** (GH-1182) es `BotonLink variant="icon" action="add"`, un link a `VARIETY_NEW` con nombre accesible "New product" (la clave existente `common:newVariety`), con la clase `boton-icono boton-icono--contorno` (`OUTLINED_ICON_ONLY_CLASS` de `web/src/components/botonVisual.tsx`) más su clase propia `productos-cabecera__nueva`, que no fija ningún color. `.boton-icono--contorno` agrega solo un borde de 1 px en `--linea`; el fondo `--superficie` y la tinta `--tinta` son los de la base `.boton-icono`, que no cambia. Son los tokens existentes del botón redondo neutro de Clientes.dc.html, sin ningún token nuevo. La clase de relleno verde `boton-icono--lleno` y `FILLED_ICON_ONLY_CLASS` ya no existen. Nunca usa la clase del botón de New sale, el componente de la barra ni la clave "Vender". No hay ninguna media query ni cambio por ancho para esta acción.
+- **Landmarks del e2e** (D-69509906): el paso de clic del recorrido móvil (`web/e2e/mobile/walk.ts`) y cada spec encuentran la acción por su nombre accesible "New product", que no cambió, así que GH-1182 no tuvo que migrar ningún localizador: ninguno usaba `boton-icono--lleno` ni `productos-cabecera__nueva`, y ningún elemento viejo se conserva, visible u oculto, para satisfacer un localizador. Desde GH-898, el helper `openStockSegment(page)` de `web/e2e/helpers/` (un clic real en "Stock" dentro del grupo "Products view", que espera `aria-pressed`; en la computadora no hace nada) es el camino de todo spec del celular que llega a "+ Stock entry", "Take from stock", "All entries", "Archived (" o la línea de resumen; ninguno se vuelve a poner en la vista Catalog para satisfacer un localizador. En vitest, los tests del celular tocan "Stock" primero con el helper de `renderVarieties.tsx`.
+- **El bloque de estado** (GH-850): `ProductStateBlock` es un componente de presentación en `web/src/screens/varieties/`, sin ninguna lectura propia, que recibe una unión discriminada: `{kind:'active', quantity, status, daysLeft: number|null, price: current price|null, hidden: boolean|null}` o `{kind:'archived', quantity, price, hidden: boolean|null}`, y `ProductStateBlockLoading` es su forma de carga; las dos se dibujan con el mismo marco de tres filas (`ul.product-state`), así sus altos no pueden separarse. `VarietyPage` arma la unión solo cuando se asentaron el Product, su fila de Stock y la fuente de su tipo (`catalogQuery` para uno activo, `archivedCatalogQuery` para uno archivado); una lectura del Catalog fallida da `hidden: null`, y esa falla ya no reemplaza a la página archivada. Reemplaza a los bloques `variedad-resumen` y a `.variedad-marcas` de la página; `ArchivedVarieties` conserva `.variedad-marcas` para sus filas.
+- **Landmarks quitados por el rediseño** (D-69509906): cada uso en el e2e, los nombres de rol, vitest, `web/src/mobile-standard/states*.ts` y `web/src/architecture/` de una clase quitada (por ejemplo `.variedad-resumen--archivada + .variedad-marcas` en `web/e2e/archivadas.spec.ts`, ahora el texto "Archived" dentro de la lista nombrada por el Archived product) se migra en el mismo cambio, a una búsqueda por rol o texto dentro del bloque de estado. Ningún elemento quitado se vuelve a poner, visible u oculto, y el PR cita la búsqueda sin coincidencias.
+- **Archivos que la parte 1 de GH-850 no toca**: `scripts/design/screens.json`, `web/src/routes.test.ts`, `ProductsComputer.tsx`, `VarietiesLayout.tsx`, `SendCatalog.tsx`, `PriceNew`, `PriceFrame`, `PriceForm`, `PriceFields`, `settingsRows.ts` y `fixedSets.ts`.
 
 ## Métricas
 
@@ -586,11 +645,17 @@ Criterios de éxito:
   eliminar el Product seleccionado selecciona el siguiente, si no el anterior, si no el estado
   vacío; en el celular la lista nunca abre un Product.
 - **El bloque de título del celular (criterios 27 a 30, GH-903)**:
-  - **Medición (criterio 27)**: antes de construir, con la palabra "New product" la fila necesitaba 317,3 px y había 272 px a 320 y 198 px a 246, así que la medición se detuvo y el dueño decidió el botón solo ícono. Con el ícono, la fila es una línea en las cuatro celdas (320 y 246 px, claro y oscuro), con objetivos de 44×44 px, separaciones de 8 px o más, sin recortes ni desplazamiento lateral, y 8,9 px de sobra a 246 px; la medición sobre `/varieties` viva da lo mismo (docs/evidence/GH-548-design-capture.md).
+  - **Medición de GH-903 (criterio 27)**: antes de construir, con la palabra "New product" la fila necesitaba 317,3 px y había 272 px a 320 y 198 px a 246, así que la medición se detuvo y el dueño decidió el botón solo ícono. Con el ícono, la fila es una línea en las cuatro celdas (320 y 246 px, claro y oscuro), con objetivos de 44×44 px, separaciones de 8 px o más, sin recortes ni desplazamiento lateral, y 8,9 px de sobra a 246 px; la medición sobre `/varieties` viva da lo mismo (docs/evidence/GH-548-design-capture.md).
   - **Tests del front a ancho de celular** (`web/src/screens/Variedades.test.tsx`): el bloque es un `div`, no un `header`, y su posición no es fija ni pegajosa; tiene exactamente 3 hijos en orden (título "Products", link "New product" a `VARIETY_NEW`, link "Settings"); la fila de acciones del cuerpo tiene `['A','A','A']` y ningún "New product"; el bloque está en los estados vacío y solo archivados.
   - **Uno de cada uno (criterio 28)**: en los dos anchos, exactamente un título "Products" y exactamente un link "New product".
   - **Cruce de 900 px (criterio 30)**: `screens/varieties/VarietySheet.test.tsx` ("a flip across 900 px keeps what was typed, on the same input") sigue en verde sin editar.
-  - **Diseño (criterio 29)**: la Design capture de `Productos` y `ProductosOscuro` a 414×844 se lee como la fila dibujada, con el botón solo ícono decidido y el hueco de Publish vacío; el proyecto móvil no suma ninguna entrada de infractor. La captura de 900 px, antes y después, es idéntica byte por byte en los dos temas.
+  - **Diseño (criterio 29)**: la Design capture de `Productos` y `ProductosOscuro` a 414×844 se lee como la fila dibujada, con el botón redondo neutro y el hueco de Publish vacío; el proyecto móvil no suma ninguna entrada de infractor. La captura de 900 px, antes y después, es idéntica byte por byte en los dos temas.
+- **La forma de la acción (criterios 27, 35 a 37, GH-1182)**:
+  - **Medición**: antes de construir, la fila con la píldora "Product" se midió en seis celdas (320, 246 y 320 con el texto al 130 %, en claro y oscuro) y no entró (49,8 px de menos a 246 px y 20,8 px a 320 px con el texto al 130 %); el PR registra el ancho necesario y el disponible en cada celda y la forma elegida. Con el botón redondo neutro, la fila es una línea en las seis celdas, con objetivos de 44 px o más y separaciones de 8 px o más, sin envolver, achicar, recortar ni desplazarse de costado.
+  - **Tests del front**: en vitest (`web/src/screens/varieties/ProductsPhone.test.tsx`), la acción se encuentra por rol y nombre accesible "New product" y lleva a `VARIETY_NEW`, sin ninguna aserción de clase. En e2e, `web/e2e/productsHeader.spec.ts` mide las seis celdas, cada una en su propio contexto, y en cada una comprueba la fila (título, acción y avatar en una sola línea, separaciones de 8 px o más, acción y avatar de 44×44 px o más, título sin recorte, sin desplazamiento lateral) y fija el botón por estilo calculado, no por clase: resuelve `--linea`, `--superficie`, `--tinta` y `--boton` en un elemento de prueba y comprueba un borde de 1 px en `--linea`, fondo `--superficie`, tinta `--tinta` y un fondo distinto de `--boton`. Cada celda adjunta su tabla de medidas. Ningún localizador de e2e ni de vitest usa la clase verde vieja, y no queda ningún elemento viejo para un localizador.
+  - **Sin verde junto al avatar (criterio 35)**: la Design capture, juzgada a ojo en los dos temas, muestra el verde solo en el avatar y el botón redondo neutro de Clientes.dc.html.
+  - **Evidencia (criterio 37)**: las Design captures claras y oscuras a 320, 375 y 430 px contra `Productos` / `ProductosOscuro` se adjuntan al PR y muestran el mismo bloque de título; ninguna fila del registro se marca not-captured.
+  - **Copy (criterio 36)**: no hay ninguna clave nueva; el barrido de una sola palabra (criterio 22) y `copyLimits.test.ts` siguen en verde; ningún texto en español del dibujo está en el Copy module.
 - **El segmento Catalog · Stock (criterios 31 a 34, GH-898)**: tests del front, 100% en verde, muestran:
   - las reglas de `readSegment` (falta o inválida da `'catalog'`, solo lee `productsSegment`) y de `withSegment` (conserva `inApp`, `from` y las claves de aviso);
   - un toque en una píldora: `aria-pressed`, el cuerpo que corresponde y el largo del historial sin cambios; con el segmento a la vista no hay ninguna llamada de desplazamiento;
@@ -701,6 +766,14 @@ Criterios de éxito:
 - **Ninguna palabra que elegir (criterio 23)**: tests del front muestran Settings y el Onboarding sin "What you sell"; ninguna ruta, campo de esquema ni columna guarda ni sirve una palabra del Business.
 - **Datos intactos (criterio 24)**: un Business existente muestra "Product" / "Products" sin ninguna acción; un Business cuyo Catalog header and footer guardado o cuyos nombres de Product contienen "variety" los conserva byte por byte, y el barrido no los marca. Un Pinned catalog publicado no recibe ningún mensaje nuevo por este cambio.
 - **El celular no paga nada (criterio 25)**: las corridas e2e existentes con presupuesto de toques (registrar una venta, dos toques al Catalog y, desde GH-898, tres a la Stock entry y al Stock withdrawal en el celular) pasan; el **Mobile check** sigue en verde y sus listas de excepciones solo se achican.
+- **De un vistazo, sin desplazarse (criterio 38)**: en el proyecto `mobile` del e2e (`web/e2e/productPage.spec.ts`), a 320×568, 375×812 y 430×932, en claro y oscuro, con el tamaño de texto por defecto y sin desplazarse, el bloque de estado empieza debajo de la cabecera del celular y la fila de acciones termina encima de la barra de abajo, en la página activa y en la archivada. 100% en verde.
+- **Los casos del bloque (criterios 38 y 40)**: tests del front a través de la página, con `fetch` simulado por `renderVarieties.tsx`, y del propio componente (`ProductStateBlock.test.tsx`) muestran exactamente tres filas (`listitem`) en cada caso: oculto; sin precio, con "No price"; `days_left` nulo, sin Days left; los dos ausentes (la tercera fila vacía); archivado y oculto; archivado y no oculto; `hidden: null` sin "Hidden". 100% en verde.
+- **Estructura fija de la página (criterio 39)**: un test del front (`VarietyPage.structure.test.tsx`) que las partes posteriores conservan sin editar muestra que los `h2` del contenido principal son exactamente, en orden, Prices, In the catalog, Stock and entries y el título del aviso de Stock bajo; y que los nombres accesibles de los botones y links fuera de esas secciones son exactamente edit name, Entry, New price, Take from stock y uno de "Delete product" o "Archive product" en la página activa, y solo Restore en la archivada. Otros tests muestran exactamente una de las dos acciones de quitar.
+- **Sin salto, sin marcas sin respaldo (criterio 40)**:
+  - con la respuesta del Catalog retenida, el bloque está `aria-busy`, tiene tres filas, no muestra ningún dígito y nunca muestra "Hidden" primero;
+  - con la lectura del Catalog fallida, en la página activa y en la archivada, un Product oculto en el servidor no muestra "Hidden" y se ve la falla;
+  - con la fila de Stock fallida, se ve "No connection" o el reintento genérico, sin bloque `aria-busy` y sin cifra de relleno.
+- **Ninguna palabra nueva (criterio 41)**: el cambio no agrega ninguna clave al Copy module y el barrido de una sola palabra sigue en verde. Ningún elemento quitado queda en el marcado, visible u oculto: el PR cita la búsqueda sin coincidencias de cada clase quitada (D-69509906). Las únicas aserciones existentes editadas son las que encontraban una clase quitada o el orden viejo de las secciones, cada una listada en el PR. El proyecto `mobile` del e2e no suma ningún infractor, y los archivos de infractores solo pierden entradas cuya celda ahora pasa. `tsc` y `oxlint` quedan limpios.
 - **Velocidad**: Products responde en menos de 300 ms con unas pocas docenas de Products.
 
 ## Fuera de alcance
@@ -739,9 +812,15 @@ Criterios de éxito:
 - Corregir los dibujos de `pantallas/` que todavía dicen "Variety": diseño lo hace en su propio trabajo.
 - **El botón "Publish catalog" del bloque de título del celular**: lo trae una parte posterior. Hasta entonces su lugar no dibuja ningún elemento.
 - En el segmento Catalog · Stock: la búsqueda, los chips, los filtros, Promos, compartir y el "···" del dibujo; filas distintas por vista; un segmento fijo o pegajoso; guardar la vista en un path, una consulta o el almacenamiento del dispositivo; cambiar cuándo se habilitan las acciones de Stock; que la pestaña Products, Delete o Restore recuerden la vista Stock; un paso del historial por cambio de vista.
-- En la fila de título del celular: mostrar la palabra "New product", acortarla, achicar el título o el avatar, cortar con puntos suspensivos o envolver la fila (D-8ecb8c1d).
+- En la fila de título del celular: mostrar la píldora "Product" o la palabra "New product", acortarla, achicar el título o el avatar, bajar las separaciones de 8 px o el objetivo de 44 px, cortar con puntos suspensivos o envolver la fila (D-8ecb8c1d).
+- Cambiar en vivo, según el ancho de cada celular, entre la píldora y el botón redondo.
+- Un botón redondo verde junto al avatar de Settings.
+- Los demás encabezados del celular (Customers, Sales y otros) con el mismo choque de círculos verdes: cada uno con su propio issue.
+- El + de la barra del celular, que abre New sale.
 - Un bloque de título fijo o pegajoso, o un `header`, en el celular.
 - Cualquier cambio en la disposición de la computadora (900 px y más).
+- **Lo que el dibujo `ProductoDetalle` tiene y la página no** (Decisión 1 del dueño, GH-850): la categoría, la unidad de venta, el bloque de costo y margen, el Save de toda la página, el recuadro de foto y los chips de atributos libres, y cualquier marcador, sustituto deshabilitado o "coming soon" en su lugar.
+- En la parte 1 de GH-850: comportamiento, rutas, campos de la API o claves del Copy module nuevos; pulido dedicado de la computadora; la Design capture como criterio; el rediseño propio de cada sección (parte 2) y el registro y la evidencia de la página archivada (parte 3).
 
 ## Planned in GH-318
 

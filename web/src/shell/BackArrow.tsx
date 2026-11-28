@@ -15,12 +15,17 @@
  * names a word only the loaded record knows. It draws only an override its screen declared
  * through `useBackParent` for this very screen and route param, and nothing before: no "‹"
  * alone, no registry word standing in for the record.
+ *
+ * `look="round"` is for a card that draws the back in its own title row (`backInTitleRow`, ADR
+ * 20261125): the same button and the same name, in a round box; its narrow step hides the text
+ * visually and never removes it, so the name is still the visible text.
  */
 
 import { useContext } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useParams } from 'react-router'
 import Boton from '../components/Boton'
+import Icono from '../components/Icono'
 import { useBackOr } from '../components/useBackOr'
 import { useLabel, type Label } from '../i18n/label'
 import { HOME, entryParentOf, parentOf, pathTo, screenOf, type ScreenId } from '../routes'
@@ -55,7 +60,7 @@ function enteredFromOf(state: unknown): unknown {
   return typeof state === 'object' && state !== null && 'enteredFrom' in state ? state.enteredFrom : undefined
 }
 
-export default function BackArrow({ id }: { id: ScreenId }) {
+export default function BackArrow({ id, look }: { id: ScreenId; look?: 'round' }) {
   const { t } = useTranslation()
   const resolve = useLabel()
   const params = filled(useParams())
@@ -72,10 +77,21 @@ export default function BackArrow({ id }: { id: ScreenId }) {
     screenOf(id).backLabel === 'record' ? override?.title : named && { kind: 'key', key: named.titleKey }
   if (label === undefined) return null
   const word = resolve(label)
+  const text = t('common:backArrow', { parent: word })
+  if (look === 'round') {
+    return (
+      <div className="flecha-atras--redonda">
+        <Boton variant="back" onClick={back}>
+          <span className="flecha-atras__texto">{text}</span>
+          <Icono nombre="atras" />
+        </Boton>
+      </div>
+    )
+  }
   return (
     <div className="flecha-atras">
       <Boton variant="back" onClick={back}>
-        {t('common:backArrow', { parent: word })}
+        {text}
       </Boton>
     </div>
   )

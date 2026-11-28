@@ -73,7 +73,7 @@ export async function seedRecords(page: Page, customerName: string): Promise<Rec
 
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name', { exact: true }).fill(customerName)
-  await page.getByRole('button', { name: 'Save and use' }).click()
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
   const customer = await idAt(page, CUSTOMER)
   await page.getByRole('link', { name: `New sale to ${customerName}` }).click()
   await fillSaleLine(page, 1, { variety: 'Rosa', grams: '5' })

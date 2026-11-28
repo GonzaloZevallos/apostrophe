@@ -12,6 +12,9 @@
  * `dirty` is the switches against `accepted`: the pair the server last accepted, taken once
  * from the first read and reset from the PUT answer. It is never compared with the query
  * cache, which a save rewrites and a partner's edit can move under the form.
+ *
+ * This page has no link to the Customer types list: it opens from its own Settings row, which
+ * shows while the saved switch is on. Save writes the pricing cache, so that row appears at once.
  */
 
 import { type FormEvent, useState } from 'react'
@@ -31,10 +34,7 @@ import Boton from '../../components/Boton'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import Loading from '../../components/Loading'
 import OpcionInterruptor from '../../components/OpcionInterruptor'
-import Icono from '../../components/Icono'
-import InAppLink from '../../components/InAppLink'
 import SinConexion from '../../components/SinConexion'
-import { SETTINGS_CUSTOMER_TYPES } from '../../routes'
 import { GENERIC_REFUSAL_MESSAGE, PRICES_SAVED, SETTINGS_TEXT } from '../../copy/settings'
 import SettingsGroup from './SettingsGroup'
 import { COMMON_TEXT } from '../../copy/common'
@@ -140,16 +140,6 @@ function PricingForm({ initial }: { initial: PricingSettings }) {
         <span className="campo__ayuda">
           {t(hasVipType ? 'customerTypes:helpWithVip' : 'customerTypes:helpNoVip')}
         </span>
-        {accepted.is_vip_customers && (
-          <nav className="ajustes__lista" aria-label={t('customerTypes:entry')}>
-            <InAppLink to={SETTINGS_CUSTOMER_TYPES} className="ajustes__item">
-              <span className="ajustes__item-rotulo">{t('customerTypes:entry')}</span>
-              <span className="ajustes__item-flecha">
-                <Icono nombre="chevron" />
-              </span>
-            </InAppLink>
-          </nav>
-        )}
         <span className="campo__ayuda">{PAST_SALES_LINE}</span>
         {genericError !== null && (
           <span className="campo__error" role="alert">

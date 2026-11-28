@@ -41,6 +41,8 @@ export interface ExpenseInput {
   category_id: number
   amount: number
   detail: string
+  /** The method the expense was paid with, `null` for none. Every save carries it. */
+  payment_method_id: number | null
 }
 
 export function listCategories(): Promise<ExpenseCategory[]> {

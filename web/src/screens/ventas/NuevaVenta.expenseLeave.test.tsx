@@ -112,7 +112,7 @@ async function chooseRosa(user: User) {
 /** Opens the Expense over the sale, with Details typed so the Expense differs from how it opened. */
 async function openChanged(user: User, text = 'Cinta') {
   await user.click(await tile())
-  await user.type(await screen.findByLabelText('Details'), text)
+  await user.type(await screen.findByLabelText('Details (optional)'), text)
 }
 
 async function pickCategoryAndAmount(user: User) {
@@ -123,8 +123,8 @@ async function pickCategoryAndAmount(user: User) {
 
 async function fillAndSave(user: User) {
   await pickCategoryAndAmount(user)
-  await user.type(screen.getByLabelText('Details'), 'Cinta')
-  await user.click(screen.getByRole('button', { name: 'Save the expense' }))
+  await user.type(screen.getByLabelText('Details (optional)'), 'Cinta')
+  await user.click(screen.getByRole('button', { name: /^Save expense/ }))
 }
 
 const close = () => within(screen.getByRole('dialog', { name: 'Add expense' })).getByRole('button', { name: 'Close' })
@@ -175,7 +175,7 @@ test('Close with a changed Expense asks, says the sale stays while the strip sho
 
   await user.click(within(question).getByRole('button', { name: 'No, keep entering' }))
   await waitFor(() => noQuestion())
-  expect(screen.getByLabelText('Details')).toHaveValue('Cinta')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Cinta')
   expect(screen.getByRole('dialog', { name: 'Add expense' })).toBeInTheDocument()
   expect(depth(router)).toBe(1)
   expect(screen.getByLabelText('Note')).toHaveValue('para Ana')
@@ -228,7 +228,7 @@ test('undoing the change makes the Expense clean again: Close asks nothing', asy
   const user = userEvent.setup()
   const router = renderSale()
   await openChanged(user, 'C')
-  await user.clear(screen.getByLabelText('Details'))
+  await user.clear(screen.getByLabelText('Details (optional)'))
   await user.click(close())
   await sheetGone()
   noQuestion()
@@ -278,10 +278,10 @@ test('a save while the question shows leaves no question and says Expense record
   await chooseRosa(user)
   await user.click(await tile())
   await pickCategoryAndAmount(user)
-  await user.type(screen.getByLabelText('Details'), 'Cinta')
+  await user.type(screen.getByLabelText('Details (optional)'), 'Cinta')
   await user.click(close())
   await asked(EXPENSE_Q)
-  fireEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+  fireEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
 
   expect(await screen.findByText('Expense recorded')).toBeInTheDocument()
   await waitFor(() => expect(depth(router)).toBe(0))
@@ -293,11 +293,11 @@ test('with no Product chosen, a save while the question shows leaves no question
   const router = renderSale()
   await user.click(await tile())
   await pickCategoryAndAmount(user)
-  await user.type(screen.getByLabelText('Details'), 'Cinta')
+  await user.type(screen.getByLabelText('Details (optional)'), 'Cinta')
   await user.click(close())
   const question = await asked(EXPENSE_Q)
   expect(within(question).getByText(LOSES)).toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'Save the expense' }))
+  fireEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
 
   expect(await screen.findByText('Expense saved')).toBeInTheDocument()
   expect(screen.queryByText('Expense recorded')).not.toBeInTheDocument()
@@ -315,7 +315,7 @@ test('navigating to Sales with a touched sale asks about the sale: No keeps both
   expect(screen.queryByText(EXPENSE_Q)).not.toBeInTheDocument()
   await user.click(within(question).getByRole('button', { name: 'No, keep entering' }))
   await waitFor(() => noQuestion())
-  expect(screen.getByLabelText('Details')).toHaveValue('Cinta')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Cinta')
   expect(router.state.location.pathname).toBe(SALE_NEW)
 
   await act(() => router.navigate(SALES))
@@ -358,7 +358,7 @@ test('a back while the Close question shows resets it, keeps the wording, and th
     expect(text).toContain(STAYS)
   }
   expect(depth(router)).toBe(1)
-  expect(screen.getByLabelText('Details')).toHaveValue('Cinta')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Cinta')
 })
 
 test('a back while the Sales question shows resets it without changing the wording', async () => {
@@ -387,7 +387,7 @@ test('a double back to the same entry resets once and the Sheet stays at depth 1
   await waitFor(() => expect(depth(router)).toBe(1))
   expect(router.state.location.pathname).toBe(SALE_NEW)
   expect(screen.getByRole('dialog', { name: 'Add expense' })).toBeInTheDocument()
-  expect(screen.getByLabelText('Details')).toHaveValue('Cinta')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Cinta')
 })
 
 test('Escape counts as No: the question goes, the Expense and the history stay', async () => {
@@ -401,7 +401,7 @@ test('Escape counts as No: the question goes, the Expense and the history stay',
   await waitFor(() => noQuestion())
   expect(depth(router)).toBe(1)
   expect(router.state.historyAction).toBe(before)
-  expect(screen.getByLabelText('Details')).toHaveValue('Cinta')
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Cinta')
 })
 
 test('a question shown with no second back stays up', async () => {
@@ -423,8 +423,48 @@ test('switching to computer width with a typed Expense drops it, and reopening s
   noQuestion()
   flipViewport('phone')
   await user.click(await tile())
-  expect(await screen.findByLabelText('Details')).toHaveValue('')
+  expect(await screen.findByLabelText('Details (optional)')).toHaveValue('')
   await user.click(close())
   await sheetGone()
   noQuestion()
+})
+
+test('changing How you paid makes the Expense changed: Close asks', async () => {
+  const user = userEvent.setup()
+  const router = renderSale()
+  await user.click(await tile())
+  await user.click(await screen.findByRole('button', { name: /^How you paid/ }))
+  await user.click(await screen.findByRole('button', { name: 'Cash' }))
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'How you paid options' })).not.toBeInTheDocument())
+  await user.click(close())
+  await asked(EXPENSE_Q)
+  expect(depth(router)).toBe(1)
+})
+
+test('opening and closing the How you paid list without choosing leaves the Expense clean: Close asks nothing', async () => {
+  const user = userEvent.setup()
+  const router = renderSale()
+  await user.click(await tile())
+  await user.click(await screen.findByRole('button', { name: /^How you paid/ }))
+  await screen.findByRole('dialog', { name: 'How you paid options' })
+  await act(() => router.navigate(-1))
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'How you paid options' })).not.toBeInTheDocument())
+  await user.click(close())
+  await sheetGone()
+  noQuestion()
+  expect(depth(router)).toBe(0)
+})
+
+test('Back with the How you paid list open closes only the list, and the changed Expense is not asked about', async () => {
+  const user = userEvent.setup()
+  const router = renderSale()
+  await openChanged(user)
+  await user.click(await screen.findByRole('button', { name: /^How you paid/ }))
+  await screen.findByRole('dialog', { name: 'How you paid options' })
+  await act(() => router.navigate(-1))
+  await waitFor(() => expect(screen.queryByRole('dialog', { name: 'How you paid options' })).not.toBeInTheDocument())
+  noQuestion()
+  expect(depth(router)).toBe(1)
+  expect(screen.getByRole('dialog', { name: 'Add expense' })).toBeInTheDocument()
+  expect(screen.getByLabelText('Details (optional)')).toHaveValue('Cinta')
 })

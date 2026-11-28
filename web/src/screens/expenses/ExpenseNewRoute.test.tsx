@@ -56,7 +56,7 @@ function api({
 async function fillForm(): Promise<void> {
   await chooseCategory("Packaging");
   await userEvent.type(screen.getByLabelText("Amount"), "1000");
-  await userEvent.type(screen.getByLabelText("Details"), "Cinta");
+  await userEvent.type(screen.getByLabelText("Details (optional)"), "Cinta");
 }
 
 afterEach(() => {
@@ -93,7 +93,7 @@ test('a save opened from the Analysis card goes back to Analysis and toasts "Exp
   );
   await fillForm();
   await userEvent.click(
-    screen.getByRole("button", { name: "Save the expense" }),
+    screen.getByRole("button", { name: /^Save expense/ }),
   );
 
   expect(await screen.findByText(ANALYSIS_SCREEN)).toBeInTheDocument();
@@ -153,7 +153,7 @@ test("closing with something typed asks before discarding; staying keeps the for
   const router = renderExpenses([ANALYSIS], api());
   await openFromAnalysis(router);
 
-  await userEvent.type(await screen.findByLabelText("Details"), "Cinta");
+  await userEvent.type(await screen.findByLabelText("Details (optional)"), "Cinta");
   await userEvent.click(screen.getByRole("button", { name: "Close" }));
 
   expect(await screen.findByText("Discard the expense?")).toBeInTheDocument();
@@ -162,7 +162,7 @@ test("closing with something typed asks before discarding; staying keeps the for
   );
 
   expect(screen.queryByText("Discard the expense?")).not.toBeInTheDocument();
-  expect(screen.getByLabelText("Details")).toHaveValue("Cinta");
+  expect(screen.getByLabelText("Details (optional)")).toHaveValue("Cinta");
   expect(router.state.location.pathname).toBe(EXPENSE_NEW);
 });
 
@@ -170,7 +170,7 @@ test("confirming the discard leaves the form and saves nothing", async () => {
   const router = renderExpenses([ANALYSIS], api());
   await openFromAnalysis(router);
 
-  await userEvent.type(await screen.findByLabelText("Details"), "Cinta");
+  await userEvent.type(await screen.findByLabelText("Details (optional)"), "Cinta");
   await userEvent.click(screen.getByRole("button", { name: "Close" }));
   await userEvent.click(
     await screen.findByRole("button", { name: "Yes, discard it" }),
@@ -203,7 +203,7 @@ test("with no history, a save goes to Gastos and toasts there", async () => {
 
   await fillForm();
   await userEvent.click(
-    screen.getByRole("button", { name: "Save the expense" }),
+    screen.getByRole("button", { name: /^Save expense/ }),
   );
 
   // The POST is held: still on the form, whose sheet is then the only <main>.
@@ -233,7 +233,7 @@ test('the form route has no bar and no "New sale"; Gastos has both', async () =>
   ).toBeGreaterThan(0);
 
   await userEvent.click(screen.getByRole("link", { name: "Add expense" }));
-  await screen.findByLabelText("Details");
+  await screen.findByLabelText("Details (optional)");
 
   expect(
     screen.queryByRole("link", { name: "New sale" }),
@@ -244,7 +244,7 @@ test('the form route has no bar and no "New sale"; Gastos has both', async () =>
 test("closing, or going back by history, with something typed asks the same question", async () => {
   const router = renderExpenses([ANALYSIS], api());
   await openFromAnalysis(router);
-  await userEvent.type(await screen.findByLabelText("Details"), "Cinta");
+  await userEvent.type(await screen.findByLabelText("Details (optional)"), "Cinta");
 
   await userEvent.click(screen.getByRole("button", { name: "Close" }));
   const viaCerrar = (await screen.findByRole("alertdialog")).textContent;
@@ -258,7 +258,7 @@ test("closing, or going back by history, with something typed asks the same ques
   expect(viaBack).toBe(viaCerrar);
   expect(viaBack).toContain("Discard the expense?");
   expect(router.state.location.pathname).toBe(EXPENSE_NEW);
-  expect(screen.getByLabelText("Details")).toHaveValue("Cinta");
+  expect(screen.getByLabelText("Details (optional)")).toHaveValue("Cinta");
 
   await userEvent.click(screen.getByRole("button", { name: "Yes, discard it" }));
   expect(await screen.findByText(ANALYSIS_SCREEN)).toBeInTheDocument();
@@ -279,7 +279,7 @@ test("after a save the form is no longer in history: leaving by history is a pop
 
   await fillForm();
   await userEvent.click(
-    screen.getByRole("button", { name: "Save the expense" }),
+    screen.getByRole("button", { name: /^Save expense/ }),
   );
 
   expect(await screen.findByText(ANALYSIS_SCREEN)).toBeInTheDocument();
@@ -354,11 +354,11 @@ test("while the categories load the form shows no empty wording and no field", a
 test("nothing chosen: the field reads its placeholder and the form cannot be saved", async () => {
   renderExpenses([ANALYSIS, EXPENSE_NEW], api());
   await userEvent.type(await screen.findByLabelText("Amount"), "1000");
-  await userEvent.type(screen.getByLabelText("Details"), "Cinta");
+  await userEvent.type(screen.getByLabelText("Details (optional)"), "Cinta");
 
   expect(await categoryField()).toHaveTextContent("Pick a category");
   expect(
-    screen.getByRole("button", { name: "Save the expense" }),
+    screen.getByRole("button", { name: /^Save expense/ }),
   ).toBeDisabled();
 });
 
@@ -370,7 +370,7 @@ describe.each([
     stubViewport("phone");
     const router = renderExpenses([...entries], api());
     await userEvent.click(await screen.findByRole("link", { name: link }));
-    await screen.findByLabelText("Details");
+    await screen.findByLabelText("Details (optional)");
     expect(router.state.location.pathname).toBe(EXPENSE_NEW);
     return router;
   }
@@ -386,7 +386,7 @@ describe.each([
 
   test("a dirty form: back raises LeaveConfirm", async () => {
     const router = await open();
-    await userEvent.type(screen.getByLabelText("Details"), "Cinta");
+    await userEvent.type(screen.getByLabelText("Details (optional)"), "Cinta");
 
     await act(() => router.navigate(-1));
 
@@ -396,7 +396,7 @@ describe.each([
 
   test("with the list open back closes only the list and keeps what was typed; a second back asks", async () => {
     const router = await open();
-    await userEvent.type(screen.getByLabelText("Details"), "Cinta");
+    await userEvent.type(screen.getByLabelText("Details (optional)"), "Cinta");
     await userEvent.click(await categoryField());
     await screen.findByRole("dialog", { name: "Category options" });
     expect(sheetDepth(router.state.location.state)).toBe(1);
@@ -409,7 +409,7 @@ describe.each([
       ).toBeNull(),
     );
     expect(router.state.location.pathname).toBe(EXPENSE_NEW);
-    expect(screen.getByLabelText("Details")).toHaveValue("Cinta");
+    expect(screen.getByLabelText("Details (optional)")).toHaveValue("Cinta");
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
 
     await act(() => router.navigate(-1));
@@ -434,6 +434,6 @@ describe.each([
     await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
     expect(router.state.location.pathname).toBe(EXPENSE_NEW);
     expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Details")).toBeInTheDocument();
+    expect(screen.getByLabelText("Details (optional)")).toBeInTheDocument();
   });
 });

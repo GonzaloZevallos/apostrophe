@@ -767,6 +767,24 @@ body {
   touch-action: manipulation;
 }
 
+/* The round look of the same arrow, for a card that draws it in its own title row (ADR
+ * 20261125): the row owns the padding, so the box is the 44 px touch target alone. The press
+ * cue is the global `.boton--enlace:active` --superficie fill. The chevron is hidden until the
+ * row's narrow step shows it in place of the text (the expenses title row's `@container`). */
+.flecha-atras--redonda .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-xs);
+  min-height: var(--alto-tocable);
+  border-radius: var(--radio-pildora);
+  touch-action: manipulation;
+}
+
+.flecha-atras--redonda .boton--enlace > svg {
+  display: none;
+}
+
 .riel-lateral {
   display: none;
   flex-direction: column;
@@ -1738,6 +1756,90 @@ a.ajustes-tema__opcion {
   font-weight: 600;
 }
 
+/* Expenses' phone title row (ADR 20261125, `ExpensesTitleRow`): the round back, the title and
+ * Add expense on one line that never wraps, with the month line as its own line below. The title
+ * is the one fixed thing: never wrapped, shrunk, clipped or ellipsised. The row is the size
+ * container, so its two steps follow the room the row itself has, in its own `em`, which grows
+ * with the text size: below 24em the labelled pill is the 44 x 44 round icon (its `aria-label`
+ * keeps the name), below 19em the back is the round chevron (its text is clipped, never removed,
+ * so the accessible name stays). Only the two thresholds may move; their number and order may not. */
+.gastos__encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+.gastos__encabezado > .gastos__mes {
+  flex: none;
+}
+
+.gastos__fila-titulo {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--espacio-sm);
+  container-type: inline-size;
+  container-name: fila-titulo-gastos;
+}
+
+.gastos__fila-titulo > .flecha-atras--redonda {
+  flex: 0 0 auto;
+}
+
+.gastos__fila-titulo > .gastos__titulo {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.gastos__fila-titulo > .gastos__cargar {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  width: auto;
+  height: var(--alto-tocable);
+  padding: 0 18px;
+  background: var(--boton);
+  color: var(--boton-texto);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.gastos__fila-titulo > .gastos__cargar .gastos__cargar-texto {
+  display: inline;
+}
+
+@container fila-titulo-gastos (max-width: 24em) {
+  .gastos__fila-titulo > .gastos__cargar {
+    width: var(--alto-tocable);
+    padding: 0;
+    background: var(--superficie);
+    color: var(--tinta);
+  }
+
+  .gastos__fila-titulo > .gastos__cargar .gastos__cargar-texto {
+    display: none;
+  }
+}
+
+@container fila-titulo-gastos (max-width: 19em) {
+  .flecha-atras--redonda .boton--enlace {
+    width: var(--alto-tocable);
+    padding: 0;
+    box-shadow: inset 0 0 0 1px var(--linea);
+  }
+
+  .flecha-atras--redonda .flecha-atras__texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .flecha-atras--redonda .boton--enlace > svg {
+    display: block;
+  }
+}
+
 .gastos__resumen,
 .gastos__ultimos {
   display: flex;
@@ -1914,6 +2016,21 @@ a.ajustes-tema__opcion {
 
 .gasto-form .boton--enlace {
   align-self: flex-start;
+}
+
+/* Save carries its amount: it may wrap onto a second line and is never cut, 44 px tall at least.
+ * The amount itself stays in one piece. */
+.gasto-form .boton[type="submit"] {
+  height: auto;
+  min-height: max(44px, var(--alto-boton));
+  padding-block: var(--espacio-sm);
+  text-align: center;
+  flex-wrap: wrap;
+  white-space: normal;
+}
+
+.gasto-form__monto {
+  white-space: nowrap;
 }
 
 .nueva-venta .nueva-venta__cerrar .boton--enlace,
@@ -4252,24 +4369,73 @@ a.ajustes-tema__opcion {
 
 /* ===== end auth-layout ===== */
 
-/* A variety's page (VariedadDetalle.dc.html): one summary line, two equal actions and the
- * four sections, all from the tokens. */
-.variedad-resumen {
+/* A Product's state block (ProductoDetalle.dc.html): three rows that wrap and grow, never
+ * clipped. Ink is neutral; MarcaEstado brings its own state shape. The loading shape is the same
+ * rows with a neutral bar each, at the row's own line height. */
+.product-state {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
   margin: 0;
-  font-size: 15px;
-  color: var(--deuda);
+  padding: 0;
+  list-style: none;
+  font-size: var(--tamano-fila);
+  color: var(--tinta);
 }
 
+.product-state__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-xs) var(--espacio-md);
+  min-block-size: calc(var(--interlineado-fila) * 1em);
+  line-height: var(--interlineado-fila);
+  overflow-wrap: anywhere;
+}
+
+.product-state__row:nth-child(n + 2) {
+  color: var(--tinta2);
+}
+
+.product-state__row .marca-estado {
+  gap: var(--espacio-xs);
+  margin-inline-start: var(--espacio-sm);
+}
+
+.product-state__row .marca-estado__palabra {
+  position: static;
+  inline-size: auto;
+  block-size: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+.product-state__row .insignia {
+  margin-inline-start: var(--espacio-sm);
+}
+
+.product-state__oculta {
+  font-style: italic;
+}
+
+.product-state__bar {
+  display: block;
+  inline-size: 40%;
+  min-block-size: calc(var(--interlineado-fila) * 1em);
+  border-radius: var(--radio-campo);
+  background: var(--linea);
+}
+
+
+/* A variety's page (ProductoDetalle.dc.html): the state block (`.product-state`), the actions and
+ * the sections, all from the tokens. */
 .variedad-resumen__oculta {
   font-weight: 600;
 }
 
-/* An archived variety's summary (VariedadArchivada.dc.html): the figures in the quiet ink, then
- * the marks on their own line, "Archivada" as the neutral Insignia and "Oculta" in words. */
-.variedad-resumen--archivada {
-  color: var(--tinta2);
-}
-
+/* The archived list's marks (ArchivedVarieties): "Archivada" as the neutral Insignia and "Oculta" in words. */
 .variedad-marcas {
   display: flex;
   align-items: center;
@@ -4291,10 +4457,15 @@ a.ajustes-tema__opcion {
 
 .variedad-acciones .boton {
   flex: 1 1 auto;
-  white-space: nowrap;
-  height: 52px;
-  font-size: 15px;
+  block-size: auto;
+  min-block-size: var(--alto-tocable);
+  min-inline-size: var(--alto-tocable);
+  padding-block: var(--espacio-sm);
+  padding-inline: var(--espacio-lg);
+  font-size: var(--tamano-fila);
   text-decoration: none;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .variedad-retiro {
@@ -4416,20 +4587,6 @@ a.ajustes-tema__opcion {
   background: var(--papel);
 }
 
-/* On a variety's page the status word is read, not hidden: shape and word together. */
-.variedad-resumen .marca-estado {
-  gap: var(--espacio-xs);
-}
-
-.variedad-resumen .marca-estado__palabra {
-  position: static;
-  width: auto;
-  height: auto;
-  margin: 0;
-  overflow: visible;
-  clip: auto;
-}
-
 .seccion-variedad__cabecera a,
 .variedad-acciones a,
 .encabezado__fila .boton--enlace {
@@ -4473,8 +4630,10 @@ a.ajustes-tema__opcion {
 /* The Products phone title block (`ProductsPhone`): a plain div that scrolls with the screen, one
  * nowrap row. The heading takes what is left; the 44 px "New product" button and the avatar keep
  * their size. 12 px between the targets leaves 8 px between the button and the avatar's 44 px
- * box, whose -4 px margins eat 4 px of the gap. The button is `.boton-icono` (44 x 44, round) filled
- * with --boton-texto on --boton; its own class sets no colour. */
+ * box, whose -4 px margins eat 4 px of the gap. The button is `.boton-icono` (44 x 44, round) with
+ * the `.boton-icono--contorno` border: --superficie, --tinta and --linea, the neutral round "+" of
+ * Clientes.dc.html, never green (green is the avatar's). The same look at every phone width: the
+ * labelled pill does not fit the row at 246 px, so nothing here switches by width. */
 .productos-cabecera {
   display: flex;
   flex-wrap: nowrap;
@@ -4487,9 +4646,15 @@ a.ajustes-tema__opcion {
   min-width: 0;
 }
 
-.boton-icono--lleno {
-  background: var(--boton);
-  color: var(--boton-texto);
+/* The neutral round add (Products' and Customers' phone title rows, New sale's results table): the
+ * plain `.boton-icono` surface and ink (--superficie, --tinta) with a --linea ring, never --boton.
+ * The ring is inside the 44 px target: a link is content-box by default, so without border-box it
+ * grows to 46. */
+.boton-icono--contorno {
+  box-sizing: border-box;
+  border: 1px solid var(--linea);
+  user-select: none;
+  touch-action: manipulation;
 }
 
 .productos-cabecera__nueva {
@@ -5702,15 +5867,30 @@ a.ajustes-tema__opcion {
   color: var(--tinta);
 }
 
+/* The input is painted invisible by its text fill, not by `opacity: 0`, as `.fecha-fila__input` is: its
+ * `color` and `background` stay real tokens, so the contrast check reads a readable value in claro and
+ * oscuro, and it stays a visible, 44 px-tall control to assistive technology. */
 .date-row__input {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   margin: 0;
-  opacity: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--tinta);
+  -webkit-text-fill-color: transparent;
   cursor: inherit;
   font-size: 16px;
+}
+
+.date-row__input::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
 }
 
 /* pressed */
@@ -5964,6 +6144,18 @@ a.ajustes-tema__opcion {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--espacio-md);
+}
+
+/* On the phone the row is one line: the title is cut by `.cabecera-fila`, the round add and the
+ * avatar keep their 44 px. */
+@media (max-width: 899.98px) {
+  .clientes__encabezado {
+    flex-wrap: nowrap;
+  }
+
+  .clientes__encabezado > .boton-icono {
+    flex-shrink: 0;
+  }
 }
 
 .clientes__encabezado > .boton {
@@ -6963,6 +7155,14 @@ a.ajustes-tema__opcion {
     white-space: nowrap;
   }
 
+  /* Expenses' month total fits the viewport at larger text too (GH-1127, Human Decision 2): where
+   * the fit above is not enough (130 % text from 320 px up) the figure breaks inside itself
+   * rather than push the page sideways. When it fits, nothing breaks and the render is as before. */
+  .gastos__total .cifra-xl {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
   .gastos__categoria .gastos__categoria-cabecera {
     min-width: 0;
   }
@@ -7035,10 +7235,23 @@ a.ajustes-tema__opcion {
     height: var(--alto-tocable);
   }
 
-  /* Scoped to Expenses' header: Analysis reuses the month pill and its arrows (part 2). */
-  .gastos__cabecera .gastos__mes-boton {
+  /* Scoped to Expenses' header (the computer's `gastos__cabecera` and the phone's title block
+   * `gastos__encabezado`): Analysis reuses the month pill and its arrows (part 2). */
+  .gastos__cabecera .gastos__mes-boton,
+  .gastos__encabezado .gastos__mes-boton {
+    flex: none;
     width: var(--alto-tocable);
     height: var(--alto-tocable);
+  }
+}
+
+/* The narrowest phone (320 px at 130 % text is 246 CSS px): the month line has 198 px, so with
+ * the arrows kept at 44 the month name ("September", the longest word) needs the pill's gap and
+ * padding closed to 4 px; the arrows never shrink below the touch target. */
+@media (max-width: 280px) {
+  .gastos__encabezado > .gastos__mes {
+    gap: var(--espacio-xs);
+    padding-inline: var(--espacio-xs);
   }
 }
 

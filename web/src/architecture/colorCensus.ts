@@ -1,8 +1,8 @@
 /**
  * The never-by-color census (design README: no state told by color alone). `stateColorRules`
  * reads CSS text and returns each rule, by its normalised selector list, whose declarations use
- * a state color: `--deuda*`, `--critico*`, `--acento-calido*`, `--positivo`, `--negativo` or a
- * chart series. `checkColorCensus` compares that to the list of entries below.
+ * a state color: `--deuda*`, `--critico*`, `--acento-calido*`, `--positivo`, `--negativo`, a
+ * chart series (`--serie1..5`) or an Expenses series (`--gasto*`). `checkColorCensus` compares that to the list of entries below.
  */
 
 export interface CensusEntry {
@@ -16,7 +16,7 @@ export interface CensusEntry {
   tests: readonly string[]
 }
 
-const STATE_COLOR = /--(?:(?:deuda|critico|acento-calido)[\w-]*|positivo|negativo|serie[1-5])(?![\w-])/
+const STATE_COLOR = /--(?:(?:deuda|critico|acento-calido)[\w-]*|positivo|negativo|serie[1-5]|gasto[\w-]*)(?![\w-])/
 const GAIN_OR_LOSS = /--(?:positivo|negativo)(?![\w-])/
 
 const normalise = (selectors: string): string =>
@@ -161,7 +161,6 @@ export const COLOR_CENSUS: readonly CensusEntry[] = [
   { selector: '.catalogo__publicar--desactualizado', component: 'PinPublish', carries: '"Out of date"', tests: at('screens/PinPublish.test.tsx') },
   { selector: '.catalogo__publicar--desactualizado .catalogo__publicar-titulo', component: 'PinPublish', carries: '"Out of date"', tests: at('screens/PinPublish.test.tsx') },
   { selector: '.catalogo__publicar--desactualizado .catalogo__publicar-detalle', component: 'PinPublish', carries: 'the reason sentence under "Out of date"', tests: at('screens/PinPublish.test.tsx') },
-  { selector: '.variedad-resumen', component: 'VarietyPage summary line', carries: 'the grams and the stock word ("low") from MarcaEstado', tests: at('screens/varieties/VarietyPage.test.tsx') },
   { selector: '.seccion-variedad__valor--aviso', component: 'VarietyThresholdSection', carries: '"Warning: 18 g left"', tests: at('screens/varieties/VarietyPage.test.tsx') },
   { selector: '.ficha-deuda', component: 'ClienteFicha, CustomerCardBehind', carries: '"Owes you" and "since dd/mm"', tests: at('screens/clientes/ClienteFicha.test.tsx', 'screens/clientes/ClienteSheet.test.tsx') },
   { selector: '.payment-chip--unpaid', component: 'SalePaymentChip', carries: 'the word "Unpaid"', tests: at('screens/ventas/SalePaymentChip.test.tsx') },

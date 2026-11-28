@@ -5,6 +5,7 @@ document, and never decides which rows those are (the plan's invariant).
 
 from __future__ import annotations
 
+import base64
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
@@ -17,9 +18,10 @@ from app.business_removal.domain.labels import (
     LABEL_VIA,
     exported_tables,
 )
-from app.business_removal.domain.schema import Schema, Table
+from app.business_removal.domain.schema import ColumnType, Schema, Table
 
 HUNDREDTHS_SUFFIX = "_hundredths"
+BASE64_SUFFIX = "_base64"
 
 
 @dataclass(frozen=True)
@@ -62,6 +64,22 @@ class UnresolvableLabel(ValueError):
         super().__init__(f"table {table!r} has no declared label")
 
 
+class UnencodableBinary(ValueError):
+    """A value in a `BINARY` column is not `bytes`, `bytearray` or `memoryview`. The
+    fixed message names the table and the column, never the value, its type or length."""
+
+    def __init__(self, table: str, column: str) -> None:
+        super().__init__(f"table {table!r} column {column!r} holds a value that is not bytes")
+
+
+class ExportKeyCollision(ValueError):
+    """A `BINARY` column `c` sits beside a column `c_base64`, so both would be written
+    under the same key. The fixed message names the table and the column only."""
+
+    def __init__(self, table: str, column: str) -> None:
+        super().__init__(f"table {table!r} column {column!r} collides with its own base64 key")
+
+
 def build_document(
     business: Business,
     schema: Schema,
@@ -83,6 +101,8 @@ def build_document(
     indexed here, since no exported table's foreign key ever targets one, and
     `login_guard` has no `business_id`, so it is deleted by email, never exported."""
     owned = exported_tables(schema)
+    for table_name in owned:
+        _check_no_key_collision(schema.table(table_name))
     rows_by_table: dict[str, dict[Any, Mapping[str, Any]]] = {
         name: {row["id"]: row for row in rows[name]} for name in owned if name in rows
     }
@@ -140,6 +160,8 @@ def _record(
         value = row[name]
         if name in fk_targets:
             record[name] = _reference(fk_targets[name], value, schema, rows_by_table, business_name)
+        elif column.type is ColumnType.BINARY:
+            record[name + BASE64_SUFFIX] = _encode_binary(table.name, name, value)
         elif name.endswith(HUNDREDTHS_SUFFIX):
             record[name[: -len(HUNDREDTHS_SUFFIX)]] = _format_hundredths(value)
         elif isinstance(value, datetime):
@@ -149,6 +171,27 @@ def _record(
         else:
             record[name] = value
     return record
+
+
+def _check_no_key_collision(table: Table) -> None:
+    names = {column.name for column in table.columns}
+    for column in table.columns:
+        if (
+            column.type is ColumnType.BINARY
+            and (table.name, column.name) not in EXCLUDED_COLUMNS
+            and column.name + BASE64_SUFFIX in names
+        ):
+            raise ExportKeyCollision(table.name, column.name)
+
+
+def _encode_binary(table: str, column: str, value: Any) -> str | None:
+    """Standard, padded base64 of exactly the stored bytes; `None` stays `None`. Any
+    other type raises with a message that never holds the value."""
+    if value is None:
+        return None
+    if isinstance(value, (bytes, bytearray, memoryview)):
+        return base64.b64encode(bytes(value)).decode("ascii")
+    raise UnencodableBinary(table, column)
 
 
 def _foreign_key_targets(table: Table) -> dict[str, str]:

@@ -35,7 +35,7 @@ test('typing, opening the list, backing out of it and then out of the form raise
   const error = vi.spyOn(console, 'error').mockImplementation(() => undefined)
   const router = renderExpenses([ANALYSIS, EXPENSE_NEW], api)
 
-  await userEvent.type(await screen.findByLabelText('Details'), 'Cinta')
+  await userEvent.type(await screen.findByLabelText('Details (optional)'), 'Cinta')
   await userEvent.click(await categoryField())
   await screen.findByRole('dialog', { name: 'Category options' })
 

@@ -1650,12 +1650,6 @@
     "issue": 47
   },
   {
-    "screen": "VariedadArchivada",
-    "rule": "touch-action",
-    "target": "button:Restore",
-    "issue": 47
-  },
-  {
     "screen": "VariedadDetalle",
     "rule": "touch-action",
     "target": "button:Archive product",

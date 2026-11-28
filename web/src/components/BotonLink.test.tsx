@@ -34,6 +34,26 @@ test('an icon-only link is named by its ariaLabel and is the 44 px icon control'
   expect(link.querySelector('svg')).not.toBeNull()
 })
 
+test('only add is toned: every other icon-only link is exactly boton-icono', () => {
+  renderLink(
+    <>
+      <BotonLink to={HOME} variant="icon" action="delete" ariaLabel="Borrar" />
+      <BotonLink to={HOME} variant="icon" action="edit" ariaLabel="Editar" />
+      <BotonLink to={HOME} variant="icon" action="search" ariaLabel="Buscar" />
+      <BotonLink to={HOME} variant="icon" action="close" ariaLabel="Cerrar" />
+      <BotonLink to={HOME} variant="icon" action="share" ariaLabel="Compartir" />
+      <BotonLink to={HOME} variant="icon" action="add" ariaLabel="Agregar" />
+      <BotonLink to={HOME} variant="icon" action="add" tone="neutral" ariaLabel="Nuevo" />
+    </>,
+  )
+  const classOf = (name: string) => screen.getByRole('link', { name }).className
+  for (const name of ['Borrar', 'Editar', 'Buscar', 'Cerrar', 'Compartir']) {
+    expect(classOf(name)).toBe('boton-icono')
+  }
+  expect(classOf('Agregar')).toBe('boton-icono boton-icono--contorno')
+  expect(classOf('Nuevo')).toBe('boton-icono boton-icono--contorno')
+})
+
 test('a text link has no icon and the underlined class', () => {
   renderLink(
     <BotonLink to={SALES} variant="link">

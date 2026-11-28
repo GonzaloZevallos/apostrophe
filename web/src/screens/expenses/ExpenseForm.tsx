@@ -12,7 +12,7 @@
  * expense (Gastos): a new expense can neither be deleted nor be already gone.
  */
 
-import { type FormEvent, useEffect, useId, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useLoading } from '../../components/useLoading'
@@ -32,6 +32,8 @@ import type { Me } from '../../api/me'
 import { isGone, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import type { SuccessToast } from '../../components/AvisoExito'
 import Boton from '../../components/Boton'
+import DateRow from '../../components/DateRow'
+import FieldRefusal from '../../components/FieldRefusal'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import MoneyInput from '../../components/MoneyInput'
 import { SheetActions } from '../../components/Sheet'
@@ -45,16 +47,28 @@ import { EXPENSES_TEXT } from '../../copy/expenses'
 import { COMMON_TEXT } from '../../copy/common'
 import { GENERIC_REFUSAL_MESSAGE } from '../../copy/settings'
 import { AMOUNT_REFUSAL_CODE, tooManyDecimalsMessage } from '../../api/amountRefusal'
+import {
+  howYouPaidView,
+  paymentMethodName,
+  paymentMethodOf,
+  paymentMethodValue,
+  usePaymentMethodOptions,
+} from '../../sales/paymentMethods'
 
 export const CATEGORY_GONE = EXPENSES_TEXT.categoryGone
 export const GENERIC_REFUSAL = GENERIC_REFUSAL_MESSAGE
 
-// `expense_category.not_found` is the one code the expense form handles on its
-// own field instead of the generic gone notice (PM round 3): the expense itself
-// still has somewhere to go, so nothing is discarded.
-const EXPENSE_FORM_OVERRIDES: Partial<Record<RefusalCode, 'category-gone'>> = {
+// These codes are handled on their own field instead of the generic gone notice (PM round 3): the
+// expense itself still has somewhere to go, so nothing is discarded. A refused Payment method is
+// handled here too, and always before `isGone`, because the contract lists both as `gone`.
+const EXPENSE_FORM_OVERRIDES: Partial<Record<RefusalCode, 'category-gone' | 'method-gone'>> = {
   'expense_category.not_found': 'category-gone',
+  'payment_method.unavailable': 'method-gone',
+  'payment_method.not_found': 'method-gone',
 }
+
+// The Save label draws the amount inside its own nowrap span: the text is split around this mark.
+const AMOUNT_MARK = '\u2063'
 
 function isRefusal(caught: unknown): caught is ApiError {
   return caught instanceof ApiError && caught.code !== UNKNOWN_CODE && kindOf(caught.code) === 'refusal'
@@ -67,17 +81,20 @@ interface FormState {
   category_id: string
   amount: string
   detail: string
+  /** The stored method's id, never resolved through the offered list. `null` is no method. */
+  payment_method_id: number | null
 }
 
 function initialForm(target: FormTarget, today: string, format: MoneyFormat): FormState {
   if (target === 'nuevo') {
-    return { spent_on: today, category_id: '', amount: '', detail: '' }
+    return { spent_on: today, category_id: '', amount: '', detail: '', payment_method_id: null }
   }
   return {
     spent_on: target.spent_on,
     category_id: String(target.category_id),
     amount: formatMoneyInput(target.amount, format),
     detail: target.detail,
+    payment_method_id: target.payment_method?.id ?? null,
   }
 }
 
@@ -86,7 +103,8 @@ function sameForm(a: FormState, b: FormState): boolean {
     a.spent_on === b.spent_on &&
     a.category_id === b.category_id &&
     a.amount === b.amount &&
-    a.detail === b.detail
+    a.detail === b.detail &&
+    a.payment_method_id === b.payment_method_id
   )
 }
 
@@ -113,12 +131,14 @@ export default function ExpenseForm({
   const queryClient = useQueryClient()
   const { t } = useTranslation()
   const categoryErrorId = useId()
+  const methodErrorId = useId()
   const categoriesQuery = useQuery({ queryKey: keys.expenseCategories(), queryFn: listCategories })
   const [initial] = useState<FormState>(() => initialForm(target, me.today, money.format))
   const [form, setForm] = useState<FormState>(initial)
   const [categoryError, setCategoryError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
   const [amountError, setAmountError] = useState<string | null>(null)
+  const [methodGone, setMethodGone] = useState<{ id: number; name: string } | null>(null)
   const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
   const [extraCategories, setExtraCategories] = useState<ExpenseCategory[]>([])
@@ -142,8 +162,39 @@ export default function ExpenseForm({
     ...extraCategories.filter((extra) => !categories.some((category) => category.id === extra.id)),
   ]
 
+  const methodOptions = usePaymentMethodOptions()
+  const storedMethod = target === 'nuevo' || target.payment_method === null ? null : target.payment_method
+  const methodView = howYouPaidView({
+    storedMethod: storedMethod === null ? null : { id: storedMethod.id, name: storedMethod.name },
+    value: paymentMethodValue(form.payment_method_id),
+    offeredIds: methodOptions.offeredIds,
+    methodOptions: methodOptions.selector.options,
+    loading: methodOptions.selector.loading,
+    failure: methodOptions.failure,
+    methodGone,
+  })
+
+  // The Selector calls `onOpenChange` again whenever its identity changes, so this one is stable and
+  // reads the hook's latest failure and `reload` through a ref: a tap on a failed field reads once.
+  const methodListRef = useRef({ failed: methodOptions.failure !== null, reload: methodOptions.reload })
+  useEffect(() => {
+    methodListRef.current = { failed: methodOptions.failure !== null, reload: methodOptions.reload }
+  })
+  const onMethodListOpenChange = useCallback((open: boolean) => {
+    if (open && methodListRef.current.failed) methodListRef.current.reload()
+  }, [])
+
   const detailTrimmed = form.detail.trim()
-  const canSubmit = form.category_id !== '' && detailTrimmed !== '' && !sending
+  const canSubmit = form.category_id !== '' && !sending && methodGone === null
+  const shownAmount = parseMoneyInput(form.amount, money.format)
+  const saveLabel =
+    shownAmount.ok && shownAmount.value > 0 ? (
+      t('expenses:form.saveWithAmount', { amount: AMOUNT_MARK })
+        .split(AMOUNT_MARK)
+        .flatMap((part, at) => (at === 0 ? [part] : [<span key="amount" className="cifra-n gasto-form__monto">{money.money(shownAmount.value)}</span>, part]))
+    ) : (
+      t('expenses:form.save')
+    )
 
   async function onCreateCategory(): Promise<void> {
     setNewCategoryError(null)
@@ -183,6 +234,7 @@ export default function ExpenseForm({
       category_id: Number(form.category_id),
       amount: parsedAmount.value,
       detail: detailTrimmed,
+      payment_method_id: form.payment_method_id,
     }
     setSending(true)
     try {
@@ -200,6 +252,19 @@ export default function ExpenseForm({
         setExtraCategories((previous) => previous.filter((extra) => extra.id !== body.category_id))
         setForm((previous) => ({ ...previous, category_id: '' }))
         setCategoryError(CATEGORY_GONE)
+      } else if (caught instanceof ApiError && resolveOverride(EXPENSE_FORM_OVERRIDES, caught.code) === 'method-gone') {
+        // Everything typed stays: only the field is marked, and Save waits for another pick or None.
+        void queryClient.invalidateQueries({ queryKey: keys.paymentMethods() })
+        const refused = body.payment_method_id
+        if (refused === null) {
+          setFormError(GENERIC_REFUSAL)
+        } else {
+          const name =
+            storedMethod !== null && storedMethod.id === refused
+              ? storedMethod.name
+              : (paymentMethodName(queryClient, refused) ?? '')
+          setMethodGone({ id: refused, name })
+        }
       } else if (caught instanceof ApiError && isGone(caught.code)) {
         invalidateResource(queryClient, 'expenses')
         onGone?.()
@@ -247,16 +312,19 @@ export default function ExpenseForm({
       {header}
       <form className="formulario" onSubmit={onSubmit}>
         <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.date}</span>
-          <input
-            className="campo__input"
-            type="date"
+          <span className="campo__rotulo">{COMMON_TEXT.amount}</span>
+          <MoneyInput
+            className="campo__input campo__input--monto"
             autoComplete="off"
-            value={form.spent_on}
-            max={me.today}
-            onChange={(event) => setForm((previous) => ({ ...previous, spent_on: event.target.value }))}
+            value={form.amount}
+            onChange={(amount) => setForm((previous) => ({ ...previous, amount }))}
             required
           />
+          {amountError !== null && (
+            <span className="campo__error" role="alert">
+              {amountError}
+            </span>
+          )}
         </label>
         <div className="campo">
           <Selector
@@ -309,31 +377,42 @@ export default function ExpenseForm({
           </Boton>
         )}
         <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.amount}</span>
-          <MoneyInput
-            className="campo__input campo__input--monto"
-            autoComplete="off"
-            value={form.amount}
-            onChange={(amount) => setForm((previous) => ({ ...previous, amount }))}
-            required
-          />
-          {amountError !== null && (
-            <span className="campo__error" role="alert">
-              {amountError}
-            </span>
-          )}
-        </label>
-        <label className="campo">
-          <span className="campo__rotulo">{EXPENSES_TEXT.details}</span>
+          <span className="campo__rotulo">{t('expenses:form.detailsOptional')}</span>
           <input
             className="campo__input"
             value={form.detail}
             autoComplete="off"
             maxLength={200}
             onChange={(event) => setForm((previous) => ({ ...previous, detail: event.target.value }))}
-            required
           />
         </label>
+        <DateRow
+          label={COMMON_TEXT.date}
+          value={form.spent_on}
+          today={me.today}
+          onChange={(spent_on) => setForm((previous) => ({ ...previous, spent_on }))}
+        />
+        <div className="campo">
+          <Selector
+            {...methodOptions.selector}
+            emptySetMessage={
+              methodOptions.failure === null ? t('expenses:form.paymentMethodEmpty') : methodOptions.selector.emptySetMessage
+            }
+            label={t('expenses:form.paymentMethod')}
+            emptyWording={t('expenses:form.paymentMethodNone')}
+            options={methodView.options}
+            value={methodView.value}
+            selected={methodView.selected}
+            loading={methodView.loading}
+            onChange={(next) => {
+              setMethodGone(null)
+              setForm((previous) => ({ ...previous, payment_method_id: paymentMethodOf(next) }))
+            }}
+            onOpenChange={onMethodListOpenChange}
+            describedBy={methodGone === null ? undefined : methodErrorId}
+          />
+          {methodGone !== null && <FieldRefusal id={methodErrorId}>{t('common:paymentMethodUnavailable')}</FieldRefusal>}
+        </div>
         <SheetActions>
           {formError !== null && (
             <span className="campo__error" role="alert">
@@ -343,7 +422,7 @@ export default function ExpenseForm({
           {offline && <SinConexion />}
           {phone && deleteButton}
           <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
-            {EXPENSES_TEXT.saveTheExpense}
+            {saveLabel}
           </Boton>
           {!phone && deleteButton}
         </SheetActions>
