@@ -8,6 +8,7 @@ from app.shared.money import MoneyFormat
 from app.shared.quantity import Quantity
 from app.stock.domain.entry import StockEntry
 from app.stock.domain.lot_order import SaleLineDraw, WithdrawalLineDraw
+from app.stock.domain.movement_order import MovementKey
 from app.stock.domain.threshold import Threshold
 from app.stock.domain.withdrawal import Withdrawal
 from app.stock.domain.withdrawal_reason import ReasonName
@@ -136,6 +137,37 @@ class VarietyCatalog(Protocol):
     def names(self) -> dict[int, str]:
         """Every variety's name of this business by id, for an answer that names the
         varieties of a record's lines."""
+        ...
+
+
+@dataclass(frozen=True)
+class ProductLabel:
+    """What a movement's product is called, and whether it is archived now."""
+
+    name: str
+    archived: bool
+
+
+class ProductLabels(Protocol):
+    """The names of a business's products by variety id, for a read that shows them.
+    Built for one business."""
+
+    def labels(self, variety_ids: Collection[int]) -> dict[int, ProductLabel]:
+        """Only the ids this business has, archived ones flagged. An id it does not have
+        is left out; it never raises."""
+        ...
+
+
+class BusinessMovements(Protocol):
+    """The stock movements (entries and withdrawals mixed) of one business, read only.
+    Built for it, every statement filters on it, and it never writes or commits."""
+
+    def page(self, before: MovementKey | None, limit: int) -> list[StockEntry | Withdrawal]:
+        """At most `limit + 1` entries and at most `limit + 1` withdrawals of this
+        business, each kind the first ones in the movement order that come strictly after
+        `before` (`MovementKey.comes_after`; every row for `None`). Each withdrawal comes
+        whole, its lines in position order. The kinds may come in any order: the use case
+        merges them."""
         ...
 
 

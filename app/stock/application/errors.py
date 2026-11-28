@@ -25,3 +25,13 @@ class VarietyArchived(LookupError):
     def __init__(self, variety_id: int) -> None:
         super().__init__("variety is archived")
         self.variety_id = variety_id
+
+
+class MovementLabelMissing(LookupError):
+    """A movement's product or withdrawal reason has no label: the stored data broke an
+    integrity invariant, not a request that was refused. Code-less like `VarietyNotFound`
+    and never registered with `TranslateErrors`, so it ends as the app's plain 500. The
+    message is fixed: it never carries an id or a name."""
+
+    def __init__(self) -> None:
+        super().__init__("a movement's product or reason has no label")
