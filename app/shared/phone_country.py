@@ -156,23 +156,47 @@ def listed_country_of(digits: str) -> PhoneCountry | None:
     return None
 
 
-def grouped(digits: str) -> str | None:
-    """The digits (no "+") as `+<code> [<mobile nine> ]<national number grouped>`, or
-    `None` when the number cannot be grouped: an unlisted code, a missing mobile nine, or
-    a national length with no template. Only " " and "-" are ever inserted."""
+def _parts(digits: str) -> tuple[PhoneCountry, str, str] | None:
+    """The one place a number is split for grouping: its listed country, the mobile-nine
+    lead (`"9 "` or `""`) and the national number filled into its template. `None` when
+    the number cannot be grouped: an unlisted code, a missing mobile nine, or a national
+    length with no template."""
     country = listed_country_of(digits)
     if country is None:
         return None
     rule = country.rule
     national = digits[len(rule.calling_code) :]
-    lead = f"+{rule.calling_code} "
+    lead = ""
     if rule.mobile_nine is not None:
         if not national.startswith(rule.mobile_nine):
             return None
         national = national[len(rule.mobile_nine) :]
-        lead += f"{rule.mobile_nine} "
+        lead = f"{rule.mobile_nine} "
     template = rule.groupings.get(len(national))
     if template is None:
         return None
     remaining = iter(national)
-    return lead + "".join(next(remaining) if char == "#" else char for char in template)
+    text = "".join(next(remaining) if char == "#" else char for char in template)
+    return country, lead, text
+
+
+def grouped(digits: str) -> str | None:
+    """The digits (no "+") as `+<code> [<mobile nine> ]<national number grouped>`, or
+    `None` when the number cannot be grouped: an unlisted code, a missing mobile nine, or
+    a national length with no template. Only " " and "-" are ever inserted."""
+    parts = _parts(digits)
+    if parts is None:
+        return None
+    country, lead, text = parts
+    return f"+{country.rule.calling_code} {lead}{text}"
+
+
+def national_grouped(digits: str) -> tuple[PhoneCountry, str] | None:
+    """The listed country and the national part of the digits (no "+") grouped by its
+    template, without the `+<code> ` lead and without the mobile nine. `None` exactly
+    when `grouped` is."""
+    parts = _parts(digits)
+    if parts is None:
+        return None
+    country, _lead, text = parts
+    return country, text

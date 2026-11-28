@@ -3,6 +3,7 @@
   "name": "Caro Núñez",
   "phone": null,
   "phone_display": null,
+  "phone_local": null,
   "vip": false,
   "customer_type_id": null,
   "balance": 0,

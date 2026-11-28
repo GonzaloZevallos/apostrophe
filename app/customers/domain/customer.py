@@ -16,7 +16,13 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from app.shared.names import fold, name_matches
-from app.shared.phone_country import PhoneCountry, PhoneCountryRule, grouped, listed_country_of
+from app.shared.phone_country import (
+    PhoneCountry,
+    PhoneCountryRule,
+    grouped,
+    listed_country_of,
+    national_grouped,
+)
 
 NAME_MAX_LENGTH = 60
 
@@ -253,6 +259,13 @@ class PhoneNumber:
         """The number grouped by its own country's rule, for a read response only; a
         number that fits no template is the stored value."""
         return grouped(self.digits) or self.value
+
+    @property
+    def national(self) -> tuple[PhoneCountry, str] | None:
+        """The listed country and the national part grouped by its template, with no
+        calling code and no mobile nine; `None` when `display` falls back to the stored
+        value."""
+        return national_grouped(self.digits)
 
 
 @dataclass(frozen=True)
