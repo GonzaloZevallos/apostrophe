@@ -23,6 +23,10 @@
   },
   "detail": {
     "void": "Void",
-    "yesVoid": "Yes, void"
+    "yesVoid": "Yes, void",
+    "heading": "Detail",
+    "total": "Total",
+    "shipping": "Shipping charged",
+    "assignCustomer": "Assign customer"
   }
 }
