@@ -43,7 +43,7 @@ class RowCost:
     """One Análisis cost line (cost of goods or stock shortfall):
     its costed amount, its own pending grams and whether *every* gram behind it is
     pending, so the screen reads "N g sin costo" and never "$ 0". `row_cost` in
-    `period_figures` is the only place `all_pending` is decided."""
+    `buckets` is the only place `all_pending` is decided."""
 
     amount: int
     pending_quantity: Quantity

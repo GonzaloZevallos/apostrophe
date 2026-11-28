@@ -113,3 +113,7 @@ Narrowed: N, and every other figure that sums quantities across products (quanti
 shortfall and pending marks), becomes a `QuantityByUnit`, which the units part creates: one amount per
 unit with its label. Two quantities of different units are never added; a business with one unit sees
 one amount. Which figures count in which period is unchanged.
+
+## Amendment (GH-1247, 2026-11-27): `row_cost` moves to `buckets.py`
+
+`row_cost`, el único lugar donde se decide `all_pending`, ahora vive en `app/results/domain/buckets.py`.
