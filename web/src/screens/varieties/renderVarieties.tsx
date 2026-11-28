@@ -6,6 +6,7 @@
  * shell's.
  */
 
+import type { ReactElement, ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -35,6 +36,15 @@ import { VARIETIES_TEXT } from '../../copy/varieties'
 import { COMMON_TEXT } from '../../copy/common'
 import ContentArea from '../../components/ContentArea'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
+import { ProductsSearchProvider } from './productsSearch'
+
+/**
+ * `ui` under the Products search store, for a test router that renders a Products or Variedades
+ * screen without `Shell` (which holds the store itself): `element: withProductsSearch(<Outlet />)`.
+ */
+export function withProductsSearch(ui: ReactNode): ReactElement {
+  return <ProductsSearchProvider>{ui}</ProductsSearchProvider>
+}
 
 export const ME: Me = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', shown_language: 'en' as ShownLanguage, money: { symbol: '$', decimals: 0 } }
 

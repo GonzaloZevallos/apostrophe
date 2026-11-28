@@ -5,13 +5,14 @@
  */
 
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router'
+import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, test } from 'vitest'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 import { CATALOG_DISABLED_REASON, EMPTY_TITLE, VARIETIES_TEXT } from '../../copy/varieties'
 import type { ProductsView } from './ProductsBody'
 import { CatalogBody, ProductsNotices, StockBody } from './ProductsPhoneBodies'
 import { showsData } from './showsData'
+import { withProductsSearch } from './renderVarieties'
 
 const ROW = {
   variety: { id: 1, name: '24K Gold', archived: false, current_price: null },
@@ -35,12 +36,19 @@ function viewOf(overrides: Partial<ProductsView> = {}): ProductsView {
   }
 }
 
+/** `ui` as a data router's one route, under the Products search store (which reads the matches). */
+function inRouter(ui: React.ReactNode) {
+  const router = createMemoryRouter([
+    {
+      path: '*',
+      element: withProductsSearch(<MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>{ui}</MoneyFormatProvider>),
+    },
+  ])
+  return <RouterProvider router={router} />
+}
+
 function renderLeaf(ui: React.ReactNode) {
-  return render(
-    <MemoryRouter>
-      <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>{ui}</MoneyFormatProvider>
-    </MemoryRouter>,
-  )
+  return render(inRouter(ui))
 }
 
 const HELD: Partial<ProductsView> = { ready: false, rows: [], summary: null }
@@ -92,13 +100,7 @@ describe('CatalogBody', () => {
     expect(sendCatalog()).toBeNull()
     expect(screen.queryByText(CATALOG_DISABLED_REASON)).toBeNull()
     expect(container.querySelector('[aria-busy="true"]')).not.toBeNull()
-    rerender(
-      <MemoryRouter>
-        <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
-          <CatalogBody view={viewOf()} catalogHeld={false} />
-        </MoneyFormatProvider>
-      </MemoryRouter>,
-    )
+    rerender(inRouter(<CatalogBody view={viewOf()} catalogHeld={false} />))
     expect(screen.getByRole('link', { name: VARIETIES_TEXT.mandarCatalogo })).toBeTruthy()
     expect(container.querySelector('[aria-busy="true"]')).toBeNull()
   })

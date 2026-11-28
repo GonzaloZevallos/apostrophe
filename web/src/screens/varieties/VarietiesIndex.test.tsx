@@ -7,11 +7,12 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
-import { createMemoryRouter, RouterProvider, useLocation } from 'react-router'
+import { createMemoryRouter, Outlet, RouterProvider, useLocation } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { VARIETIES, VARIETY, pathTo } from '../../routes'
 import { stubViewport } from '../../test-viewport'
 import VarietiesIndex from './VarietiesIndex'
+import { withProductsSearch } from './renderVarieties'
 import { isStillCurrent } from './isStillCurrent'
 
 const VARIETY_ROWS = [
@@ -35,8 +36,13 @@ function renderIndex(state?: unknown): void {
   )
   const router = createMemoryRouter(
     [
-      { path: VARIETIES, element: <><VarietiesIndex /><Where /></> },
-      { path: VARIETY, element: <><Where /><State /></> },
+      {
+        element: withProductsSearch(<Outlet />),
+        children: [
+          { path: VARIETIES, element: <><VarietiesIndex /><Where /></> },
+          { path: VARIETY, element: <><Where /><State /></> },
+        ],
+      },
     ],
     { initialEntries: [{ pathname: VARIETIES, state }] },
   )
