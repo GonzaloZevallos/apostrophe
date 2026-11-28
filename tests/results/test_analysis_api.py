@@ -100,6 +100,54 @@ def test_the_month_expense_breakdown_matches_get_expenses_without_purchases(
     assert analysis["month_expenses"]["purchases"] == 0
 
 
+def _post_expenses(client: TestClient, amounts: list[int]) -> None:
+    for position, amount in enumerate(amounts, start=1):
+        category = client.post("/expense-categories", json={"name": f"Categoria {position}"})
+        response = client.post(
+            "/expenses",
+            json={
+                "spent_on": TODAY.isoformat(),
+                "category_id": category.json()["id"],
+                "amount": amount,
+                "detail": "gasto",
+            },
+        )
+        assert response.status_code == 201, response.text
+
+
+def _shares(analysis: dict[str, Any], key: str) -> list[int | None]:
+    shares: list[int | None] = [c["share"] for c in analysis[key]["categories"]]
+    return shares
+
+
+def test_each_expense_category_carries_its_unnormalised_half_up_share(
+    client: TestClient,
+) -> None:
+    _post_expenses(client, [1, 3, 4])
+
+    analysis = client.get("/analysis").json()
+
+    # 12.5 %, 37.5 % and 50 % tie up: 13 + 38 + 50 = 101, never adjusted.
+    assert _shares(analysis, "month_expenses") == [13, 38, 50]
+    assert _shares(analysis, "since_first_record_expenses") == [13, 38, 50]
+
+
+def test_two_expense_categories_split_a_third_and_two_thirds(client: TestClient) -> None:
+    _post_expenses(client, [1, 2])
+
+    analysis = client.get("/analysis").json()
+
+    assert _shares(analysis, "month_expenses") == [33, 67]
+    assert _shares(analysis, "since_first_record_expenses") == [33, 67]
+
+
+def test_a_month_without_expenses_has_no_categories_and_so_no_share(client: TestClient) -> None:
+    analysis = client.get("/analysis").json()
+
+    assert analysis["month_expenses"]["categories"] == []
+    assert analysis["since_first_record_expenses"]["categories"] == []
+
+
 def test_a_purchase_is_its_own_line_never_inside_expenses(client: TestClient) -> None:
     variety_id = _variety_with_price(client, "Flor", 1_000)
     client.post(

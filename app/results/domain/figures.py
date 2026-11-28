@@ -160,6 +160,7 @@ class ExpenseCategoryTotal:
     category_id: int
     name: str
     total: int
+    share: int | None
 
 
 @dataclass(frozen=True)

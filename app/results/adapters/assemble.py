@@ -67,7 +67,9 @@ def _optional(figure: RowCost | None) -> RowCostOut | None:
 def _breakdown(breakdown: ExpenseBreakdown) -> ExpenseBreakdownOut:
     return ExpenseBreakdownOut(
         categories=[
-            ExpenseCategoryTotalOut(category_id=c.category_id, name=c.name, total=Decimal(c.total))
+            ExpenseCategoryTotalOut(
+                category_id=c.category_id, name=c.name, total=Decimal(c.total), share=c.share
+            )
             for c in breakdown.categories
         ],
         total=Decimal(breakdown.total),
