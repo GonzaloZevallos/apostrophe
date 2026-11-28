@@ -4369,24 +4369,73 @@ a.ajustes-tema__opcion {
 
 /* ===== end auth-layout ===== */
 
-/* A variety's page (VariedadDetalle.dc.html): one summary line, two equal actions and the
- * four sections, all from the tokens. */
-.variedad-resumen {
+/* A Product's state block (ProductoDetalle.dc.html): three rows that wrap and grow, never
+ * clipped. Ink is neutral; MarcaEstado brings its own state shape. The loading shape is the same
+ * rows with a neutral bar each, at the row's own line height. */
+.product-state {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-xs);
   margin: 0;
-  font-size: 15px;
-  color: var(--deuda);
+  padding: 0;
+  list-style: none;
+  font-size: var(--tamano-fila);
+  color: var(--tinta);
 }
 
+.product-state__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--espacio-xs) var(--espacio-md);
+  min-block-size: calc(var(--interlineado-fila) * 1em);
+  line-height: var(--interlineado-fila);
+  overflow-wrap: anywhere;
+}
+
+.product-state__row:nth-child(n + 2) {
+  color: var(--tinta2);
+}
+
+.product-state__row .marca-estado {
+  gap: var(--espacio-xs);
+  margin-inline-start: var(--espacio-sm);
+}
+
+.product-state__row .marca-estado__palabra {
+  position: static;
+  inline-size: auto;
+  block-size: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+.product-state__row .insignia {
+  margin-inline-start: var(--espacio-sm);
+}
+
+.product-state__oculta {
+  font-style: italic;
+}
+
+.product-state__bar {
+  display: block;
+  inline-size: 40%;
+  min-block-size: calc(var(--interlineado-fila) * 1em);
+  border-radius: var(--radio-campo);
+  background: var(--linea);
+}
+
+
+/* A variety's page (ProductoDetalle.dc.html): the state block (`.product-state`), the actions and
+ * the sections, all from the tokens. */
 .variedad-resumen__oculta {
   font-weight: 600;
 }
 
-/* An archived variety's summary (VariedadArchivada.dc.html): the figures in the quiet ink, then
- * the marks on their own line, "Archivada" as the neutral Insignia and "Oculta" in words. */
-.variedad-resumen--archivada {
-  color: var(--tinta2);
-}
-
+/* The archived list's marks (ArchivedVarieties): "Archivada" as the neutral Insignia and "Oculta" in words. */
 .variedad-marcas {
   display: flex;
   align-items: center;
@@ -4408,10 +4457,15 @@ a.ajustes-tema__opcion {
 
 .variedad-acciones .boton {
   flex: 1 1 auto;
-  white-space: nowrap;
-  height: 52px;
-  font-size: 15px;
+  block-size: auto;
+  min-block-size: var(--alto-tocable);
+  min-inline-size: var(--alto-tocable);
+  padding-block: var(--espacio-sm);
+  padding-inline: var(--espacio-lg);
+  font-size: var(--tamano-fila);
   text-decoration: none;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .variedad-retiro {
@@ -4531,20 +4585,6 @@ a.ajustes-tema__opcion {
   height: 20px;
   border-radius: var(--radio-pildora);
   background: var(--papel);
-}
-
-/* On a variety's page the status word is read, not hidden: shape and word together. */
-.variedad-resumen .marca-estado {
-  gap: var(--espacio-xs);
-}
-
-.variedad-resumen .marca-estado__palabra {
-  position: static;
-  width: auto;
-  height: auto;
-  margin: 0;
-  overflow: visible;
-  clip: auto;
 }
 
 .seccion-variedad__cabecera a,
