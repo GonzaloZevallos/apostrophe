@@ -67,3 +67,12 @@
   margin: 0;
   overflow-wrap: anywhere;
 }
+
+/* At 130 % zoom on the smallest phone (246 CSS px) the Total at its full size is wider than the card
+ * and widens the page; it keeps its figure class and takes the next size down there. */
+@media (max-width: 299px) {
+  .sale-detail-card__summary .cifra-xl {
+    font-size: var(--cifra-m-tamano);
+    line-height: var(--cifra-m-interlineado);
+  }
+}
