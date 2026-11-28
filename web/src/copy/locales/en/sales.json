@@ -27,6 +27,15 @@
     "heading": "Detail",
     "total": "Total",
     "shipping": "Shipping charged",
-    "assignCustomer": "Assign customer"
+    "assignCustomer": "Assign customer",
+    "share": "Share"
+  },
+  "bill": {
+    "actionsName": "Sharing the bill",
+    "copy": "Copy",
+    "copied": "Bill copied",
+    "shareFailed": "Couldn't share. Tap Copy and paste it into the chat.",
+    "copyFailed": "Couldn't copy. Select the text below and copy it by hand.",
+    "blockName": "Sale bill"
   }
 }
