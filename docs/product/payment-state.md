@@ -17,6 +17,8 @@ La regla que calcula el estado y lo que todavía se debe vive en la API y está 
 
 Antes, la vendedora no podía saber desde una Sale si estaba pagada en parte ni cuánto quedaba. La lista de Sales mostraba filas con una marca ámbar "owes you" que no decía si la deuda era parcial ni cuánto faltaba, así que abría la venta o la ficha del Customer y lo sacaba a mano. Supuesto: no hay otro atajo que importe. El Balance, el **Total owed**, las **Sales still owing** y "Owed to you" quedan exactamente como están; el conteo de Sales still owing se sigue viendo en el bloque "Owed to you" de Home.
 
+Desde GH-1201 (parte 2 de GH-1116), el detalle de la Sale muestra el mismo `SalePaymentChip`, dentro de `SaleCustomerCard`, con la misma regla y los mismos estados, "Payment can't be shown" incluido. Solo el detalle le pasa un medio (`method`), tomado de `payment_method?.name ?? null`, y el chip lo lee solo para una Sale pagada con un medio no nulo, que entonces se lee "Paid · <medio>" (`sales:card.payment.paidWith`). Sin medio, o con un nombre en blanco, se lee "Paid". `SaleCard` nunca le pasa un medio, así que en la lista una Sale pagada siempre se lee "Paid".
+
 `web/scripts/docs/front-exclude.json` ya no lista `SalePaymentChip.tsx`, `SaleCard.tsx` ni `salePayment.ts`: #1020 los conectó a una pantalla y sacó sus entradas (D-62e6dc23). Queda `^src/screens/ventas/saleWith\.ts$`, para siempre, porque solo lo importan los tests.
 
 ## Comportamiento
@@ -26,18 +28,18 @@ Antes, la vendedora no podía saber desde una Sale si estaba pagada en parte ni 
 `web/src/screens/ventas/salePayment.ts` es el único lugar que convierte `payment_state` y `still_owed` en lo que se lee:
 
 - `paymentView(state, stillOwed, money)` devuelve la variante (`paid`, `unpaid`, `part_paid` o `unknown`) y, solo para `part_paid`, el monto ya formateado.
-- `paymentText(t, view)` devuelve la oración.
+- `paymentText(t, view, method?)` devuelve la oración. Para `paid` con un medio que no está en blanco devuelve "Paid · <medio>", y si no, "Paid".
 
 El chip dibuja esa oración y la tarjeta la lleva en su nombre accesible, así que lo que se ve y lo que se escucha nunca pueden decir cosas distintas.
 
 ### El chip
 
-- **Qué lee**: solo `payment_state` y `still_owed` de la Sale (props `state` y `stillOwed`). El formateador de dinero del Business sale de `useMoney()`. Nunca lee `still_owing`, los Payments ni el Balance del Customer.
+- **Qué lee**: solo `payment_state` y `still_owed` de la Sale (props `state` y `stillOwed`) y, cuando se lo pasan, el nombre del medio (prop `method`), que lee solo si la Sale está pagada. El formateador de dinero del Business sale de `useMoney()`. Nunca lee `still_owing`, los Payments ni el Balance del Customer.
 - **Estados**:
 
 | Estado | Lo que lee la vendedora | Clase |
 |---|---|---|
-| `paid` | "Paid" | `.payment-chip--paid` |
+| `paid` | "Paid", o "Paid · <medio>" cuando el detalle le pasa un medio | `.payment-chip--paid` |
 | `unpaid` | "Unpaid" | `.payment-chip--unpaid` |
 | `part_paid` con `still_owed` mayor que 0 | un círculo lleno a la mitad y "Part-paid · {amount} owed" | `.payment-chip--part-paid` |
 | null, un valor desconocido, o `part_paid` con `still_owed` null, no finito, 0 o negativo, o que en el Money format queda en $0 | el **Attention icon** y "Payment can't be shown" | `.payment-chip--unknown` |
@@ -68,14 +70,14 @@ El chip dibuja esa oración y la tarjeta la lleva en su nombre accesible, así q
 ### La tarjeta de Sales (`SaleCard`)
 
 - **Qué es**: un solo `InAppLink` con clase `.sale-card` que lleva al detalle de la Sale (`/sales/:id`, armado desde la tabla de rutas con `pathTo(SALE, { id })`). Recibe la Sale (prop `sale`) y usa `useMoney()`. Mide al menos 44 px de alto (`min-height: var(--alto-tocable)`).
-- **Qué lee**: de la Sale, solo `payment_state`, `still_owed`, `total`, `lines`, el nombre del Customer, `id` y `date`. Nunca lee `still_owing`, los Payments, una marca VIP ni el Balance del Customer, y nunca lee el reloj del dispositivo.
+- **Qué lee**: de la Sale, solo `payment_state`, `still_owed`, `total`, `lines`, el nombre del Customer, `id` y `date`. Nunca lee `still_owing`, los Payments, una marca VIP, el Payment method ni el Balance del Customer, y nunca lee el reloj del dispositivo.
 - **Contenido, en este orden**:
   1. `.sale-card__name`: el nombre del Customer, o "No customer" en una **Sale without a customer**. Nunca muestra una marca VIP, aunque el Customer la tenga.
   2. `.sale-card__items`: la primera Sale line en el orden guardado, como `{{name}} × {{quantity}}` (`.sale-card__item`), con el formateador de cantidad de siempre y sin palabra de unidad (**Assume nothing**). La × es U+00D7. Cuando hay otras líneas le sigue `.sale-card__more`, "+N more" con la cantidad de líneas restantes. Un **Gift** cuenta como línea.
   3. `.sale-card__total`: el total de la Sale con el **Shipping charged**, en la clase de cifra `cifra-n` (**Tabular figures**).
-  4. El chip de pago.
+  4. El chip de pago, sin medio.
   5. `.sale-card__date`: la fecha propia de la Sale como dd/mm (`formatDateShort(sale.date)`), también para las de hoy.
-- **Lo que no muestra**: gramos, la **Note**, el **Sale number**, una marca VIP, un chevrón ni el Balance del Customer. Todo eso, salvo el Balance, sigue en el detalle de la Sale.
+- **Lo que no muestra**: gramos, la **Note**, el **Sale number**, una marca VIP, un chevrón, el Payment method ni el Balance del Customer. Todo eso, salvo el Balance, sigue en el detalle de la Sale.
 - **Nombre accesible**: `sales:card.name`, "{{customer}}, {{items}}, {{payment}}, total {{total}}". Por ejemplo: "Ana Pérez, Blue Dream × 5 +1 more, Paid, total $ 11.000".
   - `{{items}}` es el texto de la primera línea, más un espacio y "+N more" cuando lo hay.
   - `{{payment}}` es la oración del chip, tomada de `salePayment.ts`.
@@ -100,7 +102,7 @@ El chip dibuja esa oración y la tarjeta la lleva en su nombre accesible, así q
 - **Lo que se fue, para siempre**: las filas `.lista-ventas`/`.fila-venta*`, la marca "owes you" con su total ámbar (`SALES_TEXT.owesYou`, sacado del Copy module y de `en.baseline.json`), la insignia VIP y los gramos de cada venta. Ninguno vuelve, ni visible ni oculto (D-69509906). La lista ya no lee la configuración de precios para la insignia VIP, así que abrir Sales hace un pedido menos. El conteo de **Sales still owing** ya no se muestra en Sales: se ve solo en el bloque "Owed to you" de Home.
 - **En la computadora**: las mismas tarjetas, más anchas, sin pulido dedicado (**Phone first**). `Ventas.dc.html` y `VentasCompu.dc.html` quedan reemplazados para la lista (decisiones 1 y 2 del humano en GH-928).
 - **Sin filtro ni orden por estado**: la lista no filtra ni ordena por Payment state.
-- **Salida ante "Payment can't be shown"**: abrir la venta. El detalle de la Sale muestra cómo se pagó, no el `payment_state` ni el `still_owed`; lo que se debe se lee en la cuenta del Customer.
+- **Salida ante "Payment can't be shown"**: abrir la venta. Desde GH-1201 el detalle muestra el mismo chip con la misma regla, así que ahí también se lee "Payment can't be shown". Lo que se debe se lee en la cuenta del Customer.
 - **e2e**: los localizadores de la lista son `.sale-card`; `payments.spec.ts` encuentra la tarjeta por `.sale-card__total` y espera que su `.payment-chip` diga `Unpaid`.
 
 ### Textos
@@ -114,6 +116,7 @@ Viven solo en el **Copy module**, en inglés:
 Son las palabras exactas de la tabla del Tech Writer que el humano pegó en la decisión 2 de GH-928:
 
 - `sales:card.payment.paid`: "Paid".
+- `sales:card.payment.paidWith`: "Paid · {{method}}", solo en el detalle.
 - `sales:card.payment.unpaid`: "Unpaid".
 - `sales:card.payment.partPaid`: "Part-paid · {{amount}} owed".
 - `sales:card.payment.unknown`: "Payment can't be shown". Antes decía "Payment cannot be shown" y la corrigió GH-928 por decisión 2 del humano, que reemplaza la nota anterior de que un aviso no lleva contracciones.
@@ -122,7 +125,7 @@ Son las palabras exactas de la tabla del Tech Writer que el humano pegó en la d
 - `sales:card.more`: "+{{count}} more". Sigue la regla de conteo del repo, con la misma forma para todo conteo (`more_one` y `more_other`).
 - `sales:card.name`: "{{customer}}, {{items}}, {{payment}}, total {{total}}".
 
-`SALES_TEXT.owesYou` ("owes you") ya no existe (#1020). Ninguno de estos textos nombra una unidad, una moneda ni un tipo de producto (**Assume nothing**). "Paid · <método>" es del **On-the-spot payment**, no de este chip.
+`SALES_TEXT.owesYou` ("owes you") ya no existe (#1020). Ninguno de estos textos nombra una unidad, una moneda ni un tipo de producto (**Assume nothing**). El nombre del medio de "Paid · <medio>" es dato propio del Business, nunca un texto fijo, y solo aparece en el detalle.
 
 ### Ayuda de tests
 
@@ -133,18 +136,19 @@ Son las palabras exactas de la tabla del Tech Writer que el humano pegó en la d
 1. **Se lee sin color**: en el teléfono, el estado se lee por la palabra, y pagada en parte también por el círculo. Nunca se lee solo por el color.
 2. **El monto de la venta, tal cual**: lo que se debe de una venta pagada en parte es exactamente su `still_owed`, en el Money format del Business, también cuando no coincide con el total. Evidencia: el test con un `stillOwed` distinto del total.
 3. **Nunca un estado adivinado**: el chip muestra "Payment can't be shown" con el Attention icon decorativo en tres casos: cuando los hechos de pago no se concilian (null), cuando llega un valor desconocido y cuando un `part_paid` trae un `still_owed` inservible. Nunca muestra un estado adivinado ni $0, y en la lista no afecta a las demás tarjetas.
-4. **Assume nothing**: ningún texto del chip ni de la tarjeta nombra una unidad, una moneda, un Payment method ni un tipo de producto, los montos siguen el Money format del Business, y todos los textos viven solo en `web/src/copy/`.
+4. **Assume nothing**: ningún texto fijo del chip ni de la tarjeta nombra una unidad, una moneda, un Payment method ni un tipo de producto, los montos siguen el Money format del Business, y todos los textos viven solo en `web/src/copy/`.
 5. **Nada se corta**: el chip pasa a una segunda línea y el monto nunca queda cortado ni oculto. Evidencia: el test de `Ventas.test.tsx` con un monto de nueve dígitos que queda entero en un solo `.cifra-n`. El Mobile check (sin infractores nuevos) recorre `/sales` en el teléfono, pero su negocio de muestra solo tiene ventas pagadas, así que todavía no ve un chip pagado en parte ni desconocido en un navegador.
 6. **Lo que se ve es lo que se escucha**: el nombre accesible de la tarjeta contiene, para cada estado, exactamente el texto visible de su chip, porque los dos salen de `salePayment.ts`. Evidencia: `SaleCard.test.tsx`.
 7. **Solo los hechos de esta venta**: la tarjeta toma la fecha de la propia Sale (dd/mm) y nunca del reloj. Tampoco lee `still_owing`, los Payments ni el Balance del Customer.
 8. **Cada venta, sin abrirla** (#1020): en el teléfono, para cada venta de la lista, la vendedora sabe sin abrirla si está Paid, Part-paid (con lo que todavía se debe) o Unpaid.
 9. **Sin la marca vieja** (#1020): nada en la lista de Sales usa la marca "owes you" ni su texto; un grep de `fila-venta|lista-ventas|te-debe|owesYou` en `web/` y `scripts/` solo encuentra `pressedBlock.bdc2945.ts`. El conteo de Sales still owing sigue en Home.
 10. **Sin toques de más** (#1020): encontrar y abrir una venta, y llegar a su Sale bill, no lleva más toques que con las filas.
+11. **El mismo chip en el detalle** (GH-1201): el detalle de una Sale lee el mismo estado que su tarjeta en la lista, y una Sale pagada con medio se lee "Paid · <medio>" solo en el detalle. Evidencia: `VentaDetalle.test.tsx`.
 
 ## Pendiente
 
 - Confirmar con la **Design capture** de `/sales` contra `Pedidos.dc.html`, que ningún líder pudo ver antes del merge, que Paid, neutro, se sigue leyendo como parte de la misma familia de chips.
 - Que un chip pagado en parte y uno desconocido se vean en un navegador en el teléfono: el negocio de muestra fijado solo tiene ventas pagadas, y cambiarlo cambia todas las listas de infractores.
-- Decidir si "Payment can't be shown" necesita una forma de resolverlo ahí mismo. Hoy la salida es abrir la Sale.
+- Decidir si "Payment can't be shown" necesita una forma de resolverlo ahí mismo. Hoy la salida es abrir la Sale, que muestra el mismo chip.
 - Volver a tomar `Ventas.webp` después del merge de #1020.
 - Los comentarios de cabecera de `SaleCard.tsx` y `SalePaymentChip.tsx` todavía dicen que no están en ninguna pantalla; ya no es cierto.

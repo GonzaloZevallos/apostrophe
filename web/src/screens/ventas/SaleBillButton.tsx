@@ -1,54 +1,46 @@
 /**
- * `SaleBillButton`: Share or Copy of the sale bill, on the sale's detail (`sales.md`, "Sale
- * bill"). It draws what `useSaleBillShare` returns for the `bill` of the last `GET /sales/{id}`
- * it was handed and never works settlement out. `loading` is an explicit state, never a missing
- * bill: the button then keeps its label, is disabled and busy, and draws no digit or `$`. A
- * `null` bill draws nothing. The tap logic (synchronous call inside the gesture, one pending
- * ref, sequence number, release on visibility) lives in the hook.
+ * `SaleBillButton`: the sale bill's Copy on the sale's detail (`sales.md`, "Sale bill"). It only
+ * draws what the screen's one `useSaleBillShare` hands it as `share`; it never calls the hook,
+ * never works settlement out and never reads Share: the title row owns that tap. The one button
+ * always reads Copy, is disabled and busy while `share.busy`, and calls `share.onCopy`. It alone
+ * draws the failure notices and the copy-by-hand region. With no bill it draws nothing.
  */
 
+import { useTranslation } from 'react-i18next'
 import AvisoAmbar from '../../components/AvisoAmbar'
 import Boton from '../../components/Boton'
-import { SALE_BILL_TEXT } from '../../copy/sales'
-import { useSaleBillShare } from '../../sales/useSaleBillShare'
-import type { SaleBillButtonState } from '../../sales/useSaleBillShare'
-
-export type { SaleBillButtonState }
+import type { SaleBillShare } from '../../sales/useSaleBillShare'
 
 export interface SaleBillButtonProps {
-  state: SaleBillButtonState
-  /** True while the detail is being read again after a write that changes the bill. */
-  refreshing: boolean
-  /** The copy worked: the screen shows its toast. */
-  onCopied: () => void
+  share: SaleBillShare
+  /** Whether the sale has a bill to copy. */
+  hasBill: boolean
 }
 
-export default function SaleBillButton({ state, refreshing, onCopied }: SaleBillButtonProps) {
-  const { sharing, busy, onTap, failure } = useSaleBillShare({ state, refreshing, onCopied })
+export default function SaleBillButton({ share, hasBill }: SaleBillButtonProps) {
+  const { t } = useTranslation()
+  if (!hasBill) return null
 
-  if (state.kind === 'ready' && state.bill === null) return null
-
-  const label = sharing ? SALE_BILL_TEXT.share : SALE_BILL_TEXT.copy
-  const icon = sharing ? 'compartir' : 'copiar'
+  const { busy, onCopy, failure } = share
 
   return (
-    <div className="sale-bill">
+    <div className="sale-bill" role="group" aria-label={t('sales:bill.actionsName')}>
       <Boton
         variant="secondary"
-        icon={icon}
+        icon="copiar"
         disabled={busy}
         ariaBusy={busy ? true : undefined}
-        onClick={onTap}
+        onClick={onCopy}
       >
-        {label}
+        {t('sales:bill.copy')}
       </Boton>
       {failure !== null && (
         <AvisoAmbar attention role="alert">
-          {failure.kind === 'share' ? SALE_BILL_TEXT.shareFailed : SALE_BILL_TEXT.copyFailed}
+          {failure.kind === 'share' ? t('sales:bill.shareFailed') : t('sales:bill.copyFailed')}
         </AvisoAmbar>
       )}
       {failure?.kind === 'copy' && (
-        <div className="sale-bill__bloque" role="region" aria-label={SALE_BILL_TEXT.blockName}>
+        <div className="sale-bill__bloque" role="region" aria-label={t('sales:bill.blockName')}>
           <pre className="sale-bill__texto">{failure.text}</pre>
         </div>
       )}

@@ -1,15 +1,17 @@
 /**
- * `useSaleBillShare`: the tap logic of the sale bill's Share or Copy button (`sales.md`, "Sale
- * bill"), apart from what it draws. It renders the text from the `bill` it is handed and never
- * works settlement out. `loading` is an explicit state, never a missing bill.
+ * `useSaleBillShare`: the tap logic of the sale bill's Share and Copy buttons (`sales.md`, "Sale
+ * bill"), apart from what it draws. `onTap` shares when the device can and copies otherwise;
+ * `onCopy` always copies, and a Copy supersedes a Share that is still pending. It renders the text
+ * from the `bill` it is handed and never works settlement out. `loading` is an explicit state,
+ * never a missing bill.
  *
- * The tap calls `shareText` or `copyText` synchronously, with nothing awaited first: over plain
- * http (ADR-0002) the `execCommand` fallback must run inside the gesture. One synchronous
- * pending ref guards Share and Copy together, and a sequence number decides whose outcome
- * counts: a tap whose answer arrives after a newer tap changes nothing. A share sheet that
- * never settles is released when the page is visible again. Nothing of the bill is stored,
- * logged or written to the console. It reads no text: the label, the icon and the lines the
- * failures show belong to the caller.
+ * Each tap calls `shareText` or `copyText` synchronously, with nothing awaited first: over plain
+ * http (ADR-0002) the `execCommand` fallback must run inside the gesture. One synchronous pending
+ * ref guards both taps (a Copy may supersede a pending Share, never a pending Copy), and a
+ * sequence number decides whose outcome counts: a tap whose answer arrives after a newer tap
+ * changes nothing. A share sheet that never settles is released when the page is visible again.
+ * Nothing of the bill is stored, logged or written to the console. It reads no text: the label,
+ * the icon and the lines the failures show belong to the caller.
  */
 
 import { useEffect, useRef, useState } from 'react'
@@ -35,14 +37,17 @@ export interface SaleBillShare {
   sharing: boolean
   /** The bill is loading or being read again: the tap is not available. */
   busy: boolean
+  /** The title-row tap: shares when the device can, otherwise copies. */
   onTap: () => void
+  /** The block's tap: always copies, and supersedes a Share still pending. */
+  onCopy: () => void
   failure: SaleBillFailure | null
 }
 
 export function useSaleBillShare({ state, refreshing, onCopied }: UseSaleBillShareInput): SaleBillShare {
   const [shareFailed, setShareFailed] = useState(false)
   const [failure, setFailure] = useState<SaleBillFailure | null>(null)
-  const pending = useRef(false)
+  const pending = useRef<'share' | 'copy' | null>(null)
   const sequence = useRef(0)
   const release = useRef<(() => void) | null>(null)
 
@@ -57,19 +62,23 @@ export function useSaleBillShare({ state, refreshing, onCopied }: UseSaleBillSha
   const sharing = canShare() && !shareFailed
   const busy = state.kind === 'loading' || refreshing
 
-  function onTap() {
-    if (pending.current || state.kind !== 'ready' || state.bill === null) return
-    pending.current = true
+  /**
+   * Starts a tap: claims the pending guard, bumps the sequence so any older answer is ignored, and
+   * arms the visibility release. Returns what the tap needs, or null when there is no bill to render.
+   */
+  function begin(kind: 'share' | 'copy') {
+    if (state.kind !== 'ready' || state.bill === null) return null
     sequence.current += 1
     const tap = sequence.current
     const text = renderSaleBill(state.bill)
 
     release.current?.()
+    pending.current = kind
     const onVisible = () => {
       if (document.visibilityState === 'visible') release.current?.()
     }
     const clear = () => {
-      pending.current = false
+      pending.current = null
       document.removeEventListener('visibilitychange', onVisible)
       release.current = null
     }
@@ -77,25 +86,46 @@ export function useSaleBillShare({ state, refreshing, onCopied }: UseSaleBillSha
     document.addEventListener('visibilitychange', onVisible)
 
     setFailure(null)
-    // No `await` before either call: the browser credits it to this click.
-    if (sharing) {
-      void shareText(text).then((outcome) => {
-        if (sequence.current !== tap) return
-        clear()
-        if (outcome === 'failed') {
-          setShareFailed(true)
-          setFailure({ kind: 'share' })
-        }
-      })
-    } else {
-      void copyText(text).then((copied) => {
-        if (sequence.current !== tap) return
-        clear()
-        if (copied) onCopied()
-        else setFailure({ kind: 'copy', text })
-      })
-    }
+    return { tap, text, clear }
   }
 
-  return { sharing, busy, onTap, failure }
+  function copy(started: NonNullable<ReturnType<typeof begin>>) {
+    const { tap, text, clear } = started
+    // No `await` before the call: the browser credits it to this click.
+    void copyText(text).then((copied) => {
+      if (sequence.current !== tap) return
+      clear()
+      if (copied) onCopied()
+      else setFailure({ kind: 'copy', text })
+    })
+  }
+
+  function onTap() {
+    if (pending.current !== null) return
+    const started = begin('share')
+    if (started === null) return
+    if (!sharing) {
+      copy(started)
+      return
+    }
+    const { tap, text, clear } = started
+    // No `await` before the call: the browser credits it to this click.
+    void shareText(text).then((outcome) => {
+      if (sequence.current !== tap) return
+      clear()
+      if (outcome === 'failed') {
+        setShareFailed(true)
+        setFailure({ kind: 'share' })
+      }
+    })
+  }
+
+  function onCopy() {
+    // A Copy during a pending Copy is ignored; during a pending Share it supersedes it.
+    if (pending.current === 'copy') return
+    const started = begin('copy')
+    if (started !== null) copy(started)
+  }
+
+  return { sharing, busy, onTap, onCopy, failure }
 }

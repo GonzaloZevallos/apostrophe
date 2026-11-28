@@ -46,13 +46,13 @@ describe('the rows', () => {
     renderCard()
     const row = screen.getByRole('listitem')
     const parts = Array.from(row.children).map((child) => child.textContent)
-    expect(parts).toEqual(['5 g ×', 'Blue Dream', `· ${money.money(2000)}`, money.money(10000)])
+    expect(parts).toEqual(['5 ×', 'Blue Dream', `· ${money.money(2000)}`, money.money(10000)])
     expect(row.textContent).not.toMatch(/per gram|\/ ?g\b|por gramo/i)
   })
 
   test('the quantity, price and total are figures; the total is the small figure', () => {
     renderCard()
-    expect(screen.getByText('5 g ×')).toHaveClass('cifra-n')
+    expect(screen.getByText('5 ×')).toHaveClass('cifra-n')
     expect(screen.getByText(`· ${money.money(2000)}`)).toHaveClass('cifra-n')
     expect(screen.getByText(money.money(10000), { selector: 'li span' })).toHaveClass('cifra-s')
   })
@@ -80,7 +80,7 @@ describe('the badge', () => {
     renderCard({ lines: [lineWith({ pricing_rule: 'gift', line_total: 0 })] })
     const row = screen.getByRole('listitem')
     const parts = Array.from(row.children).map((child) => child.textContent)
-    expect(parts).toEqual(['5 g ×', 'Blue Dream', `· ${money.money(2000)}`, 'gift', money.money(0)])
+    expect(parts).toEqual(['5 ×', 'Blue Dream', `· ${money.money(2000)}`, 'gift', money.money(0)])
   })
 })
 

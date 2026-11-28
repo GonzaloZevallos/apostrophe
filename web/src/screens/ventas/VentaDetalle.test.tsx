@@ -14,7 +14,7 @@
 
 import { SALE as SALE_ROUTE, SALES, pathTo } from '../../routes'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider, useLocation } from 'react-router'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -23,6 +23,7 @@ import Notice from '../../components/Notice'
 import { readFeedback, saleJustSaved } from '../../components/feedback'
 import { SheetRouterProvider } from '../../components/useSheetStack'
 import VentaDetalle from './VentaDetalle'
+import { formatWeekdayDay } from '../../format/dates'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
 
 /** Stands in for the real `Ventas` screen, just enough to show what `VentaDetalle`
@@ -79,25 +80,60 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-test('shows the total, each line with its lowercase rule badge, shipping, note and the final Total row, all from the API', async () => {
-  // The fixture's one example owes and carries no note: this test's own point is
-  // that every one of these fields renders, so it overrides just those two,
-  // keeping everything else — id, lines, total_quantity — as the real answer's shape.
+test('shows each line with its quantity and price and no unit, shipping, the note and the Total, all from the API', async () => {
+  // The fixture's one example owes and carries no note: this test's own point is that every one of
+  // these fields renders, so it overrides just those, keeping everything else as the real answer's shape.
   vi.mocked(fetch).mockResolvedValue(
-    jsonResponse(200, { ...SALE, note: 'Entregar a la tarde', payment: 'paid' }),
+    jsonResponse(200, { ...SALE, note: 'Entregar a la tarde', payment_state: 'paid', still_owed: 0 }),
   )
   renderDetalle()
 
-  expect(await screen.findByText('Sale #2')).toBeInTheDocument()
-  expect(screen.getAllByText('$ 11.000')).toHaveLength(2) // the big total and the final Total row.
-  expect(screen.getByText('Flor A')).toBeInTheDocument()
-  expect(screen.getByText('list')).toBeInTheDocument()
-  expect(screen.getByText('3,5 g')).toBeInTheDocument()
-  expect(screen.getByText('$ 3.000 per gram')).toBeInTheDocument()
-  expect(screen.getByText('$ 10.500')).toBeInTheDocument()
-  expect(screen.getByText('$ 500')).toBeInTheDocument()
-  expect(screen.getByText('Entregar a la tarde')).toBeInTheDocument()
-  expect(screen.getByText('3,5 g · Ana Pérez · paid')).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { level: 1, name: 'Sale #2' })).toBeInTheDocument()
+  const detail = screen.getByRole('region', { name: 'Detail' })
+  const line = within(detail).getByRole('listitem')
+  expect(line).toHaveTextContent('3,5 ×')
+  expect(line).toHaveTextContent('Flor A')
+  expect(line).toHaveTextContent('· $ 3.000')
+  expect(line).toHaveTextContent('$ 10.500')
+  expect(detail.textContent).not.toMatch(/ g\b|per gram/)
+  expect(within(detail).getByText('$ 500')).toBeInTheDocument()
+  expect(within(detail).getByText('$ 11.000')).toBeInTheDocument()
+  expect(within(detail).getByText('Entregar a la tarde')).toBeInTheDocument()
+  // The old summary line and the big total are gone.
+  expect(screen.queryByText(/·.*Ana Pérez/)).not.toBeInTheDocument()
+  expect(screen.getAllByText('$ 11.000')).toHaveLength(1)
+})
+
+test('reads in order: Sale #N, the customer, the payment chip, the lines, the Total', async () => {
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
+  renderDetalle()
+
+  const title = await screen.findByRole('heading', { level: 1, name: 'Sale #2' })
+  const nodes = [
+    title,
+    screen.getByText('Ana Pérez'),
+    screen.getByText('Unpaid'),
+    screen.getByText('Flor A'),
+    screen.getByText('Total'),
+  ]
+  nodes.slice(1).forEach((node, index) => {
+    const previous = nodes[index] as HTMLElement
+    expect(previous.compareDocumentPosition(node) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+})
+
+test('a paid sale with a method shows "Paid · <method>" on the detail', async () => {
+  vi.mocked(fetch).mockResolvedValue(
+    jsonResponse(200, {
+      ...SALE,
+      payment_state: 'paid',
+      still_owed: 0,
+      payment_method: { id: 3, name: 'Transferencia', icon: 'banco' },
+    }),
+  )
+  renderDetalle()
+
+  expect(await screen.findByText('Paid · Transferencia')).toBeInTheDocument()
 })
 
 test('shows the skeleton while the sale is pending, then the sale in its place', async () => {
@@ -138,34 +174,37 @@ test('while the detail loads the title is empty and nothing reads like a Sale nu
   expect(main.textContent ?? '').not.toMatch(/#|[0-9]|Sale/)
 })
 
-test('the title is the Sale number as plain text, and the date sits under it', async () => {
+test('the title is the Sale number as a heading naming its group, never a link', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...SALE, number: 77 }))
   renderDetalle()
 
-  const title = await screen.findByText('Sale #77')
-  expect(title.tagName).toBe('SPAN')
+  const title = await screen.findByRole('heading', { level: 1, name: 'Sale #77' })
   expect(title.closest('button, a')).toBeNull()
-  expect(title.parentElement?.nextElementSibling).toHaveTextContent(/^14\/09$/)
+  expect(screen.getByRole('group', { name: 'Sale #77' })).toContainElement(title)
+  expect(screen.getByText(formatWeekdayDay('2026-09-14', 'en'))).toBeInTheDocument()
   expect(screen.queryByText('Sale #10')).not.toBeInTheDocument() // the id (10) is never shown as the number.
 })
 
-test('a sale with no customer and no payment shows "No customer" and drops the payment part', async () => {
+test('a sale with no customer shows "No customer" and an Assign customer button', async () => {
   vi.mocked(fetch).mockResolvedValue(
-    jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),
+    jsonResponse(200, { ...SALE, customer: null, payment_state: null, still_owed: null }),
   )
   renderDetalle()
 
-  expect(await screen.findByText('3,5 g · No customer')).toBeInTheDocument()
+  expect(await screen.findByText('No customer')).toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Assign customer' })).toBeEnabled()
 })
 
 test.each([
-  ['paid', 'paid'],
-  ['owing', 'left owing'],
-] as const)('the summary line reads "%s" as "%s"', async (payment, words) => {
-  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...SALE, payment }))
+  ['paid', 0, 'Paid'],
+  ['unpaid', 11000, 'Unpaid'],
+] as const)('the payment chip reads %s as "%s"', async (paymentState, stillOwed, words) => {
+  vi.mocked(fetch).mockResolvedValue(
+    jsonResponse(200, { ...SALE, payment_state: paymentState, still_owed: stillOwed }),
+  )
   renderDetalle()
 
-  expect(await screen.findByText(`3,5 g · Ana Pérez · ${words}`)).toBeInTheDocument()
+  expect(await screen.findByText(words)).toBeInTheDocument()
 })
 
 test('a gone sale shows the plain gone-detail state, never the generic retry', async () => {
@@ -177,7 +216,7 @@ test('a gone sale shows the plain gone-detail state, never the generic retry', a
 })
 
 test('Void shows on every sale: a settled one, one with no customer and one with a customer owing', async () => {
-  for (const sale of [{ ...SALE, payment: 'paid' }, { ...SALE, customer: null }, SALE]) {
+  for (const sale of [{ ...SALE, payment_state: 'paid' }, { ...SALE, customer: null }, SALE]) {
     vi.mocked(fetch).mockResolvedValue(jsonResponse(200, sale))
     renderDetalle()
     await screen.findByText('Sale #2')
@@ -295,7 +334,7 @@ test('Assign customer opens the "Pick a customer" sheet without "No customer"; c
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({
       'GET /sales/10': () =>
-        jsonResponse(200, assigned ? { ...SALE, customer: NICO } : { ...SALE, customer: null, payment: 'none' }),
+        jsonResponse(200, assigned ? { ...SALE, customer: NICO } : { ...SALE, customer: null }),
       'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
       'PUT /sales/10/customer': () => {
         assigned = true
@@ -304,7 +343,7 @@ test('Assign customer opens the "Pick a customer" sheet without "No customer"; c
     }),
   )
   renderDetalle()
-  await screen.findByText('3,5 g · No customer')
+  await screen.findByText('No customer')
 
   await userEvent.click(screen.getByRole('button', { name: 'Assign customer' }))
   expect(screen.getByText('Pick a customer')).toBeInTheDocument()
@@ -330,7 +369,7 @@ test('assigning a customer shows the customer the second GET answers, never the 
     throw new Error('the second GET never started')
   }
   let gets = 0
-  const noCustomer = { ...SALE, customer: null, payment: 'none', bill: { ...SALE.bill, balance: null } }
+  const noCustomer = { ...SALE, customer: null, bill: { ...SALE.bill, balance: null } }
   vi.mocked(fetch).mockImplementation((input, init) => {
     const url = typeof input === 'string' ? input : input.toString()
     const method = init?.method ?? 'GET'
@@ -353,7 +392,7 @@ test('assigning a customer shows the customer the second GET answers, never the 
     return Promise.resolve(jsonResponse(200, []))
   })
   renderDetalle()
-  await screen.findByText('3,5 g · No customer')
+  await screen.findByText('No customer')
 
   await userEvent.click(screen.getByRole('button', { name: 'Assign customer' }))
   fireEvent.change(screen.getByPlaceholderText('Phone or name'), { target: { value: 'Nico' } })
@@ -361,13 +400,16 @@ test('assigning a customer shows the customer the second GET answers, never the 
 
   await waitFor(() => expect(gets).toBe(2))
   expect(screen.queryByText(/From The PUT/)).not.toBeInTheDocument()
-  expect(screen.getByText('3,5 g · No customer')).toBeInTheDocument()
+  expect(screen.getByText('No customer')).toBeInTheDocument()
+  // The bill is being read again: Assign waits.
+  expect(screen.getByRole('button', { name: 'Assign customer' })).toBeDisabled()
 
   resolveSecondGet(
     jsonResponse(200, { ...SALE, customer: NICO, bill: { ...SALE.bill, balance: 4000 } }),
   )
 
-  expect(await screen.findByText('3,5 g · Nico · left owing')).toBeInTheDocument()
+  expect(await screen.findByText('Nico')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Assign customer' })).not.toBeInTheDocument()
   expect(gets).toBe(2)
 })
 
@@ -376,7 +418,7 @@ test('assigning a customer to a sale someone already assigned shows the fixed me
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({
       'GET /sales/10': () =>
-        jsonResponse(200, assignedAlready ? SALE : { ...SALE, customer: null, payment: 'none' }),
+        jsonResponse(200, assignedAlready ? SALE : { ...SALE, customer: null }),
       'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
       'PUT /sales/10/customer': () => {
         assignedAlready = true
@@ -385,7 +427,7 @@ test('assigning a customer to a sale someone already assigned shows the fixed me
     }),
   )
   renderDetalle()
-  await screen.findByText('3,5 g · No customer')
+  await screen.findByText('No customer')
 
   await userEvent.click(screen.getByRole('button', { name: 'Assign customer' }))
   fireEvent.change(screen.getByPlaceholderText('Phone or name'), { target: { value: 'Nico' } })
@@ -398,13 +440,13 @@ test('assigning a customer to a sale someone already assigned shows the fixed me
 test('assigning to a sale a partner deleted meanwhile shows the gone notice on Ventas', async () => {
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({
-      'GET /sales/10': () => jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),
+      'GET /sales/10': () => jsonResponse(200, { ...SALE, customer: null }),
       'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
       'PUT /sales/10/customer': () => jsonResponse(404, { code: 'sale.not_found' }),
     }),
   )
   renderDetalle()
-  await screen.findByText('3,5 g · No customer')
+  await screen.findByText('No customer')
 
   await userEvent.click(screen.getByRole('button', { name: 'Assign customer' }))
   fireEvent.change(screen.getByPlaceholderText('Phone or name'), { target: { value: 'Nico' } })
@@ -416,13 +458,13 @@ test('assigning to a sale a partner deleted meanwhile shows the gone notice on V
 test('assigning a customer a partner deleted meanwhile shows the gone notice on Ventas', async () => {
   vi.mocked(fetch).mockImplementation(
     dispatchFetch({
-      'GET /sales/10': () => jsonResponse(200, { ...SALE, customer: null, payment: 'none' }),
+      'GET /sales/10': () => jsonResponse(200, { ...SALE, customer: null }),
       'GET /customers?q=Nico': () => jsonResponse(200, [NICO_SEARCH_RESULT]),
       'PUT /sales/10/customer': () => jsonResponse(404, { code: 'sale.customer_not_found' }),
     }),
   )
   renderDetalle()
-  await screen.findByText('3,5 g · No customer')
+  await screen.findByText('No customer')
 
   await userEvent.click(screen.getByRole('button', { name: 'Assign customer' }))
   fireEvent.change(screen.getByPlaceholderText('Phone or name'), { target: { value: 'Nico' } })

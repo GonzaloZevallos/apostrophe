@@ -10,7 +10,7 @@ import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { SaleLine } from '../../api/sales'
 import ReglaInsignia from '../../components/ReglaInsignia'
-import { formatGrams } from '../../format/money'
+import { formatQuantity } from '../../format/money'
 import { useMoney } from '../../format/moneyContext'
 import './SaleDetailCard.css'
 
@@ -40,7 +40,7 @@ export default function SaleDetailCard({ lines, shipping_charged, total, note }:
         {lines.map((line, index) => (
           // Two lines can share a product (a gift line beside a paid one): the position is unique.
           <li key={index} className="sale-detail-card__line">
-            <span className="sale-detail-card__figure cifra-n">{formatGrams(line.quantity)} ×</span>
+            <span className="sale-detail-card__figure cifra-n">{formatQuantity(Math.round(Number(line.quantity) * 100))} ×</span>
             <span className="sale-detail-card__name">{line.product_name}</span>
             <span className="sale-detail-card__figure cifra-n">· {money.money(line.price_per_gram)}</span>
             {line.pricing_rule !== 'list' && (

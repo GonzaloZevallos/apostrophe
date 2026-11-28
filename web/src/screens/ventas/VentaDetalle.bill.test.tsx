@@ -42,10 +42,33 @@ function setSecureContext(value: boolean) {
   Object.defineProperty(window, 'isSecureContext', { value, configurable: true })
 }
 
-/** The button of the loaded detail: the loading skeleton already holds a disabled one. */
-async function readyButton(name: 'Share' | 'Copy'): Promise<HTMLElement> {
-  await waitFor(() => expect(screen.getByRole('button', { name })).toBeEnabled())
-  return screen.getByRole('button', { name })
+/** The title row's group, named by the h1 'Sale #N'. */
+function titleRow(): HTMLElement {
+  return screen.getByRole('group', { name: /^Sale #\d+$/ })
+}
+
+/** The Sale bill block's group. */
+function billBlock(): HTMLElement {
+  return screen.getByRole('group', { name: 'Sharing the bill' })
+}
+
+/** The title row's Share of the loaded detail, reached only through its group. */
+async function readyShare(): Promise<HTMLElement> {
+  const share = await within(await findTitleRow()).findByRole('button', { name: 'Share' })
+  await waitFor(() => expect(share).toBeEnabled())
+  return share
+}
+
+/** The block's Copy of the loaded detail: the loading state already holds a disabled one. */
+async function readyCopy(): Promise<HTMLElement> {
+  await screen.findByRole('heading', { level: 1, name: /^Sale #/ })
+  const copy = within(billBlock()).getByRole('button', { name: 'Copy' })
+  await waitFor(() => expect(copy).toBeEnabled())
+  return copy
+}
+
+async function findTitleRow(): Promise<HTMLElement> {
+  return screen.findByRole('group', { name: /^Sale #\d+$/ })
 }
 
 beforeEach(() => {
@@ -68,7 +91,7 @@ test('Share sends the text of the bill the detail answered', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
 
-  await userEvent.click(await readyButton('Share'))
+  await userEvent.click(await readyShare())
 
   expect(share).toHaveBeenCalledWith({ text: BILL_TEXT })
 })
@@ -80,32 +103,86 @@ test('over plain http Copy calls execCommand right in the click and the toast sa
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
   renderDetalle()
 
-  fireEvent.click(await readyButton('Copy'))
+  fireEvent.click(await readyCopy())
 
   expect(execCommand).toHaveBeenCalledWith('copy')
   expect(await screen.findByText('Bill copied')).toBeInTheDocument()
 })
 
-test('the button is the first of the actions, and never inside the Sale saved notice', async () => {
+test('the block follows the detail card, holds only Copy and sits outside the Sale saved notice', async () => {
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...SALE, customer: null }))
   renderDetalle(saleJustSaved())
 
-  await screen.findByText('Sale #2')
-  const copy = screen.getByRole('button', { name: 'Copy' })
-  const wrapper = copy.parentElement
-  expect(wrapper).toHaveClass('sale-bill')
-  expect(wrapper?.firstElementChild).toBe(copy)
-  const actions = wrapper?.parentElement
-  expect(actions?.firstElementChild).toBe(wrapper)
-  expect(within(actions as HTMLElement).getByRole('button', { name: 'Assign customer' })).toBeInTheDocument()
-  expect(copy.closest('.venta-guardada')).toBeNull()
+  await screen.findByRole('heading', { level: 1, name: 'Sale #2' })
+  const block = billBlock()
+  const detail = screen.getByRole('region', { name: 'Detail' })
+  expect(detail.compareDocumentPosition(block) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(within(block).getAllByRole('button')).toHaveLength(1)
+  expect(within(block).queryByRole('button', { name: 'Assign customer' })).not.toBeInTheDocument()
+  expect(within(screen.getByRole('status')).queryByRole('button', { name: 'Copy' })).not.toBeInTheDocument()
+})
+
+test('the block reads Copy, never Share, while the title row offers the one Share', async () => {
+  Object.defineProperty(navigator, 'share', { value: vi.fn(() => Promise.resolve()), configurable: true })
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
+  renderDetalle()
+
+  await readyShare()
+  expect(within(billBlock()).getByRole('button', { name: 'Copy' })).toBeInTheDocument()
+  expect(within(billBlock()).queryByRole('button', { name: 'Share' })).not.toBeInTheDocument()
+  expect(screen.getAllByRole('button', { name: 'Share' })).toHaveLength(1)
+})
+
+test('without a way to share the title row has no Share and the block still copies', async () => {
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
+  renderDetalle()
+
+  await readyCopy()
+  expect(screen.queryByRole('button', { name: 'Share' })).not.toBeInTheDocument()
+})
+
+test('after a failed share the title row has no Share, the notice shows, and Copy succeeds and clears it', async () => {
+  const share = vi.fn(() => Promise.reject(new Error('boom')))
+  Object.defineProperty(navigator, 'share', { value: share, configurable: true })
+  const execCommand = vi.fn(() => true)
+  Object.defineProperty(document, 'execCommand', { value: execCommand, configurable: true })
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
+  renderDetalle()
+
+  await userEvent.click(await readyShare())
+  setSecureContext(false) // the Copy that follows takes the plain-http path.
+
+  expect(await screen.findByText("Couldn't share. Tap Copy and paste it into the chat.")).toBeInTheDocument()
+  expect(within(titleRow()).queryByRole('button', { name: 'Share' })).not.toBeInTheDocument()
+  expect(within(billBlock()).getByRole('button', { name: 'Copy' })).toBeEnabled()
+
+  fireEvent.click(within(billBlock()).getByRole('button', { name: 'Copy' }))
+
+  expect(execCommand).toHaveBeenCalledWith('copy')
+  expect(await screen.findByText('Bill copied')).toBeInTheDocument()
+  expect(screen.queryByText("Couldn't share. Tap Copy and paste it into the chat.")).not.toBeInTheDocument()
+})
+
+test('a failed copy shows the bill text by hand in a region named Sale bill, inside the block', async () => {
+  setSecureContext(false)
+  Object.defineProperty(document, 'execCommand', { value: vi.fn(() => false), configurable: true })
+  vi.mocked(fetch).mockResolvedValue(jsonResponse(200, SALE))
+  renderDetalle()
+
+  fireEvent.click(await readyCopy())
+
+  const region = await screen.findByRole('region', { name: 'Sale bill' })
+  expect(region.textContent).toBe(BILL_TEXT)
+  expect(billBlock()).toContainElement(region)
 })
 
 test('a sale whose bill is null has no Share or Copy, and the rest of the detail shows', async () => {
+  Object.defineProperty(navigator, 'share', { value: vi.fn(() => Promise.resolve()), configurable: true })
   vi.mocked(fetch).mockResolvedValue(jsonResponse(200, { ...SALE, bill: null }))
   renderDetalle()
 
   expect(await screen.findByText('Sale #2')).toBeInTheDocument()
+  expect(screen.queryByRole('group', { name: 'Sharing the bill' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Copy' })).not.toBeInTheDocument()
   expect(screen.queryByRole('button', { name: 'Share' })).not.toBeInTheDocument()
 })
@@ -117,9 +194,9 @@ test('while the detail loads the button is there, disabled and busy, with no dig
   const button = await screen.findByRole('button', { name: 'Copy' })
   expect(button).toBeDisabled()
   expect(button).toHaveAttribute('aria-busy', 'true')
-  const body = button.closest('.cuerpo') as HTMLElement
-  expect(body.closest('main')?.textContent ?? '').not.toMatch(/[0-9$]/)
-  expect(body.closest('main')).toHaveAttribute('aria-busy', 'true')
+  const main = screen.getByRole('main')
+  expect(main.textContent ?? '').not.toMatch(/[0-9$]/)
+  expect(main).toHaveAttribute('aria-busy', 'true')
 })
 
 test('the title and the first line of the bill after the business name show the same number', async () => {
@@ -131,7 +208,7 @@ test('the title and the first line of the bill after the business name show the 
   renderDetalle()
 
   expect(await screen.findByText('Sale #77')).toBeInTheDocument()
-  await userEvent.click(await readyButton('Share'))
+  await userEvent.click(await readyShare())
 
   const sent = share.mock.calls[0]?.[0]
   expect(sent?.text.split('\n')[1]).toBe('Sale #77 · 14/09')
@@ -170,7 +247,7 @@ async function chooseNico() {
   await userEvent.click(await screen.findByText('Nico'))
 }
 
-const NO_CUSTOMER = { ...SALE, customer: null, payment: 'none', bill: { ...SALE.bill, balance: null } }
+const NO_CUSTOMER = { ...SALE, customer: null, bill: { ...SALE.bill, balance: null } }
 const WITH_CUSTOMER = { ...SALE, customer: NICO, bill: { ...SALE.bill, balance: 41000 } }
 
 test('after an assign the copied text ends with the balance of the second GET', async () => {
@@ -189,7 +266,7 @@ test('after an assign the copied text ends with the balance of the second GET', 
   await chooseNico()
   await screen.findByText('Customer assigned')
 
-  fireEvent.click(await readyButton('Copy'))
+  fireEvent.click(await readyCopy())
 
   await screen.findByText('Bill copied')
   expect(copied).toHaveLength(1)
@@ -214,8 +291,9 @@ test('a focus refetch that started before the assign leaves the button busy unti
   await chooseNico()
 
   await act(async () => releaseStale(jsonResponse(200, NO_CUSTOMER)))
-  expect(screen.getByRole('button', { name: 'Copy' })).toBeDisabled()
+  expect(within(billBlock()).getByRole('button', { name: 'Copy' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Assign customer' })).toBeDisabled()
 
   await act(async () => releaseFresh(jsonResponse(200, WITH_CUSTOMER)))
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Copy' })).toBeEnabled())
+  await waitFor(() => expect(within(billBlock()).getByRole('button', { name: 'Copy' })).toBeEnabled())
 })

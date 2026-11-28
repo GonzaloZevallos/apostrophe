@@ -1,17 +1,13 @@
 /**
- * `VentaDetalle` (`sales.md`, "On screen: Detalle de venta"; `VentaDetalle.dc.html`):
- * the title "Sale #N" with the sale's date under it, the total, a summary line of grams (the API's
- * `total_quantity`, never summed here) · the customer or "Sin cliente" · how it was
- * paid (`paymentSummary`, dropping `payment: 'none'`'s part), each line with its
- * price per gram, `ReglaInsignia` and line total, shipping, a final Total row and
- * the note — all from the API's own answer (docs/adr/0011; plan, invariants:
- * nothing here is the preview). A line's cost of goods and pending cost
- * (`SaleDetailLine.cost`) answer in the API but are left out here, as they were
- * before this rebuild: neither `VentaDetalle.dc.html` nor sales.md's "Shows" list
- * names them. The VIP mark this screen once showed next to the customer's name is
- * dropped too: the design's summary is one flat text line, and sales.md's "Shows"
- * names only "the customer or Sin cliente" (plan, invariants: no figure or text the
- * API does not answer, and no behaviour sales.md lacks, appears on screen). "Borrás
+ * `VentaDetalle` (`sales.md`, "On screen: Detalle de venta"; `VentaDetalle.dc.html`), one layout
+ * for phone and computer: the title row "Sale #N" with the one Share, `SaleCustomerCard` (who,
+ * when, the payment chip), `SaleDetailCard` (the lines, shipping, Total and note), the toasts and
+ * errors, the Sale bill's Copy and the Void row, all from the API's own answer (docs/adr/0011;
+ * plan, invariants: nothing here is the preview). `useSaleBillShare` is called once, here, before
+ * the error and pending returns: the title row's Share calls `share.onTap`, the block copies
+ * through `share.onCopy`. A line's cost of goods and pending cost (`SaleDetailLine.cost`) answer
+ * in the API but are left out here, as they were before this rebuild.
+ * "Borrás
  * la venta" is confirmed
  * with `Antes de borrar`, naming the date and the amount; "Venta guardada" with
  * Deshacer (`Estados`) is this screen's own banner, read once through
@@ -32,14 +28,14 @@
  */
 
 import { SALES } from '../../routes'
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { ApiError, NetworkError } from '../../api/client'
 import type { Customer } from '../../api/customers'
 import { invalidateResource, keys } from '../../api/keys'
-import { assignCustomer, deleteSale, getSale, type Sale, type SaleDetail } from '../../api/sales'
+import { assignCustomer, deleteSale, getSale, type SaleDetail } from '../../api/sales'
 import { isGone, resolveOverride, type RefusalCode } from '../../api/refusals'
 import AvisoExito from '../../components/AvisoExito'
 import Boton from '../../components/Boton'
@@ -47,7 +43,6 @@ import ConfirmDialog from '../../components/ConfirmDialog'
 import { clearSaleJustSaved, gone, readFeedback, SALE_SAVED, toast } from '../../components/feedback'
 import ErrorGenerico from '../../components/ErrorGenerico'
 import GoneScreen from '../../components/GoneScreen'
-import ReglaInsignia from '../../components/ReglaInsignia'
 import SinConexion from '../../components/SinConexion'
 import Loading from '../../components/Loading'
 import { SheetStackProvider, useSheet } from '../../components/useSheetStack'
@@ -57,8 +52,11 @@ import { useMoney } from '../../format/moneyContext'
 import { GENERIC_REFUSAL } from './NuevaVenta'
 import NuevaVentaCliente from './NuevaVentaCliente'
 import SaleBillButton from './SaleBillButton'
+import SaleCustomerCard from './SaleCustomerCard'
+import SaleDetailCard from './SaleDetailCard'
 import { COMMON_TEXT } from '../../copy/common'
-import { SALE_BILL_TEXT, SALES_TEXT } from '../../copy/sales'
+import { SALES_TEXT } from '../../copy/sales'
+import { useSaleBillShare } from '../../sales/useSaleBillShare'
 import ContentArea from '../../components/ContentArea'
 
 export const CUSTOMER_ALREADY_ASSIGNED_MESSAGE = SALES_TEXT.saleHasCustomer
@@ -74,33 +72,6 @@ const ASSIGN_OVERRIDES: Partial<Record<RefusalCode, { message: string; refetch: 
 }
 
 export const UNDO_WINDOW_MS = 5000
-
-/** How the sale was paid, read only from `payment` (plan, invariants: "how it was
- * paid on the detail comes only from `payment` through `paymentSummary`") — never
- * derived from `still_owing` or an amount. `none` drops its part of the summary
- * line entirely, replacing `PAYMENT_LABEL` and its own row (plan, "sale-detail"). */
-function paymentSummary(payment: Sale['payment']): string {
-  switch (payment) {
-    case 'paid':
-      return SALES_TEXT.paid
-    case 'owing':
-      return SALES_TEXT.leftOwing
-    case 'none':
-      return ''
-  }
-}
-
-/** The design's one summary line under the total (`VentaDetalle.dc.html`):
- * grams · customer or "Sin cliente" · how it was paid, each part from the API's
- * own answer, joined by " · " with `payment: 'none'`'s empty part dropped. */
-function summaryLine(sale: SaleDetail): string {
-  const parts = [
-    formatGrams(sale.total_quantity),
-    sale.customer === null ? SALES_TEXT.noCustomer : sale.customer.name,
-    paymentSummary(sale.payment),
-  ]
-  return parts.filter((part) => part !== '').join(' · ')
-}
 
 function deleteTitle(sale: SaleDetail, money: MoneyFormatter): string {
   const total = money.money(sale.total)
@@ -126,7 +97,8 @@ function VentaDetalleScreen() {
   const { id } = useParams<{ id: string }>()
   const saleId = id ?? ''
   const location = useLocation()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const titleId = useId()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
@@ -181,6 +153,14 @@ function VentaDetalleScreen() {
   // Derived while rendering, not in an effect: the wait ends the render the detail shows the
   // customer, or the query errors.
   if (awaitingAssigned && (isError || assignedCustomerArrived)) setAwaitingAssigned(false)
+
+  // The one share of the screen, called before the error and pending returns: the title row taps
+  // `onTap`, the block taps `onCopy`.
+  const share = useSaleBillShare({
+    state: data === undefined ? { kind: 'loading' } : { kind: 'ready', bill: data.bill },
+    refreshing: assignMutation.isPending || (awaitingAssigned && data?.customer === null),
+    onCopied: () => setNotice('copied'),
+  })
 
   async function onCustomerChosen(customer: Customer | null): Promise<void> {
     if (customer === null) return // `allowNone={false}`: the sheet never offers it here.
@@ -282,7 +262,7 @@ function VentaDetalleScreen() {
           </div>
           <Loading />
           <div className="venta-detalle__acciones">
-            <SaleBillButton state={{ kind: 'loading' }} refreshing={false} onCopied={() => undefined} />
+            <SaleBillButton share={share} hasBill />
           </div>
         </div>
       </ContentArea>
@@ -294,10 +274,22 @@ function VentaDetalleScreen() {
   return (
     <ContentArea as="main" className="pantalla venta-detalle">
       <div className="cuerpo">
-        <div className="encabezado__fila">
-          <span className="encabezado__titulo">{SALES_TEXT.saleNumber(sale.number)}</span>
+        <div className="encabezado-fila" role="group" aria-labelledby={titleId}>
+          <h1 id={titleId} className="encabezado__titulo">
+            {t('sales:detail.title')}
+            {sale.number}
+          </h1>
+          {share.sharing && sale.bill !== null && (
+            <Boton
+              variant="icon"
+              action="share"
+              ariaLabel={t('sales:detail.share')}
+              disabled={share.busy}
+              ariaBusy={share.busy ? true : undefined}
+              onClick={share.onTap}
+            />
+          )}
         </div>
-        <span className="rotulo venta-detalle__fecha">{formatDateShort(sale.date)}</span>
 
         {undoAvailable && (
           <div className="venta-guardada" role="status">
@@ -310,56 +302,26 @@ function VentaDetalleScreen() {
         {deleteOffline && <SinConexion />}
         {deleteFailed && <ErrorGenerico />}
 
-        <div className="venta-detalle__resumen">
-          <span className="campo__rotulo">{SALES_TEXT.total}</span>
-          <span className="cifra-xl">{money.money(sale.total)}</span>
-          <span className="venta-detalle__subtitulo">{summaryLine(sale)}</span>
-        </div>
+        <SaleCustomerCard
+          customerName={sale.customer?.name ?? null}
+          date={sale.date}
+          language={i18n.language}
+          paymentState={sale.payment_state}
+          stillOwed={sale.still_owed}
+          methodName={sale.payment_method?.name ?? null}
+          onAssign={sale.customer === null ? assignSheet.open : undefined}
+          assignDisabled={refreshing}
+        />
 
-        <div>
-          <span className="venta-detalle__encabezado-lineas">{SALES_TEXT.lines}</span>
-          <div className="venta-detalle__lineas">
-            {sale.lines.map((line, index) => (
-              // A sale can have two lines of the same variety (a gift line and a
-              // paid one, say): `SaleIn` sets no uniqueness rule on `product_id`,
-              // so the line's position — fixed and unique within one sale —
-              // joins it in the key.
-              <div key={`${line.product_id}-${index}`} className="venta-detalle__linea">
-                <div className="venta-detalle__linea-superior">
-                  <span className="venta-detalle__variedad">{line.product_name}</span>
-                  <span className="venta-detalle__gramos cifra-s">{formatGrams(line.quantity)}</span>
-                </div>
-                <div className="venta-detalle__linea-inferior">
-                  <span className="venta-detalle__precio cifra-n">
-                    {money.money(line.price_per_gram)}{SALES_TEXT.perGram}
-                  </span>
-                  <ReglaInsignia rule={line.pricing_rule} typeName={line.customer_type_name} />
-                  <span className="venta-detalle__total cifra-s">{money.money(line.line_total)}</span>
-                </div>
-              </div>
-            ))}
-            <div className="venta-detalle__renglon">
-              <span>{SALES_TEXT.shippingCharged}</span>
-              <span className="venta-detalle__renglon-monto cifra-s">
-                {money.money(sale.shipping_charged)}
-              </span>
-            </div>
-            <div className="venta-detalle__renglon venta-detalle__renglon--total">
-              <span>{SALES_TEXT.total}</span>
-              <span className="venta-detalle__renglon-monto cifra-s">{money.money(sale.total)}</span>
-            </div>
-          </div>
-        </div>
-
-        {sale.note !== null && sale.note !== '' && (
-          <div className="campo">
-            <span className="campo__rotulo">{COMMON_TEXT.note}</span>
-            <span className="venta-detalle__nota">{sale.note}</span>
-          </div>
-        )}
+        <SaleDetailCard
+          lines={sale.lines}
+          shipping_charged={sale.shipping_charged}
+          total={sale.total}
+          note={sale.note}
+        />
 
         {notice === 'assigned' && <AvisoExito texto={SALES_TEXT.customerAssigned} />}
-        {notice === 'copied' && <AvisoExito texto={SALE_BILL_TEXT.copied} />}
+        {notice === 'copied' && <AvisoExito texto={t('sales:bill.copied')} />}
         {assignOffline && <SinConexion />}
         {assignError !== null && (
           <span className="campo__error" role="alert">
@@ -368,16 +330,7 @@ function VentaDetalleScreen() {
         )}
 
         <div className="venta-detalle__acciones">
-          <SaleBillButton
-            state={{ kind: 'ready', bill: sale.bill }}
-            refreshing={refreshing}
-            onCopied={() => setNotice('copied')}
-          />
-          {sale.customer === null && (
-            <Boton variant="secondary" icon="personaMas" onClick={assignSheet.open}>
-              {SALES_TEXT.assignCustomer}
-            </Boton>
-          )}
+          <SaleBillButton share={share} hasBill={sale.bill !== null} />
         </div>
 
         <div className="venta-detalle__botones">

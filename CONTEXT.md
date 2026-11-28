@@ -523,7 +523,7 @@ El cuarto criterio del dueño: la app nunca fija en el código la forma de traba
 _Avoid_: business-neutral, white label, vertical, preset, template, multi-tenant
 
 **Sale bill**:
-Los datos de una Sale registrada que un vendedor puede compartir con el Customer de esa Sale: nombre del Business, Sale number, fecha, líneas, Shipping charged, total, estado de Payment y el Balance actual del Customer. Se calculan en el momento a partir del Settlement cuando se lee el detalle de la Sale y nunca se guardan; el Balance es la cuenta completa del Customer en el momento de compartir. Se comparte como texto plano con Share o Copy en el detalle de la Sale; _In the app_: Sale bill (el nombre accesible de su bloque seleccionable), y la acción dice Share / Copy.
+Los datos de una Sale registrada que un vendedor puede compartir con el Customer de esa Sale: nombre del Business, Sale number, fecha, líneas, Shipping charged, total, estado de Payment y el Balance actual del Customer. Se calculan en el momento a partir del Settlement cuando se lee el detalle de la Sale y nunca se guardan; el Balance es la cuenta completa del Customer en el momento de compartir. Se comparte como texto plano en el detalle de la Sale: Share es el botón redondo de la fila del título, que aparece solo donde el dispositivo puede compartir, y Copy es la acción del bloque del Sale bill, que nunca ofrece Share; _In the app_: Sale bill (el nombre accesible de su bloque seleccionable), y las acciones dicen Share y Copy.
 _Avoid_: invoice, receipt, statement, ticket
 
 **Documentation language**:
