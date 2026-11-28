@@ -157,3 +157,68 @@ test('a share that never settles is released when the page is visible again', ()
   act(() => result.current.onTap())
   expect(shareText).toHaveBeenCalledTimes(2)
 })
+
+test('a Copy while sharing is true calls copyText and never shareText', async () => {
+  copyText.mockResolvedValue(true)
+  const onCopied = vi.fn()
+  const { result } = setup(READY, onCopied)
+  expect(result.current.sharing).toBe(true)
+
+  await act(async () => {
+    result.current.onCopy()
+  })
+
+  expect(copyText).toHaveBeenCalledTimes(1)
+  expect(shareText).not.toHaveBeenCalled()
+  expect(onCopied).toHaveBeenCalledTimes(1)
+})
+
+test('a Copy supersedes a Share that never settles, and that Share answering later changes nothing', async () => {
+  const share = deferred<'shared' | 'cancelled' | 'failed'>()
+  shareText.mockReturnValue(share.promise)
+  copyText.mockResolvedValue(true)
+  const onCopied = vi.fn()
+  const { result } = setup(READY, onCopied)
+
+  act(() => result.current.onTap())
+  await act(async () => {
+    result.current.onCopy()
+  })
+  expect(copyText).toHaveBeenCalledTimes(1)
+  expect(onCopied).toHaveBeenCalledTimes(1)
+
+  await act(async () => {
+    share.resolve('failed')
+    await share.promise
+  })
+  expect(result.current.failure).toBeNull()
+  expect(result.current.sharing).toBe(true)
+})
+
+test('a failed Copy sets the copy failure with the text it tried to copy', async () => {
+  copyText.mockResolvedValue(false)
+  const onCopied = vi.fn()
+  const { result } = setup(READY, onCopied)
+
+  await act(async () => {
+    result.current.onCopy()
+  })
+
+  const text = copyText.mock.calls[0]?.[0] as string
+  expect(text.length).toBeGreaterThan(0)
+  expect(result.current.failure).toEqual({ kind: 'copy', text })
+  expect(onCopied).not.toHaveBeenCalled()
+})
+
+test('a double Copy copies once, and a Copy with no bill does nothing', () => {
+  copyText.mockReturnValue(new Promise(() => undefined))
+  const { result, rerender } = setup({ kind: 'ready', bill: null })
+
+  act(() => result.current.onCopy())
+  expect(copyText).not.toHaveBeenCalled()
+
+  rerender({ state: READY, refreshing: false })
+  act(() => result.current.onCopy())
+  act(() => result.current.onCopy())
+  expect(copyText).toHaveBeenCalledTimes(1)
+})
