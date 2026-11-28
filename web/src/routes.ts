@@ -245,6 +245,10 @@ interface ScreenBase {
   /** The route is drawn by one `Sheet` over its parent on a phone (ADR-0062): the page under it
    * keeps its place when it opens (navigation.md criterion 23). `scrollPlan.ts` reads it. */
   sheetOnPhone?: true
+  /** The card draws its back itself, first in its own title row (`BackArrow look="round"`,
+   * ADR 20261125), so the shell draws none. The only thing that turns the shell's back off;
+   * only `expenses` sets it. */
+  backInTitleRow?: true
 }
 
 /**
@@ -340,6 +344,7 @@ export const SCREENS = [
     titleKey: 'common:expenses',
     parent: { phone: 'analysis' },
     place: { bar: 'home', rail: 'expenses' },
+    backInTitleRow: true,
   }),
   screen({ id: 'expense-new', path: EXPENSE_NEW, declaredKind: 'form', titleKey: 'shell:newExpense', parent: 'expenses', sheetOnPhone: true }),
   screen({
@@ -366,7 +371,7 @@ export const SCREENS = [
     path: SETTINGS_CUSTOMER_TYPES,
     declaredKind: 'form',
     titleKey: 'customerTypes:title',
-    parent: 'settings-prices',
+    parent: 'settings',
   }),
   screen({
     id: 'settings-payments',
@@ -524,13 +529,12 @@ export function parentOf(id: ScreenId, viewport: Viewport): ParentRef | undefine
 /**
  * The screens whose back arrow names where the seller came from when that is not their registry
  * parent: the phone Settings home sets `enteredFrom: 'settings'` on every row and shortcut, so
- * Payment methods, Customer types and Expense categories, opened from it, return to Settings.
+ * Payment methods and Expense categories, opened from it, return to Settings.
  * Only a link carrying that state triggers it, so the computer's back labels do not change. It
  * holds on both viewports, so it takes no viewport.
  */
 export const ENTRY_PARENTS = {
   'settings-payment-methods': 'settings',
-  'settings-customer-types': 'settings',
   'settings-expense-categories': 'settings',
 } as const satisfies Partial<Record<ScreenId, ScreenId>>
 

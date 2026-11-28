@@ -16,6 +16,7 @@ class ColumnType(Enum):
     BOOLEAN = auto()
     DATE = auto()
     DATETIME = auto()
+    BINARY = auto()
     OTHER = auto()
 
 

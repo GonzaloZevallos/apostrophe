@@ -27,7 +27,7 @@ Lo que garantiza la fuente de diseño que está en master (qué versión, cómo 
 **Cuando** corro el design capture sobre todo el registro, como hace un antes/después (ADR-0042), **quiero** que cada fila alcance su pantalla y que cada captura pase su chequeo de fuentes, **para poder** leer un exit no cero como una falla real y adjuntar la corrida como evidencia sin explicar filas que siempre fallan.
 
 - Afina el primer job y su criterio 1 para todo el registro; no es un job nuevo. Su protagonista es el mismo mantenedor o revisor.
-- Antes (evidencia de GH-219 y GH-150): `EstadosConfirmar` nunca llegaba a "Delete sale", y `EstadosSinConexionCompu` y `EstadosSinConexionCompuOscuro` fallaban el chequeo de fuentes en su paso offline, en base y en cabeza por igual, así que toda corrida `--strict` del registro entero salía con exit 1 con las demás filas en ok.
+- Antes (evidencia de GH-219 y GH-150): `EstadosConfirmar` nunca llegaba a la confirmación de borrado ("Delete sale", hoy "Void"), y `EstadosSinConexionCompu` y `EstadosSinConexionCompuOscuro` fallaban el chequeo de fuentes en su paso offline, en base y en cabeza por igual, así que toda corrida `--strict` del registro entero salía con exit 1 con las demás filas en ok.
 
 **Cuando** reviso un cambio en cómo se ve Analysis, **quiero** capturas actuales de antes y después de Analysis, una comparación sobre todas las demás pantallas del registro y un plan que nombre cada archivo que el cambio edita, **para poder** aprobar o rechazar sólo con la evidencia del PR, sin volver a tomar capturas, revisar pantallas a mano ni arrastrar un finding abierto a la tarea siguiente.
 
@@ -206,7 +206,7 @@ Esta sección describe la herramienta como la dejaron las partes 1 y 2 de GH-491
 ### Toda fila alcanza su pantalla
 
 - Cada fila del registro, no sólo `Inicio*` (Home) y el Onboarding, alcanza su pantalla como lo hace un vendedor y captura entera su sección nombrada. Una corrida `--strict` del registro entero sale no cero sólo cuando una fila de verdad falla.
-- **`EstadosConfirmar`** alcanza la confirmación de borrado (el caption `Antes de borrar` en `Estados.dc.html`) en el detalle de una venta como lo hace un vendedor: abre una venta que existe en la muestra y toca "Delete sale". Su captura muestra la confirmación entera: la pregunta que nombra la fecha, el monto y los gramos que vuelven de la venta, y "No, keep it / Yes, delete it" (docs/product/sales.md).
+- **`EstadosConfirmar`** alcanza la confirmación de borrado (el caption `Antes de borrar` en `Estados.dc.html`) en el detalle de una venta como lo hace un vendedor: abre una venta que existe en la muestra y toca "Void". Su captura muestra la confirmación entera: la pregunta que nombra la fecha, el monto y los gramos que vuelven de la venta, y "No, keep it / Yes, void" (docs/product/sales.md).
 - **`EstadosSinConexionCompu` y `EstadosSinConexionCompuOscuro`** muestran "No connection" en el layout de computadora, claro y oscuro. Las fuentes propias de la página están en su lugar antes de que caiga la red, así que quedar offline nunca deja una fuente de página en error. Las fuentes de la captura siguen fijadas y locales (ADR-0042).
 - El chequeo de aplicadas no cambia y cubre cada fila, las filas offline incluidas: una fuente en error sigue siendo una falla, nunca un pase.
 - Una fila se hace alcanzar su pantalla sólo con sus pasos, los datos de muestra o la herramienta de captura. Nunca cambiando la pantalla, su copy, el `font-display` propio de la app ni el chequeo de aplicadas, y nunca quitando o excusando la fila.

@@ -5,7 +5,7 @@
  */
 
 import { expect, test } from 'vitest'
-import { kindOf, SCREENS, screen as declare, screenOf, type ScreenId } from '../routes'
+import { kindOf, SCREENS, screen as declare, screenOf, type Screen, type ScreenId } from '../routes'
 import { chromeOf, type Chrome } from './chrome'
 
 const ROOT: Chrome = { rail: true, railNuevaVenta: true, bar: true, backArrow: false }
@@ -13,9 +13,10 @@ const CARD: Chrome = { rail: true, railNuevaVenta: false, bar: true, backArrow: 
 const FORM: Chrome = { rail: true, railNuevaVenta: false, bar: false, backArrow: false }
 const MODAL_FORM: Chrome = { ...FORM, rail: false }
 /** Gastos: a card under Análisis on the phone, a root of the side rail on a computer. The rail
- * and the bar are both in the markup, so each keeps the flags of its own viewport's kind. */
+ * and the bar are both in the markup, so each keeps the flags of its own viewport's kind. Its
+ * phone back is drawn by the card in its own title row (`backInTitleRow`), so the shell's is off. */
 const CARD_ON_PHONE: readonly [Chrome, Chrome] = [
-  { rail: true, railNuevaVenta: true, bar: true, backArrow: true },
+  { rail: true, railNuevaVenta: true, bar: true, backArrow: false },
   { rail: true, railNuevaVenta: true, bar: true, backArrow: false },
 ]
 
@@ -94,6 +95,28 @@ test('a two-pane detail is a card: no "+ Nueva venta" in the rail and its rail s
   })
 
   expect(chromeOf(detail, 'computer')).toEqual(CARD)
+})
+
+test('a phone card that draws its back in its own title row gets no shell back; any other card does', () => {
+  const own = declare({
+    id: 'expenses',
+    path: '/x',
+    declaredKind: 'card-on-phone',
+    titleKey: 'common:expenses',
+    parent: { phone: 'analysis' },
+    place: { bar: 'home', rail: 'expenses' },
+    backInTitleRow: true,
+  })
+  const plain = declare({ ...own, backInTitleRow: undefined })
+
+  expect(chromeOf(own, 'phone').backArrow).toBe(false)
+  expect(chromeOf(plain, 'phone').backArrow).toBe(true)
+  expect(chromeOf(own, 'computer').backArrow).toBe(false)
+})
+
+test('only the expenses entry of the registry opts in to drawing its back in its own title row', () => {
+  const registry: readonly Screen[] = SCREENS
+  expect(registry.filter((entry) => entry.backInTitleRow === true).map((entry) => entry.id)).toEqual(['expenses'])
 })
 
 test('only the explicit modalOnComputer hides the rail, and only on a computer', () => {

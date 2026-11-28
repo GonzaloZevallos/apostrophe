@@ -194,7 +194,7 @@
       "steps": [{ "offline": true }, { "wait": "Offline: check your internet and try again." }] },
     { "screen": "EstadosGone", "design": "Estados", "route": "/sales/999999", "path": "/sales/999999" },
     { "screen": "EstadosConfirmar", "design": "Estados", "section": "Antes de borrar", "route": "/sales/{owing_sale}", "path": "/sales/{owing_sale}",
-      "steps": [{ "press": "Delete sale" }] }
+      "steps": [{ "press": "Void" }] }
 ,
     { "screen": "VariedadDetalleOscuro", "design_viewport": [414, 844], "design": "VariedadDetalle", "route": "/varieties/{low}", "path": "/varieties/{low}", "tema": "oscuro" },
     { "screen": "ArchivadasOscuro", "design": "Archivadas", "route": "/varieties/archived", "path": "/varieties/archived", "tema": "oscuro" },
@@ -221,8 +221,8 @@
     { "screen": "ConfiguracionOscuro", "route": "/settings", "path": "/settings", "tema": "oscuro" },
     { "screen": "ConfiguracionCompuOscuro", "route": "/settings", "path": "/settings", "tema": "oscuro", "viewport": [1280, 920] },
     { "screen": "GastoNuevoOscuro", "route": "/expenses/new", "path": "/expenses/new", "tema": "oscuro" },
-    {"screen": "VentaVuelve", "route": "/sales/new", "path": "/sales/new", "walked_as": "sale/expense-returned", "steps": [{"click": "Pick a product"}, {"press": "Sir Jack"}, {"fill": {"label": "Line 1 grams", "value": "5"}}, {"click": "Expense"}, {"click": "Pick a category"}, {"press": "Packaging"}, {"fill": {"label": "Amount", "value": "1500"}}, {"fill": {"label": "Details", "value": "Cinta"}}, {"click": "Save the expense"}, {"wait": "$ 55.000"}, {"wait": "Expense recorded"}, {"scroll_top": "Other things to record"}]},
-    {"screen": "VentaVuelveOscuro", "route": "/sales/new", "path": "/sales/new", "tema": "oscuro", "steps": [{"click": "Pick a product"}, {"press": "Sir Jack"}, {"fill": {"label": "Line 1 grams", "value": "5"}}, {"click": "Expense"}, {"click": "Pick a category"}, {"press": "Packaging"}, {"fill": {"label": "Amount", "value": "1500"}}, {"fill": {"label": "Details", "value": "Cinta"}}, {"click": "Save the expense"}, {"wait": "$ 55.000"}, {"wait": "Expense recorded"}, {"scroll_top": "Other things to record"}]},
+    {"screen": "VentaVuelve", "route": "/sales/new", "path": "/sales/new", "walked_as": "sale/expense-returned", "steps": [{"click": "Pick a product"}, {"press": "Sir Jack"}, {"fill": {"label": "Line 1 grams", "value": "5"}}, {"click": "Expense"}, {"click": "Pick a category"}, {"press": "Packaging"}, {"fill": {"label": "Amount", "value": "1500"}}, {"fill": {"label": "Details (optional)", "value": "Cinta"}}, {"click": "Save expense · $ 1.500"}, {"wait": "$ 55.000"}, {"wait": "Expense recorded"}, {"scroll_top": "Other things to record"}]},
+    {"screen": "VentaVuelveOscuro", "route": "/sales/new", "path": "/sales/new", "tema": "oscuro", "steps": [{"click": "Pick a product"}, {"press": "Sir Jack"}, {"fill": {"label": "Line 1 grams", "value": "5"}}, {"click": "Expense"}, {"click": "Pick a category"}, {"press": "Packaging"}, {"fill": {"label": "Amount", "value": "1500"}}, {"fill": {"label": "Details (optional)", "value": "Cinta"}}, {"click": "Save expense · $ 1.500"}, {"wait": "$ 55.000"}, {"wait": "Expense recorded"}, {"scroll_top": "Other things to record"}]},
     { "screen": "InicioEditar", "route": null, "path": "/home/edit" },
     { "screen": "InicioEditarOscuro", "route": null, "path": "/home/edit", "tema": "oscuro" },
     { "screen": "WidgetCatalogo", "route": null, "path": "/home/widgets" },
@@ -380,7 +380,7 @@
     { "path": "/settings/business", "kind": "form", "parent": "/settings" },
     { "path": "/settings/users", "kind": "form", "parent": "/settings" },
     { "path": "/settings/prices", "kind": "form", "parent": "/settings" },
-    { "path": "/settings/prices/customer-types", "kind": "form", "parent": "/settings/prices" },
+    { "path": "/settings/prices/customer-types", "kind": "form", "parent": "/settings" },
     { "path": "/settings/payments", "kind": "form", "parent": "/settings" },
     { "path": "/settings/payments/methods", "kind": "card", "parent": "/settings/payments" },
     { "path": "/settings/payments/methods/archived", "kind": "form", "parent": "/settings/payments/methods" },

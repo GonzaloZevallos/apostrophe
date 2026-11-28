@@ -150,9 +150,9 @@ test('a seller records an expense from the Expenses card and Close goes back to 
   await page.getByRole('button', { name: /^Category/ }).click()
   await page.getByRole('button', { name: 'Packaging', exact: true }).click()
   await page.getByLabel('Amount', { exact: true }).fill('3200')
-  await page.getByLabel('Details', { exact: true }).fill('Cajas de cartón')
+  await page.getByLabel('Details (optional)', { exact: true }).fill('Cajas de cartón')
   await expectToast(page, 'Expense saved', async () => {
-    await page.getByRole('button', { name: 'Save the expense' }).click()
+    await page.getByRole('button', { name: /^Save expense/ }).click()
     await expectPath(page, ANALYSIS)
   })
 
@@ -397,7 +397,7 @@ test('a new customer, alone or from Pick a customer, with a local number in the 
     await awaitDetected()
     if (other) await pickUruguay(counter)
     await phone.fill(distinct(other ? uruguay.example : argentina.example, other ? 2 : 1))
-    await tap(counter, page.getByRole('button', { name: 'Save and use' }))
+    await tap(counter, page.getByRole('button', { name: 'Save', exact: true }))
     await expectPath(page, CUSTOMER)
     measured[`customer ${key}`] = counter.taps
   }

@@ -60,7 +60,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // Registered with no phone number at all.
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name', { exact: true }).fill('Noe Sinnumero')
-  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save', exact: true }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
@@ -83,7 +83,7 @@ test('a customer with no phone number is registered, edited, sold to, paid and s
   // the phone field while it stays usable.
   await page.getByRole('link', { name: 'Edit' }).click()
   await expect(page.getByLabel('Phone', { exact: true })).toHaveValue('')
-  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save', exact: true }).click())
   await expect(page.getByText('Customer saved')).toBeVisible()
   await expect(page.getByText('Phone')).toHaveCount(0)
 

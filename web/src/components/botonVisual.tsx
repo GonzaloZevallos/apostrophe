@@ -18,9 +18,10 @@ const ACTION_ICON: Record<IconOnlyAction, NombreIcono> = {
 }
 
 /** The one icon-only action drawn with a border (`--linea`) on `--superficie` and `--tinta` ink, the
- * neutral round "+" of Clientes.dc.html: the phone Products title row's "New product", which has no
- * room for its word. Never green: in a phone header green is the Settings avatar's and the labelled
- * pill's alone, so two round buttons never look alike. */
+ * neutral round "+" of Clientes.dc.html: `add`, in the phone Products and Customers title rows and
+ * New sale's computer results table. Never green: in a phone header green is the Settings avatar's
+ * and the labelled pill's alone, so two round buttons never look alike. Every other icon-only
+ * action is the plain `boton-icono`. */
 const OUTLINED_ICON_ONLY_CLASS = 'boton-icono boton-icono--contorno'
 
 /** Placement classes of the fixed "Nueva venta" button (phone and computer), kept here so no

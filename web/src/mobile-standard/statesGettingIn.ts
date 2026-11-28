@@ -10,9 +10,8 @@
 import { GONE_NOTICE as GONE_NOTICE_REFUSAL } from '../api/refusals.ts'
 import { AUTH_TEXT, BRAKE_MESSAGE, DEAD_LINK_MESSAGE, FORGOT_SHEET_TEXT, NOT_USABLE_TITLE } from '../copy/auth.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
-import { SALES_TEXT } from '../copy/sales.ts'
 import { CUSTOMERS, INVITATION, LOGIN, RESET, SALE, SALES } from '../routes.ts'
-import { common, refusal } from './copy.ts'
+import { common, refusal, sales } from './copy.ts'
 import type { WalkState } from './states.ts'
 
 const BRAKE = BRAKE_MESSAGE
@@ -79,7 +78,7 @@ export const GETTING_IN_STATES: readonly WalkState[] = [
   {
     screen: 'EstadosGoneAviso',
     route: SALE.replace(':id', '{owing_sale}'),
-    steps: [{ click: SALES_TEXT.deleteSale }, { click: common('common:yesDelete') }],
+    steps: [{ click: sales('sales:detail.void') }, { click: sales('sales:detail.yesVoid') }],
     visible: GONE_NOTICE,
     writes: [{ method: 'DELETE', path: /^\/sales\/\d+$/, status: 404, body: { code: 'sale.not_found' } }],
   },

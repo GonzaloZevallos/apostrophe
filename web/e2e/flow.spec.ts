@@ -44,7 +44,7 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Phone', { exact: true }).fill(PHONE)
   await page.getByLabel('Name', { exact: true }).fill('Marisa Gómez')
-  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save', exact: true }).click())
   await expectPath(page, CUSTOMER)
   await expect(page.getByText('Customer saved')).toBeVisible()
 
@@ -122,14 +122,14 @@ test('a seller does everything the backend offers today, from the front alone', 
   await page.getByLabel('New category name', { exact: true }).fill('Flete')
   await page.getByRole('button', { name: 'Create category' }).click()
   await page.getByLabel('Amount', { exact: true }).fill('4500')
-  await page.getByLabel('Details', { exact: true }).fill('Flete al mercado')
-  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: 'Save the expense' }).click())
+  await page.getByLabel('Details (optional)', { exact: true }).fill('Flete al mercado')
+  await expectToast(page, 'Expense saved', () => page.getByRole('button', { name: /^Save expense/ }).click())
   await expect(page.getByText('Flete al mercado')).toBeVisible()
 
   // Edit it.
   await page.getByText('Flete al mercado').click()
-  await page.getByLabel('Details', { exact: true }).fill('Flete al mercado central')
-  await page.getByRole('button', { name: 'Save the expense' }).click()
+  await page.getByLabel('Details (optional)', { exact: true }).fill('Flete al mercado central')
+  await page.getByRole('button', { name: /^Save expense/ }).click()
   // A second "Expense saved" on the same list, the first maybe still showing: not detectable, so the row is asserted.
   await expect(page.getByText('Flete al mercado central')).toBeVisible()
 

@@ -19,6 +19,7 @@
 import { CUSTOMER, CUSTOMERS, parentOf, pathTo } from '../../routes'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type FormEvent, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router'
 import Boton from '../../components/Boton'
 import LeaveConfirm from '../../components/LeaveConfirm'
@@ -143,6 +144,7 @@ interface BodyProps {
 }
 
 function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const viewport = useViewport()
@@ -298,7 +300,7 @@ function ClienteFormBody({ mode, customerId, initial }: BodyProps) {
           )}
           {offline && <SinConexion />}
           <Boton textOnly="submit" type="submit" disabled={save.isPending || !country.ready}>
-            {CUSTOMERS_TEXT.saveAndUse}
+            {t('common:save')}
           </Boton>
         </SheetActions>
       </form>

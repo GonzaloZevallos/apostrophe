@@ -116,8 +116,8 @@ async function saveExpense(user: ReturnType<typeof userEvent.setup>) {
   await user.click(await screen.findByRole('button', { name: /^Category/ }))
   await user.click(await screen.findByRole('button', { name: 'Packaging' }))
   await user.type(screen.getByLabelText('Amount'), '500')
-  await user.type(screen.getByLabelText('Details'), 'Cinta')
-  await user.click(screen.getByRole('button', { name: 'Save the expense' }))
+  await user.type(screen.getByLabelText('Details (optional)'), 'Cinta')
+  await user.click(screen.getByRole('button', { name: /^Save expense/ }))
 }
 
 test('the tile opens the Add expense dialog over a mounted sale, with no strip and no customer sheet', async () => {
