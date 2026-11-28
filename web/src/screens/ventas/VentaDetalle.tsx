@@ -276,7 +276,7 @@ function VentaDetalleScreen() {
       <div className="cuerpo">
         <div className="encabezado-fila" role="group" aria-labelledby={titleId}>
           <h1 id={titleId} className="encabezado__titulo">
-            {SALES_TEXT.saleNumber(sale.number)}
+            {t('sales:detail.title', { number: sale.number })}
           </h1>
           {share.sharing && sale.bill !== null && (
             <Boton
