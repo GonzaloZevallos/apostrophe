@@ -7,12 +7,12 @@ from typing import Literal, Protocol
 
 import pytest
 
+from app.results.domain.buckets import row_cost
 from app.results.domain.figures import ReasonCost, RowCost
 from app.results.domain.ledger import DrawRow, ReasonRecord
 from app.results.domain.period_figures import (
     Buckets,
     period_figures,
-    row_cost,
     scan,
     totals_between,
 )
