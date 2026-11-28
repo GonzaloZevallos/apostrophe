@@ -10,6 +10,8 @@ import { initialDraft, saleDraftReducer, type DraftChoice, type DraftState, type
 
 export interface SaleDraftApi {
   state: DraftState
+  /** The Business's today the hook was built with: the one value `setDate` guards with and a date control's `max`. */
+  today: string
   addProduct: (productId: number) => void
   stepUp: (productId: number) => void
   stepDown: (productId: number) => void
@@ -57,5 +59,5 @@ export function useSaleDraft(args: { today: string; customerId?: number | null }
     (date: string) => dispatch({ type: 'dateSet', date, today }),
     [today],
   )
-  return { state, ...actions, setDate }
+  return { state, today, ...actions, setDate }
 }

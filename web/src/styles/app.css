@@ -6814,6 +6814,14 @@ a.ajustes-tema__opcion {
   gap: var(--espacio-md);
 }
 
+/* The "Date, shipping and note" row's open body: its fields stacked like the rest of the block. */
+.cobro__fila-extra-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+  padding-bottom: var(--espacio-md);
+}
+
 /* Change is secondary to the Collect total: the muted ink, laid out like the Total row. */
 .cobro__vuelto {
   display: flex;
