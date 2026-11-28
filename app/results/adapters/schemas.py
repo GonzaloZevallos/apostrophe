@@ -484,6 +484,7 @@ class ExpenseCategoryTotalOut(BaseModel):
     category_id: int
     name: str
     total: MoneyOut
+    share: int | None
 
 
 class ExpenseBreakdownOut(BaseModel):

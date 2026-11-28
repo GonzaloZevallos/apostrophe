@@ -18,8 +18,8 @@ from itertools import accumulate
 
 from app.results.domain.ledger import PaymentMethodRecord, SaleRecord
 from app.results.domain.period_figures import Buckets
-from app.results.domain.rounding import percent
 from app.shared.calendar import local_day
+from app.shared.rounding import percent
 
 LAST_HOUR = 23
 

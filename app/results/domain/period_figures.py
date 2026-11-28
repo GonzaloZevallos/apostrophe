@@ -42,9 +42,9 @@ from app.results.domain.ledger import (
     ReasonRecord,
     SaleRecord,
 )
-from app.results.domain.rounding import percent
 from app.shared.calendar import Month, Week
 from app.shared.quantity import Quantity
+from app.shared.rounding import percent
 
 ZERO = Quantity(0)
 
@@ -621,13 +621,16 @@ def _best_earliest_on_tie(values: list[int]) -> int | None:
 def _expense_breakdown(buckets: Buckets, start: date, end_inclusive: date) -> ExpenseBreakdown:
     totals = buckets.expense_categories(start, end_inclusive)
     ordered = sorted(totals.items(), key=lambda item: item[1][1])
+    base = sum(total for _, (_, _, total) in ordered)
     categories = tuple(
-        ExpenseCategoryTotal(category_id=category_id, name=name, total=total)
+        ExpenseCategoryTotal(
+            category_id=category_id, name=name, total=total, share=percent(total, base)
+        )
         for category_id, (name, name_key, total) in ordered
     )
     return ExpenseBreakdown(
         categories=categories,
-        total=sum(c.total for c in categories),
+        total=base,
         purchases=buckets.purchases(start, end_inclusive),
     )
 

@@ -42,6 +42,20 @@ HEXAGON_ROOTS = (
 )
 ALL_HEXAGON_NAMES = frozenset(dotted(root) for root in HEXAGON_ROOTS)
 SHARED_KERNEL_MODULES = tuple(sorted((REPO_ROOT / "app" / "shared").glob("*.py")))
+KERNEL_MODULE_NAMES = frozenset(f"app.shared.{m.stem}" for m in SHARED_KERNEL_MODULES)
+
+
+def kernel_imports_outside_the_rule(module: Path) -> list[str]:
+    """What a kernel module imports beyond the standard library and the other top-level
+    modules of the kernel itself (`app.shared.ratio`, never the `app.shared.copy` package)."""
+    return [
+        name
+        for name in full_imports_of(module)
+        if not is_stdlib(name)
+        and not any(name == m or name.startswith(f"{m}.") for m in KERNEL_MODULE_NAMES)
+    ]
+
+
 # Stands in for a sibling hexagon that `relative_cross_hexagon.py` reaches with dots
 # alone (`from ... import sibling_hexagon`), the way `app/accounts/application` would
 # reach `app.products` with the same number of dots. No such package needs to exist:
@@ -95,7 +109,21 @@ def test_each_hexagon_keeps_its_import_rules(root: Path) -> None:
     "module", SHARED_KERNEL_MODULES, ids=[m.stem for m in SHARED_KERNEL_MODULES]
 )
 def test_the_shared_kernel_imports_only_the_standard_library(module: Path) -> None:
-    assert [name for name in imports_of(module) if not is_stdlib(name)] == []
+    assert kernel_imports_outside_the_rule(module) == []
+
+
+def test_the_kernel_rule_refuses_the_copy_package_and_third_party_libraries() -> None:
+    copy_package = FIXTURES / "shared_kernel" / "imports_the_copy_package.py"
+    third_party = FIXTURES / "shared_kernel" / "imports_a_third_party_library.py"
+
+    assert kernel_imports_outside_the_rule(copy_package) == ["app.shared.copy.catalog.CopyCatalog"]
+    assert kernel_imports_outside_the_rule(third_party) == ["babel.support.Translations"]
+
+
+def test_the_kernel_rule_accepts_a_top_level_kernel_module_beside_the_standard_library() -> None:
+    sibling = FIXTURES / "shared_kernel" / "imports_a_sibling_kernel_module.py"
+
+    assert kernel_imports_outside_the_rule(sibling) == []
 
 
 def test_the_language_value_objects_import_only_the_standard_library() -> None:

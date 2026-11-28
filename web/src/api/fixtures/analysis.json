@@ -262,16 +262,16 @@
   },
   "month_expenses": {
     "categories": [
-      { "category_id": 1, "name": "Insumos", "total": 4000 },
-      { "category_id": 2, "name": "Transporte", "total": 2500 }
+      { "category_id": 1, "name": "Insumos", "total": 4000, "share": 62 },
+      { "category_id": 2, "name": "Transporte", "total": 2500, "share": 38 }
     ],
     "total": 6500,
     "purchases": 15000
   },
   "since_first_record_expenses": {
     "categories": [
-      { "category_id": 1, "name": "Insumos", "total": 24000 },
-      { "category_id": 2, "name": "Transporte", "total": 19300 }
+      { "category_id": 1, "name": "Insumos", "total": 24000, "share": 55 },
+      { "category_id": 2, "name": "Transporte", "total": 19300, "share": 45 }
     ],
     "total": 43300,
     "purchases": 62000

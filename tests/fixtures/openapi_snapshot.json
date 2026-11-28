@@ -1834,12 +1834,24 @@
               }
             ],
             "title": "Total"
+          },
+          "share": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share"
           }
         },
         "required": [
           "category_id",
           "name",
-          "total"
+          "total",
+          "share"
         ],
         "title": "ExpenseCategoryTotalOut",
         "type": "object"

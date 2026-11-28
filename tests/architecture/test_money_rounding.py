@@ -42,7 +42,7 @@ EXEMPT_FILES: dict[str, str] = {
 }
 # Closed. A function (qualified by its classes) that may hold them, keyed `path::function`.
 EXEMPT_FUNCTIONS: dict[str, str] = {
-    "app/results/domain/rounding.py::percent": (
+    "app/shared/rounding.py::percent": (
         "Margin % is a ratio, not money: it scales by 100 and delegates the rounding"
     ),
     "app/products/domain/cost_and_margins.py::margin_percent": (
@@ -225,7 +225,7 @@ def test_the_scan_without_exemptions_flags_exactly_the_exempt_set() -> None:
 def test_the_exempt_set_is_exactly_the_agreed_one() -> None:
     assert set(EXEMPT_FILES) == {"app/shared/money.py", "app/shared/quantity.py"}
     assert set(EXEMPT_FUNCTIONS) == {
-        "app/results/domain/rounding.py::percent",
+        "app/shared/rounding.py::percent",
         "app/products/domain/cost_and_margins.py::margin_percent",
         "app/shared/ratio.py::round_ratio_half_up",
         "app/stock/domain/withdrawal.py::WithdrawalLine.of",

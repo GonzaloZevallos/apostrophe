@@ -57,6 +57,8 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "weeks[].withdrawals[].amount": "integer",
         "months[].shortfall": ShapeOf("analysis", "months[].shortfall"),
         "months[].withdrawals[].amount": "integer",
+        "month_expenses.categories[].share": "integer",
+        "since_first_record_expenses.categories[].share": "integer",
     },
     "analysis-empty": {
         # `analysis-empty.json` is a business with no record at all: every nullable
@@ -76,6 +78,8 @@ NULLABLE: Mapping[str, Mapping[str, JsonType | ShapeOf]] = {
         "weeks[].withdrawals[].amount": "integer",
         "months[].shortfall": ShapeOf("analysis", "months[].shortfall"),
         "months[].withdrawals[].amount": "integer",
+        "month_expenses.categories[].share": "integer",
+        "since_first_record_expenses.categories[].share": "integer",
     },
     "customer": {
         "phone": "string",
