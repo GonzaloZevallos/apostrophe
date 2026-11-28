@@ -73,8 +73,8 @@
  * and takes cifra-l's size (38 px); at 130 % zoom on the smallest phone (under 300 CSS px) it takes cifra-m's. */
 @media (max-width: 340px) {
   .sale-detail-card__summary .cifra-xl {
-    font-size: 38px;
-    line-height: 1.05;
+    font-size: var(--cifra-l-tamano);
+    line-height: var(--cifra-l-interlineado);
   }
 }
 

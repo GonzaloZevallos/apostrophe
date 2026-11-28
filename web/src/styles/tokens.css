@@ -55,7 +55,9 @@
 
   /* Tipografía */
   --fuente: 'Geist', system-ui, -apple-system, sans-serif;
-  /* cifra-m: la única clase de texto que lee su tamaño de acá (el pie de Nueva venta también) */
+  /* cifra-l y cifra-m: las clases de texto que leen su tamaño de acá (el pie de Nueva venta también; el Total del detalle de venta en teléfonos angostos) */
+  --cifra-l-tamano: 38px;
+  --cifra-l-interlineado: 1.05;
   --cifra-m-tamano: 25px;
   --cifra-m-interlineado: 1.1;
   /* La marca (BrandMark): su tamaño y el de la palabra "apostrophe" junto a ella */
@@ -148,7 +150,7 @@ body {
 
 /* Clases de texto — mismos valores que `texto` en tokens.ts */
 .cifra-xl { font-size: 54px; font-weight: 600; letter-spacing: -0.045em; line-height: 1.05 }
-.cifra-l  { font-size: 38px; font-weight: 600; letter-spacing: -0.04em;  line-height: 1.05 }
+.cifra-l  { font-size: var(--cifra-l-tamano); font-weight: 600; letter-spacing: -0.04em;  line-height: var(--cifra-l-interlineado) }
 .cifra-m  { font-size: var(--cifra-m-tamano); font-weight: 600; letter-spacing: -0.035em; line-height: var(--cifra-m-interlineado) }
 .cifra-s  { font-size: 17px; font-weight: 600 }
 .titulo   { font-size: 20px; font-weight: 600; letter-spacing: -0.02em }
