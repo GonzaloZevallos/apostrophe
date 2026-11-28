@@ -9,7 +9,7 @@
  * the console holds nothing.
  */
 
-import { CATALOG, HOME, LOGIN, SETTINGS } from '../src/routes.js'
+import { CATALOG, HOME, LOGIN, SETTINGS, SETTINGS_PRICES } from '../src/routes.js'
 import { expectPath } from './helpers/url.js'
 import { expect, test } from './fixtures.js'
 import { expectToast } from './helpers/toast.js'
@@ -142,4 +142,24 @@ test('a seller goes through every Configuración group from the phone, with no c
   const REFUSED_REMOVAL_NETWORK_LOG =
     'error: Failed to load resource: the server responded with a status of 409 (Conflict)'
   expect(consoleMessages.filter((message) => message !== REFUSED_REMOVAL_NETWORK_LOG)).toEqual([])
+})
+
+test('on a computer the Settings list stays in view beside the open page, its row marked', async ({ page }) => {
+  const consoleMessages: string[] = []
+  watchConsole(page, consoleMessages)
+
+  await page.setViewportSize({ width: 1280, height: 920 })
+  await signUpNewBusiness(page, {
+    businessName: `Flores de Columna ${uniqueTag()}`,
+    email: `duena-columna-${uniqueTag()}@example.com`,
+  })
+
+  await page.goto(SETTINGS_PRICES)
+  const prices = settingsRow(page, 'Catalog', 'Prices')
+  await expect(prices).toHaveAttribute('aria-current', 'page')
+
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+
+  await expect(prices).toBeInViewport()
+  expect(consoleMessages).toEqual([])
 })

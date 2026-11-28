@@ -2,20 +2,21 @@
  * `Settings`, the list of groups, mounted through the real route table (`router.routes`)
  * under a memory router, so the test also proves what `router.tsx` registers: which chrome
  * the list and a group get, and which groups exist. `useViewport` is mocked per case since
- * jsdom lays nothing out: the list's back arrow reads the viewport. The list of eight groups is
- * the computer's (`SettingsComputer`), so the cases that read it run on a computer; the phone
- * home is covered by `SettingsHome.test.tsx`.
+ * jsdom lays nothing out: the list's back arrow reads the viewport. On a computer the list is
+ * `SettingsLayout`'s column (`SettingsNav`); the phone home is covered by `SettingsHome.test.tsx`.
  */
 
 import { HOME, SALES, SETTINGS, SETTINGS_ACCOUNT, SETTINGS_APPEARANCE, SETTINGS_BUSINESS, SETTINGS_CATALOG_MESSAGE, SETTINGS_INTEGRATIONS, SETTINGS_PAYMENTS, SETTINGS_PRICES, SETTINGS_USERS } from '../../routes'
 import { inAppState } from '../../components/inAppState'
-import { act, render, screen, within } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import { queryClient } from '../../queryClient'
 import { router as appRouter } from '../../router'
+import { testT } from '../../i18n/testing'
+import { SETTINGS_ROWS } from './settingsRows'
 
 const GROUPS = [
   ['Business', SETTINGS_BUSINESS],
@@ -37,14 +38,19 @@ function stubComputer(isComputer: boolean) {
 }
 
 function renderApp(entries: string[], index?: number) {
+  const json = (body: unknown) => new Response(JSON.stringify(body), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  const ME = { email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }
+  const answered = json(ME)
   vi.stubGlobal(
     'fetch',
-    vi.fn().mockResolvedValue(
-      new Response(
-        JSON.stringify({ email: 'ana@x.com', business_name: 'La Huerta', today: '2026-10-02', money: { symbol: '$', decimals: 0 } }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } },
-      ),
-    ),
+    vi.fn().mockImplementation((input: RequestInfo | URL) => {
+      const path = String(input)
+      // The computer's list column reads the business and the pricing switches beside `me`.
+      const computer = viewport.current === 'computer'
+      if (computer && path.endsWith('/business')) return Promise.resolve(json({ users: [], selectable_languages: ['en', 'es'] }))
+      if (computer && path.endsWith('/pricing-settings')) return Promise.resolve(json({ is_vip_customers: true, is_bulk_pricing: true }))
+      return Promise.resolve(computer ? json(ME) : answered)
+    }),
   )
   const router = createMemoryRouter(appRouter.routes, {
     initialEntries: entries,
@@ -63,14 +69,14 @@ afterEach(() => {
   queryClient.clear()
 })
 
-test('lists exactly the nine groups in order, each a link to its own route', async () => {
+test('on a computer /settings shows the prompt beside the list, whose rows are the registry\'s', async () => {
   stubComputer(true)
   renderApp([SETTINGS])
 
-  const list = await screen.findByRole('navigation', { name: 'Settings' })
-  const links = within(list).getAllByRole('link')
-  expect(links.map((link) => link.textContent)).toEqual(GROUPS.map(([name]) => name))
-  expect(links.map((link) => link.getAttribute('href'))).toEqual(GROUPS.map(([, path]) => path))
+  expect(await screen.findByText('Choose a setting')).toBeInTheDocument()
+  const rows = await screen.findAllByRole('link', { name: new RegExp(`^${testT(SETTINGS_ROWS[0]?.labelKey ?? 'common:settings')}`) })
+  expect(rows.length).toBeGreaterThan(0)
+  expect(screen.queryByRole('navigation', { name: 'Settings' })).not.toBeInTheDocument()
 })
 
 test('shows the bar with its + (Vender) and no "+ New sale" link', async () => {
@@ -95,16 +101,19 @@ test('a group route shows no bar and no + (Vender)', async () => {
   expect(screen.queryByRole('link', { name: /New sale/ })).not.toBeInTheDocument()
 })
 
-test.each(GROUPS)('"%s" opens its group, marking the entry as in-app', async (name, path) => {
-  stubComputer(true)
-  const user = userEvent.setup()
-  const { router } = renderApp([SETTINGS])
+test.each(SETTINGS_ROWS.filter((row) => row.isShown({ selectableLanguages: ['en', 'es'], isCustomerTypesOn: true })))(
+  'the $key row opens its page, marking the entry as in-app and as entered from Settings',
+  async (row) => {
+    stubComputer(true)
+    const user = userEvent.setup()
+    const { router } = renderApp([SETTINGS])
 
-  await user.click(await screen.findByRole('link', { name }))
+    await user.click(await screen.findByRole('link', { name: `${testT(row.labelKey)} ${testT(row.descriptionKey)}` }))
 
-  expect(router.state.location.pathname).toBe(path)
-  expect(router.state.location.state).toEqual(inAppState({ pathname: SETTINGS }))
-})
+    expect(router.state.location.pathname).toBe(row.to)
+    expect(router.state.location.state).toEqual(inAppState({ pathname: SETTINGS }, { enteredFrom: 'settings' }))
+  },
+)
 
 test('every group route exists and closes with "Close"', async () => {
   stubComputer(false)
@@ -168,5 +177,5 @@ test("opened with no in-app state, Close from a group goes to Settings' list", a
   await user.click(await screen.findByRole('button', { name: 'Close' }))
 
   expect(router.state.location.pathname).toBe(SETTINGS)
-  expect(await screen.findByRole('navigation', { name: 'Settings' })).toBeInTheDocument()
+  expect(await screen.findByText('Choose a setting')).toBeInTheDocument()
 })

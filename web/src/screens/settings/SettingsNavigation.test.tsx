@@ -13,7 +13,6 @@ import { router } from '../../router'
 import {
   EXPENSE_CATEGORIES,
   HOME,
-  SETTINGS,
   SETTINGS_CUSTOMER_TYPES,
   SETTINGS_PAYMENTS,
   SETTINGS_PAYMENT_METHODS,
@@ -55,14 +54,6 @@ afterEach(async () => {
   vi.unstubAllGlobals()
   queryClient.clear()
   await act(() => router.navigate(HOME))
-})
-
-test("the computer's Settings list has no Expense categories row", async () => {
-  await open(SETTINGS, 'computer')
-
-  const list = await screen.findByRole('navigation', { name: 'Settings' })
-  expect(within(list).getByRole('link', { name: 'Payments and expenses' })).toBeInTheDocument()
-  expect(within(list).queryByRole('link', { name: 'Expense categories' })).not.toBeInTheDocument()
 })
 
 test('Payments and expenses lists Payment methods, then Expense categories, and the second opens its screen', async () => {
