@@ -95,7 +95,13 @@ def test_each_hexagon_keeps_its_import_rules(root: Path) -> None:
     "module", SHARED_KERNEL_MODULES, ids=[m.stem for m in SHARED_KERNEL_MODULES]
 )
 def test_the_shared_kernel_imports_only_the_standard_library(module: Path) -> None:
-    assert [name for name in imports_of(module) if not is_stdlib(name)] == []
+    # The kernel may import itself (app.shared.rounding calls app.shared.ratio); nothing else.
+    outside = [
+        name
+        for name in imports_of(module)
+        if not is_stdlib(name) and name != "app.shared" and not name.startswith("app.shared.")
+    ]
+    assert outside == []
 
 
 def test_the_language_value_objects_import_only_the_standard_library() -> None:
