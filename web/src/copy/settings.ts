@@ -114,6 +114,7 @@ export const SETTINGS_TEXT = {
   botToken: 'Bot token',
   savedOn: 'Saved on ',
   notShownAgain: ' · not shown again',
+  tokenStoredEncrypted: 'Saved encrypted and never shown again.',
   channelChat: 'Channel chat',
   yourChat: 'Your chat',
   findMyChat: 'Find my chat',

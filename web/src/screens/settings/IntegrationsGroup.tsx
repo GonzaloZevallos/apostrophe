@@ -130,6 +130,8 @@ export function IntegrationsForm({
     onDirtyChange?.(dirty)
   }, [dirty, onDirtyChange])
 
+  const tokenDescribedBy =
+    testError === null ? `${fieldId}-token-help` : `${fieldId}-token-help ${fieldId}-test-error`
   const typedToken = tokenFieldOpen && tokenInput.trim() !== '' ? tokenInput : null
   const canSearch = typedToken !== null || accepted.tokenSavedOn !== null
 
@@ -208,16 +210,23 @@ export function IntegrationsForm({
 
       <form className="formulario" onSubmit={onFormSubmit} onKeyDown={onFormKeyDown}>
         {tokenFieldOpen ? (
-          <label className="campo">
-            <span className="campo__rotulo">{SETTINGS_TEXT.botToken}</span>
+          <div className="campo">
+            <label className="campo__rotulo" htmlFor={`${fieldId}-token`}>
+              {SETTINGS_TEXT.botToken}
+            </label>
             <input
+              id={`${fieldId}-token`}
               className="campo__input"
               type="password"
               autoComplete="new-password"
+              aria-describedby={tokenDescribedBy}
               value={tokenInput}
               onChange={(event) => setTokenInput(event.target.value)}
             />
-          </label>
+            <span id={`${fieldId}-token-help`} className="campo__ayuda">
+              {SETTINGS_TEXT.tokenStoredEncrypted}
+            </span>
+          </div>
         ) : (
           <div className="catalogo__fila">
             <span className="catalogo__fila-texto">
@@ -285,7 +294,7 @@ export function IntegrationsForm({
         </div>
 
         {testError !== null && (
-          <span className="campo__error" role="alert">
+          <span id={`${fieldId}-test-error`} className="campo__error" role="alert">
             {testError}
           </span>
         )}
