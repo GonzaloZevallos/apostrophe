@@ -1,6 +1,6 @@
 {
   "form": {
-    "amountAboveZero": "The amount must be more than {{zero}}",
+    "amountAboveZero": "The amount must be more than {{amount}}",
     "detailsOptional": "Details (optional)",
     "paymentMethod": "How you paid",
     "paymentMethodNone": "None",

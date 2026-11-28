@@ -194,7 +194,7 @@ export default function ExpenseForm({
     reason === 'tooManyDecimals'
       ? { rule: 'tooManyDecimals', text: tooManyDecimalsMessage(money.format) }
       : reason === 'notAboveZero' && blurred
-        ? { rule: 'notAboveZero', text: t('expenses:form.amountAboveZero', { zero: money.money(0) }) }
+        ? { rule: 'notAboveZero', text: t('expenses:form.amountAboveZero', { amount: money.money(0) }) }
         : refusal !== null && refusal.text === form.amount
           ? { rule: 'refusal', text: refusal.message }
           : null
