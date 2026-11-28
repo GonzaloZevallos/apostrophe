@@ -101,7 +101,7 @@ def test_a_write_that_fails_partway_leaves_no_file_and_changes_no_row(
     assert after == before
 
 
-def test_a_blob_column_added_later_refuses_both_modes_with_no_file_and_no_change(
+def test_an_unwritable_column_added_later_refuses_both_modes_with_no_file_and_no_change(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     db_path = tmp_path / "apostrophe.db"
@@ -110,7 +110,7 @@ def test_a_blob_column_added_later_refuses_both_modes_with_no_file_and_no_change
     seed(db_path, clock)
     leaving_id = _business_id(db_path, "La Huerta")
     with sqlite3.connect(db_path) as connection:
-        connection.execute("ALTER TABLE customer ADD COLUMN raw_blob BLOB")
+        connection.execute("ALTER TABLE customer ADD COLUMN raw_blob REAL")
         connection.commit()
     set_env(monkeypatch, db_path, export_dir)
 

@@ -194,7 +194,7 @@
       "steps": [{ "offline": true }, { "wait": "Offline: check your internet and try again." }] },
     { "screen": "EstadosGone", "design": "Estados", "route": "/sales/999999", "path": "/sales/999999" },
     { "screen": "EstadosConfirmar", "design": "Estados", "section": "Antes de borrar", "route": "/sales/{owing_sale}", "path": "/sales/{owing_sale}",
-      "steps": [{ "press": "Delete sale" }] }
+      "steps": [{ "press": "Void" }] }
 ,
     { "screen": "VariedadDetalleOscuro", "design_viewport": [414, 844], "design": "VariedadDetalle", "route": "/varieties/{low}", "path": "/varieties/{low}", "tema": "oscuro" },
     { "screen": "ArchivadasOscuro", "design": "Archivadas", "route": "/varieties/archived", "path": "/varieties/archived", "tema": "oscuro" },
@@ -380,7 +380,7 @@
     { "path": "/settings/business", "kind": "form", "parent": "/settings" },
     { "path": "/settings/users", "kind": "form", "parent": "/settings" },
     { "path": "/settings/prices", "kind": "form", "parent": "/settings" },
-    { "path": "/settings/prices/customer-types", "kind": "form", "parent": "/settings/prices" },
+    { "path": "/settings/prices/customer-types", "kind": "form", "parent": "/settings" },
     { "path": "/settings/payments", "kind": "form", "parent": "/settings" },
     { "path": "/settings/payments/methods", "kind": "card", "parent": "/settings/payments" },
     { "path": "/settings/payments/methods/archived", "kind": "form", "parent": "/settings/payments/methods" },

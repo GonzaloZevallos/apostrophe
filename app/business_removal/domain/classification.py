@@ -114,7 +114,8 @@ def secret_columns(schema: Schema) -> tuple[tuple[str, str], ...]:
 
 
 def other_type_columns(schema: Schema) -> tuple[tuple[str, str], ...]:
-    """Columns of a type the export cannot write (`ColumnType.OTHER`), outside
+    """Columns of a type the export cannot write (`ColumnType.OTHER`; `BINARY` is
+    written, as base64, so it is not one of them), outside
     `EXCLUDED_COLUMNS` and outside a skipped or withheld table. A non-empty result
     means the command must refuse: a column of an unwritable type needs its own
     exclusion, named by hand, before the removal can run again."""

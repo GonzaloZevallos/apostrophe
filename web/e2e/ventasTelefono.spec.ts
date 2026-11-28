@@ -256,11 +256,11 @@ async function sweep(page: Page, { name, scale }: PhoneCase): Promise<void> {
   await expectThumbSized(page, `${name}: Ventas`, scale)
 
   await page.locator('.sale-card').first().click()
-  await expect(page.getByRole('button', { name: 'Delete sale' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Void' })).toBeVisible()
   await settled(page)
   await expectNoSidewaysOverflow(page, `${name}: the detail`, scale)
   await expectThumbSized(page, `${name}: the detail`, scale)
-  await page.getByRole('button', { name: 'Delete sale' }).click()
+  await page.getByRole('button', { name: 'Void' }).click()
   await expect(page.getByRole('alertdialog')).toBeVisible()
   await settled(page)
   await expectThumbSized(page, `${name}: the delete dialog`, scale)

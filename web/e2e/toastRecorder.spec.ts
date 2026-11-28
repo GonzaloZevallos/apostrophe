@@ -158,7 +158,7 @@ test('real screens: a flash toast, a toast on its own timer and the card\'s hist
   // ClienteFicha: the toast comes in history state, with no timer.
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name', { exact: true }).fill('Noe Registro')
-  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save', exact: true }).click())
   await expectPath(page, CUSTOMER)
   // No product timer on this one (history state): the page check stays next to the recorder's.
   await expect(page.getByText('Customer saved')).toBeVisible()

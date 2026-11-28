@@ -114,6 +114,8 @@ classDiagram
   class DeleteOrderCycle {
     tables : tuple~str, ...~
   }
+  class ExportKeyCollision {
+  }
   class ExportedMoney {
     decimals : int
     scale : int
@@ -132,6 +134,8 @@ classDiagram
     foreign_keys : tuple~ForeignKey, ...~
     name : str
     column(name: str) Column
+  }
+  class UnencodableBinary {
   }
   class UnresolvableLabel {
   }
@@ -156,6 +160,8 @@ classDiagram
     prepare() Path
     read_back(path: Path) dict~str, Any~
     write_durably(name: str, document: dict~str, Any~) Path
+  }
+  class ExportNotFaithful {
   }
   class Interrupted {
   }

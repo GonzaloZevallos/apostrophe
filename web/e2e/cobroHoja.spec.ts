@@ -48,7 +48,7 @@ async function makeDebtor(page: Page): Promise<void> {
 
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name', { exact: true }).fill('Carla Cobrar')
-  await page.getByRole('button', { name: 'Save and use' }).click()
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
   await expectPath(page, CUSTOMER)
   await page.getByRole('link', { name: 'New sale to Carla Cobrar' }).click()
   await expectPath(page, SALE_NEW)

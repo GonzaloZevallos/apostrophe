@@ -31,7 +31,7 @@ export async function seedLedger(page: Page, customerName: string, sales: number
 
   await page.goto(CUSTOMER_NEW)
   await page.getByLabel('Name', { exact: true }).fill(customerName)
-  await page.getByRole('button', { name: 'Save and use' }).click()
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
   await expectPath(page, CUSTOMER)
   const card = new URL(page.url()).pathname
   const id = /\/(\d+)$/.exec(card)?.[1]

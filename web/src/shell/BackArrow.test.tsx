@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useContext, useEffect, useLayoutEffect, useState, type ReactNode } from 'react'
-import { createMemoryRouter, Outlet, RouterProvider, useParams, type InitialEntry, type RouteObject } from 'react-router'
+import { createMemoryRouter, MemoryRouter, Outlet, RouterProvider, useParams, type InitialEntry, type RouteObject } from 'react-router'
 import { afterEach, expect, test, vi } from 'vitest'
 import type { Me } from '../api/me'
 import { SHOWN_EN } from '../test/shownLanguage'
@@ -29,6 +29,7 @@ import {
   pathTo,
   type RecordLabelledScreen,
 } from '../routes'
+import BackArrow from './BackArrow'
 import Shell from './Shell'
 import { BackParentContext, useBackParent } from './useBackParent'
 import { MoneyFormatProvider } from '../format/MoneyFormatProvider'
@@ -336,4 +337,32 @@ test('a card that is not in the table keeps its registry word and fallback when 
   await user.click(screen.getByRole('button', { name: '‹ Sales' }))
 
   expect(router.state.location.pathname).toBe(SALES)
+})
+
+test('the round look is its own root, with the same button name, the whole text kept and a hidden chevron beside it', () => {
+  const round = render(
+    <MemoryRouter>
+      <BackArrow id="expenses" look="round" />
+    </MemoryRouter>,
+  )
+  const back = screen.getByRole('button', { name: '‹ Analysis' })
+  expect(back).toHaveTextContent('‹ Analysis')
+  expect(back).not.toHaveAttribute('aria-label')
+  expect(round.container.querySelectorAll('.flecha-atras--redonda')).toHaveLength(1)
+  expect(round.container.querySelectorAll('.flecha-atras')).toHaveLength(0)
+  expect(screen.getAllByRole('button')).toHaveLength(1)
+  const chevron = back.querySelector('svg')
+  expect(chevron).toHaveAttribute('aria-hidden', 'true')
+  expect(back.querySelector('.flecha-atras__texto')).toHaveTextContent('‹ Analysis')
+  round.unmount()
+
+  const plain = render(
+    <MemoryRouter>
+      <BackArrow id="expenses" />
+    </MemoryRouter>,
+  )
+  expect(screen.getByRole('button', { name: '‹ Analysis' })).toBe(plain.container.querySelector('button'))
+  expect(plain.container.querySelectorAll('.flecha-atras')).toHaveLength(1)
+  expect(plain.container.querySelectorAll('.flecha-atras--redonda')).toHaveLength(0)
+  expect(plain.container.querySelector('svg')).toBeNull()
 })

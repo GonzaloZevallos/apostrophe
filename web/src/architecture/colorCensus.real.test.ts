@@ -12,6 +12,7 @@ test('every app.css rule using a state color is listed with the word, sign or ar
   expect(checkColorCensus(appCss, COLOR_CENSUS, testFiles)).toEqual([])
 })
 
-test('no rule of app.css uses --positivo or --negativo, and none is listed', () => {
-  expect(appCss).not.toMatch(/--(?:positivo|negativo)(?![\w-])/)
+test("--positivo and --negativo are used once in app.css: the sale detail's Void button text, listed in the census", () => {
+  expect(appCss.match(/--(?:positivo|negativo)(?![\w-])/g)).toEqual(['--negativo'])
+  expect(COLOR_CENSUS.map(({ selector }) => selector)).toContain('.venta-detalle__botones .boton')
 })

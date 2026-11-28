@@ -2,11 +2,13 @@
 
 **Cuando** configuro cómo pone precios mi negocio, registro el precio de un producto o entrego un pedido, **quiero** que la app use solo las Pricing rules que tiene mi negocio (un Bulk price si vendo por cantidad, y un VIP price que fijo por producto para mis VIP customers), **para** cobrarle a cada cliente exactamente lo que quiero sin tipear un **Special price** a mano, sin ver campos que no me corresponden y sin que el precio de nadie cambie por sorpresa.
 
-**Cuando** tengo clientes habituales a los que trato distinto, **quiero** agruparlos en tipos a los que les pongo nombre yo y elegir el tipo de cada uno desde su ficha, **para poder** distinguirlos de un vistazo, y más adelante cobrarles según su tipo, sin depender de la memoria ni de notas. (GH-405: lo sirven acá el interruptor Customer types y la fila Customer types del grupo Prices; definido en customers.md.)
+**Cuando** tengo clientes habituales a los que trato distinto, **quiero** agruparlos en tipos a los que les pongo nombre yo y elegir el tipo de cada uno desde su ficha, **para poder** distinguirlos de un vistazo, y más adelante cobrarles según su tipo, sin depender de la memoria ni de notas. (GH-405: lo sirven acá el interruptor Customer types y, desde GH-1068, la fila Customer types de Settings; definido en customers.md.)
 
 **Cuando** registro una venta para un cliente que pertenece a uno de mis grupos de clientes, **quiero** que cada línea se cotice al precio que fijé para ese grupo y ese producto, **para** cobrarle a cada grupo su propio precio sin tipearlo ni sacarlo de memoria. (Parte customer-type prices de GH-318: lo sirven acá los **Customer-type price**s y el campo "VIP price" que escribe el del VIP type; la cotización de la línea está en sales.md.)
 
 **Cuando** necesito cambiar cómo está configurado mi negocio, **quiero** cada configuración de todo el negocio en un solo lugar, cada una en su propia pantalla corta, **para** cambiarla en pocos toques desde el celular y volver con el cliente. (El job de Settings, navigation.md: lo sirve acá el grupo Prices.)
+
+**Cuando** entro a Settings para cambiar cómo funciona mi negocio, **quiero** encontrar cada configuración en un solo lugar, la lista de Settings, y que cada camino que me nombran la app o los docs coincida con lo que toco, **para** llegar rápido y no preguntarme si dos links llevan a dos cosas distintas. (GH-1068, definido en settings.md: lo sirve acá que Prices no repita la fila Customer types.)
 
 # Pricing settings
 
@@ -41,13 +43,14 @@ Criterios de éxito:
 5. **Los Customers nunca ven un precio de tipo.** El Catalog nunca muestra el VIP price ni ningún Customer-type price, y el **Sale bill** nunca nombra el tipo. La línea de Bulk del Catalog se muestra solo mientras Bulk price está activado.
 6. **Rápido.** Cada interruptor se cambia en pocos toques desde Settings → Prices. Registrar una Sale sigue llevando menos de un minuto.
 7. **Los Businesses nunca se mezclan** (ADR-0004). Los interruptores, los Customer types y los Customer-type prices de un Business nunca afectan los precios, las pantallas ni el Catalog de otro.
+8. **Prices, como el dibujo** (GH-1068). La página Prices muestra solo los dos interruptores, sus líneas de ayuda, la línea de las Sales pasadas y Save, en el celular y en la computadora; a la lista de Customer types se llega solo desde su fila de Settings.
 
 ## Comportamiento
 
 ### Los interruptores
 
 - **Dos por Business**, independientes entre sí: Bulk price y Customer types.
-- **Customer types** es el interruptor que antes se leía "VIP customers": conserva su columna `pricing_settings.is_vip_customers`, su valor guardado y su efecto; solo cambia la palabra de pantalla (ADR-0059). Gobierna la fila Customer types de Prices, el campo "Customer type" del formulario, el tipo en la ficha, la marca VIP, el campo "VIP price" y todo Customer-type price.
+- **Customer types** es el interruptor que antes se leía "VIP customers": conserva su columna `pricing_settings.is_vip_customers`, su valor guardado y su efecto; solo cambia la palabra de pantalla (ADR-0059). Gobierna la fila Customer types de Settings, el campo "Customer type" del formulario, el tipo en la ficha, la marca VIP, el campo "VIP price" y todo Customer-type price.
 - **Dónde rige**: en el precio de las Sales y en el alta y la edición de Customers. Las rutas de `/api/customer-types` no lo leen y responden igual encendido o apagado; son las pantallas las que se ocultan.
 - **Dónde se cambian**: solo en Settings → Prices. Cualquier **User** del Business puede cambiarlos; no hay roles.
 - **Una regla desactivada**:
@@ -102,7 +105,7 @@ Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-
 
 - **Lugar**: un grupo de Settings (navigation.md), después de Users y antes de Integrations.
 - **Ruta**: `/settings/prices`, fijada en `scripts/design/screens.json`. No hay otro acceso: no se llega desde la página de un Product ni desde el formulario de precio. Prices queda a 2 toques de una Tab root.
-- **Un formulario**:
+- **Un formulario**, como sus dibujos ConfiguracionPrecios y ConfiguracionPreciosCompu:
   - "Close", y una confirmación al salir con cambios sin guardar ("Discard the prices?"); un grupo sin tocar se cierra de inmediato;
   - dos interruptores, "Bulk price" y "Customer types", cada uno marcado como activado o desactivado por palabra o forma y `aria-checked`, nunca solo por color;
   - el botón "Save the prices";
@@ -112,7 +115,7 @@ Decidido en docs/adr/0059-customer-type-prices-are-effective-dated-rows-and-the-
   - en un Business con VIP type: "Customers in the VIP type pay the VIP price where a price has one. Other types have no price yet.";
   - en cualquier otro: "Customer types have no price yet."
   - No hay conteo, ni lista de Products sin VIP price, ni aviso en ningún otro lado.
-- **La fila "Customer types"** (rótulo y chevron), dentro de la tarjeta del interruptor, debajo de la línea de ayuda y arriba de "Save the prices": lleva a la lista y la gestión de los tipos (`/settings/prices/customer-types`, a 3 toques de una Tab root; customers.md). Sigue el valor guardado del interruptor, no el que se está editando: aparece después de activar el interruptor y tocar "Save the prices", y desaparece al guardarlo desactivado.
+- **Sin link a Customer types** (GH-1068): Prices no lleva ninguna fila hacia la lista de tipos, porque el dibujo no la tiene y la lista ya es su propia fila de Settings. La lista y la gestión de los tipos (`/settings/prices/customer-types`, customers.md) se abren solo desde la fila `customerTypes` de Settings, que sigue el valor guardado del interruptor: aparece después de activarlo y tocar "Save the prices" (el guardado escribe la caché de los interruptores, así que la fila se ve al volver a Settings sin otra lectura), y desaparece al guardarlo desactivado. Su padre en `web/src/routes.ts` es Settings, así que "‹ Settings" y Close sin historial caen en Settings, se llegue desde la fila o tipeando la dirección. La dirección se conserva y no redirige. Con el interruptor ya activado, la lista queda a 2 toques de una Tab root (antes 3, pasando por Prices); la primera vez, en un Business nuevo, queda a 4 (avatar, Prices, "‹ Settings" y la fila), sin contar encender el interruptor ni guardarlo.
 - **Upkeep**: un guardado que cambia cualquiera de los dos interruptores lo dispara (pinned-catalog.md), porque la línea de Bulk del Catalog depende de Bulk price.
 - **Avisos**: un grupo que ya no existe, la falta de red y los errores del servidor siguen accounts.md.
 - Todo texto vive en el **Copy module**.
@@ -146,16 +149,18 @@ El **Business export** (accounts.md) guarda los dos interruptores tal como está
 - **Valores por defecto**: un Business abierto con una **Invitation** de Business nuevo tiene los dos interruptores desactivados, ningún Customer type y ningún Customer-type price.
 - **Cambiar de interruptor no pierde nada (criterio 4)**: después de desactivar y volver a activar, cada Bulk price, Customer-type price, Customer type y pertenencia guardados se leen como antes, incluido un Customer editado mientras Customer types estaba desactivado.
 - **Inmutabilidad del precio guardado (criterio 3)**: después de cualquier cambio de interruptor, de pertenencia, de nombre de un tipo o de sus precios, el precio, la regla, la copia del nombre y el total de las líneas existentes no cambian.
-- **Las pantallas siguen los interruptores (criterio 1)**: tests del front muestran, con cada interruptor desactivado, ningún rastro de él en el formulario de precio, la página del Product, el formulario, la ficha y la lista de Customers, la fila Customer types de Prices, el badge de Sales, New sale ni el Catalog. Los badges registrados en el detalle de una Sale se mantienen.
-- **Grupo Prices (criterio 6)**:
-  - tests del front cubren "Close", la confirmación de cambios sin guardar, un cierre sin tocar, "Save the prices", "Prices saved", la etiqueta "Customer types", la línea fija, las dos formas de la línea de ayuda, la fila Customer types siguiendo el valor guardado, su lugar y su ruta, y la ausencia de cualquier otro acceso;
-  - Prices se abre en 2 toques como máximo desde cualquier **Tab root**, y la lista de Customer types en 3;
-  - la corrida de punta a punta de Settings cambia cada regla desde un viewport de celular.
+- **Las pantallas siguen los interruptores (criterio 1)**: tests del front muestran, con cada interruptor desactivado, ningún rastro de él en el formulario de precio, la página del Product, el formulario, la ficha y la lista de Customers, la fila Customer types de Settings, el badge de Sales, New sale ni el Catalog. Los badges registrados en el detalle de una Sale se mantienen.
+- **Grupo Prices (criterios 6 y 8)**:
+  - tests del front cubren "Close", la confirmación de cambios sin guardar, un cierre sin tocar, "Save the prices", "Prices saved", la etiqueta "Customer types", la línea fija, las dos formas de la línea de ayuda, la ausencia de cualquier fila hacia Customer types (con el interruptor activado o desactivado) y la ausencia de cualquier otro acceso a Prices;
+  - Prices se abre en 2 toques como máximo desde cualquier **Tab root**, y la lista de Customer types también en 2 (antes 3) con el interruptor ya activado, desde su fila de Settings;
+  - en un Business nuevo, `customerTypes.spec.ts` llega a la lista en 4 toques y crea un tipo en 7 toques y 1 campo, sin contar encender el interruptor ni guardarlo (decisión 1 del humano en GH-1068);
+  - un test de rutas comprueba que el padre de `settings-customer-types` es `settings`;
+  - la corrida de punta a punta de Settings cambia cada regla desde un viewport de celular, y `customerTypes.spec.ts` abre la lista desde la fila de Settings.
 - **Upkeep**: un guardado que cambia cualquiera de los dos interruptores dispara el Upkeep; un guardado que no cambia ninguno no envía nada.
 - **Aislamiento (criterio 7)**: las rutas de los interruptores, de los Customer types y de las Price entries que escriben Customer-type prices están en el barrido y en el test de rutas protegidas. Los interruptores, los tipos y sus precios de un Business nunca cambian los precios, las pantallas ni el Catalog de otro.
 - **Sin eco**: ningún rechazo ni línea de log contiene un precio.
 - **Textos**: todo texto nuevo está en el Copy module y ningún valor por defecto nuevo lleva una palabra propia de un solo tipo de negocio.
-- **Diseño**: `scripts/design/compare.sh` corre antes y después para Prices (`ConfiguracionPrecios`), en celular y computadora, adjunto al PR; la lista de Customer types no tiene dibujo y se juzga contra el diseño escrito.
+- **Diseño**: Design captures en claro y en oscuro de Prices (`ConfiguracionPrecios` y `ConfiguracionPreciosCompu`), en celular y computadora, adjuntas al PR; la lista de Customer types no tiene dibujo y se juzga contra el diseño escrito.
 
 ## Fuera de alcance
 
@@ -168,7 +173,8 @@ El **Business export** (accounts.md) guarda los dos interruptores tal como está
 - Rechazar o avisar en una Sale porque los interruptores cambiaron en medio de la Sale.
 - Un aviso o conteo de Products sin VIP price.
 - Roles o permisos para cambiar los interruptores.
-- La fila "Tipos de cliente" bajo el grupo Customers que mostraba el dibujo de Configuración: a los Customer types se llega solo desde Prices.
+- La fila "Tipos de cliente" bajo el grupo Customers que mostraba el dibujo de Configuración: a los Customer types se llega solo desde su fila de Settings.
+- Un link a Customer types dentro de Prices, y cualquier redirección de `/settings/prices/customer-types` (GH-1068).
 - Aplicar al tocar, como hace Appearance: los interruptores cambian el precio de cada Sale nueva para cada socio, así que se guardan de forma explícita.
 - Anunciar el cambio a quienes venden.
 

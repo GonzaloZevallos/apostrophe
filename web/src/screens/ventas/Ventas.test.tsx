@@ -282,7 +282,7 @@ test('a dropped network shows Sin conexión, never the empty-list text', async (
   ).not.toBeInTheDocument()
 })
 
-test('arriving back from Delete sale or Deshacer shows "Sale deleted · the grams go back to stock"', async () => {
+test('arriving back from Void or Deshacer shows "Sale deleted · the grams go back to stock"', async () => {
   api.mockResolvedValue(jsonResponse(200, []))
   renderVentas({ toast: 'common:saleDeletedGramsBack' })
 
