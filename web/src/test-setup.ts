@@ -18,6 +18,9 @@ configure({ asyncUtilTimeout: ASYNC_UTIL_TIMEOUT })
 // jsdom has no scrolling: it prints "Not implemented" for `window.scrollTo`, which the screens
 // call to come back to their place after Record payment. A test that cares spies on it.
 if (typeof window !== 'undefined') window.scrollTo = () => undefined
+// Nor does it bring an element into view (the Expense form's amount reason does): a test that cares
+// replaces it on the element it watches.
+if (typeof Element !== 'undefined') Element.prototype.scrollIntoView = () => undefined
 
 // Translation keys that were asked for and not found are recorded by `src/i18n/missingKeys.ts`
 // (the instance installs its handler under the test runner). Each test starts with none, and a

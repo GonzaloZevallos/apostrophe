@@ -1,5 +1,6 @@
 {
   "form": {
+    "amountAboveZero": "⟦Ťĥè åṁöûňť ṁûšť ƀè ṁöřè ťĥåň {{amount}}·~·~·~·~·~·⟧",
     "detailsOptional": "⟦Ðèťåìłš (öṗťìöňåł)·~·~·~·⟧",
     "paymentMethod": "⟦Ĥöŵ ýöû ṗåìđ·~·~·⟧",
     "paymentMethodNone": "⟦Ňöňè·~⟧",

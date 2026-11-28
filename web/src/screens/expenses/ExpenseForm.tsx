@@ -40,7 +40,7 @@ import { SheetActions } from '../../components/Sheet'
 import Selector from '../../components/Selector'
 import SinConexion from '../../components/SinConexion'
 import { useViewport } from '../../shell/useViewport'
-import { formatMoneyInput, parseMoneyInput } from '../../format/parse'
+import { amountReason, formatMoneyInput, parseMoneyInput } from '../../format/parse'
 import type { MoneyFormat } from '../../format/money'
 import { useMoney } from '../../format/moneyContext'
 import { EXPENSES_TEXT } from '../../copy/expenses'
@@ -132,12 +132,16 @@ export default function ExpenseForm({
   const { t } = useTranslation()
   const categoryErrorId = useId()
   const methodErrorId = useId()
+  const amountReasonId = useId()
   const categoriesQuery = useQuery({ queryKey: keys.expenseCategories(), queryFn: listCategories })
   const [initial] = useState<FormState>(() => initialForm(target, me.today, money.format))
   const [form, setForm] = useState<FormState>(initial)
   const [categoryError, setCategoryError] = useState<string | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
-  const [amountError, setAmountError] = useState<string | null>(null)
+  // The amount's sentence is never state: it is worked out at render from the text, whether the field
+  // was left, and a server refusal tied to the exact text it refused.
+  const [blurred, setBlurred] = useState(false)
+  const [refusal, setRefusal] = useState<{ text: string; message: string } | null>(null)
   const [methodGone, setMethodGone] = useState<{ id: number; name: string } | null>(null)
   const [offline, setOffline] = useState(false)
   const [sending, setSending] = useState(false)
@@ -185,7 +189,25 @@ export default function ExpenseForm({
   }, [])
 
   const detailTrimmed = form.detail.trim()
-  const canSubmit = form.category_id !== '' && !sending && methodGone === null
+  const reason = amountReason(form.amount, money.format)
+  const amountSentence: { rule: 'tooManyDecimals' | 'notAboveZero' | 'refusal'; text: string } | null =
+    reason === 'tooManyDecimals'
+      ? { rule: 'tooManyDecimals', text: tooManyDecimalsMessage(money.format) }
+      : reason === 'notAboveZero' && blurred
+        ? { rule: 'notAboveZero', text: t('expenses:form.amountAboveZero', { amount: money.money(0) }) }
+        : refusal !== null && refusal.text === form.amount
+          ? { rule: 'refusal', text: refusal.message }
+          : null
+  const amountRule = amountSentence?.rule ?? null
+  const amountReasonRef = useRef<HTMLSpanElement>(null)
+  const amountRef = useRef<HTMLInputElement>(null)
+  // A new sentence is brought into view: the keyboard or the pinned Save may cover it.
+  useEffect(() => {
+    if (amountRule !== null) amountReasonRef.current?.scrollIntoView({ block: 'nearest' })
+  }, [amountRule])
+  // One boolean for the button, its tap and the submit: nothing is sent while the form cannot save.
+  const saveBlocked =
+    form.category_id === '' || sending || methodGone !== null || form.amount.trim() === '' || reason !== null
   const shownAmount = parseMoneyInput(form.amount, money.format)
   const saveLabel =
     shownAmount.ok && shownAmount.value > 0 ? (
@@ -219,16 +241,12 @@ export default function ExpenseForm({
 
   async function onSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault()
+    if (saveBlocked) return
     setFormError(null)
-    setAmountError(null)
     setCategoryError(null)
     setOffline(false)
     const parsedAmount = parseMoneyInput(form.amount, money.format)
-    if (!parsedAmount.ok) {
-      if (parsedAmount.tooManyDecimals) setAmountError(tooManyDecimalsMessage(money.format))
-      else setFormError(GENERIC_REFUSAL)
-      return
-    }
+    if (!parsedAmount.ok) return
     const body: ExpenseInput = {
       spent_on: form.spent_on,
       category_id: Number(form.category_id),
@@ -269,7 +287,7 @@ export default function ExpenseForm({
         invalidateResource(queryClient, 'expenses')
         onGone?.()
       } else if (caught instanceof ApiError && caught.code === AMOUNT_REFUSAL_CODE) {
-        setAmountError(tooManyDecimalsMessage(money.format))
+        setRefusal({ text: form.amount, message: tooManyDecimalsMessage(money.format) })
       } else if (isRefusal(caught)) {
         setFormError(GENERIC_REFUSAL)
       } else {
@@ -311,21 +329,30 @@ export default function ExpenseForm({
     <div className="gasto-form">
       {header}
       <form className="formulario" onSubmit={onSubmit}>
-        <label className="campo">
-          <span className="campo__rotulo">{COMMON_TEXT.amount}</span>
-          <MoneyInput
-            className="campo__input campo__input--monto"
-            autoComplete="off"
-            value={form.amount}
-            onChange={(amount) => setForm((previous) => ({ ...previous, amount }))}
-            required
-          />
-          {amountError !== null && (
-            <span className="campo__error" role="alert">
-              {amountError}
+        <div className="campo">
+          <label className="campo">
+            <span className="campo__rotulo">{COMMON_TEXT.amount}</span>
+            <MoneyInput
+              ref={amountRef}
+              className="campo__input campo__input--monto"
+              autoComplete="off"
+              value={form.amount}
+              onChange={(amount) => {
+                setBlurred(false)
+                setForm((previous) => ({ ...previous, amount }))
+              }}
+              onBlur={() => setBlurred(true)}
+              required
+              aria-describedby={amountSentence === null ? undefined : amountReasonId}
+              aria-invalid={amountSentence === null ? undefined : true}
+            />
+          </label>
+          {amountSentence !== null && (
+            <span key={amountSentence.rule} ref={amountReasonRef} id={amountReasonId} className="campo__error" role="alert">
+              {amountSentence.text}
             </span>
           )}
-        </label>
+        </div>
         <div className="campo">
           <Selector
             required
@@ -421,7 +448,18 @@ export default function ExpenseForm({
           )}
           {offline && <SinConexion />}
           {phone && deleteButton}
-          <Boton textOnly="submit" type="submit" disabled={!canSubmit}>
+          <Boton
+            textOnly="submit"
+            type="submit"
+            ariaDisabled={saveBlocked}
+            onClick={(event) => {
+              if (!saveBlocked) return
+              event.preventDefault()
+              setBlurred(true)
+              // A tap that shows the amount's reason leaves the cursor in the amount, keyboard up.
+              if (reason !== null) amountRef.current?.focus()
+            }}
+          >
             {saveLabel}
           </Boton>
           {!phone && deleteButton}
