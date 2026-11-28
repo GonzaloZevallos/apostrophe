@@ -35,6 +35,7 @@ subgraph src["src"]
       src_screens_clientes_CustomerTypeField_tsx["CustomerTypeField.tsx"]
       src_screens_clientes_CustomerTypeLine_tsx["CustomerTypeLine.tsx"]
       src_screens_clientes_CustomersBehind_tsx["CustomersBehind.tsx"]
+      src_screens_clientes_CustomersTitleRow_tsx["CustomersTitleRow.tsx"]
       src_screens_clientes_DebtorsUnavailable_tsx["DebtorsUnavailable.tsx"]
       src_screens_clientes_OwedSummary_tsx["OwedSummary.tsx"]
       src_screens_clientes_TeDeben_tsx["TeDeben.tsx"]
@@ -265,6 +266,7 @@ src_screens_clientes_ClientesLayout_tsx-->src_screens_clientes_CustomersBehind_t
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_ClienteFila_tsx
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_CustomerSearch_ts
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_CustomerSegments_tsx
+src_screens_clientes_Clientes_tsx-->src_screens_clientes_CustomersTitleRow_tsx
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_DebtorsUnavailable_tsx
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_OwedSummary_tsx
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_TeDeben_tsx
@@ -281,6 +283,7 @@ src_screens_clientes_CustomerFields_tsx-->src_screens_clientes_usePhoneCountryFi
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_ClienteFila_tsx
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_CustomerSearch_ts
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_CustomerSegments_tsx
+src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_CustomersTitleRow_tsx
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_OwedSummary_tsx
 src_screens_clientes_OwedSummary_tsx-->src_screens_clientes_figureCh_ts
 src_screens_clientes_TeDeben_tsx-->src_screens_clientes_ClienteFila_tsx
