@@ -3,7 +3,6 @@
 from app.search.application.ports import CustomerHit, ProductHit, SaleHit
 from app.search.application.search import search
 from app.search.domain.query import SearchQuery
-from app.shared.money import Money
 from app.shared.quantity import Quantity
 
 
@@ -58,7 +57,7 @@ def test_a_short_query_returns_three_empty_lists_and_calls_no_port() -> None:
 
 
 def test_a_normal_query_passes_five_to_each_port_and_returns_their_lists() -> None:
-    customer = CustomerHit(1, "Ana", Money(500))
+    customer = CustomerHit(1, "Ana", 500)
     product = ProductHit(2, "Rose", Quantity(1000))
     sales, customers, products = (
         RecordingSales(),

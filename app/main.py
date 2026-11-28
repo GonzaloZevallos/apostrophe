@@ -80,6 +80,7 @@ from app.products.application.ports import LatestCostedPurchase
 from app.results.adapters.router import router as results_router
 from app.sales.adapters.router import router as sales_router
 from app.sales.adapters.sales_ledger import SqlSalesLedger
+from app.search.adapters.router import router as search_router
 from app.settings import Settings
 from app.shared.copy import CopyCatalog
 from app.shared.language import BusinessLanguage
@@ -392,6 +393,8 @@ def create_app(
     app.include_router(products_router, dependencies=money_upkeep_gated)
     app.include_router(customers_router, dependencies=money_gated)
     app.include_router(phone_countries_router, dependencies=gated)
+    # It answers `MoneyOut`; no upkeep, because reading writes nothing.
+    app.include_router(search_router, dependencies=money_gated)
     # `customer_types` never imports `customers`: the count of customers in a type
     # reaches its router from here (the `CustomersInType` port).
     app.include_router(

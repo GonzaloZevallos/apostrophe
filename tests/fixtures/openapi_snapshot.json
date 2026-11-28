@@ -1047,6 +1047,36 @@
         "title": "CurrentPriceOut",
         "type": "object"
       },
+      "CustomerHitOut": {
+        "properties": {
+          "balance": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "title": "Balance"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "balance"
+        ],
+        "title": "CustomerHitOut",
+        "type": "object"
+      },
       "CustomerIn": {
         "properties": {
           "customer_type_id": {
@@ -3969,6 +3999,29 @@
         "title": "ProductDetailOut",
         "type": "object"
       },
+      "ProductHitOut": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "quantity"
+        ],
+        "title": "ProductHitOut",
+        "type": "object"
+      },
       "ProductIn": {
         "properties": {
           "name": {
@@ -5179,6 +5232,44 @@
           "payment_method"
         ],
         "title": "SaleRefOut",
+        "type": "object"
+      },
+      "SearchOut": {
+        "properties": {
+          "customers": {
+            "items": {
+              "$ref": "#/components/schemas/CustomerHitOut"
+            },
+            "title": "Customers",
+            "type": "array"
+          },
+          "products": {
+            "items": {
+              "$ref": "#/components/schemas/ProductHitOut"
+            },
+            "title": "Products",
+            "type": "array"
+          },
+          "sales": {
+            "items": {
+              "$ref": "#/components/schemas/SearchSaleOut"
+            },
+            "title": "Sales",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sales",
+          "customers",
+          "products"
+        ],
+        "title": "SearchOut",
+        "type": "object"
+      },
+      "SearchSaleOut": {
+        "description": "Placeholder: the Sales group arrives in a later part, and its list is empty.",
+        "properties": {},
+        "title": "SearchSaleOut",
         "type": "object"
       },
       "SessionOut": {
@@ -9770,6 +9861,54 @@
         "summary": "Assign Customer",
         "tags": [
           "sales"
+        ]
+      }
+    },
+    "/search": {
+      "get": {
+        "operationId": "grouped_search_search_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Q",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Grouped Search",
+        "tags": [
+          "search"
         ]
       }
     },

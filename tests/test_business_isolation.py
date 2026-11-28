@@ -500,6 +500,8 @@ LISTS = [p for m, p, _ in OPERATIONS if m == "GET" and "{" not in p and p != "/s
 # The same route with a query that reads other rows: the archived varieties' stock.
 LISTS.append("/stock?archived=true")
 LISTS.append(f"/sales/suggestions?on={SEEDED_ON}")
+# The search route finds rows by a query, so it is read with one that finds A's own.
+LISTS.append(f"/search?q={MARKER}")
 # A non-GET route with no `{` in its path never names a record: the business it acts on
 # can only come from the session. B calling one must never move anything A can see
 # through `LISTS` (a `GET /business` with no path parameter is itself one of `LISTS`,
@@ -595,6 +597,15 @@ def test_every_route_that_takes_a_body_has_an_example() -> None:
 
 def test_there_are_routes_that_name_a_record() -> None:
     assert len(BY_ID) > 0 and len(LISTS) > 0
+
+
+def test_a_search_for_the_marker_returns_the_business_s_own_customer_and_product(
+    business_a: TestClient, seeded: dict[str, int]
+) -> None:
+    found = business_a.get(f"/search?q={MARKER}").json()
+
+    assert any(MARKER in hit["name"] for hit in found["customers"])
+    assert any(MARKER in hit["name"] for hit in found["products"])
 
 
 def _lists_snapshot(business_a: TestClient) -> dict[str, Any]:
