@@ -1,10 +1,11 @@
 import { describe, expect, test } from 'vitest'
 import vectors from './money.vectors.json'
 import type { MoneyFormat } from './money'
-import { formatMoneyInput, moneyInputMode, parseGrams, parseMoneyInput, parseSignedGrams, readMoneyInput } from './parse'
+import { amountReason, formatMoneyInput, moneyInputMode, parseGrams, parseMoneyInput, parseSignedGrams, readMoneyInput } from './parse'
 
 const ZERO: MoneyFormat = { symbol: '$', decimals: 0 }
 const TWO: MoneyFormat = { symbol: 'US$', decimals: 2 }
+const ONE: MoneyFormat = { symbol: '$', decimals: 1 }
 
 describe('parseMoneyInput with 0 decimals (today)', () => {
   test('reads whole pesos with a dot as the thousands separator', () => {
@@ -178,5 +179,30 @@ describe('readMoneyInput after a deletion', () => {
 
   test('typed or pasted text keeps the cents rule', () => {
     expect(readMoneyInput('$ 20.00')).toBe(20)
+  })
+})
+
+describe('amountReason', () => {
+  const rows: ReadonlyArray<readonly [string, MoneyFormat, ReturnType<typeof amountReason>, readonly string[]]> = [
+    ['0 decimals', ZERO, null, ['1000', '1.234', '1.234.567', '', '  ']],
+    ['0 decimals', ZERO, 'tooManyDecimals', ['1,5', '0,5', '0,00', '1,500', '1.5', '12.50', '1.2345']],
+    ['0 decimals', ZERO, 'notAboveZero', ['0', '-5', 'abc', '1.2.3', '1,']],
+    ['0 decimals', ZERO, 'outOfRange', ['123456789012345678']],
+    ['1 decimal', ONE, null, ['1,2', '1.250']],
+    ['1 decimal', ONE, 'tooManyDecimals', ['1,25', '1.25']],
+    ['1 decimal', ONE, 'notAboveZero', ['0,0', '1,', '-5']],
+    ['2 decimals', TWO, null, ['11.5', '11,50', '1.234']],
+    ['2 decimals', TWO, 'tooManyDecimals', ['1,555', '0,000']],
+    ['2 decimals', TWO, 'notAboveZero', ['0,00', '1,', '-5', 'abc']],
+    ['2 decimals', TWO, 'outOfRange', ['123456789012345678', '1234567890123456,00']],
+  ]
+  for (const [name, format, expected, inputs] of rows) {
+    test.each(inputs)(`${name}: %j is ${String(expected)}`, (text) => {
+      expect(amountReason(text, format)).toBe(expected)
+    })
+  }
+
+  test('a negative value of any size is not out of range', () => {
+    expect(amountReason('-123456789012345678', ZERO)).toBe('notAboveZero')
   })
 })

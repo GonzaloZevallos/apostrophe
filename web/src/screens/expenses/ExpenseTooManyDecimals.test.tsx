@@ -2,7 +2,8 @@
  * An amount with more decimals than the business allows, at the screen seam: Testing Library
  * through the real data router with `fetch` faked to answer 422 `money.too_many_decimals`.
  * The fixed copy shows under the amount field, what was typed stays, and the response's
- * `detail` is never shown (ADR-0058, ADR-0008).
+ * `detail` is never shown (ADR-0058, ADR-0008). The form itself refuses more decimals live, so the
+ * server's answer is only the backstop for a value the form accepted.
  */
 
 import { screen } from '@testing-library/react'
@@ -33,7 +34,7 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
-test('a refused amount shows the whole-amounts copy under the field and keeps what was typed', async () => {
+test('a server-refused amount shows the whole-amounts copy under the field and keeps what was typed', async () => {
   stubViewport('phone')
   renderExpenses([EXPENSE_NEW], api())
 
@@ -48,6 +49,33 @@ test('a refused amount shows the whole-amounts copy under the field and keeps wh
   expect(screen.queryByText(DETAIL_FROM_THE_SERVER)).not.toBeInTheDocument()
   expect(screen.getByLabelText(/^Amount/)).toHaveValue('1000')
   expect(screen.getByLabelText('Details (optional)')).toHaveValue('Cinta')
+})
+
+test('the server-refused sentence goes as soon as the amount changes', async () => {
+  stubViewport('phone')
+  renderExpenses([EXPENSE_NEW], api())
+
+  await chooseCategory('Packaging')
+  await userEvent.type(screen.getByLabelText('Amount'), '1000')
+  await userEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('Use whole amounts only.')
+
+  await userEvent.type(screen.getByLabelText('Amount'), '5')
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
+test('typing more decimals than the business keeps shows the reason live, with no tap, and Save cannot be sent', async () => {
+  stubViewport('phone')
+  const fetchImpl = vi.fn(api())
+  renderExpenses([EXPENSE_NEW], fetchImpl)
+
+  await chooseCategory('Packaging')
+  await userEvent.type(screen.getByLabelText('Amount'), '1,5')
+
+  expect(screen.getByRole('alert')).toHaveTextContent('Use whole amounts only.')
+  expect(screen.getByRole('button', { name: /^Save expense/ })).toHaveAttribute('aria-disabled', 'true')
+  await userEvent.click(screen.getByRole('button', { name: /^Save expense/ }))
+  expect(fetchImpl.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(0)
 })
 
 test('the copy names the decimals the business allows when it allows any', () => {

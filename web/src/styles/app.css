@@ -338,7 +338,8 @@ body {
   cursor: pointer;
 }
 
-.boton:disabled {
+.boton:disabled,
+.boton[aria-disabled='true'] {
   opacity: 0.6;
   cursor: default;
 }

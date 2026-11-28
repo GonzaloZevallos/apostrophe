@@ -359,7 +359,7 @@ test("nothing chosen: the field reads its placeholder and the form cannot be sav
   expect(await categoryField()).toHaveTextContent("Pick a category");
   expect(
     screen.getByRole("button", { name: /^Save expense/ }),
-  ).toBeDisabled();
+  ).toHaveAttribute("aria-disabled", "true");
 });
 
 describe.each([

@@ -27,10 +27,14 @@ export type MoneyParse = { ok: true; value: number } | { ok: false; tooManyDecim
 
 const INVALID: MoneyParse = { ok: false, tooManyDecimals: false }
 const TOO_MANY: MoneyParse = { ok: false, tooManyDecimals: true }
+// A shape the parser accepts with a positive value too large to keep exact: refused like any invalid
+// text by `parseMoneyInput`, told apart only by `amountReason`.
+const OUT_OF_RANGE: MoneyParse = { ok: false, tooManyDecimals: false }
 
 function positive(whole: string, fraction: string, decimals: number): MoneyParse {
   const value = Number(fraction === '' ? whole : `${whole}.${fraction}`)
-  if (!Number.isSafeInteger(Math.round(value * 10 ** decimals)) || value <= 0) return INVALID
+  if (value <= 0) return INVALID
+  if (!Number.isSafeInteger(Math.round(value * 10 ** decimals))) return OUT_OF_RANGE
   return { ok: true, value }
 }
 
@@ -41,6 +45,11 @@ function positive(whole: string, fraction: string, decimals: number): MoneyParse
  * digits than the business keeps is refused as `tooManyDecimals`; a dot after the comma is invalid.
  * Zero and negatives are refused. The server's `money_within` stays the authority. */
 export function parseMoneyInput(input: string, format: MoneyFormat): MoneyParse {
+  const parsed = readMoney(input, format)
+  return parsed === OUT_OF_RANGE ? INVALID : parsed
+}
+
+function readMoney(input: string, format: MoneyFormat): MoneyParse {
   const text = input.trim()
   const { decimals } = format
   if (decimals === 0) {
@@ -62,6 +71,34 @@ export function parseMoneyInput(input: string, format: MoneyFormat): MoneyParse 
   const [, whole = '', fraction = ''] = split
   if (fraction.length > decimals) return TOO_MANY
   return positive(whole, fraction, decimals)
+}
+
+/** The rule a typed amount breaks, for the one sentence an amount field shows under itself. */
+export type AmountReason = 'tooManyDecimals' | 'notAboveZero' | 'outOfRange'
+
+// With 0 decimals: a whole part (dot-grouped or plain), a comma, then digits.
+const COMMA_FRACTION_RE = /^(\d{1,3}(\.\d{3})+|\d+),\d+$/
+
+/** Which rule an amount the form cannot send breaks, or `null` when the text is empty or valid.
+ * Built on `parseMoneyInput` and agreeing with it on what is valid. With 0 decimals it also
+ * judges by the shape of the text, whatever its value: a comma and digits, or one dot not
+ * followed by exactly three digits, is someone typing decimals. `outOfRange` is a positive
+ * value of an accepted shape that is too large to keep exact; anything else is `notAboveZero`. */
+export function amountReason(text: string, format: MoneyFormat): AmountReason | null {
+  const trimmed = text.trim()
+  if (trimmed === '') return null
+  const parsed = readMoney(trimmed, format)
+  if (parsed.ok) return null
+  if (parsed.tooManyDecimals) return 'tooManyDecimals'
+  if (format.decimals === 0 && typedDecimals(trimmed)) return 'tooManyDecimals'
+  if (parsed === OUT_OF_RANGE) return 'outOfRange'
+  return 'notAboveZero'
+}
+
+function typedDecimals(text: string): boolean {
+  if (COMMA_FRACTION_RE.test(text)) return true
+  const split = DOT_FRACTION_RE.exec(text)
+  return split !== null && !GROUPED_RE.test(text) && split[2]?.length !== 3
 }
 
 /** The keyboard an amount field opens: digits only while the business keeps no decimals, one that

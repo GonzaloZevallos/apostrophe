@@ -142,7 +142,7 @@ test.each(['payment_method.unavailable', 'payment_method.not_found'])(
     // The refused method is the stored one: the field keeps its stored label, marked.
     expect(screen.getByRole('button', { name: /^How you paid/ })).toHaveTextContent('Nequi')
     expect(screen.getByRole('button', { name: /^How you paid/ })).toHaveTextContent('no longer available')
-    expect(screen.getByRole('button', { name: /^Save expense/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /^Save expense/ })).toHaveAttribute('aria-disabled', 'true')
     expect(screen.getByRole('dialog')).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: /^How you paid/ }))
