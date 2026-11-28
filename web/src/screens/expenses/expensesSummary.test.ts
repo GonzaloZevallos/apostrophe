@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import type { Expense, MonthlyView } from '../../api/expenses'
-import { expenseOrder, mutedLine, shortAmount, summarize } from './expensesSummary'
+import { expenseOrder, latestExpenses, mutedLine, shortAmount, summarize } from './expensesSummary'
 
 /** A month view from flat `id, name, subtotal` triples. */
 function viewOf(...cells: (number | string)[]): MonthlyView {
@@ -78,7 +78,96 @@ describe('summarize', () => {
   ]
 
   test.each(rows)('%s', (_name, view, decimals, total, segments) => {
-    expect(summarize(view, decimals)).toEqual({ total, segments })
+    const summary = summarize(view, decimals)
+    const fields = summary.segments.map(({ key, name, amount, percent, colorIndex }) => ({ key, name, amount, percent, colorIndex }))
+    expect({ total: summary.total, segments: fields }).toEqual({ total, segments })
+  })
+
+  test.each(rows)('%s: the shares sum to 1 within 1e-9', (_name, view, decimals) => {
+    const { segments } = summarize(view, decimals)
+    if (segments.length === 0) return
+    expect(Math.abs(segments.reduce((sum, segment) => sum + segment.share, 0) - 1)).toBeLessThan(1e-9)
+  })
+})
+
+describe('summarize: share and short', () => {
+  const shares = (view: MonthlyView, decimals: number) =>
+    summarize(view, decimals).segments.map(({ key, share, short }) => ({ key, share, short }))
+
+  test('a single category has share 1', () => {
+    expect(shares(viewOf(1, 'Rent', 1234), 0)).toEqual([{ key: 1, share: 1, short: { unit: 'thousand', value: 1 } }])
+  })
+
+  test('the share is the exact fraction, never adjusted', () => {
+    expect(shares(viewOf(1, 'A', 1, 2, 'B', 1, 3, 'C', 1), 0).map((segment) => segment.share)).toEqual([1 / 3, 1 / 3, 1 / 3])
+    expect(shares(viewOf(1, 'Rent', 141, 2, 'Tea', 59), 0).map((segment) => segment.share)).toEqual([0.705, 0.295])
+  })
+
+  test('Others carries the share and short amount of the summed rest', () => {
+    const view = viewOf(1, 'A', 5000, 2, 'B', 3000, 3, 'C', 1500, 4, 'D', 400, 5, 'E', 100)
+    const others = summarize(view, 0).segments.find((segment) => segment.key === 'others')
+    expect(others?.share).toBe(500 / 10000)
+    expect(others?.short).toEqual({ unit: 'none', value: 500 })
+    expect(others?.percent).toBe(5)
+  })
+
+  test('every segment reads its own short amount', () => {
+    const view = viewOf(1, 'A', 1500000, 2, 'B', 2500, 3, 'C', 40)
+    expect(shares(view, 0).map((segment) => segment.short)).toEqual([
+      { unit: 'million', value: 15 },
+      { unit: 'thousand', value: 3 },
+      { unit: 'none', value: 40 },
+    ])
+  })
+
+  test('with 2 decimals the short amount and the share come from the same minor units', () => {
+    const view = viewOf(1, 'A', 999.5, 2, 'B', 0.5)
+    expect(shares(view, 2)).toEqual([
+      { key: 1, share: 99950 / 100000, short: { unit: 'none', value: 999.5 } },
+      { key: 2, share: 50 / 100000, short: { unit: 'none', value: 0.5 } },
+    ])
+  })
+
+  test('a tie keeps equal shares in rank order', () => {
+    expect(shares(viewOf(1, 'alpha', 50, 2, 'Zeta', 50), 0).map((segment) => [segment.key, segment.share])).toEqual([
+      [2, 0.5],
+      [1, 0.5],
+    ])
+  })
+})
+
+describe('latestExpenses', () => {
+  const category = (id: number, name: string, expenses: Expense[]): MonthlyView['categories'][number] => ({
+    id,
+    name,
+    subtotal: expenses.length,
+    expenses,
+  })
+  const view = (...categories: MonthlyView['categories']): MonthlyView => ({ month: '2026-11', total: 0, categories })
+
+  test('orders newest date first, then the higher id, across categories', () => {
+    const rows = latestExpenses(
+      view(
+        category(1, 'Rent', [expense(1, '2026-11-01'), expense(5, '2026-11-20')]),
+        category(2, 'Tea', [expense(3, '2026-11-20'), expense(9, '2026-10-30')]),
+      ),
+    )
+    expect(rows.map((row) => [row.expense.id, row.categoryName])).toEqual([
+      [5, 'Rent'],
+      [3, 'Tea'],
+      [1, 'Rent'],
+      [9, 'Tea'],
+    ])
+  })
+
+  test('equal dates with different ids put the higher id first', () => {
+    const rows = latestExpenses(view(category(1, 'Rent', [expense(2, '2026-11-20'), expense(7, '2026-11-20')])))
+    expect(rows.map((row) => row.expense.id)).toEqual([7, 2])
+  })
+
+  test('is empty for a month with no expenses', () => {
+    expect(latestExpenses(view(category(1, 'Rent', [])))).toEqual([])
+    expect(latestExpenses(view())).toEqual([])
   })
 })
 

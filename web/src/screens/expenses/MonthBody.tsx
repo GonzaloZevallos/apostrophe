@@ -8,6 +8,7 @@ import type { Expense, MonthlyView } from '../../api/expenses'
 import { formatDate } from '../../format/dates'
 import { useMoney } from '../../format/moneyContext'
 import { EXPENSES_TEXT } from '../../copy/expenses'
+import { latestExpenses, type LatestRow } from './expensesSummary'
 
 function countLine(expenses: number, categories: number): string {
   const spent = expenses === 1 ? EXPENSES_TEXT.expenseOne : EXPENSES_TEXT.expenseMany(expenses)
@@ -59,27 +60,55 @@ function ExpenseRow({ expense, categoryName, today, onEdit }: ExpenseRowProps) {
   )
 }
 
+export interface MonthTotalProps {
+  total: number
+  expenseCount: number
+  categoryCount: number
+  /** False hides the count line. */
+  withCount?: boolean
+}
+
+/** The month's total, with the line that counts its expenses and categories when there are any. */
+export function MonthTotal({ total, expenseCount, categoryCount, withCount = true }: MonthTotalProps) {
+  const money = useMoney()
+  return (
+    <div className="gastos__total">
+      <span className="rotulo">{EXPENSES_TEXT.youSpentThisMonth}</span>
+      <span className="cifra-xl">{money.money(total)}</span>
+      {withCount && expenseCount > 0 && (
+        <span className="gastos__conteo">{countLine(expenseCount, categoryCount)}</span>
+      )}
+    </div>
+  )
+}
+
+export interface LatestSectionProps {
+  latest: readonly LatestRow[]
+  today: string
+  onEdit?: (expense: Expense) => void
+}
+
+/** The "Latest" block: one row per expense, in the order given. Nothing when there are none. */
+export function LatestSection({ latest, today, onEdit }: LatestSectionProps) {
+  if (latest.length === 0) return null
+  return (
+    <div className="gastos__ultimos">
+      <span className="gastos__seccion">{EXPENSES_TEXT.latest}</span>
+      {latest.map(({ expense, categoryName }) => (
+        <ExpenseRow key={expense.id} expense={expense} categoryName={categoryName} today={today} onEdit={onEdit} />
+      ))}
+    </div>
+  )
+}
+
 export default function MonthBody({ view, today, onEdit }: MonthBodyProps) {
   const money = useMoney()
-  const latest = view.categories
-    .flatMap((category) => category.expenses.map((expense) => ({ expense, categoryName: category.name })))
-    // ISO dates (YYYY-MM-DD) order as text; `<` and `>` do not read the device locale.
-    .sort((a, b) => {
-      if (b.expense.spent_on < a.expense.spent_on) return -1
-      if (b.expense.spent_on > a.expense.spent_on) return 1
-      return b.expense.id - a.expense.id
-    })
+  const latest = latestExpenses(view)
 
   return (
     <>
       <div className="gastos__resumen">
-        <div className="gastos__total">
-          <span className="rotulo">{EXPENSES_TEXT.youSpentThisMonth}</span>
-          <span className="cifra-xl">{money.money(view.total)}</span>
-          {latest.length > 0 && (
-            <span className="gastos__conteo">{countLine(latest.length, view.categories.length)}</span>
-          )}
-        </div>
+        <MonthTotal total={view.total} expenseCount={latest.length} categoryCount={view.categories.length} />
         {view.categories.length > 0 && (
           <>
             <span className="gastos__seccion">{EXPENSES_TEXT.byCategory}</span>
@@ -102,20 +131,7 @@ export default function MonthBody({ view, today, onEdit }: MonthBodyProps) {
           </>
         )}
       </div>
-      {latest.length > 0 && (
-        <div className="gastos__ultimos">
-          <span className="gastos__seccion">{EXPENSES_TEXT.latest}</span>
-          {latest.map(({ expense, categoryName }) => (
-            <ExpenseRow
-              key={expense.id}
-              expense={expense}
-              categoryName={categoryName}
-              today={today}
-              onEdit={onEdit}
-            />
-          ))}
-        </div>
-      )}
+      <LatestSection latest={latest} today={today} onEdit={onEdit} />
     </>
   )
 }

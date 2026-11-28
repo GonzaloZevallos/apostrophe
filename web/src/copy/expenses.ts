@@ -64,6 +64,7 @@ export const EXPENSES_TEXT = {
   millionSuffix: 'M',
   barLabel: (segments: string) => `Spending by category: ${segments}`,
   barSegment: (name: string, percent: string | number) => `${name} ${percent}%`,
+  barSegmentSeparator: ', ',
   today: 'today',
   /** Short weekdays, index 0 = Monday (the order `relativeDay` returns). */
   weekdaysShort: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],

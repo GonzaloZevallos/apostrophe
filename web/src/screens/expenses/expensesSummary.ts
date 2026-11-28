@@ -19,6 +19,10 @@ export interface Segment {
   amount: number
   /** Whole percent of the month, rounded half up. Never adjusted to sum to 100. */
   percent: number
+  /** The exact fraction of the month, `minor / total`. Never adjusted, so every share of a month sums to 1. */
+  share: number
+  /** The amount as a short figure, from `shortAmount` at the Business's decimals. */
+  short: ShortAmount
   colorIndex: ColorIndex
 }
 
@@ -54,6 +58,28 @@ function percentOf(minor: number, total: number): number {
   return Math.floor((200 * minor + total) / (2 * total))
 }
 
+/** The one constructor of a `Segment`: the top three and Others alike, so amount, percent, share and
+ * short amount always come from the same `minor` and `total`. */
+function segmentOf(
+  key: Segment['key'],
+  name: string | null,
+  minor: number,
+  total: number,
+  unit: number,
+  colorIndex: ColorIndex,
+  decimals: number,
+): Segment {
+  return {
+    key,
+    name,
+    amount: minor / unit,
+    percent: percentOf(minor, total),
+    share: minor / total,
+    short: shortAmount(minor / unit, decimals),
+    colorIndex,
+  }
+}
+
 /** The month's category segments: zeros dropped, ranked by amount, the top three coloured and the
  * rest summed into Others. The total is the sum of the converted subtotals; `view.total` is not read. */
 export function summarize(view: MonthlyView, decimals: number): Summary {
@@ -64,17 +90,15 @@ export function summarize(view: MonthlyView, decimals: number): Summary {
   const total = ranked.reduce((sum, category) => sum + category.minor, 0)
   if (total === 0) return { total: 0, segments: [] }
   const unit = 10 ** decimals
-  const segments: Segment[] = ranked.slice(0, TOP).map((category, index) => ({
-    key: category.id,
-    name: category.name,
-    amount: category.minor / unit,
-    percent: percentOf(category.minor, total),
-    colorIndex: COLORS[index] ?? 'others',
-  }))
+  const segments: Segment[] = ranked
+    .slice(0, TOP)
+    .map((category, index) =>
+      segmentOf(category.id, category.name, category.minor, total, unit, COLORS[index] ?? 'others', decimals),
+    )
   const rest = ranked.slice(TOP)
   if (rest.length > 0) {
     const others = rest.reduce((sum, category) => sum + category.minor, 0)
-    segments.push({ key: 'others', name: null, amount: others / unit, percent: percentOf(others, total), colorIndex: 'others' })
+    segments.push(segmentOf('others', null, others, total, unit, 'others', decimals))
   }
   return { total: total / unit, segments }
 }
@@ -104,6 +128,18 @@ export function shortAmount(amount: number, decimals: number): ShortAmount {
 export function expenseOrder(a: Expense, b: Expense): number {
   if (a.spent_on !== b.spent_on) return a.spent_on < b.spent_on ? 1 : -1
   return b.id - a.id
+}
+
+export interface LatestRow {
+  expense: Expense
+  categoryName: string
+}
+
+/** Every expense of the month, newest first, each with its category's name: the "Latest" list. */
+export function latestExpenses(view: MonthlyView): LatestRow[] {
+  return view.categories
+    .flatMap((category) => category.expenses.map((expense) => ({ expense, categoryName: category.name })))
+    .sort((a, b) => expenseOrder(a.expense, b.expense))
 }
 
 export type MutedPart =

@@ -55,7 +55,7 @@ function digitsOf(amount: MoneyAmount): { negative: boolean; whole: string; frac
 }
 
 /** Dots between thousands, from four digits up, by hand. */
-function grouped(whole: string): string {
+export function groupThousands(whole: string): string {
   const groups: string[] = []
   let rest = whole
   while (rest.length > 3) {
@@ -82,7 +82,7 @@ function figureOf(amount: MoneyAmount, decimals: number): { negative: boolean; f
   const text = scaled.join('').padStart(decimals + 1, '0')
   const wholeText = text.slice(0, text.length - decimals).replace(/^0+(?=\d)/, '')
   const decimalText = decimals === 0 ? '' : `,${text.slice(text.length - decimals)}`
-  return { negative: negative && /[1-9]/.test(text), figure: `${grouped(wholeText)}${decimalText}` }
+  return { negative: negative && /[1-9]/.test(text), figure: `${groupThousands(wholeText)}${decimalText}` }
 }
 
 function escapedForRegExp(text: string): string {
