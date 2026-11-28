@@ -444,3 +444,92 @@ describe('comparisons.mjs exit status and capture', () => {
     expect(output).toMatch(/EISDIR/)
   }, CENSUS_TEST_MS)
 })
+
+// A row marked `no_design` is kept as a capture of the built screen only: its design side is never
+// taken, there is no sheet, and it is reported as `not compared: no design`. Each case runs on a fixture
+// registry whose rows are real rows of the registry with the mark.
+describe('comparisons.mjs rows with no design', () => {
+  const NO_DESIGN = 'shot: no design (design)'
+  type Row = Record<string, unknown> & { screen: string }
+  const real = (): Row[] => (JSON.parse(readFileSync(REGISTRY, 'utf-8')) as { screens: Row[] }).screens
+  const rowOf = (name: string): Row => {
+    const row = real().find((candidate) => candidate.screen === name)
+    if (!row) throw new Error(`no row ${name}`)
+    return row
+  }
+  // The row as a built-capture-only one: the drawing's keys go, the mark comes.
+  const marked = (name: string, extra: Partial<Row> = {}): Row => {
+    const { design: _design, section: _section, design_viewport: _viewport, ...rest } = rowOf(name)
+    return { ...rest, no_design: true, ...extra }
+  }
+  const registryOf = (name: string, rows: Row[]): string => {
+    const path = join(dir, `${name}.registry.json`)
+    writeFileSync(path, JSON.stringify({ screens: rows }))
+    return path
+  }
+  const whole = async (name: string, rows: Row[], joinToken = 'j'): Promise<Run> => {
+    const out = join(dir, name)
+    const { status, output } = await spawnScript([
+      '--facts', writeFacts(name, joinToken), '--out', out, '--step-timeout', String(CENSUS_STEP_MS),
+      '--strict', '--registry', registryOf(name, rows),
+    ])
+    return { entries: JSON.parse(readFileSync(join(out, 'index.json'), 'utf-8')), status, output }
+  }
+
+  it('with --only, takes the built side alone, writes no sheet and no design image, and counts the row', async () => {
+    const registry = registryOf('nd-only', [marked('NegocioNuevo')])
+    const { entries, status, output } = await run('nd-only', 'NegocioNuevo', ['--strict', '--registry', registry])
+    expect(status, output).toBe(0)
+    expect(readdirSync(join(dir, 'nd-only')).sort()).toEqual(['NegocioNuevo.built.png', 'index.json'])
+    const [entry] = entries as [Entry]
+    expect(entry).toMatchObject({ screen: 'NegocioNuevo', file: null, design: null, capture: 'captured' })
+    expect(entry.built).toBe(join(dir, 'nd-only', 'NegocioNuevo.built.png'))
+    expect(entry.reasons).toEqual({ design: NO_DESIGN })
+    expect(entry.notes).toContain('sin diseño')
+    expect(output).toContain('not compared: no design: 1 rows')
+  }, CENSUS_TEST_MS)
+
+  it('fails --strict, with --only, when its built side cannot be captured', async () => {
+    const registry = registryOf('nd-miss', [marked('Invitacion')])
+    const { entries, status, output } = await run('nd-miss', 'Invitacion', ['--strict', '--registry', registry], 'never')
+    expect(status, output).toBe(1)
+    const [entry] = entries as [Entry]
+    expect(entry).toMatchObject({ file: null, design: null, built: null, capture: 'not-captured' })
+    expect(entry.reasons).toEqual({ design: NO_DESIGN, built: 'shot: did not settle (built)' })
+    expect(output).toContain('comparisons: --strict and a row is not captured')
+    expect(output).toContain('not compared: no design: 1 rows')
+  }, CENSUS_TEST_MS)
+
+  it('fails --strict over the whole registry when its built side cannot be captured', async () => {
+    const { status, output } = await whole('nd-whole-miss', [marked('Invitacion')], 'never')
+    expect(status, output).toBe(1)
+    expect(output).toContain('comparisons: --strict and a row is not captured')
+  }, CENSUS_TEST_MS)
+
+  it('passes --strict over the whole registry when its built side is captured, beside a row with no built screen', async () => {
+    const noRoute = marked('Reset', { route: null })
+    const { entries, status, output } = await whole('nd-whole-ok', [noRoute, marked('NegocioNuevo')])
+    expect(status, output).toBe(0)
+    // The row with no route is counted once, as not built; it is not also a row with no design.
+    expect(output).toContain('not compared: no built screen: 1 rows')
+    expect(output).toContain('not compared: no design: 1 rows')
+    const unbuilt = entries.find((e) => e.screen === 'Reset')
+    expect(unbuilt).toMatchObject({ file: null, design: null, built: null, capture: 'not-captured' })
+    expect(unbuilt?.reasons).toEqual({ built: 'shot: no built screen yet (built)', design: NO_DESIGN })
+    expect(entries.find((e) => e.screen === 'NegocioNuevo')?.capture).toBe('captured')
+  }, CENSUS_TEST_MS)
+
+  it('gives, under --built-only, the entry of a row that is not marked', async () => {
+    const registry = registryOf('nd-built-only', [marked('NegocioNuevo')])
+    const withMark = await run('nd-built-only', 'NegocioNuevo', ['--built-only', '--strict', '--registry', registry])
+    const without = await run('nd-built-only-plain', 'NegocioNuevo', ['--built-only', '--strict'])
+    expect(withMark.status, withMark.output).toBe(0)
+    expect(withMark.output).not.toContain('not compared: no design')
+    const [marks] = withMark.entries as [Entry]
+    const [plain] = without.entries as [Entry]
+    expect(marks.reasons).toBeUndefined()
+    // The entries differ only by the directory each run wrote to.
+    const named = (entry: Entry, out: string): string => JSON.stringify(entry).replaceAll(join(dir, out), '<out>')
+    expect(named(marks, 'nd-built-only')).toBe(named(plain, 'nd-built-only-plain'))
+  }, CENSUS_TEST_MS)
+})

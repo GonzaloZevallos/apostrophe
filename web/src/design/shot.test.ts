@@ -5,6 +5,7 @@ import {
   CALM_CONTEXT,
   CALM_CSS,
   CAPTURE_SCALE,
+  NO_DESIGN,
   PROBE_CSS,
   captureContextOptions,
   censusClass,
@@ -1081,6 +1082,13 @@ describe('named', () => {
     expect(named('no built screen yet', 'built')).toBe('shot: no built screen yet (built)')
     expect(() => named('Nueva venta 12', 'built')).toThrow('shot: a reason outside the fixed table')
     expect(() => named('did not settle', 'both' as 'built')).toThrow('shot: a reason outside the fixed table')
+  })
+
+  it('has the no design reason, for the design side only', () => {
+    expect(NO_DESIGN).toBe('shot: no design (design)')
+    expect(NO_DESIGN).toBe(named('no design', 'design'))
+    expect(shotReason(NO_DESIGN, 'design')).toBe(NO_DESIGN)
+    expect(shotReason(NO_DESIGN, 'built')).toBe('shot: could not take the shot (built)')
   })
 })
 

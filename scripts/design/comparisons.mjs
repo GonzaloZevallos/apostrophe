@@ -50,6 +50,13 @@
 // `<screen>.built.png` and `index.json`. Each entry keeps its shape; its `design` and `file` are null and
 // `capture` says whether the built PNG exists. Without it everything runs as before.
 //
+// A row with `no_design: true` (`designOf` is null; docs/product/design-capture.md) is kept as a capture of the
+// built screen only: unless `--built-only` is given, its design side and its sheet are never taken, its entry has
+// `file` and `design` null, the note `sin diseño` and `reasons.design` equal to `NO_DESIGN`, and it is captured
+// when its built PNG exists, as a `--built-only` row is. The summary counts it as `not compared: no design`, with
+// `--only` or without, and `--strict` fails it only through its built side. A row that is also `route: null` is
+// counted only as `not compared: no built screen`. Under `--built-only` the mark changes nothing.
+//
 // `--step-timeout <ms>` (an integer of at least 1; default 8000) is the wall-clock bound of one
 // step of a capture. It bounds `withinTimeout` and the built page's Playwright default; the design
 // page's default is the larger of 30000 and it. The settle bounds count frames and do not change.
@@ -59,7 +66,7 @@ import { mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
-import { assertAccountKinds, assertScreens, assertSelectedAccounts, assertSelectedNeeds, viewportsOf } from './screens.mjs'
+import { assertAccountKinds, assertScreens, assertSelectedAccounts, assertSelectedNeeds, designOf, viewportsOf } from './screens.mjs'
 import { pngCssWidth, sheetHtml } from './sheet.mjs'
 import { FONT_FAMILIES, fontCss, fontRoute } from './fonts.mjs'
 import { applyInPage } from './textScale.mjs'
@@ -76,7 +83,17 @@ import {
   retrySummary,
   sideOutcome,
 } from './settle.mjs'
-import { BUILT_DEVICE_PINS, CAPTURE_SCALE, captureContextOptions, launchOptions, named, rowCapture, shotReason, staleFiles } from './shot.mjs'
+import {
+  BUILT_DEVICE_PINS,
+  CAPTURE_SCALE,
+  NO_DESIGN,
+  captureContextOptions,
+  launchOptions,
+  named,
+  rowCapture,
+  shotReason,
+  staleFiles,
+} from './shot.mjs'
 import {
   addProbe,
   configureShot,
@@ -257,9 +274,6 @@ async function applyTextScale(page, s, side, ofFirstText) {
   if (miss) return { reason: miss, kind: 'other' }
   return settleKinded(page, { advanceMs: SETTLE_ADVANCE_MS, ofFirstText })
 }
-
-// The design file an entry is compared against: `design`, else the entry's own name.
-const designOf = (s) => s.design ?? s.screen
 
 // Whether the attempt's page sent any request other than a read, set before the page navigates. The
 // built login goes through `context.request` before the page exists, so it is not counted here.
@@ -480,10 +494,16 @@ let retriedAttempts = 0
 // registry (no `--only`) they are `not compared: no built screen`, not a failure of `--strict`; a row
 // asked for by name with `--only` is still one (GH-601, human decision).
 const unbuilt = new Set()
+// The rows with a built screen and no design (`no_design`) that this run went over, `--only` included.
+const noDesign = new Set()
 try {
   for (const s of screens) {
     if (only && !only.has(s.screen)) continue
     if (s.route === null) unbuilt.add(s.screen)
+    // Only the design side is skipped; `--built-only` already skips it and keeps its output as it is.
+    const withoutDesign = !builtOnly && designOf(s) === null
+    if (withoutDesign && s.route !== null) noDesign.add(s.screen)
+    const builtStandsIn = builtOnly || withoutDesign
     // Each side has its own context options: the design side's size is `design_viewport` when the
     // row has one, the built side's is always `viewport ?? PHONE` (screens.mjs, `viewportsOf`).
     const sizes = viewportsOf(s)
@@ -498,7 +518,8 @@ try {
     // What each side recorded: a path only once its PNG write has returned, else a fixed reason.
     const sides = { design: { path: null, reason: null }, built: { path: null, reason: null } }
     try {
-      const design = builtOnly
+      if (withoutDesign) notes.push('sin diseño')
+      const design = builtStandsIn
         ? { png: null, reason: null }
         : await attempt(
             'el diseño',
@@ -530,7 +551,7 @@ try {
         writeFileSync(path, built.png)
         entry.built = sides.built.path = path
       }
-      if (!builtOnly) {
+      if (!builtStandsIn) {
         const file = join(out, `${s.screen}.png`)
         await composeSheet(browser, s, sizes.design[0], sizes.built[0], design.png, built.png, notes, file)
         entry.file = file
@@ -539,11 +560,12 @@ try {
       fail(ctx, `la pantalla falló: ${firstLine(error)}`)
     }
     // A side with no path and no reason threw before it could record one.
-    for (const side of builtOnly ? ['built'] : ['design', 'built']) {
+    for (const side of builtStandsIn ? ['built'] : ['design', 'built']) {
       if (sides[side].path === null && !sides[side].reason) sides[side].reason = named('could not take the shot', side)
     }
-    // A built-only row is captured when its built PNG exists: the design side is not asked for.
-    Object.assign(entry, rowCapture(builtOnly ? { design: { path: sides.built.path, reason: null }, built: sides.built } : sides))
+    // A built-only row, and a row with no design, is captured when its built PNG exists: the design side is not asked for.
+    Object.assign(entry, rowCapture(builtStandsIn ? { design: { path: sides.built.path, reason: null }, built: sides.built } : sides))
+    if (withoutDesign) entry.reasons = { ...entry.reasons, design: NO_DESIGN }
     if (ctx.census) {
       const censusSides = Object.entries(ctx.census).filter(
         ([, side]) => side !== null && Object.keys(side.record).length > 0,
@@ -573,6 +595,8 @@ console.log(retrySummary(retriedRows, retriedAttempts))
 // failed capture and a design side that failed (`failed`) all still fail `--strict`.
 const excused = only ? [] : results.filter((e) => e.capture === 'not-captured' && unbuilt.has(e.screen))
 if (excused.length) console.log(`not compared: no built screen: ${excused.length} rows`)
+// Never a pass: a row with no design is only counted here, and `--strict` below still reads its built side.
+if (noDesign.size) console.log(`not compared: no design: ${noDesign.size} rows`)
 // `--strict`, after the index is written: any failed capture or any row not captured exits 1.
 if (values.strict && (failed || results.some((e) => e.capture === 'not-captured' && !excused.includes(e)))) {
   console.error('comparisons: --strict and a row is not captured, or a capture failed (a side that did not settle or could not be reached, a font, a screen that threw, or a screen not built yet)')

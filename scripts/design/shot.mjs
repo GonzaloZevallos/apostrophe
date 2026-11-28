@@ -327,6 +327,7 @@ const WHATS = new Set([
   'device scale factor is not a whole number',
   'the page changed while it was shot',
   'the page scrolls inside an element',
+  'no design',
 ])
 const SIDES = ['design', 'built']
 
@@ -334,6 +335,10 @@ export function named(what, side) {
   if (!WHATS.has(what) || !SIDES.includes(side)) throw new Error('shot: a reason outside the fixed table')
   return `shot: ${what} (${side})`
 }
+
+// Why a `no_design` row has no design side: the row is kept as a capture of the built screen only
+// (`screens.mjs`, `designOf`). Shared by `comparisons.mjs`, which writes it, and `ae.mjs`, which reads it.
+export const NO_DESIGN = named('no design', 'design')
 
 // The fixed reason a failed side records in `index.json`, by exact membership and never by prefix:
 // a line of the table for this side stays as it is; the settle's two reasons are `did not settle`;

@@ -8,6 +8,7 @@ import {
   assertSelectedAccounts,
   assertSelectedNeeds,
   captureSelection,
+  designOf,
   screenImageRows,
   sectionOccurrences,
 } from '../../../scripts/design/screens.mjs'
@@ -1475,5 +1476,94 @@ describe('the screen image rows', () => {
     const included = new Set(names(screenImageRows(real)))
     expect(included.size).toBeGreaterThan(0)
     expect(captureSelection(real).length).toBeGreaterThanOrEqual(included.size)
+  })
+})
+
+describe('the no_design mark', () => {
+  const pantallasWith = (...files: string[]): string => {
+    const dir = mkdtempSync(join(tmpdir(), 'pantallas-'))
+    for (const file of files) writeFileSync(join(dir, `${file}.dc.html`), '<p>Etiqueta</p>')
+    return dir
+  }
+
+  describe('assertScreens', () => {
+    it('accepts a no_design row with no file, and still refuses a missing file for any other row', () => {
+      const dir = pantallasWith('Inicio')
+      expect(() => assertScreens([{ screen: 'SinDibujo', no_design: true }], dir)).not.toThrow()
+      expect(() => assertScreens([{ screen: 'SinDibujo', section: 'Etiqueta' }], dir)).toThrow(
+        /^SinDibujo: design SinDibujo has no pantallas\/SinDibujo\.dc\.html$/,
+      )
+      expect(() => assertScreens([{ screen: 'SinDibujo', design: 'Inicio' }], dir)).not.toThrow()
+      expect(() => assertScreens([{ screen: 'Otra', design: 'Falta' }], dir)).toThrow(
+        /^Otra: design Falta has no pantallas\/Falta\.dc\.html$/,
+      )
+    })
+
+    it.each([
+      ['design', { design: 'Inicio' }],
+      ['section', { section: 'Etiqueta' }],
+      ['design_viewport', { design_viewport: [390, 844] }],
+    ])('refuses no_design together with %s', (key, extra) => {
+      const dir = pantallasWith('Inicio')
+      expect(() => assertScreens([{ screen: 'SinDibujo', no_design: true, ...extra }], dir)).toThrow(
+        new Error(`SinDibujo: no_design cannot be used with ${key}`),
+      )
+    })
+
+    it.each([[false], ['yes'], [1], [null]])('refuses no_design that is not true: %j', (value) => {
+      expect(() => assertScreens([{ screen: 'SinDibujo', no_design: value }], pantallasWith())).toThrow(
+        new Error('SinDibujo: no_design must be true'),
+      )
+    })
+
+    it('keeps the dark twin rule for a no_design row: tema is required, and with it no drawing is needed', () => {
+      const dir = pantallasWith()
+      expect(() => assertScreens([{ screen: 'SinDibujoOscuro', no_design: true }], dir)).toThrow(
+        /^SinDibujoOscuro: a dark twin must carry tema: 'oscuro'$/,
+      )
+      expect(() => assertScreens([{ screen: 'SinDibujoOscuro', no_design: true, tema: 'oscuro' }], dir)).not.toThrow()
+    })
+
+    it('refuses a no_design Onboarding computer entry, which must name a design', () => {
+      expect(() => assertScreens([{ screen: 'OnboardingStockCompu', no_design: true }], pantallasWith())).toThrow(
+        /^OnboardingStockCompu: an Onboarding computer entry must name the phone design it reuses$/,
+      )
+    })
+  })
+
+  describe('designOf', () => {
+    it('returns null for a no_design row, whatever its screen is', () => {
+      expect(designOf({ screen: 'Inicio', no_design: true })).toBeNull()
+    })
+
+    it('returns design, else screen, for any other row', () => {
+      expect(designOf({ screen: 'InicioCompu', design: 'Inicio' })).toBe('Inicio')
+      expect(designOf({ screen: 'Inicio' })).toBe('Inicio')
+    })
+  })
+
+  describe('assertSelectedAccounts', () => {
+    it('never treats a no_design row as reaching Listo', () => {
+      const kinds = { inicio: 'ended', listo: 'open' } as const
+      expect(() =>
+        assertSelectedAccounts(
+          [
+            { screen: 'OnboardingListo', no_design: true, account: 'inicio' },
+            { screen: 'OnboardingListoOtra', no_design: true },
+          ],
+          kinds,
+        ),
+      ).not.toThrow()
+      expect(() =>
+        assertSelectedAccounts([{ screen: 'OnboardingListo', no_design: true, account: 'listo' }], kinds),
+      ).toThrow(/^OnboardingListo: names an open account but does not reach OnboardingListo, so only an ended account can serve it$/)
+    })
+
+    it('does not count a no_design row as the Listo entry of a business', () => {
+      const kinds = { listo: 'open' } as const
+      expect(() =>
+        assertSelectedAccounts([{ screen: 'OnboardingListo', no_design: true }, { screen: 'OnboardingListo2', design: 'OnboardingListo' }], kinds),
+      ).not.toThrow()
+    })
   })
 })
