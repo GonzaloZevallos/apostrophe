@@ -305,7 +305,7 @@ El Margin total de un mes en todos sus Products sobre las Sales de gramos con co
 _Avoid_: average profit, mean margin
 
 **First record**:
-El registro más antiguo de un Business en la app: una Sale, una Stock entry, un Stock withdrawal, un Payment o una Expense. El historial de Analysis y sus totales desde el inicio empiezan ahí, así que el costo de ningún Stock withdrawal queda afuera de ellos. _In the app_: Since the first record.
+El registro más antiguo de un Business en la app: una Sale, una Stock entry, un Stock withdrawal, un Payment o una Expense. Ahí empiezan el historial de Analysis, sus totales desde el inicio y las cifras de `last_7_days` del Panel. Un día del Panel anterior a él no tiene cifra, nunca $0, y sin un First record anterior a hoy el Panel no trae `last_7_days`. _In the app_: Since the first record.
 _Avoid_: start date, opening date, inception
 
 **Best week**:

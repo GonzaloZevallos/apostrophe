@@ -948,6 +948,9 @@ def test_get_panel_issues_the_same_number_of_statements_small_or_seeded(
     big_count = _statement_count(engine, other_client)
 
     assert small_count == big_count == PANEL_STATEMENTS, (small_count, big_count)
+    # The small history is all today, so it has no series; the bigger one reaches back.
+    assert client.get("/panel").json()["today"]["last_7_days"] is None
+    assert len(other_client.get("/panel").json()["today"]["last_7_days"]) == 7
 
 
 def test_an_archived_variety_leaves_the_panel_stock_rows_but_not_the_period_figures(
@@ -1172,6 +1175,7 @@ def test_get_panel_statement_count_ignores_the_today_block_history(
     clock.set(_art(today, 12))
 
     assert _statement_count(engine, client) == _statement_count(engine, other_client)
+    assert other_client.get("/panel").json()["today"]["last_7_days"] is not None
 
 
 # --- last 7 days and money in (GH-497 part 2) -------------------------------------------
@@ -1237,6 +1241,67 @@ def test_the_last_day_of_last_7_days_is_todays_sales(
     assert series[-1]["sales"] == block["sales"]
     assert series[4]["sales"] == 1_250
     assert series[0]["sales"] == 0
+
+
+def test_last_7_days_today_entry_is_the_sold_today_figure_of_the_periods(
+    client: TestClient, clock: MovableClock
+) -> None:
+    variety_id = _stocked_variety(client)
+    day = BLOCK_DAY
+    _sale_recorded_at(client, clock, variety_id, on=day, at=_art(day, 9), quantity="3", shipping=75)
+    _sale_recorded_at(
+        client,
+        clock,
+        variety_id,
+        on=day,
+        at=_art(day, 10),
+        payment="owing",
+        customer_id=_customer(client, "Ana"),
+    )
+    clock.set(_art(day, 12))
+
+    body = client.get("/panel").json()
+
+    series = body["today"]["last_7_days"]
+    assert series[-1]["day"] == day.isoformat()
+    assert series[-1]["sales"] == body["periods"]["today"]["sales"] == 4_075
+
+
+def test_last_7_days_is_null_before_the_first_record_and_a_figure_from_it(
+    client: TestClient, clock: MovableClock
+) -> None:
+    day = BLOCK_DAY
+    clock.set(_art(day, 12))
+    _expense(client, amount=100, on=(day - timedelta(days=3)).isoformat())
+
+    series = _today_block(client, clock, _art(day, 12))["last_7_days"]
+
+    assert [item["day"] for item in series] == [
+        (day - timedelta(days=n)).isoformat() for n in range(6, -1, -1)
+    ]
+    assert [item["sales"] for item in series] == [None, None, None, 0, 0, 0, 0]
+
+
+def test_last_7_days_is_null_when_only_today_has_history(
+    client: TestClient, clock: MovableClock
+) -> None:
+    day = BLOCK_DAY
+    clock.set(_art(day, 12))
+    variety_id = _variety(client, "Criolla", price=1_000)
+    _entry(client, variety_id, quantity="10", on=day.isoformat())
+    _sale_recorded_at(client, clock, variety_id, on=day, at=_art(day, 9))
+
+    block = _today_block(client, clock, _art(day, 12))
+
+    assert block["sales"] == 1_000
+    assert block["last_7_days"] is None
+
+
+def test_last_7_days_is_null_with_no_records_at_all(client: TestClient) -> None:
+    response = client.get("/panel")
+
+    assert response.status_code == 200, response.text
+    assert response.json()["today"]["last_7_days"] is None
 
 
 def test_a_renamed_method_shows_its_new_name_in_money_in(
