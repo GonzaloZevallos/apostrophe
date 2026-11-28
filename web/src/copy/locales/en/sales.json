@@ -29,7 +29,7 @@
     "shipping": "Shipping charged",
     "assignCustomer": "Assign customer",
     "share": "Share",
-    "title": "Sale #{{number}}"
+    "title": "Sale #"
   },
   "bill": {
     "actionsName": "Sharing the bill",
