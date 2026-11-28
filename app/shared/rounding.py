@@ -1,4 +1,4 @@
-"""The one rounding a ratio gets: half up, exact over `Fraction` (ADR-0020,
+"""The one rounding results does to a ratio: half up, exact over `Fraction` (ADR-0020,
 CODING_STANDARDS.md's invariant — no `float`, `round()` or `Decimal.quantize` in any
 percentage path). A percentage is a ratio, not money, so it never goes through
 the money helpers in `app/shared/money.py` (ADR-0058): it goes through
