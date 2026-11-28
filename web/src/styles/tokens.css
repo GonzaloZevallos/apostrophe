@@ -52,6 +52,12 @@
   --gasto2: #a85a06;
   --gasto3: #1c6fa8;
   --gasto-otros: #7e8c84;
+  --fondo-grafico: #ffffff;
+  --grafico1: #1e6b47;
+  --grafico2: #a85a06;
+  --grafico3: #4c7fd0;
+  --grafico4: #b8457a;
+  --grafico5: #7e8c84;
 
   /* Tipografía */
   --fuente: 'Geist', system-ui, -apple-system, sans-serif;
@@ -87,6 +93,8 @@
   --opacidad-fondo-hoja: 0.35;
   --alto-tocable: 44px;
   --alto-boton: 56px;
+  /* Alto fijo del recuadro del gráfico de barra apilada (ChartBox) */
+  --alto-grafico-barra: 3.5rem;
 
   /* Zonas seguras del sistema (muesca, barra de inicio): lo único que lee env() */
   --inset-arriba: env(safe-area-inset-top, 0px);
@@ -136,6 +144,12 @@
   --gasto2: #e8a54b;
   --gasto3: #5aa9e6;
   --gasto-otros: #7e8c84;
+  --fondo-grafico: #18211c;
+  --grafico1: #5cc594;
+  --grafico2: #f0b95a;
+  --grafico3: #7fa8e8;
+  --grafico4: #e07aa8;
+  --grafico5: #7f8c85;
 }
 
 html,

@@ -74,6 +74,14 @@ export interface Paleta {
   gasto2: string;
   gasto3: string;
   gastoOtros: string;
+
+  /** Fondo opaco de ChartBox (igual a superficie) y sus cinco rellenos: marcas, ver README. */
+  fondoGrafico: string;
+  grafico1: string;
+  grafico2: string;
+  grafico3: string;
+  grafico4: string;
+  grafico5: string;
 }
 
 export const claro: Paleta = {
@@ -115,6 +123,13 @@ export const claro: Paleta = {
   gasto2: '#a85a06',
   gasto3: '#1c6fa8',
   gastoOtros: '#7e8c84',
+
+  fondoGrafico: '#ffffff',
+  grafico1: '#1e6b47',
+  grafico2: '#a85a06',
+  grafico3: '#4c7fd0',
+  grafico4: '#b8457a',
+  grafico5: '#7e8c84',
 };
 
 export const oscuro: Paleta = {
@@ -156,6 +171,13 @@ export const oscuro: Paleta = {
   gasto2: '#e8a54b',
   gasto3: '#5aa9e6',
   gastoOtros: '#7e8c84',
+
+  fondoGrafico: '#18211c',
+  grafico1: '#5cc594',
+  grafico2: '#f0b95a',
+  grafico3: '#7fa8e8',
+  grafico4: '#e07aa8',
+  grafico5: '#7f8c85',
 };
 
 export const paletas: Record<Tema, Paleta> = { claro, oscuro };

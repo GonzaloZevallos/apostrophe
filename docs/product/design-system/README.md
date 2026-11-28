@@ -153,6 +153,11 @@ impreso no es el calculado. Si cambiás un color, cambiá la fila.
 | `--gasto2` | ícono | — | — | — | |
 | `--gasto3` | ícono | — | — | — | |
 | `--gasto-otros` | ícono | — | — | — | |
+| `--grafico1` | ícono | — | — | — | |
+| `--grafico2` | ícono | — | — | — | |
+| `--grafico3` | ícono | — | — | — | |
+| `--grafico4` | ícono | — | — | — | |
+| `--grafico5` | ícono | — | — | — | |
 | `--linea` | ícono | — | — | — | |
 | `--deuda-linea` | ícono | — | — | — | |
 | `--deuda-reciente` | ícono | — | — | — | |
@@ -240,6 +245,21 @@ claro (`#a85a06`) es un relleno de gráfico, no texto, así que el cambio a 4,5:
 | `--gasto2` | `#a85a06` | 5,08 | `#e8a54b` | 7,79 |
 | `--gasto3` | `#1c6fa8` | 5,40 | `#5aa9e6` | 6,48 |
 | `--gasto-otros` | `#7e8c84` | 3,52 | `#7e8c84` | 4,69 |
+
+**Series de los gráficos** (`--grafico1` a `--grafico5`). Son los rellenos del gráfico de
+barra apilada: marcas, nunca texto, siempre con su rótulo en HTML al lado, y llegan a 3:1
+contra `--fondo-grafico` en los dos temas. Filas `ícono`, sin selectores.
+
+| Serie | Claro | Relación | Oscuro | Relación |
+|---|---|---|---|---|
+| `--grafico1` | `#1e6b47` | 6,46 | `#5cc594` | 7,75 |
+| `--grafico2` | `#a85a06` | 5,08 | `#f0b95a` | 9,26 |
+| `--grafico3` | `#4c7fd0` | 4,00 | `#7fa8e8` | 6,81 |
+| `--grafico4` | `#b8457a` | 5,04 | `#e07aa8` | 5,91 |
+| `--grafico5` | `#7e8c84` | 3,52 | `#7f8c85` | 4,71 |
+
+`--fondo-grafico` es el fondo opaco de ChartBox, igual a `--superficie` en cada tema; no
+lleva fila de contraste porque ninguna hoja de estilos escribe texto encima.
 
 ### El logo
 
