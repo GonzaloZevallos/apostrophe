@@ -4,13 +4,13 @@
  * split. The fixture is never edited by a refactor.
  */
 
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, test } from 'vitest'
 import type { Expense, MonthlyView } from '../../api/expenses'
 import { MoneyFormatProvider } from '../../format/MoneyFormatProvider'
-import MonthBody from './MonthBody'
+import MonthBody, { MonthTotal } from './MonthBody'
 
 const TODAY = '2026-10-02'
 
@@ -104,5 +104,25 @@ describe('MonthBody markup', () => {
   test('the state without onEdit takes its rows out of the tab order', () => {
     expect(FIXTURE['without onEdit']).toContain('tabindex="-1"')
     expect(FIXTURE['with onEdit']).not.toContain('tabindex')
+  })
+})
+
+describe('MonthTotal', () => {
+  const renderTotal = (withCount?: boolean) =>
+    render(
+      <MoneyFormatProvider format={{ symbol: '$', decimals: 0 }}>
+        <MonthTotal total={500} expenseCount={3} categoryCount={2} withCount={withCount} />
+      </MoneyFormatProvider>,
+    )
+
+  test('shows the count line by default', () => {
+    renderTotal()
+    expect(screen.getByText('3 expenses in 2 categories')).toBeInTheDocument()
+  })
+
+  test('withCount false hides the count line and keeps the total', () => {
+    renderTotal(false)
+    expect(screen.queryByText('3 expenses in 2 categories')).not.toBeInTheDocument()
+    expect(screen.getByText('$ 500')).toBeInTheDocument()
   })
 })
