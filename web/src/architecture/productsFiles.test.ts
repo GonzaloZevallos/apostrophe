@@ -43,7 +43,7 @@ test('other imports, and other files under varieties, are accepted', () => {
   expect(find("import { GENERIC_REFUSAL_MESSAGE } from '../Variedades'", 'src/screens/varieties/ThresholdForm.tsx')).toEqual([])
 })
 
-const modules = import.meta.glob(['/src/screens/varieties/*.tsx'], { query: '?raw', import: 'default', eager: true }) as Record<
+const modules = import.meta.glob(['/src/screens/varieties/*.{ts,tsx}'], { query: '?raw', import: 'default', eager: true }) as Record<
   string,
   string
 >

@@ -17,6 +17,8 @@
   "^src/screens/stubFetchWithSettings\\.ts$",
   "^src/screens/ventas/lineProduct\\.ts$",
   "^src/screens/ventas/saleWith\\.ts$",
+  "^src/screens/ventas/SaleCustomerCard\\.tsx$",
+  "^src/screens/ventas/SaleDetailCard\\.tsx$",
   "^src/screens/ventas/NewSaleSheetHost\\.tsx$",
   "^src/i18n/switchFixture\\.ts$",
   "^src/components/selectorTestKit\\.tsx$",
@@ -44,5 +46,5 @@
   "^src/screens/ventas/renderNuevaVentaSheet\\.tsx$",
   "^src/screens/settings/settingsSearch\\.ts$",
   "^src/screens/settings/useSettingsSearchEntry\\.ts$",
-  "^src/screens/varieties/productsSegment\\.ts$"
+  "^src/screens/expenses/expensesSummary\\.ts$"
 ]

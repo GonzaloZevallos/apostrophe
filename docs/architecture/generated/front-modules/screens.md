@@ -35,6 +35,7 @@ subgraph src["src"]
       src_screens_clientes_CustomerTypeField_tsx["CustomerTypeField.tsx"]
       src_screens_clientes_CustomerTypeLine_tsx["CustomerTypeLine.tsx"]
       src_screens_clientes_CustomersBehind_tsx["CustomersBehind.tsx"]
+      src_screens_clientes_CustomersTitleRow_tsx["CustomersTitleRow.tsx"]
       src_screens_clientes_DebtorsUnavailable_tsx["DebtorsUnavailable.tsx"]
       src_screens_clientes_OwedSummary_tsx["OwedSummary.tsx"]
       src_screens_clientes_TeDeben_tsx["TeDeben.tsx"]
@@ -48,6 +49,7 @@ subgraph src["src"]
       src_screens_expenses_ExpenseNewRoute_tsx["ExpenseNewRoute.tsx"]
       src_screens_expenses_ExpenseNewSheet_tsx["ExpenseNewSheet.tsx"]
       src_screens_expenses_ExpensesBehind_tsx["ExpensesBehind.tsx"]
+      src_screens_expenses_ExpensesTitleRow_tsx["ExpensesTitleRow.tsx"]
       src_screens_expenses_MonthBody_tsx["MonthBody.tsx"]
     end
     subgraph src_screens_inicio["inicio"]
@@ -123,6 +125,7 @@ subgraph src["src"]
       src_screens_varieties_ProductsBody_tsx["ProductsBody.tsx"]
       src_screens_varieties_ProductsComputer_tsx["ProductsComputer.tsx"]
       src_screens_varieties_ProductsEmpty_tsx["ProductsEmpty.tsx"]
+      src_screens_varieties_ProductsPhoneBodies_tsx["ProductsPhoneBodies.tsx"]
       src_screens_varieties_ProductsPhone_tsx["ProductsPhone.tsx"]
       src_screens_varieties_ProductsSummary_tsx["ProductsSummary.tsx"]
       src_screens_varieties_RenameForm_tsx["RenameForm.tsx"]
@@ -147,7 +150,9 @@ subgraph src["src"]
       src_screens_varieties_fieldIds_ts["fieldIds.ts"]
       src_screens_varieties_isStillCurrent_ts["isStillCurrent.ts"]
       src_screens_varieties_priceFieldRules_ts["priceFieldRules.ts"]
+      src_screens_varieties_productsSegment_ts["productsSegment.ts"]
       src_screens_varieties_restoreLanding_ts["restoreLanding.ts"]
+      src_screens_varieties_showsData_ts["showsData.ts"]
       src_screens_varieties_useRestore_tsx["useRestore.tsx"]
       src_screens_varieties_useSelectedVariety_ts["useSelectedVariety.ts"]
       src_screens_varieties_useVipPriceField_ts["useVipPriceField.ts"]
@@ -230,6 +235,7 @@ src_screens_Entrar_tsx-->src_screens_ForgotSheet_tsx
 src_screens_EntriesList_tsx-->src_screens_Variedades_tsx
 src_screens_EntriesList_tsx-->src_screens_originLabel_ts
 src_screens_Gastos_tsx-->src_screens_expenses_ExpenseEditSheet_tsx
+src_screens_Gastos_tsx-->src_screens_expenses_ExpensesTitleRow_tsx
 src_screens_Gastos_tsx-->src_screens_expenses_MonthBody_tsx
 src_screens_Inicio_tsx-->src_screens_inicio_InicioPanel_tsx
 src_screens_StockEntryForm_tsx-->src_screens_Variedades_tsx
@@ -260,6 +266,7 @@ src_screens_clientes_ClientesLayout_tsx-->src_screens_clientes_CustomersBehind_t
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_ClienteFila_tsx
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_CustomerSearch_ts
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_CustomerSegments_tsx
+src_screens_clientes_Clientes_tsx-->src_screens_clientes_CustomersTitleRow_tsx
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_DebtorsUnavailable_tsx
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_OwedSummary_tsx
 src_screens_clientes_Clientes_tsx-->src_screens_clientes_TeDeben_tsx
@@ -276,6 +283,7 @@ src_screens_clientes_CustomerFields_tsx-->src_screens_clientes_usePhoneCountryFi
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_ClienteFila_tsx
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_CustomerSearch_ts
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_CustomerSegments_tsx
+src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_CustomersTitleRow_tsx
 src_screens_clientes_CustomersBehind_tsx-->src_screens_clientes_OwedSummary_tsx
 src_screens_clientes_OwedSummary_tsx-->src_screens_clientes_figureCh_ts
 src_screens_clientes_TeDeben_tsx-->src_screens_clientes_ClienteFila_tsx
@@ -284,6 +292,7 @@ src_screens_expenses_ExpenseEditSheet_tsx-->src_screens_expenses_ExpenseForm_tsx
 src_screens_expenses_ExpenseNewRoute_tsx-->src_screens_expenses_ExpenseNewSheet_tsx
 src_screens_expenses_ExpenseNewRoute_tsx-->src_screens_expenses_ExpensesBehind_tsx
 src_screens_expenses_ExpenseNewSheet_tsx-->src_screens_expenses_ExpenseForm_tsx
+src_screens_expenses_ExpensesBehind_tsx-->src_screens_expenses_ExpensesTitleRow_tsx
 src_screens_expenses_ExpensesBehind_tsx-->src_screens_expenses_MonthBody_tsx
 src_screens_inicio_InicioFondo_tsx-->src_screens_inicio_InicioPanel_tsx
 src_screens_inicio_InicioPanel_tsx-->src_screens_inicio_PeriodFigures_tsx
@@ -406,7 +415,16 @@ src_screens_varieties_ProductsBody_tsx-->src_screens_varieties_SendCatalog_tsx
 src_screens_varieties_ProductsBody_tsx-->src_screens_varieties_StockActions_tsx
 src_screens_varieties_ProductsBody_tsx-->src_screens_varieties_VarietyRows_tsx
 src_screens_varieties_ProductsComputer_tsx-->src_screens_varieties_ProductsBody_tsx
+src_screens_varieties_ProductsPhoneBodies_tsx-->src_screens_varieties_ProductsBody_tsx
+src_screens_varieties_ProductsPhoneBodies_tsx-->src_screens_varieties_ProductsEmpty_tsx
+src_screens_varieties_ProductsPhoneBodies_tsx-->src_screens_varieties_ProductsSummary_tsx
+src_screens_varieties_ProductsPhoneBodies_tsx-->src_screens_varieties_SendCatalog_tsx
+src_screens_varieties_ProductsPhoneBodies_tsx-->src_screens_varieties_StockActions_tsx
+src_screens_varieties_ProductsPhoneBodies_tsx-->src_screens_varieties_VarietyRows_tsx
+src_screens_varieties_ProductsPhoneBodies_tsx-->src_screens_varieties_showsData_ts
 src_screens_varieties_ProductsPhone_tsx-->src_screens_varieties_ProductsBody_tsx
+src_screens_varieties_ProductsPhone_tsx-->src_screens_varieties_ProductsPhoneBodies_tsx
+src_screens_varieties_ProductsPhone_tsx-->src_screens_varieties_productsSegment_ts
 src_screens_varieties_RenameForm_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_ThresholdForm_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_VarietiesBehind_tsx-->src_screens_Variedades_tsx
@@ -447,6 +465,7 @@ src_screens_varieties_VarietyThresholdSection_tsx-->src_screens_varieties_variet
 src_screens_varieties_archivedVarieties_ts-->src_screens_Variedades_tsx
 src_screens_varieties_restoreLanding_ts-->src_screens_Variedades_tsx
 src_screens_varieties_restoreLanding_ts-->src_screens_varieties_varietiesByName_ts
+src_screens_varieties_showsData_ts-->src_screens_varieties_ProductsBody_tsx
 src_screens_varieties_useRestore_tsx-->src_screens_Variedades_tsx
 src_screens_varieties_useRestore_tsx-->src_screens_varieties_restoreLanding_ts
 src_screens_varieties_useSelectedVariety_ts-->src_screens_Variedades_tsx

@@ -49,6 +49,8 @@ export interface NuevaVentaSheetProps {
   onClose: () => void
   onChangeCustomer: () => void
   onCollect: (sale: CompleteSale) => void
+  /** A line's name and price was tapped: the host opens its detail. */
+  onOpenLine: (productId: number) => void
   /** The Sheet frame, passed through (`computerClass` is the host's own frame on a computer). */
   computer: boolean
   computerClass: string
@@ -132,6 +134,7 @@ export default function NuevaVentaSheet({
   onClose,
   onChangeCustomer,
   onCollect,
+  onOpenLine,
   computer,
   computerClass,
   computerDialog,
@@ -176,6 +179,7 @@ export default function NuevaVentaSheet({
         customerTypeId={customerTypeId}
         draft={draft}
         pricing={pricing}
+        onOpenLine={onOpenLine}
       />
       <SheetActions>
         <div className="sale-bar">

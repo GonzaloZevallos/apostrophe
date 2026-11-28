@@ -86,6 +86,7 @@ The app's colors are the owner's Yerba palette, in a light and a dark theme. The
 - **Derived** (the owner gave no value; each is a tint or shade of the owner's hues): `--tenue`, `--deuda-fondo`, `--deuda2`, `--deuda-linea`, `--critico`, `--critico-texto`.
 - **Deviation:** light debt moved from the owner's `#a85a06` to `#a35706` because it read 4.35:1 on the soft tint; the ratio and the move are in the README.
 - **Chart series:** `--serie1` to `--serie5`. Light: `#1e6b47`, `#e3a23b`, `#4c7fd0`, `#b8457a`, `#b9c2bc`. Dark, brighter variants of the same hues: `#5cc594`, `#f0b95a`, `#7fa8e8`, `#e07aa8`, `#7f8c85`. A series is a mark, always labelled directly, touching it.
+- **Expenses series:** `--gasto1`, `--gasto2`, `--gasto3`, `--gasto-otros`. Light: `#1e6b47`, `#a85a06`, `#1c6fa8`, `#7e8c84`. Dark: `#5cc594`, `#e8a54b`, `#5aa9e6`, `#7e8c84`. Both themes are the values drawn in `Gastos.dc.html` and `GastosOscuro.dc.html`. A series is a mark, always labelled directly, touching it.
 - Every text pair is at least 4.5:1 in both themes; decorative borders are exempt.
 - **Color never alone:** no state told by color alone: a sign, arrow or word on every gain, loss, debt or state; chart series labelled directly. The color census (`web/src/architecture/colorCensus.ts`) lists every rule that uses a debt, state, gain, loss or series token.
 

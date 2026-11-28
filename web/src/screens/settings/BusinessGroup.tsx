@@ -1,6 +1,6 @@
 /**
  * The "Negocio" group of Configuración (`ConfiguracionNegocio.dc.html`; `accounts.md`):
- * renaming the business, language and the links to currency and withdrawal reasons.
+ * renaming the business and, with two or more selectable languages, the language.
  *
  * The business comes only from the session: `GET`/`PATCH /business` never take an id
  * (CODING_STANDARDS §9). Saving shows the fixed toast "Saved" (a constant,
@@ -22,9 +22,6 @@ import { type LanguageTag, type StoredLanguage, sameLanguage } from '../../api/l
 import { LANGUAGE_NOT_SELECTABLE_MESSAGE, kindOf, resolveOverride, type RefusalCode } from '../../api/refusals'
 import AvisoExito from '../../components/AvisoExito'
 import Boton from '../../components/Boton'
-import Icono from '../../components/Icono'
-import InAppLink from '../../components/InAppLink'
-import { SETTINGS_CURRENCY, SETTINGS_WITHDRAWAL_REASONS } from '../../routes'
 import ErrorGenerico, { ERROR_GENERICO_MENSAJE } from '../../components/ErrorGenerico'
 import { LANGUAGES } from '../../components/fixedSets'
 import SinConexion from '../../components/SinConexion'
@@ -189,26 +186,6 @@ function BusinessForm({ initialName, language, selectable }: BusinessFormProps) 
         {offline && <SinConexion />}
       </form>
       {selectable.length > 1 && <LanguageControl language={language} selectable={selectable} />}
-      <div className="ajustes__lista">
-        <InAppLink to={SETTINGS_CURRENCY} className="ajustes__item">
-          <span className="ajustes__item-icono">
-            <Icono nombre="precio" />
-          </span>
-          <span className="ajustes__item-rotulo">{COMMON_TEXT.currencyAndDecimals}</span>
-          <span className="ajustes__item-flecha">
-            <Icono nombre="chevron" />
-          </span>
-        </InAppLink>
-        <InAppLink to={SETTINGS_WITHDRAWAL_REASONS} className="ajustes__item">
-          <span className="ajustes__item-icono">
-            <Icono nombre="salidaStock" />
-          </span>
-          <span className="ajustes__item-rotulo">{COMMON_TEXT.withdrawalReasons}</span>
-          <span className="ajustes__item-flecha">
-            <Icono nombre="chevron" />
-          </span>
-        </InAppLink>
-      </div>
     </SettingsGroup>
   )
 }

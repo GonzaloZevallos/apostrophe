@@ -767,6 +767,24 @@ body {
   touch-action: manipulation;
 }
 
+/* The round look of the same arrow, for a card that draws it in its own title row (ADR
+ * 20261125): the row owns the padding, so the box is the 44 px touch target alone. The press
+ * cue is the global `.boton--enlace:active` --superficie fill. The chevron is hidden until the
+ * row's narrow step shows it in place of the text (the expenses title row's `@container`). */
+.flecha-atras--redonda .boton--enlace {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-xs);
+  min-height: var(--alto-tocable);
+  border-radius: var(--radio-pildora);
+  touch-action: manipulation;
+}
+
+.flecha-atras--redonda .boton--enlace > svg {
+  display: none;
+}
+
 .riel-lateral {
   display: none;
   flex-direction: column;
@@ -1738,6 +1756,90 @@ a.ajustes-tema__opcion {
   font-weight: 600;
 }
 
+/* Expenses' phone title row (ADR 20261125, `ExpensesTitleRow`): the round back, the title and
+ * Add expense on one line that never wraps, with the month line as its own line below. The title
+ * is the one fixed thing: never wrapped, shrunk, clipped or ellipsised. The row is the size
+ * container, so its two steps follow the room the row itself has, in its own `em`, which grows
+ * with the text size: below 24em the labelled pill is the 44 x 44 round icon (its `aria-label`
+ * keeps the name), below 19em the back is the round chevron (its text is clipped, never removed,
+ * so the accessible name stays). Only the two thresholds may move; their number and order may not. */
+.gastos__encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-md);
+}
+
+.gastos__encabezado > .gastos__mes {
+  flex: none;
+}
+
+.gastos__fila-titulo {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--espacio-sm);
+  container-type: inline-size;
+  container-name: fila-titulo-gastos;
+}
+
+.gastos__fila-titulo > .flecha-atras--redonda {
+  flex: 0 0 auto;
+}
+
+.gastos__fila-titulo > .gastos__titulo {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.gastos__fila-titulo > .gastos__cargar {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  width: auto;
+  height: var(--alto-tocable);
+  padding: 0 18px;
+  background: var(--boton);
+  color: var(--boton-texto);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.gastos__fila-titulo > .gastos__cargar .gastos__cargar-texto {
+  display: inline;
+}
+
+@container fila-titulo-gastos (max-width: 24em) {
+  .gastos__fila-titulo > .gastos__cargar {
+    width: var(--alto-tocable);
+    padding: 0;
+    background: var(--superficie);
+    color: var(--tinta);
+  }
+
+  .gastos__fila-titulo > .gastos__cargar .gastos__cargar-texto {
+    display: none;
+  }
+}
+
+@container fila-titulo-gastos (max-width: 19em) {
+  .flecha-atras--redonda .boton--enlace {
+    width: var(--alto-tocable);
+    padding: 0;
+    box-shadow: inset 0 0 0 1px var(--linea);
+  }
+
+  .flecha-atras--redonda .flecha-atras__texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .flecha-atras--redonda .boton--enlace > svg {
+    display: block;
+  }
+}
+
 .gastos__resumen,
 .gastos__ultimos {
   display: flex;
@@ -2419,6 +2521,29 @@ a.ajustes-tema__opcion {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* The bottom row of the sale detail: one column per button ("Void" alone today; "Edit sale"
+ * (issue 561) goes in before it), each taking an equal share of the row. */
+.venta-detalle__botones {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: var(--espacio-sm);
+}
+
+.venta-detalle__botones .boton {
+  color: var(--negativo);
+  min-height: var(--alto-tocable);
+}
+
+/* No tap delay and no text selection on the sale detail's Void button and its confirm dialog.
+ * Scoped to `.venta-detalle`, not on `.boton` or `.confirmacion`, so no other screen's listed
+ * touch-action offender changes. */
+.venta-detalle .venta-detalle__botones .boton,
+.venta-detalle > .confirmacion button {
+  touch-action: manipulation;
+  user-select: none;
 }
 
 /* The sale bill's own wrapper (`SaleBillButton`): it lays its children out as the actions row
@@ -4484,6 +4609,18 @@ a.ajustes-tema__opcion {
   color: var(--boton-texto);
 }
 
+/* The neutral round add (the phone Customers title row's "New customer"): the plain
+ * `.boton-icono` surface with a --linea ring and the --tinta icon, never --boton. */
+.boton-icono--neutro {
+  /* The ring is inside the 44 px target: a link is content-box by default, so without this it grows to 46. */
+  box-sizing: border-box;
+  background: var(--superficie);
+  border: 1px solid var(--linea);
+  color: var(--tinta);
+  user-select: none;
+  touch-action: manipulation;
+}
+
 .productos-cabecera__nueva {
   user-select: none;
   touch-action: manipulation;
@@ -5457,6 +5594,34 @@ a.ajustes-tema__opcion {
   font-size: 20px;
 }
 
+/* A line's name and price are one tappable `Boton` row beside the stepper, with no mark of their own:
+ * reshaped here into a side-by-side, at least 44 px target that keeps the name's ellipsis. */
+.nv-productos__abrir {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.nv-productos__abrir .boton--fila {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--espacio-md);
+  min-height: var(--alto-tocable);
+  padding: 0;
+  border-bottom: 0;
+}
+
+.nv-productos__precio {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.nv-productos__precio--sin {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-xs);
+}
+
 .nv-productos__paso-vacio {
   width: var(--alto-tocable);
   height: var(--alto-tocable);
@@ -5943,6 +6108,18 @@ a.ajustes-tema__opcion {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--espacio-md);
+}
+
+/* On the phone the row is one line: the title is cut by `.cabecera-fila`, the round add and the
+ * avatar keep their 44 px. */
+@media (max-width: 899.98px) {
+  .clientes__encabezado {
+    flex-wrap: nowrap;
+  }
+
+  .clientes__encabezado > .boton-icono {
+    flex-shrink: 0;
+  }
 }
 
 .clientes__encabezado > .boton {
@@ -6942,6 +7119,14 @@ a.ajustes-tema__opcion {
     white-space: nowrap;
   }
 
+  /* Expenses' month total fits the viewport at larger text too (GH-1127, Human Decision 2): where
+   * the fit above is not enough (130 % text from 320 px up) the figure breaks inside itself
+   * rather than push the page sideways. When it fits, nothing breaks and the render is as before. */
+  .gastos__total .cifra-xl {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
   .gastos__categoria .gastos__categoria-cabecera {
     min-width: 0;
   }
@@ -7014,10 +7199,23 @@ a.ajustes-tema__opcion {
     height: var(--alto-tocable);
   }
 
-  /* Scoped to Expenses' header: Analysis reuses the month pill and its arrows (part 2). */
-  .gastos__cabecera .gastos__mes-boton {
+  /* Scoped to Expenses' header (the computer's `gastos__cabecera` and the phone's title block
+   * `gastos__encabezado`): Analysis reuses the month pill and its arrows (part 2). */
+  .gastos__cabecera .gastos__mes-boton,
+  .gastos__encabezado .gastos__mes-boton {
+    flex: none;
     width: var(--alto-tocable);
     height: var(--alto-tocable);
+  }
+}
+
+/* The narrowest phone (320 px at 130 % text is 246 CSS px): the month line has 198 px, so with
+ * the arrows kept at 44 the month name ("September", the longest word) needs the pill's gap and
+ * padding closed to 4 px; the arrows never shrink below the touch target. */
+@media (max-width: 280px) {
+  .gastos__encabezado > .gastos__mes {
+    gap: var(--espacio-xs);
+    padding-inline: var(--espacio-xs);
   }
 }
 

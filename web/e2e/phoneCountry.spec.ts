@@ -41,8 +41,8 @@ async function newCustomerForm(page: Page, name: string): Promise<void> {
   await expect(countryField(page)).not.toHaveAttribute('aria-busy', 'true')
 }
 
-async function saveAndUse(page: Page): Promise<void> {
-  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save and use' }).click())
+async function save(page: Page): Promise<void> {
+  await expectToast(page, 'Customer saved', () => page.getByRole('button', { name: 'Save', exact: true }).click())
   await expectPath(page, CUSTOMER)
 }
 
@@ -68,7 +68,7 @@ test('a Uruguayan device saves a local Uruguayan number, an Argentine one by pic
   await expect(countryField(page)).not.toHaveAttribute('aria-disabled', 'true')
   await expect(phoneField(page)).toHaveAttribute('placeholder', uruguay.example)
   await phoneField(page).fill(uruguay.example)
-  await saveAndUse(page)
+  await save(page)
   await expect(page.getByText(`+${uruguay.callingCode}`)).toBeVisible()
 
   // An Argentine customer: the seller picks Argentina and types the local form; the example follows.
@@ -76,7 +76,7 @@ test('a Uruguayan device saves a local Uruguayan number, an Argentine one by pic
   await pickCountry(page, argentina.label)
   await expect(phoneField(page)).toHaveAttribute('placeholder', argentina.example)
   await phoneField(page).fill(argentina.example)
-  await saveAndUse(page)
+  await save(page)
   await expect(page.getByText(`+${argentina.callingCode}`)).toBeVisible()
 
   // A "+" decides the country: the Selector shows it, locked, with its reason; the text is not rewritten.
@@ -98,7 +98,7 @@ test('a Uruguayan device saves a local Uruguayan number, an Argentine one by pic
   await expect(countryField(page)).not.toHaveAttribute('aria-disabled', 'true')
   await expect(countryField(page)).toContainText(chile.label)
   await phoneField(page).fill(plusChile)
-  await saveAndUse(page)
+  await save(page)
   await expect(page.getByText(`+${chile.callingCode}`)).toBeVisible()
 
   // Each edit opens on its own number's country, locked.

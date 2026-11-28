@@ -1,8 +1,8 @@
 /**
  * The never-by-color census (design README: no state told by color alone). `stateColorRules`
  * reads CSS text and returns each rule, by its normalised selector list, whose declarations use
- * a state color: `--deuda*`, `--critico*`, `--acento-calido*`, `--positivo`, `--negativo` or a
- * chart series. `checkColorCensus` compares that to the list of entries below.
+ * a state color: `--deuda*`, `--critico*`, `--acento-calido*`, `--positivo`, `--negativo`, a
+ * chart series (`--serie1..5`) or an Expenses series (`--gasto*`). `checkColorCensus` compares that to the list of entries below.
  */
 
 export interface CensusEntry {
@@ -16,7 +16,7 @@ export interface CensusEntry {
   tests: readonly string[]
 }
 
-const STATE_COLOR = /--(?:(?:deuda|critico|acento-calido)[\w-]*|positivo|negativo|serie[1-5])(?![\w-])/
+const STATE_COLOR = /--(?:(?:deuda|critico|acento-calido)[\w-]*|positivo|negativo|serie[1-5]|gasto[\w-]*)(?![\w-])/
 const GAIN_OR_LOSS = /--(?:positivo|negativo)(?![\w-])/
 
 const normalise = (selectors: string): string =>
@@ -113,10 +113,11 @@ const at = (...paths: string[]): string[] => paths.map((path) => `src/${path}`)
  * the word, sign, arrow or shape that component shows, so the state reads without color. The
  * `tests` assert it through what the user sees.
  *
- * `--positivo` and `--negativo`: no entry, no screen shows a gain today. The rule for the first
- * gain figure: the sign and direction come from the API value and the text from the format
- * module, in one non-breaking unit, with the arrow `aria-hidden` and "up"/"down" in its accessible
- * name. Its rule is listed here with its component and the test that asserts the sign or arrow.
+ * `--positivo` and `--negativo`: one entry, the sale detail's Void button (its label is the word,
+ * the red is only the owner's chosen text colour, Decision 1 of GH-1115); no screen shows a gain
+ * today. The rule for the first gain figure: the sign and direction come from the API value and
+ * the text from the format module, in one non-breaking unit, with the arrow `aria-hidden` and
+ * "up"/"down" in its accessible name. Its rule is listed here with its component and the test that asserts the sign or arrow.
  *
  * FINDINGS (a rule that needs more than a missing word, sign or arrow): none. Every rule below
  * sits beside a word its component already shows; the only gap was that the phone "behind pane"
@@ -166,5 +167,6 @@ export const COLOR_CENSUS: readonly CensusEntry[] = [
   { selector: '.payment-chip--unpaid', component: 'SalePaymentChip', carries: 'the word "Unpaid"', tests: at('screens/ventas/SalePaymentChip.test.tsx') },
   { selector: '.payment-chip--part-paid', component: 'SalePaymentChip', carries: 'the word "Part-paid" and the half-filled circle', tests: at('screens/ventas/SalePaymentChip.test.tsx') },
   { selector: '.payment-chip--unknown', component: 'SalePaymentChip', carries: `the Attention icon and the sentence "Payment can't be shown"`, tests: at('screens/ventas/SalePaymentChip.test.tsx') },
+  { selector: '.venta-detalle__botones .boton', component: 'VentaDetalle (the Void button)', carries: 'the word "Void" and, in its confirmation, "Yes, void"', tests: at('screens/ventas/VentaDetalle.test.tsx') },
   { selector: '.payment-chip__half', component: 'SalePaymentChip', carries: 'the half-filled circle beside the word "Part-paid"', tests: at('screens/ventas/SalePaymentChip.test.tsx') },
 ]

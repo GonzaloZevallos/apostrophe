@@ -5,7 +5,7 @@ import { DATES_TEXT } from '../copy/dates'
  * months (`"YYYY-MM"`). The front never reads the device's clock, zone or locale here, and
  * never passes an API date to `Date.parse` (plan, invariants): "today" always comes in as a
  * parameter, read from `GET /auth/me`. Every function works on the string's digits alone,
- * except `formatTodayLong` and `formatWeekdayDay`, the ones that build a UTC instant from those digits and formats
+ * except `formatTodayLong` and `formatWeekdayDay` (`relativeDay` is digits only), the ones that build a UTC instant from those digits and formats
  * it only in UTC, in the language the screen is shown in (ADR-0049, amendment GH-748).
  */
 
@@ -229,12 +229,25 @@ function addDays(iso: string, delta: number): string {
   return formatIso(civil.year, civil.month, civil.day)
 }
 
+type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6
+
 /** Monday = 0 .. Sunday = 6, from an API date's digits, with no `Date`. */
-function weekday(iso: string): number {
+function weekday(iso: string): Weekday {
   const { year, month, day } = parseDate(iso)
   const days = daysFromCivil(Number(year), Number(month), Number(day))
   // 1970-01-01 (days = 0) was a Thursday, index 3 in a Monday-first week.
-  return (((days + 3) % 7) + 7) % 7
+  // The double modulo leaves exactly 0..6.
+  return ((((days + 3) % 7) + 7) % 7) as Weekday
+}
+
+/** A date as the Expenses list names it: `today`, or its short weekday (0 = Monday .. 6 = Sunday)
+ * with `dd/mm`. There is no "yesterday": it is a weekday like any other. */
+export type RelativeDay = { kind: 'today' } | { kind: 'weekday'; weekday: Weekday; date: string }
+
+/** `spentOn` relative to `todayIso`, on the digits of both, with no `Date`. */
+export function relativeDay(spentOn: string, todayIso: string): RelativeDay {
+  if (spentOn === todayIso) return { kind: 'today' }
+  return { kind: 'weekday', weekday: weekday(spentOn), date: formatDateShort(spentOn) }
 }
 
 /** "Hoy": today to today. */

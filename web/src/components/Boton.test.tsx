@@ -26,6 +26,26 @@ test('an icon-only button is named by its ariaLabel, with no visible text', () =
   expect(button.textContent).toBe('')
 })
 
+test('only add is toned: every other icon-only action is exactly boton-icono', () => {
+  render(
+    <>
+      <Boton variant="icon" action="delete" ariaLabel="Borrar" />
+      <Boton variant="icon" action="edit" ariaLabel="Editar" />
+      <Boton variant="icon" action="search" ariaLabel="Buscar" />
+      <Boton variant="icon" action="close" ariaLabel="Cerrar" />
+      <Boton variant="icon" action="share" ariaLabel="Compartir" />
+      <Boton variant="icon" action="add" ariaLabel="Agregar" />
+      <Boton variant="icon" action="add" tone="neutral" ariaLabel="Nuevo" />
+    </>,
+  )
+  const classOf = (name: string) => screen.getByRole('button', { name }).className
+  for (const name of ['Borrar', 'Editar', 'Buscar', 'Cerrar', 'Compartir']) {
+    expect(classOf(name)).toBe('boton-icono')
+  }
+  expect(classOf('Agregar')).toBe('boton-icono boton-icono--lleno')
+  expect(classOf('Nuevo')).toBe('boton-icono boton-icono--neutro')
+})
+
 test('an icon-only button draws the icon its action maps to, hidden from assistive technology', () => {
   render(
     <>

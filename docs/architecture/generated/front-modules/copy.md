@@ -60,6 +60,7 @@ src_copy_emptyStates_ts-->src_copy_limits_ts
 src_copy_expenses_ts-->src_copy_baselineArgs_ts
 src_copy_expenses_ts-->src_copy_expenses_ts
 src_copy_expenses_ts-->src_copy_limits_ts
+src_copy_expenses_ts-->src_copy_stock_ts
 src_copy_inicio_ts-->src_copy_baselineArgs_ts
 src_copy_inicio_ts-->src_copy_common_ts
 src_copy_inicio_ts-->src_copy_inicio_ts

@@ -33,7 +33,7 @@ import {
 import { AUTH_TEXT } from '../copy/auth.ts'
 import { DETECTED_COUNTRY_BUTTON } from './countryField.ts'
 import { REFUSAL_KEY } from '../i18n/refusalTable.ts'
-import { common, emptyState, expenses, refusal, settings } from './copy.ts'
+import { common, emptyState, expenses, products, refusal, settings } from './copy.ts'
 import { CUSTOMERS_TEXT } from '../copy/customers.ts'
 import { EXPENSES_TEXT } from '../copy/expenses.ts'
 import { SETTINGS_TEXT } from '../copy/settings.ts'
@@ -332,6 +332,21 @@ export const RECORDS_STATES: readonly WalkState[] = [
     visible: 'Mica Solano',
     // It ends on the Customers page with the search empty, so its placeholder is the row's own listed offender.
     offendersAs: 'Clientes',
+  },
+
+  {
+    // Products on Catalog again after a visit to Stock: Send catalog is the one thing the body holds.
+    screen: 'products/catalog',
+    route: VARIETIES,
+    steps: [{ click: products('products:segment.stock') }, { click: products('products:segment.catalog') }],
+    visible: VARIETIES_TEXT.mandarCatalogo,
+  },
+  {
+    // Products on the Stock segment: the stock actions, the summary and the foot links.
+    screen: 'products/stock',
+    route: VARIETIES,
+    steps: [{ click: products('products:segment.stock') }],
+    visible: common('common:stockEntry'),
   },
 
   {

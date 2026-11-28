@@ -20,5 +20,13 @@
   },
   "loading": {
     "label": "Loading sales"
+  },
+  "detail": {
+    "void": "Void",
+    "yesVoid": "Yes, void",
+    "heading": "Detail",
+    "total": "Total",
+    "shipping": "Shipping charged",
+    "assignCustomer": "Assign customer"
   }
 }

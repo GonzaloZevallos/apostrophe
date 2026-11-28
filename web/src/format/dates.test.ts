@@ -12,6 +12,7 @@ import {
   maxSaleDate,
   monthRange,
   parseMonth,
+  relativeDay,
   shiftMonth,
   sinceWhen,
   todayRange,
@@ -248,5 +249,27 @@ describe('formatWeekdayDay', () => {
     expect(formatTodayLong('2026-11-23', 'en')).toBe('Monday, November 23')
     expect(formatWeekdayDay('2026-11-23', 'en')).toBe('Monday 23')
     expect(formatTodayLong('2026-11-23', 'en')).toBe('Monday, November 23')
+  })
+})
+
+describe('relativeDay', () => {
+  const TODAY = '2026-11-26'
+
+  test.each([
+    ['2026-11-23', { kind: 'weekday', weekday: 0, date: '23/11' }],
+    ['2026-11-29', { kind: 'weekday', weekday: 6, date: '29/11' }],
+    [TODAY, { kind: 'today' }],
+    ['2026-11-25', { kind: 'weekday', weekday: 2, date: '25/11' }],
+    ['2026-11-28', { kind: 'weekday', weekday: 5, date: '28/11' }],
+    ['2025-11-24', { kind: 'weekday', weekday: 0, date: '24/11' }],
+  ])('%s reads %j, under any process time zone', (spentOn, expected) => {
+    for (const zone of ['America/Argentina/Buenos_Aires', 'Pacific/Auckland']) {
+      vi.stubEnv('TZ', zone)
+      expect(relativeDay(spentOn, TODAY)).toEqual(expected)
+    }
+  })
+
+  test('rejects a string that is not an API date', () => {
+    expect(() => relativeDay('23/11/2026', TODAY)).toThrow('not an API date: 23/11/2026')
   })
 })

@@ -786,7 +786,8 @@ test('every action on the list and in Te deben is icon + text, and Cobrar keeps 
   expectIconAndTextRule(document.body, RULE)
 })
 
-test('the header holds the title and "New customer" with its icon, and no count line', async () => {
+test('on a computer the header holds the title and "New customer" with its icon, and no count line', async () => {
+  stubViewport('computer')
   vi.mocked(fetch).mockImplementation(
     fetchStub(() => jsonResponse(200, [customerFixture]), () => jsonResponse(200, DEBTORS_FIXTURE)),
   )
@@ -798,6 +799,24 @@ test('the header holds the title and "New customer" with its icon, and no count 
   expect(within(header as HTMLElement).getByText('Customers')).toBeInTheDocument()
   expect(nuevo).toHaveTextContent('New customer')
   expect(nuevo.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(screen.queryByText(/^\d+ customers?$/)).not.toBeInTheDocument()
+})
+
+test('on a phone the header holds the title and a round "New customer" with no visible word, and no count line', async () => {
+  stubViewport('phone')
+  vi.mocked(fetch).mockImplementation(
+    fetchStub(() => jsonResponse(200, [customerFixture]), () => jsonResponse(200, DEBTORS_FIXTURE)),
+  )
+  renderClientes()
+
+  const nuevo = await screen.findByRole('link', { name: 'New customer' })
+  const header = nuevo.closest('.clientes__encabezado')
+  expect(header).not.toBeNull()
+  expect(within(header as HTMLElement).getByText('Customers')).toBeInTheDocument()
+  expect(nuevo).toHaveTextContent('')
+  expect(within(header as HTMLElement).queryByText('New customer')).not.toBeInTheDocument()
+  expect(nuevo.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+  expect(screen.getAllByRole('link', { name: 'New customer' })).toHaveLength(1)
   expect(screen.queryByText(/^\d+ customers?$/)).not.toBeInTheDocument()
 })
 

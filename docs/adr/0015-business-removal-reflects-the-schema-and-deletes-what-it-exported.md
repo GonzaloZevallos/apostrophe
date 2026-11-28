@@ -198,3 +198,31 @@ business's `{scale, decimals}` beside them, so a business at scale 2 is not expo
 Quantity columns stay as ADR-0056 stores them, in hundredths.
 
 > Amended by ADR-0077: `login_guard` now has an `id`, but still no `business_id`, so it is still deleted by email; the export key `price_entry.effective_from` is now `effective_on`.
+
+## Amendment (GH-1075 part 1): binary columns are exported as base64, and the read-back compares the whole document
+
+A business logo stores image bytes, and a binary column made the command refuse to run.
+
+- **A binary column is written, chosen by its reflected type.** `ColumnType.BINARY`
+  covers `LargeBinary` and its subclasses (SQLite's `BLOB`, Postgres's `BYTEA`) and
+  `BINARY` and `VARBINARY`. The column is chosen by that type, never by its name or by
+  the Python type of a value.
+  - The value is written as standard, padded base64 under `<column>_base64`, a suffix
+    rule like `_hundredths`. The bytes are exactly the stored bytes. A null value is
+    written as `null` under the same key.
+  - `bytes`, `bytearray` and `memoryview` are accepted. Any other value raises
+    `UnencodableBinary`, with a fixed message that names the table and the column, never
+    the value, its type or its length.
+  - A binary column `c` beside a column named `c_base64` would write the same key twice:
+    `build_document` raises `ExportKeyCollision`, naming the table and the column only.
+  - Both failures end the run before any delete: the file is discarded and the
+    transaction rolled back. `--dry-run` never builds the document, so it shows neither.
+- **The read-back compares the whole document.** After `read_back`, and before the
+  first delete, `remove_business` requires the document read from disk to equal the
+  document that was built, as well as the id sets. Otherwise it raises
+  `ExportNotFaithful`, which carries no data; the operator sees the generic failed
+  line, and the run rolls back and discards the file.
+- **The GH-36 line is narrowed.** "`ColumnType.OTHER` is refused ... only
+  `pinned_catalog.token_ciphertext`" no longer holds as written: binary columns are not
+  `OTHER` any more, and `token_ciphertext` stays excluded by `EXCLUDED_COLUMNS`. `OTHER`
+  is still refused for any type the export cannot write.
