@@ -13,9 +13,11 @@
  *   ("‹ <parent>"). They accept no `icon`. Back is never close.
  * - **Icon only** (`variant="icon"`): an obvious action from the closed `ACTION_ICON`
  *   map (`botonVisual.tsx`: delete, search, close, edit, share, add), with a required `ariaLabel`
- *   (the exact current word, never a new one) and a 44 px target (`.boton-icono`; `add` is the
- *   round `.boton-icono` filled with `--boton` (`.boton-icono--lleno`), only the phone Products title row's
- *   "New product").
+ *   (the exact current word, never a new one) and a 44 px target (`.boton-icono`). Only `add`
+ *   takes a `tone`: `filled` (the default, `--boton`, `.boton-icono--lleno`) or `neutral`
+ *   (`--superficie` with a `--linea` border, `.boton-icono--neutro`). `add` is for the phone title
+ *   rows of Products (filled) and Customers (neutral), and New sale's computer results table
+ *   (`ProductResultsTable`) already uses it filled.
  * - `row`: a full-width, left-aligned, stacked-content button for a tappable list row,
  *   reset only through its own `boton--fila` class.
  *
@@ -100,9 +102,8 @@ export interface BotonNotice extends BotonCommon {
   type?: 'button'
 }
 
-export interface BotonIconOnly extends BotonCommon {
+interface BotonIconOnlyCommon extends BotonCommon {
   variant: 'icon'
-  action: IconOnlyAction
   /** The control's name: the exact current word of the action. */
   ariaLabel: string
   /** `-1` for a control that is a mouse convenience and never a Tab stop (a result row's Add). */
@@ -114,6 +115,19 @@ export interface BotonIconOnly extends BotonCommon {
   textOnly?: undefined
   type?: 'button'
 }
+
+/** The round add: `tone` (default `filled`) exists only here, so no other icon-only action can be tinted. */
+export interface BotonIconAdd extends BotonIconOnlyCommon {
+  action: 'add'
+  tone?: 'filled' | 'neutral'
+}
+
+export interface BotonIconOther extends BotonIconOnlyCommon {
+  action: Exclude<IconOnlyAction, 'add'>
+  tone?: never
+}
+
+export type BotonIconOnly = BotonIconAdd | BotonIconOther
 
 /** Every shape but the submit, which a link cannot be. */
 export type BotonVisualProps = BotonIconText | BotonTextKind | BotonRow | BotonNotice | BotonIconOnly

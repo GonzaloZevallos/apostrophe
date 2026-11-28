@@ -42,6 +42,23 @@ const criticalWithAction: Rejected<{ variant: 'critical'; icon: 'tacho'; action:
 const linkLinkWithIcon: RejectedLink<{ to: string; variant: 'link'; icon: 'tacho' } & Children> = true
 const linkSubmit: RejectedLink<{ to: string; textOnly: 'submit'; type: 'submit' } & Children> = true
 const linkIconOnlyWithoutLabel: RejectedLink<{ to: string; variant: 'icon'; action: 'search' }> = true
+const toneOnDelete: Rejected<{ variant: 'icon'; action: 'delete'; ariaLabel: 'x'; tone: 'neutral' }> = true
+const toneOnSearch: Rejected<{ variant: 'icon'; action: 'search'; ariaLabel: 'x'; tone: 'filled' }> = true
+const toneGreenOnAdd: Rejected<{ variant: 'icon'; action: 'add'; ariaLabel: 'x'; tone: 'green' }> = true
+const linkToneOnDelete: RejectedLink<{
+  to: string
+  variant: 'icon'
+  action: 'delete'
+  ariaLabel: 'x'
+  tone: 'neutral'
+}> = true
+const linkToneGreenOnAdd: RejectedLink<{
+  to: string
+  variant: 'icon'
+  action: 'add'
+  ariaLabel: 'x'
+  tone: 'green'
+}> = true
 const noticeWithIcon: Rejected<{ variant: 'notice'; icon: 'atras' } & Children> = true
 const noticeWithAriaLabel: Rejected<{ variant: 'notice'; ariaLabel: 'x' } & Children> = true
 const noticeTextOnlySubmit: Rejected<{ variant: 'notice'; textOnly: 'submit'; type: 'submit' } & Children> =
@@ -63,6 +80,16 @@ const back: Rejected<{ variant: 'back' } & Children> = false
 const row: Rejected<{ variant: 'row' } & Children> = false
 const notice: Rejected<{ variant: 'notice' } & Children> = false
 const linkNotice: RejectedLink<{ to: string; variant: 'notice' } & Children> = false
+const addNeutral: Rejected<{ variant: 'icon'; action: 'add'; ariaLabel: 'New'; tone: 'neutral' }> = false
+const addFilled: Rejected<{ variant: 'icon'; action: 'add'; ariaLabel: 'New'; tone: 'filled' }> = false
+const addDefaultTone: Rejected<{ variant: 'icon'; action: 'add'; ariaLabel: 'New' }> = false
+const linkAddNeutral: RejectedLink<{
+  to: string
+  variant: 'icon'
+  action: 'add'
+  ariaLabel: 'New'
+  tone: 'neutral'
+}> = false
 const closeIcon: Rejected<{ variant: 'icon'; action: 'close'; ariaLabel: 'Close' }> = false
 const editIcon: Rejected<{ variant: 'icon'; action: 'edit'; ariaLabel: 'Edit' }> = false
 const shareIcon: Rejected<{ variant: 'icon'; action: 'share'; ariaLabel: 'Share' }> = false
@@ -97,6 +124,11 @@ test('the closed lists are enforced by tsc, not at run time', () => {
     linkLinkWithIcon,
     linkSubmit,
     linkIconOnlyWithoutLabel,
+    toneOnDelete,
+    toneOnSearch,
+    toneGreenOnAdd,
+    linkToneOnDelete,
+    linkToneGreenOnAdd,
     noticeWithIcon,
     noticeWithAriaLabel,
     noticeTextOnlySubmit,
@@ -116,6 +148,10 @@ test('the closed lists are enforced by tsc, not at run time', () => {
     row,
     notice,
     linkNotice,
+    addNeutral,
+    addFilled,
+    addDefaultTone,
+    linkAddNeutral,
     closeIcon,
     editIcon,
     shareIcon,

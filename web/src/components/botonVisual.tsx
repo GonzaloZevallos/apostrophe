@@ -17,9 +17,13 @@ const ACTION_ICON: Record<IconOnlyAction, NombreIcono> = {
   add: 'agregar',
 }
 
-/** The one icon-only action drawn filled (`--boton`, like the avatar beside it) rather than on
- * `--superficie`: the phone Products title row's "New product", which has no room for its word. */
-const FILLED_ICON_ONLY_CLASS = 'boton-icono boton-icono--lleno'
+/** The one icon-only action with a tone: `add`, filled (`--boton`, like the avatar beside it) by
+ * default or neutral (`--superficie` with a `--linea` border). Every other icon-only action is the
+ * plain `boton-icono`. */
+const ADD_TONE_CLASS: Record<'filled' | 'neutral', string> = {
+  filled: 'boton-icono boton-icono--lleno',
+  neutral: 'boton-icono boton-icono--neutro',
+}
 
 /** Placement classes of the fixed "Nueva venta" button (phone and computer), kept here so no
  * other file writes a `boton*` literal. */
@@ -54,7 +58,7 @@ export function botonVisual(props: BotonProps): {
   const className = CLASS[props.variant ?? 'primary']
   if (props.variant === 'icon') {
     return {
-      className: props.action === 'add' ? FILLED_ICON_ONLY_CLASS : className,
+      className: props.action === 'add' ? ADD_TONE_CLASS[props.tone ?? 'filled'] : className,
       ariaLabel: props.ariaLabel,
       content: <Icono nombre={ACTION_ICON[props.action]} />,
     }
