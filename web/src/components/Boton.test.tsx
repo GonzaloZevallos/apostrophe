@@ -42,8 +42,8 @@ test('only add is toned: every other icon-only action is exactly boton-icono', (
   for (const name of ['Borrar', 'Editar', 'Buscar', 'Cerrar', 'Compartir']) {
     expect(classOf(name)).toBe('boton-icono')
   }
-  expect(classOf('Agregar')).toBe('boton-icono boton-icono--lleno')
-  expect(classOf('Nuevo')).toBe('boton-icono boton-icono--neutro')
+  expect(classOf('Agregar')).toBe('boton-icono boton-icono--contorno')
+  expect(classOf('Nuevo')).toBe('boton-icono boton-icono--contorno')
 })
 
 test('an icon-only button draws the icon its action maps to, hidden from assistive technology', () => {

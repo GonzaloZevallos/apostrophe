@@ -17,13 +17,12 @@ const ACTION_ICON: Record<IconOnlyAction, NombreIcono> = {
   add: 'agregar',
 }
 
-/** The one icon-only action with a tone: `add`, filled (`--boton`, like the avatar beside it) by
- * default or neutral (`--superficie` with a `--linea` border). Every other icon-only action is the
- * plain `boton-icono`. */
-const ADD_TONE_CLASS: Record<'filled' | 'neutral', string> = {
-  filled: 'boton-icono boton-icono--lleno',
-  neutral: 'boton-icono boton-icono--neutro',
-}
+/** The one icon-only action drawn with a border (`--linea`) on `--superficie` and `--tinta` ink, the
+ * neutral round "+" of Clientes.dc.html: `add`, in the phone Products and Customers title rows and
+ * New sale's computer results table. Never green: in a phone header green is the Settings avatar's
+ * and the labelled pill's alone, so two round buttons never look alike. Every other icon-only
+ * action is the plain `boton-icono`. */
+const OUTLINED_ICON_ONLY_CLASS = 'boton-icono boton-icono--contorno'
 
 /** Placement classes of the fixed "Nueva venta" button (phone and computer), kept here so no
  * other file writes a `boton*` literal. */
@@ -58,7 +57,7 @@ export function botonVisual(props: BotonProps): {
   const className = CLASS[props.variant ?? 'primary']
   if (props.variant === 'icon') {
     return {
-      className: props.action === 'add' ? ADD_TONE_CLASS[props.tone ?? 'filled'] : className,
+      className: props.action === 'add' ? OUTLINED_ICON_ONLY_CLASS : className,
       ariaLabel: props.ariaLabel,
       content: <Icono nombre={ACTION_ICON[props.action]} />,
     }

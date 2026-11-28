@@ -2,7 +2,8 @@
  * The Products phone layout: a title block at the top, then the shared body. The block is a plain
  * div that scrolls with the screen (never a header, never fixed or sticky): the title, nothing
  * for the Publish catalog slot (no element until that action exists), the "New product" action
- * as an icon-only round button named by its words (the row has no room for them), and the
+ * as the neutral icon-only round button named by its words (the labelled pill does not fit the
+ * row at 246 px, measured by `e2e/productsHeader.spec.ts`; never green next to the avatar), and the
  * Settings avatar. Under it the Catalog | Stock pill row (it scrolls with the content, never sticky),
  * the notices drawn once, and the body of the segment. The "New product" link is the block's alone.
  *

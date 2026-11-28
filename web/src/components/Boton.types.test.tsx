@@ -44,6 +44,7 @@ const linkSubmit: RejectedLink<{ to: string; textOnly: 'submit'; type: 'submit' 
 const linkIconOnlyWithoutLabel: RejectedLink<{ to: string; variant: 'icon'; action: 'search' }> = true
 const toneOnDelete: Rejected<{ variant: 'icon'; action: 'delete'; ariaLabel: 'x'; tone: 'neutral' }> = true
 const toneOnSearch: Rejected<{ variant: 'icon'; action: 'search'; ariaLabel: 'x'; tone: 'filled' }> = true
+const filledOnAdd: Rejected<{ variant: 'icon'; action: 'add'; ariaLabel: 'New'; tone: 'filled' }> = true
 const toneGreenOnAdd: Rejected<{ variant: 'icon'; action: 'add'; ariaLabel: 'x'; tone: 'green' }> = true
 const linkToneOnDelete: RejectedLink<{
   to: string
@@ -81,7 +82,6 @@ const row: Rejected<{ variant: 'row' } & Children> = false
 const notice: Rejected<{ variant: 'notice' } & Children> = false
 const linkNotice: RejectedLink<{ to: string; variant: 'notice' } & Children> = false
 const addNeutral: Rejected<{ variant: 'icon'; action: 'add'; ariaLabel: 'New'; tone: 'neutral' }> = false
-const addFilled: Rejected<{ variant: 'icon'; action: 'add'; ariaLabel: 'New'; tone: 'filled' }> = false
 const addDefaultTone: Rejected<{ variant: 'icon'; action: 'add'; ariaLabel: 'New' }> = false
 const linkAddNeutral: RejectedLink<{
   to: string
@@ -126,6 +126,7 @@ test('the closed lists are enforced by tsc, not at run time', () => {
     linkIconOnlyWithoutLabel,
     toneOnDelete,
     toneOnSearch,
+    filledOnAdd,
     toneGreenOnAdd,
     linkToneOnDelete,
     linkToneGreenOnAdd,
@@ -149,7 +150,6 @@ test('the closed lists are enforced by tsc, not at run time', () => {
     notice,
     linkNotice,
     addNeutral,
-    addFilled,
     addDefaultTone,
     linkAddNeutral,
     closeIcon,

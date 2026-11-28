@@ -13,11 +13,10 @@
  *   ("‹ <parent>"). They accept no `icon`. Back is never close.
  * - **Icon only** (`variant="icon"`): an obvious action from the closed `ACTION_ICON`
  *   map (`botonVisual.tsx`: delete, search, close, edit, share, add), with a required `ariaLabel`
- *   (the exact current word, never a new one) and a 44 px target (`.boton-icono`). Only `add`
- *   takes a `tone`: `filled` (the default, `--boton`, `.boton-icono--lleno`) or `neutral`
- *   (`--superficie` with a `--linea` border, `.boton-icono--neutro`). `add` is for the phone title
- *   rows of Products (filled) and Customers (neutral), and New sale's computer results table
- *   (`ProductResultsTable`) already uses it filled.
+ *   (the exact current word, never a new one) and a 44 px target (`.boton-icono`). `add` is the
+ *   one round `.boton-icono` with a `--linea` border (`.boton-icono--contorno`), the neutral look
+ *   of the phone title rows of Products and Customers and of New sale's computer results table;
+ *   never green. Its optional `tone` only says `neutral`, the one tone there is.
  * - `row`: a full-width, left-aligned, stacked-content button for a tappable list row,
  *   reset only through its own `boton--fila` class.
  *
@@ -116,10 +115,10 @@ interface BotonIconOnlyCommon extends BotonCommon {
   type?: 'button'
 }
 
-/** The round add: `tone` (default `filled`) exists only here, so no other icon-only action can be tinted. */
+/** The round add: `tone` (only `neutral`, the default) exists only here, so no other icon-only action can be tinted. */
 export interface BotonIconAdd extends BotonIconOnlyCommon {
   action: 'add'
-  tone?: 'filled' | 'neutral'
+  tone?: 'neutral'
 }
 
 export interface BotonIconOther extends BotonIconOnlyCommon {

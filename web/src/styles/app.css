@@ -4590,8 +4590,10 @@ a.ajustes-tema__opcion {
 /* The Products phone title block (`ProductsPhone`): a plain div that scrolls with the screen, one
  * nowrap row. The heading takes what is left; the 44 px "New product" button and the avatar keep
  * their size. 12 px between the targets leaves 8 px between the button and the avatar's 44 px
- * box, whose -4 px margins eat 4 px of the gap. The button is `.boton-icono` (44 x 44, round) filled
- * with --boton-texto on --boton; its own class sets no colour. */
+ * box, whose -4 px margins eat 4 px of the gap. The button is `.boton-icono` (44 x 44, round) with
+ * the `.boton-icono--contorno` border: --superficie, --tinta and --linea, the neutral round "+" of
+ * Clientes.dc.html, never green (green is the avatar's). The same look at every phone width: the
+ * labelled pill does not fit the row at 246 px, so nothing here switches by width. */
 .productos-cabecera {
   display: flex;
   flex-wrap: nowrap;
@@ -4604,19 +4606,13 @@ a.ajustes-tema__opcion {
   min-width: 0;
 }
 
-.boton-icono--lleno {
-  background: var(--boton);
-  color: var(--boton-texto);
-}
-
-/* The neutral round add (the phone Customers title row's "New customer"): the plain
- * `.boton-icono` surface with a --linea ring and the --tinta icon, never --boton. */
-.boton-icono--neutro {
-  /* The ring is inside the 44 px target: a link is content-box by default, so without this it grows to 46. */
+/* The neutral round add (Products' and Customers' phone title rows, New sale's results table): the
+ * plain `.boton-icono` surface and ink (--superficie, --tinta) with a --linea ring, never --boton.
+ * The ring is inside the 44 px target: a link is content-box by default, so without border-box it
+ * grows to 46. */
+.boton-icono--contorno {
   box-sizing: border-box;
-  background: var(--superficie);
   border: 1px solid var(--linea);
-  color: var(--tinta);
   user-select: none;
   touch-action: manipulation;
 }
