@@ -68,8 +68,16 @@
   overflow-wrap: anywhere;
 }
 
-/* At 130 % zoom on the smallest phone (246 CSS px) the Total at its full size is wider than the card
- * and widens the page; it keeps its figure class and takes the next size down there. */
+/* On a 320 px phone with the text at 130 % the Total at its full size (54 px) is wider than the card and
+ * widens the page, and the media query cannot see the text size: up to 340 px the Total keeps its figure class
+ * and takes cifra-l's size (38 px); at 130 % zoom on the smallest phone (under 300 CSS px) it takes cifra-m's. */
+@media (max-width: 340px) {
+  .sale-detail-card__summary .cifra-xl {
+    font-size: 38px;
+    line-height: 1.05;
+  }
+}
+
 @media (max-width: 299px) {
   .sale-detail-card__summary .cifra-xl {
     font-size: var(--cifra-m-tamano);
