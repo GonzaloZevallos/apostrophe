@@ -5,7 +5,7 @@
  * rule has a case that fails if a sentence covers another rule's value.
  */
 
-import { screen, waitFor } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, test, vi } from 'vitest'
 import type { Me } from '../../api/me'
@@ -246,4 +246,16 @@ test('a second tap on Save while the first is still sending sends no second requ
   await userEvent.click(saveButton())
   expect(calls.writes).toBe(1)
   release()
+})
+
+test('Enter with a valid amount but no category sends nothing: the submit guard covers every blocking rule', async () => {
+  const calls: Calls = { writes: 0 }
+  stubViewport('phone')
+  renderExpenses([EXPENSE_NEW], api(calls), ZERO_DECIMALS)
+  await userEvent.type(await screen.findByLabelText('Amount'), '1000{Enter}')
+  await userEvent.type(screen.getByLabelText('Details (optional)'), 'x{Enter}')
+  // A submit that does not come through Save's click (nothing says it must) meets the same guard.
+  fireEvent.submit(amountField().form ?? amountField())
+  expect(saveButton()).toHaveAttribute('aria-disabled', 'true')
+  expect(calls.writes).toBe(0)
 })
